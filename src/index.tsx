@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { Menu } from 'antd';
 import NoteContainer from 'pages/NoteContainer';
 import BashProfile from 'pages/BashProfile';
+import Demo from 'pages/Demo';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -28,6 +29,7 @@ function App() {
           <Routes>
             <Route path="/" element={<RootLayout />} />
             <Route path="note" element={<NoteContainer />} />
+            <Route path="demo" element={<Demo />} />
             <Route path="bash-profile" element={<BashProfile />} />
           </Routes>
         </BrowserRouter>
@@ -51,6 +53,9 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="bashProfile">
           <Link to="/bash-profile">Bash profile</Link>
+        </Menu.Item>
+        <Menu.Item key="demo">
+          <Link to="/demo">Demo</Link>
         </Menu.Item>
       </Menu>
     </div>
