@@ -40,6 +40,8 @@ const demoSlice = createSlice({
 
 export const { add, update, remove, makeRandom } = demoSlice.actions;
 
+export const selectDemo = (state: RootState) => state.demo;
+
 export const fetchRandom = (): AppThunk => async (dispatch, getState) => {
   // const res = await fetchRandomDemo()
   getState();

@@ -1,10 +1,10 @@
 import { connect } from 'react-redux';
 import withRouter from 'components/withRouter';
 import { get } from 'lodash';
-import { add, update, remove, fetchRandom } from 'reducers/demo';
+import { add, update, remove, fetchRandom } from './demoSlice';
 import { Button, Divider } from 'antd';
 
-export interface IDemoProps {
+interface IProps {
   demo: any;
   add: any;
   update: any;
@@ -12,7 +12,7 @@ export interface IDemoProps {
   fetchRandom: any;
 }
 
-function Demo({ demo, add, update, remove, fetchRandom }: IDemoProps) {
+function DemoHOC({ demo, add, update, remove, fetchRandom }: IProps) {
   return (
     <div>
       <div
@@ -69,4 +69,6 @@ const mapDispatchToProps = {
   fetchRandom,
 };
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Demo));
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(DemoHOC)
+);

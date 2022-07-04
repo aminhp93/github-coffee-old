@@ -10,7 +10,9 @@ import { useState } from 'react';
 import { Menu } from 'antd';
 import NoteContainer from 'pages/NoteContainer';
 import BashProfile from 'pages/BashProfile';
-import Demo from 'pages/Demo';
+import DemoHOC from 'features/demo/DemoHOC';
+import DemoHook from 'features/demo/DemoHook';
+import Demo from 'features/demo/Demo';
 
 ReactDOM.render(
   <React.StrictMode>
@@ -29,6 +31,8 @@ function App() {
           <Routes>
             <Route path="/" element={<RootLayout />} />
             <Route path="note" element={<NoteContainer />} />
+            <Route path="demo-hoc" element={<DemoHOC />} />
+            <Route path="demo-hook" element={<DemoHook />} />
             <Route path="demo" element={<Demo />} />
             <Route path="bash-profile" element={<BashProfile />} />
           </Routes>
@@ -53,6 +57,12 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="bashProfile">
           <Link to="/bash-profile">Bash profile</Link>
+        </Menu.Item>
+        <Menu.Item key="demoHOC">
+          <Link to="/demo-hoc">Demo HOC</Link>
+        </Menu.Item>
+        <Menu.Item key="demoHook">
+          <Link to="/demo-hook">Demo Hook</Link>
         </Menu.Item>
         <Menu.Item key="demo">
           <Link to="/demo">Demo</Link>
