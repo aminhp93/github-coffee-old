@@ -16,33 +16,24 @@ const demoSlice = createSlice({
   ],
   reducers: {
     add: (state) => {
-      const newState = [...state];
-      newState.push({
-        id: newState.length + 1,
-        name: `name_${newState.length + 1}`,
+      state.push({
+        id: state.length + 1,
+        name: `name_${state.length + 1}`,
       });
-      return newState;
     },
     update: (state, action: any) => {
-      const newState = [...state];
-      const index = newState.findIndex((i) => i.id === action.payload.id);
+      const index = state.findIndex((i) => i.id === action.payload.id);
       if (index === -1) return state;
-      newState[index] = {
+      state[index] = {
         id: action.payload.id,
         name: `name_${action.payload.id}_updated_${new Date().getTime()}`,
       };
-      return newState;
     },
     remove: (state, action: any) => {
-      const newState = [...state];
-      const index = newState.findIndex((i) => i.id === action.payload.id);
-      if (index === -1) return state;
-      newState.splice(index, 1);
-      return newState;
+      return state.filter((i) => i.id !== action.payload.id);
     },
     makeRandom: (state) => {
-      const newState = [...state];
-      return shuffle(newState);
+      return shuffle(state);
     },
   },
 });
