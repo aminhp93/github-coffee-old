@@ -1,5 +1,4 @@
-import * as React from 'react';
-import Note from 'pages/Note';
+import Note from 'features/note/Note';
 
 export interface IBashProfileProps {}
 

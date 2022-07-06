@@ -1,26 +1,28 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-
+import ReactDOM from 'react-dom/client';
 import 'styles/index.less';
 
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu } from 'antd';
-import NoteContainer from 'pages/NoteContainer';
+import NoteList from 'features/note/NoteList';
 import BashProfile from 'pages/BashProfile';
 import DemoHOC from 'features/demo/DemoHOC';
 import DemoHook from 'features/demo/DemoHook';
 import Demo from 'features/demo/Demo';
+import ShowMoreText from 'react-show-more-text';
+import Truncate from 'react-truncate';
 
-ReactDOM.render(
-  <React.StrictMode>
+const root = ReactDOM.createRoot(document.getElementById('root') as any);
+
+root.render(
+  <React.Fragment>
     <Provider store={store}>
       <App />
     </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.Fragment>
 );
 
 function App() {
@@ -30,7 +32,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<RootLayout />} />
-            <Route path="note" element={<NoteContainer />} />
+            <Route path="note-list" element={<NoteList />} />
             <Route path="demo-hoc" element={<DemoHOC />} />
             <Route path="demo-hook" element={<DemoHook />} />
             <Route path="demo" element={<Demo />} />
@@ -52,8 +54,8 @@ function RootLayout() {
   return (
     <div className="RootLayout">
       <Menu mode="inline" onClick={handleChangeMenu} selectedKeys={[keyMenu]}>
-        <Menu.Item key="note">
-          <Link to="/note">Note</Link>
+        <Menu.Item key="noteList">
+          <Link to="/note-list">Note List</Link>
         </Menu.Item>
         <Menu.Item key="bashProfile">
           <Link to="/bash-profile">Bash profile</Link>
