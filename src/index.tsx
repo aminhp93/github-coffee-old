@@ -12,8 +12,6 @@ import BashProfile from 'pages/BashProfile';
 import DemoHOC from 'features/demo/DemoHOC';
 import DemoHook from 'features/demo/DemoHook';
 import Demo from 'features/demo/Demo';
-import ShowMoreText from 'react-show-more-text';
-import Truncate from 'react-truncate';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
