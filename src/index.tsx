@@ -2,6 +2,8 @@ import React from 'react';
 import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom/client';
 import 'styles/index.less';
+import '../node_modules/react-grid-layout/css/styles.css';
+import '../node_modules/react-resizable/css/styles.css';
 
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
@@ -12,6 +14,7 @@ import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
+import SensorDashboard from 'features/sensor/SensorDashboard';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -33,6 +36,7 @@ function App() {
           <Route path="demo" element={<Demo />} />
           <Route path="test" element={<Test />} />
           <Route path="bash-profile" element={<BashProfile />} />
+          <Route path="sensor-dashboard" element={<SensorDashboard />} />
           <Route path="api" element={<API />} />
         </Routes>
       </BrowserRouter>
@@ -64,6 +68,9 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="api">
           <Link to="/api">API</Link>
+        </Menu.Item>
+        <Menu.Item key="sensorDashboard">
+          <Link to="/sensor-dashboard">Sensor Dashboard</Link>
         </Menu.Item>
       </Menu>
     </div>

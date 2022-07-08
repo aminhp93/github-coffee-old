@@ -3,6 +3,11 @@
 @import 'configs';
 @import 'pages';
 @import 'components';
+@import 'features';
+
+#root {
+  height: 100%;
+}
 
 @media screen and (max-width: 1280px) {
   .container {
@@ -17,7 +22,8 @@
 }
 
 .container {
-  max-width: 55em;
+  height: 100%;
+  max-width: 100em;
   margin-right: auto;
   margin-left: auto;
   transition: padding 0.3s;
