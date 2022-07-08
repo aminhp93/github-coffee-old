@@ -19,6 +19,10 @@ const COLORS: any = {
   4: 'yellow',
 };
 
+const FAKE_DATA = JSON.parse(
+  '[{"sensorId":1,"sensor":"Temperature","historicalData":[10,20,40,30,15],"value":15,"unit":"°C"},{"sensorId":4,"sensor":"Oxygen","historicalData":[75,105,65,95,90],"value":35,"unit":"%"},{"sensorId":2,"sensor":"Intensity","data":30,"historicalData":[1,3,20,40,50],"value":50,"unit":"g"},{"sensorId":3,"sensor":"Feeding","historicalData":[75,105,65,95,90],"value":35,"unit":"%"}]'
+);
+
 export default function LineChartContainer() {
   const [data, setData] = useState([]);
   const [originData, setOriginData] = useState([]);
@@ -54,6 +58,9 @@ export default function LineChartContainer() {
         setOriginData(res.data);
         setData(mappedData);
       } catch (e) {
+        const mappedData = mapData(FAKE_DATA);
+        setOriginData(FAKE_DATA);
+        setData(mappedData);
         notification.error({ message: 'Error' });
       }
     };

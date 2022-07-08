@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Tooltip as TooltipAntd, Select } from 'antd';
 import { Responsive as ResponsiveGridLayout } from 'react-grid-layout';
+import ReactGridLayout from 'react-grid-layout';
 import { withSize } from 'react-sizeme';
 import { CloseOutlined } from '@ant-design/icons';
 import ExampleChart from './ExampleChart';
@@ -15,9 +16,9 @@ const DEFAULT_ITEMS = ['a', 'b', 'c'];
 
 const DEFAULT_LAYOUTS = {
   lg: [
-    { w: 5, h: 6, x: 0, y: 0, i: 'a', moved: false, static: false },
-    { w: 5, h: 6, x: 6, y: 6, i: 'b', moved: false, static: false },
-    { w: 11, h: 6, x: 0, y: 0, i: 'c', moved: false, static: false },
+    { w: 6, h: 6, x: 0, y: 0, i: 'a' },
+    { w: 5, h: 6, x: 6, y: 0, i: 'b' },
+    { w: 6, h: 6, x: 0, y: 0, i: 'c' },
   ],
 };
 
@@ -50,10 +51,10 @@ function SensorDashboard({ size }: IProps) {
   );
 
   const handleChangeLayout = (
-    currentLayout: ReactGridLayout.Layout[],
-    allLayouts: ReactGridLayout.Layouts
+    currentLayout: ReactGridLayout.Layout[]
+    // allLayouts: ReactGridLayout.Layouts
   ) => {
-    setLayouts(allLayouts);
+    setLayouts(currentLayout);
   };
 
   const handleRemove = (itemId: string) => {
@@ -94,18 +95,19 @@ function SensorDashboard({ size }: IProps) {
           Save layout
         </Button>
       </div>
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={layouts}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+      <ReactGridLayout
+        // className="layout"
+        layout={DEFAULT_LAYOUTS.lg}
+        // breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        // cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        cols={12}
         rowHeight={60}
         width={size?.width}
         onLayoutChange={handleChangeLayout}
       >
         {items.map((i) => {
           return (
-            <div className="ResponsiveGridLayoutItem" key={i}>
+            <div className="ResponsiveGridLayoutItem widget" key={i}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <div>{LIST_COMPONENTS[i].text}</div>
                 <TooltipAntd title="Close chart" placement="top">
@@ -122,7 +124,7 @@ function SensorDashboard({ size }: IProps) {
             </div>
           );
         })}
-      </ResponsiveGridLayout>
+      </ReactGridLayout>
     </div>
   );
 }
