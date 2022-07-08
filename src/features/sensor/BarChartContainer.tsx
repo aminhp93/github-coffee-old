@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import axios from 'axios';
+import { notification } from 'antd';
 
 export default function BarChartContainer() {
   const [data, setData] = useState([]);
@@ -43,7 +44,7 @@ export default function BarChartContainer() {
         setOriginData(res.data);
         setData(mappedData);
       } catch (e) {
-        console.log(e);
+        notification.error({ message: 'Error' });
       }
     };
     fetch();

@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import axios from 'axios';
+import { notification } from 'antd';
 
 const COLORS: any = {
   1: 'red',
@@ -53,10 +54,17 @@ export default function LineChartContainer() {
         setOriginData(res.data);
         setData(mappedData);
       } catch (e) {
-        console.log(e);
+        notification.error({ message: 'Error' });
       }
     };
     fetch();
+    const timeoutId = setInterval(() => {
+      fetch();
+    }, 5000);
+
+    return () => {
+      clearInterval(timeoutId);
+    };
   }, []);
 
   return (
