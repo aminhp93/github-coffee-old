@@ -16,7 +16,7 @@ function DemoHook() {
           justifyContent: 'space-between',
         }}
       >
-        <div>Demo</div>
+        <div>Demo Hook</div>
         <div>
           <Button onClick={() => dispatch(add())}>Add</Button>
           <Button onClick={() => dispatch(fetchRandom())}>Fetch random</Button>

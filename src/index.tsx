@@ -8,10 +8,10 @@ import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu } from 'antd';
 import NoteList from 'features/note/NoteList';
-import BashProfile from 'pages/BashProfile';
-import DemoHOC from 'features/demo/DemoHOC';
-import DemoHook from 'features/demo/DemoHook';
+import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
+import Test from 'features/test/Test';
+import API from 'features/api/API';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -25,19 +25,17 @@ root.render(
 
 function App() {
   return (
-    <div className="App">
-      <div style={{ height: '100%' }}>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<RootLayout />} />
-            <Route path="note-list" element={<NoteList />} />
-            <Route path="demo-hoc" element={<DemoHOC />} />
-            <Route path="demo-hook" element={<DemoHook />} />
-            <Route path="demo" element={<Demo />} />
-            <Route path="bash-profile" element={<BashProfile />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
+    <div className="container">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<RootLayout />} />
+          <Route path="note-list" element={<NoteList />} />
+          <Route path="demo" element={<Demo />} />
+          <Route path="test" element={<Test />} />
+          <Route path="bash-profile" element={<BashProfile />} />
+          <Route path="api" element={<API />} />
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
@@ -58,14 +56,14 @@ function RootLayout() {
         <Menu.Item key="bashProfile">
           <Link to="/bash-profile">Bash profile</Link>
         </Menu.Item>
-        <Menu.Item key="demoHOC">
-          <Link to="/demo-hoc">Demo HOC</Link>
-        </Menu.Item>
-        <Menu.Item key="demoHook">
-          <Link to="/demo-hook">Demo Hook</Link>
-        </Menu.Item>
         <Menu.Item key="demo">
           <Link to="/demo">Demo</Link>
+        </Menu.Item>
+        <Menu.Item key="test">
+          <Link to="/test">Test</Link>
+        </Menu.Item>
+        <Menu.Item key="api">
+          <Link to="/api">API</Link>
         </Menu.Item>
       </Menu>
     </div>

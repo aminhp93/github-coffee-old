@@ -22,7 +22,7 @@ function DemoHOC({ demo, add, update, remove, fetchRandom }: IProps) {
           justifyContent: 'space-between',
         }}
       >
-        <div>Demo</div>
+        <div>Demo HOC</div>
         <div>
           <Button onClick={() => add()}>Add</Button>
           <Button onClick={() => fetchRandom()}>Fetch random</Button>
