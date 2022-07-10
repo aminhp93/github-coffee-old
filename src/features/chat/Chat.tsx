@@ -35,7 +35,7 @@ function Chat({ data }: IProps) {
         username,
         message: text,
       };
-      axios.post('http://localhost:5000/message', payload);
+      axios.post('/api/message', payload);
     } else {
       setText(e.target.value);
     }
