@@ -10,7 +10,6 @@ interface IProps {
 }
 
 function Chat({ data }: IProps) {
-  console.log(process);
   const [text, setText] = useState('');
   const [username, setUsername] = useState('');
   const [chats, setChats] = useState([] as any);
