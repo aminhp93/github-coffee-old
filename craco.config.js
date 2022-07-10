@@ -52,7 +52,7 @@ module.exports = {
       add: [
         // new EnvironmentPlugin(env),
         // new DefinePlugin({
-        //   process: { env: {} },
+        //   : { env: {} },
         // }),
       ],
     },
