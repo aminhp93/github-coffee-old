@@ -1,9 +1,16 @@
-// eslint-disable-next-line import/no-anonymous-default-export
-export default {
-  pusher: {
-    app_id: '1435319',
-    key: '15ee77871e1ed5258044',
-    secret: '4c2b97bec11d18dc8a13',
-    cluster: 'ap1',
-  },
-};
+import development from './development';
+import production from './production';
+
+if (process.env.NODE_ENV === 'production') {
+  console.log(process?.env);
+}
+
+let config: any = {};
+
+if (process.env.ENV === 'production') {
+  config = production;
+} else {
+  config = development;
+}
+
+export default config;

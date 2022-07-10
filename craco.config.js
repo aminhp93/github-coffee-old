@@ -2,6 +2,14 @@ const CracoLessPlugin = require('craco-less');
 const path = require('path');
 // const CracoAlias = require("craco-alias");
 const { EnvironmentPlugin, ProvidePlugin, DefinePlugin } = require('webpack');
+const childprocess = require('child_process');
+
+const env = {
+  ENV: process.env.ENV || 'development',
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  // VERSION: childprocess.execSync('git describe').toString().trim(),
+  // BUILD: childprocess.execSync('git branch --show-current').toString().trim(),
+};
 
 module.exports = {
   plugins: [
@@ -40,12 +48,13 @@ module.exports = {
     output: {
       filename: '[name].bundle.js',
     },
-    // plugins: {
-    //   add: [
-    //     new DefinePlugin({
-    //       process: { env: {} },
-    //     }),
-    //   ],
-    // },
+    plugins: {
+      add: [
+        // new EnvironmentPlugin(env),
+        // new DefinePlugin({
+        //   process: { env: {} },
+        // }),
+      ],
+    },
   },
 };

@@ -30,12 +30,13 @@ function Chat({ data }: IProps) {
   }, []);
 
   const handleTextChange = (e: any) => {
+    console.log(33, config);
     if (e.keyCode === 13) {
       const payload = {
         username,
         message: text,
       };
-      axios.post('/api/message', payload);
+      axios.post(`/api/message`, payload);
     } else {
       setText(e.target.value);
     }
