@@ -51,29 +51,29 @@ function DemoHook() {
 
 export default DemoHook;
 
-var tip = 100;
+// var tip = 100;
 
-(function () {
-  console.log('i have ' + hus());
-  function w() {
-    return tip * 2;
-  }
-  function hus() {
-    return w() / 2;
-  }
-  // var tip = 10
-})();
+// (function () {
+//   console.log('i have ' + hus());
+//   function w() {
+//     return tip * 2;
+//   }
+//   function hus() {
+//     return w() / 2;
+//   }
+//   // var tip = 10
+// })();
 
-for (let i = 0; i < 3; i++) {
-  console.log(i);
-  setTimeout(() => {
-    console.log(i);
-  }, 5000);
-}
+// for (let i = 0; i < 3; i++) {
+//   console.log(i);
+//   setTimeout(() => {
+//     console.log(i);
+//   }, 5000);
+// }
 
-for (let i = 0; i < 3; i++) {
-  console.log(i);
-  setTimeout(function () {
-    console.log(i);
-  }, 2000);
-}
+// for (let i = 0; i < 3; i++) {
+//   console.log(i);
+//   setTimeout(function () {
+//     console.log(i);
+//   }, 2000);
+// }

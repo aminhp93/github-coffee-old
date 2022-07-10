@@ -15,6 +15,7 @@ import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
 import SensorDashboard from 'features/sensor/SensorDashboard';
+import Chat from 'features/chat/Chat';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="bash-profile" element={<BashProfile />} />
           <Route path="sensor-dashboard" element={<SensorDashboard />} />
           <Route path="api" element={<API />} />
+          <Route path="chat" element={<Chat />} />
         </Routes>
       </BrowserRouter>
     </div>
@@ -71,6 +73,9 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="sensorDashboard">
           <Link to="/sensor-dashboard">Sensor Dashboard</Link>
+        </Menu.Item>
+        <Menu.Item key="chat">
+          <Link to="/chat">Chat</Link>
         </Menu.Item>
       </Menu>
     </div>

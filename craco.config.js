@@ -1,6 +1,7 @@
 const CracoLessPlugin = require('craco-less');
 const path = require('path');
 // const CracoAlias = require("craco-alias");
+const { EnvironmentPlugin, ProvidePlugin, DefinePlugin } = require('webpack');
 
 module.exports = {
   plugins: [
@@ -27,19 +28,24 @@ module.exports = {
     //     }
     // }
   ],
-  // webpack: {
-  //     configure: {
-  //         optimization: {
-  //             splitChunks: {
-  //                 chunks: 'async',
-  //                 maxSize: 5000000
-  //             },
-  //         },
-
-  //     },
-  //     output: {
-  //         filename: '[name].bundle.js'
-  //     },
-
-  // }
+  webpack: {
+    configure: {
+      optimization: {
+        splitChunks: {
+          chunks: 'async',
+          maxSize: 5000000,
+        },
+      },
+    },
+    output: {
+      filename: '[name].bundle.js',
+    },
+    // plugins: {
+    //   add: [
+    //     new DefinePlugin({
+    //       process: { env: {} },
+    //     }),
+    //   ],
+    // },
+  },
 };
