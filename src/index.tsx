@@ -29,7 +29,7 @@ root.render(
 );
 
 function App() {
-  console.log(process);
+  console.log(process.env);
   return (
     <div className="container">
       <BrowserRouter>

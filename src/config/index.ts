@@ -3,7 +3,7 @@ import production from './production';
 
 let config = development;
 
-if (process.env.ENV === 'production') {
+if (process.env.NODE_ENV === 'production') {
   config = production;
 }
 
