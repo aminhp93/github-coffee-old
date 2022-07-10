@@ -54,7 +54,7 @@
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false craco start & node server.js",
-    "build": "GENERATE_SOURCEMAP=false craco build",
+    "build": "GENERATE_SOURCEMAP=false craco build & node server.js",
     "test": "craco test"
   },
   "eslintConfig": {
