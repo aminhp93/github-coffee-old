@@ -36,7 +36,11 @@ function Chat({ data }: IProps) {
         username,
         message: text,
       };
-      axios.post(`${config.apiUrl}/api/message`, payload);
+      // axios.post(`${config.apiUrl}/api/message`, payload);
+      axios.post(
+        `https://2023-nextjs-with-redux.vercel.app/api/message`,
+        payload
+      );
     } else {
       setText(e.target.value);
     }
