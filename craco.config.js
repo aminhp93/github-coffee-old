@@ -4,13 +4,6 @@ const path = require('path');
 const { EnvironmentPlugin, ProvidePlugin, DefinePlugin } = require('webpack');
 const childprocess = require('child_process');
 
-const env = {
-  ENV: process.env.ENV || 'development',
-  NODE_ENV: process.env.NODE_ENV || 'development',
-  // VERSION: childprocess.execSync('git describe').toString().trim(),
-  // BUILD: childprocess.execSync('git branch --show-current').toString().trim(),
-};
-
 module.exports = {
   plugins: [
     {
@@ -51,9 +44,13 @@ module.exports = {
     plugins: {
       add: [
         // new EnvironmentPlugin(env),
-        // new DefinePlugin({
-        //   : { env: {} },
-        // }),
+
+        new ProvidePlugin({
+          process: 'process/browser.js',
+        }),
+        new DefinePlugin({
+          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+        }),
       ],
     },
   },
