@@ -81,13 +81,13 @@ export default function LineChartContainer(props: IProps) {
       }
     };
     fetch();
-    // const intervalId = setInterval(() => {
-    //   fetch();
-    // }, INTERVAL_TIME_CALL_API);
+    const intervalId = setInterval(() => {
+      fetch();
+    }, INTERVAL_TIME_CALL_API);
 
-    // return () => {
-    //   clearInterval(intervalId);
-    // };
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   return (
