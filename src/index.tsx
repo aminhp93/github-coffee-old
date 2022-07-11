@@ -14,7 +14,7 @@ import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
-import SensorDashboard from 'features/sensor/SensorDashboard';
+import Sensor from 'features/sensor';
 import Chat from 'features/chat/Chat';
 import Stock from 'features/stock/Stock';
 
@@ -39,7 +39,7 @@ function App() {
           <Route path="demo" element={<Demo />} />
           <Route path="test" element={<Test />} />
           <Route path="bash-profile" element={<BashProfile />} />
-          <Route path="sensor-dashboard" element={<SensorDashboard />} />
+          <Route path="sensor" element={<Sensor />} />
           <Route path="api" element={<API />} />
           <Route path="chat" element={<Chat />} />
           <Route path="stock" element={<Stock />} />
@@ -74,8 +74,8 @@ function RootLayout() {
         <Menu.Item key="api">
           <Link to="/api">API</Link>
         </Menu.Item>
-        <Menu.Item key="sensorDashboard">
-          <Link to="/sensor-dashboard">Sensor Dashboard</Link>
+        <Menu.Item key="sensor">
+          <Link to="/sensor">Sensor</Link>
         </Menu.Item>
         <Menu.Item key="chat">
           <Link to="/chat">Chat</Link>

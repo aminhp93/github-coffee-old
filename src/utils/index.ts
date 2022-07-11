@@ -1,4 +1,5 @@
 export * from './HouseFinance';
+export * from './sensor';
 
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const BILLION = 1000000000;

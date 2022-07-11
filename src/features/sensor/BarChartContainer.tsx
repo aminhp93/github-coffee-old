@@ -11,22 +11,28 @@ import {
 } from 'recharts';
 import axios from 'axios';
 import { notification } from 'antd';
+import { INTERVAL_TIME_CALL_API, FAKE_DATA } from 'utils/sensor';
+import { ISensor } from 'types';
 
-const FAKE_DATA = JSON.parse(
-  '[{"sensorId":1,"sensor":"Temperature","historicalData":[10,20,40,30,15],"value":15,"unit":"°C"},{"sensorId":4,"sensor":"Oxygen","historicalData":[75,105,65,95,90],"value":35,"unit":"%"},{"sensorId":2,"sensor":"Intensity","data":30,"historicalData":[1,3,20,40,50],"value":50,"unit":"g"},{"sensorId":3,"sensor":"Feeding","historicalData":[75,105,65,95,90],"value":35,"unit":"%"}]'
-);
+interface IProps {
+  selectedSensor: any;
+}
 
-export default function BarChartContainer() {
+export default function BarChartContainer(props: IProps) {
+  const { selectedSensor } = props;
   const [data, setData] = useState([]);
   const [originData, setOriginData] = useState([]);
 
-  const mapData = (data: any) => {
+  const mapData = (data: ISensor[]) => {
     const result: any = [];
-    data.map((i: any, index: number) => {
+    const historicalData = data[0].historicalData;
+    historicalData.map((i: any, index: number) => {
       const item: any = {
-        name: i.sensor,
-        value: i.value,
+        name: `${index}`,
       };
+      data.map((j: ISensor, index2: number) => {
+        item[j.sensor] = j.historicalData[index];
+      });
 
       result.push(item);
     });
@@ -44,17 +50,37 @@ export default function BarChartContainer() {
           method: 'GET',
         });
 
-        const mappedData = mapData(res.data);
-        setOriginData(res.data);
+        let filterData = res.data;
+        if (selectedSensor) {
+          filterData = res.data.filter(
+            (i: ISensor) => i.sensorId === selectedSensor.sensorId
+          );
+        }
+        const mappedData = mapData(filterData);
+        setOriginData(filterData);
         setData(mappedData);
       } catch (e) {
-        const mappedData = mapData(FAKE_DATA);
-        setOriginData(FAKE_DATA);
+        let filterData = FAKE_DATA;
+        if (selectedSensor) {
+          filterData = FAKE_DATA.filter(
+            (i: ISensor) => i.sensorId === selectedSensor.sensorId
+          );
+        }
+        const mappedData = mapData(filterData);
+        setOriginData(filterData);
         setData(mappedData);
+
         notification.error({ message: 'Error' });
       }
     };
     fetch();
+    const intervalId = setInterval(() => {
+      fetch();
+    }, INTERVAL_TIME_CALL_API);
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -73,7 +99,9 @@ export default function BarChartContainer() {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Bar dataKey="value" fill="#8884d8" />
+        {originData.map((i: any, index) => {
+          return <Bar dataKey={i.sensor} fill="#8884d8" />;
+        })}
       </BarChart>
     </ResponsiveContainer>
   );
