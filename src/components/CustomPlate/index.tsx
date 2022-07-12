@@ -215,7 +215,11 @@ const CustomPlate = (props: IProps) => {
         </HeadingToolbar>
       </PlateEventProvider>
 
-      <div ref={containerRef} style={{ position: 'relative' }}>
+      <div
+        ref={containerRef}
+        style={{ position: 'relative' }}
+        className="CustomPlate"
+      >
         <Plate<MyValue>
           editableProps={CONFIG.editableProps}
           initialValue={VALUES.playground}
