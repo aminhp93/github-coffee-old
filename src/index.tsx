@@ -9,7 +9,8 @@ import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Menu } from 'antd';
-import NoteList from 'features/note/NoteList';
+import Note from 'features/note';
+import NoteAdd from 'features/note/NoteAdd';
 import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
@@ -35,7 +36,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<RootLayout />} />
-          <Route path="note-list" element={<NoteList />} />
+          <Route path="note/add/" element={<NoteAdd />} />
+          <Route path="note" element={<Note />} />
           <Route path="demo" element={<Demo />} />
           <Route path="test" element={<Test />} />
           <Route path="bash-profile" element={<BashProfile />} />
@@ -59,8 +61,8 @@ function RootLayout() {
   return (
     <div className="RootLayout">
       <Menu mode="inline" onClick={handleChangeMenu} selectedKeys={[keyMenu]}>
-        <Menu.Item key="noteList">
-          <Link to="/note-list">Note List</Link>
+        <Menu.Item key="note">
+          <Link to="/note">Note</Link>
         </Menu.Item>
         <Menu.Item key="bashProfile">
           <Link to="/bash-profile">Bash profile</Link>

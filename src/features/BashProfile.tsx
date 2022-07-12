@@ -1,4 +1,4 @@
-import Note from 'features/note/Note';
+import Note from 'features/note/NoteDetail';
 
 export interface IBashProfileProps {}
 

@@ -67,3 +67,14 @@ export const AccountUrls = {
   fetchCashStatement: (index: number) =>
     `https://trade-report-api.vndirect.com.vn/accounts/0001069456/cashStatement?fromDate=2017-01-01&index=${index}&offset=50&types=`,
 };
+
+export const NoteUrls = {
+  createNote: 'https://testapi.io/api/aminhp93/resource/note/',
+  listNote: 'https://testapi.io/api/aminhp93/resource/note/',
+  detailNote: (noteId: number) =>
+    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
+  updateNote: (noteId: number) =>
+    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
+  deleteNote: (noteId: number) =>
+    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
+};

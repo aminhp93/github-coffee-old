@@ -13,7 +13,7 @@ import {
   createCodeBlockPlugin,
   createCodePlugin,
   createExitBreakPlugin,
-  createHeadingPlugin,
+  // createHeadingPlugin,
   createHighlightPlugin,
   createKbdPlugin,
   createImagePlugin,
@@ -109,7 +109,7 @@ let components = createPlateUI({
   [ELEMENT_CODE_BLOCK]: StyledElement,
   // customize your components by plugin key
 });
-components = withStyledPlaceHolders(components);
+// components = withStyledPlaceHolders(components);
 components = withStyledDraggables(components);
 
 const cbUploadImage = async (data: any) => {
@@ -145,7 +145,7 @@ const plugins = createMyPlugins(
     createParagraphPlugin(),
     createBlockquotePlugin(),
     createTodoListPlugin(),
-    createHeadingPlugin(),
+    // createHeadingPlugin(),
     createImagePlugin({
       options: {
         uploadImage: cbUploadImage,
