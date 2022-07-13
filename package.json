@@ -53,7 +53,7 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false craco start && node server.js",
+    "start": "GENERATE_SOURCEMAP=false craco start & node server.js",
     "build": "GENERATE_SOURCEMAP=false craco build",
     "test": "craco test"
   },
