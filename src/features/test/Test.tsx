@@ -9,6 +9,7 @@ export default function Test(props: ITestProps) {
     try {
       const res = await axios({
         url: ChatUrls.getChat,
+        method: 'GET',
       });
       console.log(res);
     } catch (e) {}

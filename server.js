@@ -30,23 +30,23 @@ const pusher = new Pusher({
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static(path.resolve(__dirname, 'build')));
+// app.use(express.static(path.resolve(__dirname, 'build')));
 
 app.set('PORT', process.env.PORT || 5000);
 
-app.post(ChatUrls.createChat, (req, res) => {
-  const payload = req.body;
-  pusher.trigger('chat', 'message', payload);
-  res.send(payload);
-});
+// app.post(ChatUrls.createChat, (req, res) => {
+//   const payload = req.body;
+//   pusher.trigger('chat', 'message', payload);
+//   res.send(payload);
+// });
 
-app.get(ChatUrls.getChat, (req, res) => {
+app.get('http://localhost:3000/api/cors/', (req, res) => {
   res.status(200).json({ test: 'ok' });
 });
 
-app.get('/*', function (req, res) {
-  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-});
+// app.get('/*', function (req, res) {
+//   res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+// });
 
 app.listen(app.get('PORT'), () =>
   console.log('Listening at ' + app.get('PORT'))

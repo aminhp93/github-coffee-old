@@ -83,6 +83,6 @@ export const NoteUrls = {
 };
 
 export const ChatUrls = {
-  getChat: `${baseUrl}/api/chat/`,
-  createChat: `${baseUrl}/api/chat/`,
+  getChat: `${baseUrl}/api/chat`,
+  createChat: `${baseUrl}/api/chat`,
 };
