@@ -1,5 +1,8 @@
 import axios from 'axios';
 import { notification } from 'antd';
+import config from 'config';
+
+const baseUrl = config.apiUrl;
 
 let headers = {
   'Content-Type': 'application/json',
@@ -77,4 +80,9 @@ export const NoteUrls = {
     `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
   deleteNote: (noteId: number) =>
     `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
+};
+
+export const ChatUrls = {
+  getChat: `${baseUrl}/api/chat/`,
+  createChat: `${baseUrl}/api/chat/`,
 };
