@@ -44,6 +44,10 @@ app.get(ChatUrls.getChat, (req, res) => {
   res.status(200).json({ test: 'ok' });
 });
 
+app.get('/*', function (req, res) {
+  res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
+});
+
 app.listen(app.get('PORT'), () =>
   console.log('Listening at ' + app.get('PORT'))
 );
