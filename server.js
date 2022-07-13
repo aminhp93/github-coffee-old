@@ -32,15 +32,13 @@ app.use(bodyParser.json());
 
 app.set('PORT', process.env.PORT || 5000);
 
-// app.post(`/api/message`, (req, res) => {
-//   console.log(29);
-//   const payload = req.body;
-//   pusher.trigger('chat', 'message', payload);
-//   res.send(payload);
-// });
+app.post(ChatUrls.createChat, (req, res) => {
+  const payload = req.body;
+  pusher.trigger('chat', 'message', payload);
+  res.send(payload);
+});
 
 app.get(ChatUrls.getChat, (req, res) => {
-  console.log(36);
   res.status(200).json({ test: 'ok' });
 });
 

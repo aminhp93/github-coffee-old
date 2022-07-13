@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from 'react';
 import Pusher from 'pusher-js';
 import ChatList from './ChatList';
 import ChatBox from './ChatBox';
 import config from 'config';
+import request, { ChatUrls } from 'request';
 
 interface IProps {
   data?: any;
@@ -30,17 +30,16 @@ function Chat({ data }: IProps) {
   }, []);
 
   const handleTextChange = (e: any) => {
-    console.log(33, config);
     if (e.keyCode === 13) {
       const payload = {
         username,
         message: text,
       };
-      // axios.post(`${config.apiUrl}/api/message`, payload);
-      axios.post(
-        `https://2023-nextjs-with-redux.vercel.app/api/message`,
-        payload
-      );
+      request({
+        method: 'POST',
+        url: ChatUrls.createChat,
+        data: payload,
+      });
     } else {
       setText(e.target.value);
     }
