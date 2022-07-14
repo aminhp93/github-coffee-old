@@ -76,7 +76,7 @@ app.use(bodyParser.json());
 
 // Subscribe route
 
-app.get('/api', (req, res) => {
+app.get('/api1', (req, res) => {
   res.status(200).json({});
 });
 
