@@ -14,6 +14,22 @@ function Chat({ data }: IProps) {
   const [username, setUsername] = useState('');
   const [chats, setChats] = useState([] as any);
 
+  const getChat = async () => {
+    try {
+      const res = await request({
+        url: `${config.apiUrl}/chats/`,
+        method: 'GET',
+      });
+      console.log(res);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    getChat();
+  }, []);
+
   useEffect(() => {
     const username: any = window.prompt('Username: ', 'Anonymous');
     setUsername(username);

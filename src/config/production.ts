@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-  apiUrl: 'https://2023-nextjs-with-redux.vercel.app',
+  apiUrl: 'https://api-2023.herokuapp.com',
   pusher: {
     app_id: '1435319',
     key: '15ee77871e1ed5258044',
