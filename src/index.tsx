@@ -18,6 +18,7 @@ import API from 'features/api/API';
 import Sensor from 'features/sensor';
 import Chat from 'features/chat/Chat';
 import Stock from 'features/stock/Stock';
+import CustomEcharts from 'features/echarts';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="api" element={<API />} />
           <Route path="chat" element={<Chat />} />
           <Route path="stock" element={<Stock />} />
+          <Route path="echarts" element={<CustomEcharts />} />
         </Routes>
       </BrowserRouter>
     </div>
@@ -84,6 +86,9 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="stock">
           <Link to="/stock">Stock</Link>
+        </Menu.Item>
+        <Menu.Item key="echarts">
+          <Link to="/echarts">Echarts</Link>
         </Menu.Item>
       </Menu>
     </div>

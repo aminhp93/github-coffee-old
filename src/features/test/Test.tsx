@@ -18,5 +18,5 @@ export default function Test(props: ITestProps) {
   useEffect(() => {
     fetch();
   }, []);
-  return <div>test</div>;
+  return <div>test2</div>;
 }
