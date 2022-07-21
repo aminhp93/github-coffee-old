@@ -19,6 +19,7 @@ import Sensor from 'features/sensor';
 import Chat from 'features/chat/Chat';
 import Stock from 'features/stock/Stock';
 import CustomEcharts from 'features/echarts';
+import CustomChartJS from 'features/chartjs';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="chat" element={<Chat />} />
           <Route path="stock" element={<Stock />} />
           <Route path="echarts" element={<CustomEcharts />} />
+          <Route path="chartjs" element={<CustomChartJS />} />
         </Routes>
       </BrowserRouter>
     </div>
@@ -89,6 +91,9 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="echarts">
           <Link to="/echarts">Echarts</Link>
+        </Menu.Item>
+        <Menu.Item key="chartJS">
+          <Link to="/chartjs">ChartJS</Link>
         </Menu.Item>
       </Menu>
     </div>
