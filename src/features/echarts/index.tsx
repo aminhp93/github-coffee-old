@@ -302,42 +302,15 @@ const dataZoomChart = (obama_budget_2012: any) => {
 }
 }
 
-
 export default function CustomEcharts() {
-  const onEvent = {
-    'click': () => {
-      console.log('click')
-    },
-
-  }
   return (
     <div>
-      {/* <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <div style={{ width: '50%', height: 300 }}>
-          <Chart options={line} resizeObserver={resizeObserver} />
-        </div>
-        <div style={{ width: '50%', height: 300 }}>
-          <Chart options={bars} resizeObserver={resizeObserver} />
-        </div>
-      </div> */}
-      <div style={{ height: "500px", width: "500px"}}>
+      {/* <div style={{ height: "500px", width: "500px"}}>
         <Chart  resizeObserver={resizeObserver} />
-      </div>
+      </div> */}
       <div style={{ height: "500px", width: "500px"}}>
         <LineChart/>
       </div>
-      <div>
-      <ReactECharts
-  option={line}
-  notMerge={true}
-  lazyUpdate={true}
-  theme={"theme_name"}
-  onChartReady={() => console.log('redy')}
-  onEvents={onEvent}
-  // opts={}
-/>
-      </div>
-      
     </div>
   );
 }
