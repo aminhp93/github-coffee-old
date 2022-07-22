@@ -114,7 +114,7 @@ export default function CustomChartJS(props: Props) {
           pinch: {
             enabled: true
           },
-          mode: 'xy',
+          mode: 'x',
           onZoom: () => {
             const newList = [...listNote]
             newList.unshift('on onZoom')
