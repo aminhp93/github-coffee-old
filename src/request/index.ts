@@ -4,11 +4,8 @@ import config from 'config';
 
 const baseUrl = config.apiUrl;
 
-const accessToken = localStorage.getItem('ACCESS_TOKEN');
-
 let headers = {
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${accessToken}`,
 };
 
 const client = axios.create({
@@ -18,13 +15,14 @@ const client = axios.create({
 // Add authenitcation token to request header
 client.interceptors.request.use(
   async (config) => {
-    const newConfig = {
-      ...config,
-    };
+    const accessToken = localStorage.getItem('ACCESS_TOKEN');
 
     // Try refreshing the session, without relying on the cache
 
-    return newConfig;
+    return {
+      ...{ Authorization: `Bearer ${accessToken}` },
+      ...config,
+    };
   },
   (error) => {
     return Promise.reject(error);

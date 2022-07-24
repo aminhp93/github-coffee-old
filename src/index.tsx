@@ -8,7 +8,7 @@ import '../node_modules/react-resizable/css/styles.css';
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Menu } from 'antd';
+import { Menu, notification } from 'antd';
 import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
 import BashProfile from 'features/BashProfile';
@@ -22,6 +22,11 @@ import CustomEcharts from 'features/echarts';
 import CustomChartJS from 'features/chartjs';
 import Post from 'features/post';
 import User from 'features/user';
+
+notification.config({
+  placement: 'bottomLeft',
+  duration: 3,
+});
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
