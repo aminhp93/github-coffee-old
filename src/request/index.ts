@@ -4,8 +4,11 @@ import config from 'config';
 
 const baseUrl = config.apiUrl;
 
+const accessToken = localStorage.getItem('ACCESS_TOKEN');
+
 let headers = {
   'Content-Type': 'application/json',
+  Authorization: `Bearer ${accessToken}`,
 };
 
 const client = axios.create({
@@ -43,12 +46,12 @@ client.interceptors.response.use(
 const request = (options: any) => {
   const onSuccess = (res: any) => res;
   const onError = (err: any) => {
-    notification.error({
-      message: 'Error',
-      description: String(err),
-      placement: 'bottomLeft',
-      duration: 5,
-    });
+    // notification.error({
+    //   message: 'Error',
+    //   description: String(err),
+    //   placement: 'bottomLeft',
+    //   duration: 5,
+    // });
   };
 
   return client(options).then(onSuccess).catch(onError);
@@ -72,8 +75,8 @@ export const AccountUrls = {
 };
 
 export const NoteUrls = {
-  createNote: 'https://testapi.io/api/aminhp93/resource/note/',
-  listNote: 'https://testapi.io/api/aminhp93/resource/note/',
+  createNote: 'https://testapi.io/api/aminhp93/resource/note',
+  listNote: 'https://testapi.io/api/aminhp93/resource/note',
   detailNote: (noteId: number) =>
     `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
   updateNote: (noteId: number) =>
@@ -82,7 +85,20 @@ export const NoteUrls = {
     `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
 };
 
+export const PostUrls = {
+  createPost: `${baseUrl}/api/posts/create/`,
+  listPost: `${baseUrl}/api/posts/`,
+  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
+  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
+  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
+};
+
 export const ChatUrls = {
   getChat: `${baseUrl}/api/chat`,
   createChat: `${baseUrl}/api/chat`,
+};
+
+export const UserUrls = {
+  getAuthUser: `${baseUrl}/api/me/`,
+  getAccessToken: `${baseUrl}/api/token/`,
 };

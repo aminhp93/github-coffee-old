@@ -9,22 +9,29 @@
   height: 100%;
 }
 
-@media screen and (max-width: 1280px) {
-  .container {
-    padding: 0 32px;
-  }
-}
-
-@media screen and (max-width: 1580px) {
-  .container {
-    padding: 0 64px;
-  }
-}
-
 .container {
   height: 100%;
-  max-width: 100em;
-  margin-right: auto;
-  margin-left: auto;
+  max-width: @site-width;
+  margin: auto;
   transition: padding 0.3s;
+  background: @gray-100;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 1rem;
+  }
+}
+
+.amin-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
