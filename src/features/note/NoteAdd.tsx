@@ -9,7 +9,6 @@ interface Props {}
 
 export default function NoteAdd(props: Props) {
   const [plateId, setPlateId] = useState(uuidv4());
-
   const [titleCreateNote, setTitleCreateNote] = useState(null);
   const [note, setNote] = useState([
     {

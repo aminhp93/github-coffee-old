@@ -202,6 +202,9 @@ interface IProps {
   id?: any;
   onChange?: any;
   value?: any;
+  hideToolBar?: boolean;
+  readOnly?: boolean;
+  editableProps?: any;
 }
 
 const CustomPlate = (props: IProps) => {
@@ -209,11 +212,13 @@ const CustomPlate = (props: IProps) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <PlateEventProvider>
-        <HeadingToolbar>
-          <ToolbarButtons />
-        </HeadingToolbar>
-      </PlateEventProvider>
+      {!props.hideToolBar && (
+        <PlateEventProvider>
+          <HeadingToolbar>
+            <ToolbarButtons />
+          </HeadingToolbar>
+        </PlateEventProvider>
+      )}
 
       <div
         ref={containerRef}
@@ -222,8 +227,9 @@ const CustomPlate = (props: IProps) => {
       >
         <Plate<MyValue>
           editableProps={CONFIG.editableProps}
-          initialValue={VALUES.playground}
+          // initialValue={VALUES.playground}
           plugins={plugins}
+          readOnly
           {...props}
         >
           <MarkBallonToolbar />

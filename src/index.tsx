@@ -21,6 +21,7 @@ import Stock from 'features/stock/Stock';
 import CustomEcharts from 'features/echarts';
 import CustomChartJS from 'features/chartjs';
 import Post from 'features/post';
+import PostCreate from 'features/post/PostCreate';
 import User from 'features/user';
 
 notification.config({
@@ -56,6 +57,7 @@ function App() {
           <Route path="stock" element={<Stock />} />
           <Route path="echarts" element={<CustomEcharts />} />
           <Route path="chartjs" element={<CustomChartJS />} />
+          <Route path="post/create/" element={<PostCreate />} />
           <Route path="post" element={<Post />} />
           <Route path="user" element={<User />} />
         </Routes>

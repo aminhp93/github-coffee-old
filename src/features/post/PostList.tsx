@@ -1,54 +1,43 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PostListItem from './PostListItem';
 import { IPost } from 'types';
 import { PostService } from 'services';
 import { Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
-export default function PostList() {
-  // const [listPost, setListPost] = useEffect([]);
+interface Props {
+  cb: any;
+}
 
-  const list: IPost[] = [
-    {
-      content: 'string',
-      createdAt: 'string',
-      id: 1,
-      title: 'string',
-      updatedAt: 'string',
-    },
-  ];
+export default function PostList({ cb }: Props) {
+  const navigate = useNavigate();
+
+  const [listPost, setListPost] = useState<IPost[]>([]);
 
   const fetch = async () => {
     try {
       const res = await PostService.listPost();
+      setListPost(res.data.results);
     } catch (e) {
       //
     }
   };
 
   const handleCreatePost = async () => {
-    try {
-      const dataCreate = {
-        title: 'title',
-        body: 'body',
-        description: 'description',
-      };
-      const res = await PostService.createPost(dataCreate);
-    } catch (e) {
-      //
-    }
+    navigate('/post/create');
   };
 
   useEffect(() => {
     fetch();
-  });
+  }, []);
 
   return (
     <div>
       <div>
         <Button onClick={handleCreatePost}>Create post</Button>
       </div>
-      {list.map((i: IPost) => {
-        return <PostListItem data={i} />;
+      {listPost.map((i: IPost) => {
+        return <PostListItem data={i} cb={cb} />;
       })}
     </div>
   );

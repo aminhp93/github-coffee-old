@@ -25,31 +25,31 @@ import {
   SoftBreakPlugin,
   TEditableProps,
   TrailingBlockPlugin,
-} from '@udecode/plate'
-import { autoformatRules } from './autoformat/autoformatRules'
-import { MENTIONABLES } from './mentionables'
-import { MyPlatePlugin, MyValue, MyEditor } from './typescript'
+} from '@udecode/plate';
+import { autoformatRules } from './autoformat/autoformatRules';
+import { MENTIONABLES } from './mentionables';
+import { MyPlatePlugin, MyValue, MyEditor } from './typescript';
 
 const resetBlockTypesCommonRule = {
   types: [ELEMENT_BLOCKQUOTE, ELEMENT_TODO_LI],
   defaultType: ELEMENT_PARAGRAPH,
-}
+};
 
 export const CONFIG: {
-  components: Record<string, any>
-  editableProps: TEditableProps<MyValue>
+  components: Record<string, any>;
+  editableProps: TEditableProps<MyValue>;
 
-  align: Partial<MyPlatePlugin>
-  autoformat: Partial<MyPlatePlugin<AutoformatPlugin<MyValue, MyEditor>>>
-  exitBreak: Partial<MyPlatePlugin<ExitBreakPlugin>>
-  forceLayout: Partial<MyPlatePlugin<NormalizeTypesPlugin>>
-  indent: Partial<MyPlatePlugin<IndentPlugin>>
-  lineHeight: Partial<MyPlatePlugin>
-  mentionItems: any
-  resetBlockType: Partial<MyPlatePlugin<ResetNodePlugin>>
-  selectOnBackspace: Partial<MyPlatePlugin<SelectOnBackspacePlugin>>
-  softBreak: Partial<MyPlatePlugin<SoftBreakPlugin>>
-  trailingBlock: Partial<MyPlatePlugin<TrailingBlockPlugin>>
+  align: Partial<MyPlatePlugin>;
+  autoformat: Partial<MyPlatePlugin<AutoformatPlugin<MyValue, MyEditor>>>;
+  exitBreak: Partial<MyPlatePlugin<ExitBreakPlugin>>;
+  forceLayout: Partial<MyPlatePlugin<NormalizeTypesPlugin>>;
+  indent: Partial<MyPlatePlugin<IndentPlugin>>;
+  lineHeight: Partial<MyPlatePlugin>;
+  mentionItems: any;
+  resetBlockType: Partial<MyPlatePlugin<ResetNodePlugin>>;
+  selectOnBackspace: Partial<MyPlatePlugin<SelectOnBackspacePlugin>>;
+  softBreak: Partial<MyPlatePlugin<SoftBreakPlugin>>;
+  trailingBlock: Partial<MyPlatePlugin<TrailingBlockPlugin>>;
 } = {
   editableProps: {
     spellCheck: false,
@@ -58,6 +58,7 @@ export const CONFIG: {
     style: {
       padding: '15px',
     },
+    // readOnly: true,
   },
   components: createPlateUI(),
 
@@ -179,4 +180,4 @@ export const CONFIG: {
       rules: [{ path: [0], strictType: ELEMENT_H1 }],
     },
   },
-}
+};

@@ -15,12 +15,9 @@ const client = axios.create({
 // Add authenitcation token to request header
 client.interceptors.request.use(
   async (config) => {
-    const accessToken = localStorage.getItem('ACCESS_TOKEN');
-
     // Try refreshing the session, without relying on the cache
 
     return {
-      ...{ Authorization: `Bearer ${accessToken}` },
       ...config,
     };
   },
@@ -42,17 +39,20 @@ client.interceptors.response.use(
 );
 
 const request = (options: any) => {
-  const onSuccess = (res: any) => res;
-  const onError = (err: any) => {
-    // notification.error({
-    //   message: 'Error',
-    //   description: String(err),
-    //   placement: 'bottomLeft',
-    //   duration: 5,
-    // });
+  const accessToken = localStorage.getItem('ACCESS_TOKEN');
+  const finalOptions = {
+    ...{
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    ...options,
   };
+  console.log(finalOptions, options);
+  const onSuccess = (res: any) => res;
+  const onError = (err: any) => {};
 
-  return client(options).then(onSuccess).catch(onError);
+  return client(finalOptions).then(onSuccess).catch(onError);
 };
 
 export default request;
@@ -86,9 +86,9 @@ export const NoteUrls = {
 export const PostUrls = {
   createPost: `${baseUrl}/api/posts/create/`,
   listPost: `${baseUrl}/api/posts/`,
-  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
-  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
-  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}`,
+  detailPost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
+  updatePost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
+  deletePost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
 };
 
 export const ChatUrls = {

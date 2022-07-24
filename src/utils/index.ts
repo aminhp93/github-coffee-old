@@ -31,3 +31,23 @@ export const getColumnsFromListData = (data: any) => {
 
   return columns;
 };
+
+export const getParsedJson = (data: any) => {
+  if (!data)
+    return [
+      {
+        children: [{ text: '' }],
+        type: 'p',
+      },
+    ];
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    return [
+      {
+        children: [{ text: '' }],
+        type: 'p',
+      },
+    ];
+  }
+};

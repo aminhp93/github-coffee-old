@@ -15,8 +15,7 @@ export default function User(props: IUserProps) {
       };
       const res = await UserService.getAccessToken(requestData);
       localStorage.removeItem('ACCESS_TOKEN');
-      const res2 = localStorage.setItem('ACCESS_TOKEN', res.data.access);
-      console.log(res2);
+      localStorage.setItem('ACCESS_TOKEN', res.data.access);
       const headers = {
         Authorization: `Bearer ${res.data.access}`,
       };
