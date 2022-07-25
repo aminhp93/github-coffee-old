@@ -16,7 +16,7 @@ import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
 import Sensor from 'features/sensor';
-import Chat from 'features/chat/Chat';
+import Chat from 'features/chat';
 import Stock from 'features/stock/Stock';
 import CustomEcharts from 'features/echarts';
 import CustomChartJS from 'features/chartjs';

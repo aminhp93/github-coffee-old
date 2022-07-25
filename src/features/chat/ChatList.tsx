@@ -1,5 +1,5 @@
 import './ChatList.css';
-
+import { v4 as uuidv4 } from 'uuid';
 interface IProps {
   chats: any;
 }
@@ -12,7 +12,7 @@ const ChatList = ({ chats }: IProps) => (
           <div className="row show-grid">
             <div className="col-xs-12">
               <div className="chatMessage">
-                <div key={chat.id} className="box">
+                <div key={uuidv4()} className="box">
                   <p>
                     <strong>{chat.username}</strong>
                   </p>

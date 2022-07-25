@@ -3,23 +3,16 @@ import Pusher from 'pusher-js';
 import ChatList from './ChatList';
 import ChatBox from './ChatBox';
 import config from 'config';
-import request, { ChatUrls } from 'request';
+import { ChatService } from 'services/chat';
 
-interface IProps {
-  data?: any;
-}
-
-function Chat({ data }: IProps) {
+function Chat() {
   const [text, setText] = useState('');
   const [username, setUsername] = useState('');
   const [chats, setChats] = useState([] as any);
 
   const getChat = async () => {
     try {
-      const res = await request({
-        url: `${config.apiUrl}/chats/`,
-        method: 'GET',
-      });
+      const res = await ChatService.getChatList();
       console.log(res);
     } catch (e) {
       console.log(e);
@@ -40,22 +33,23 @@ function Chat({ data }: IProps) {
     } as any);
     const channel = pusher.subscribe('chat');
     channel.bind('message', (data: any) => {
-      setChats([...chats, data]);
+      console.log('received data', data, chats, [...chats, data]);
+
+      setChats((old: any) => {
+        return [...old, data];
+      });
       setText('');
     });
   }, []);
 
-  const handleTextChange = (e: any) => {
+  const handleTextChange = async (e: any) => {
     if (e.keyCode === 13) {
-      const payload = {
-        username,
-        message: text,
-      };
-      request({
-        method: 'POST',
-        url: ChatUrls.createChat,
-        data: payload,
-      });
+      // const payload = {
+      //   username,
+      //   message: text,
+      // };
+      await ChatService.getChatList();
+      // const res = await ChatService.getChatList(payload)
     } else {
       setText(e.target.value);
     }

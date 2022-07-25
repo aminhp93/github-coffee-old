@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { notification } from 'antd';
 import config from 'config';
 
 const baseUrl = config.apiUrl;
@@ -92,8 +91,8 @@ export const PostUrls = {
 };
 
 export const ChatUrls = {
-  getChat: `${baseUrl}/api/chat`,
-  createChat: `${baseUrl}/api/chat`,
+  getChatList: `${baseUrl}/api/chats/`,
+  createChat: `${baseUrl}/api/chat/`,
 };
 
 export const UserUrls = {
