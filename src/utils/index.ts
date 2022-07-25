@@ -1,5 +1,4 @@
 export * from './HouseFinance';
-export * from './sensor';
 export * from './webPush';
 export * from './storage';
 

@@ -15,11 +15,9 @@ import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
-import Sensor from 'features/sensor';
 import Chat from 'features/chat';
 import Stock from 'features/stock/Stock';
 import CustomEcharts from 'features/echarts';
-import CustomChartJS from 'features/chartjs';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import User from 'features/user';
@@ -51,12 +49,10 @@ function App() {
           <Route path="demo" element={<Demo />} />
           <Route path="test" element={<Test />} />
           <Route path="bash-profile" element={<BashProfile />} />
-          <Route path="sensor" element={<Sensor />} />
           <Route path="api" element={<API />} />
           <Route path="chat" element={<Chat />} />
           <Route path="stock" element={<Stock />} />
           <Route path="echarts" element={<CustomEcharts />} />
-          <Route path="chartjs" element={<CustomChartJS />} />
           <Route path="post/create/" element={<PostCreate />} />
           <Route path="post" element={<Post />} />
           <Route path="user" element={<User />} />
@@ -91,9 +87,6 @@ function RootLayout() {
         <Menu.Item key="api">
           <Link to="/api">API</Link>
         </Menu.Item>
-        <Menu.Item key="sensor">
-          <Link to="/sensor">Sensor</Link>
-        </Menu.Item>
         <Menu.Item key="chat">
           <Link to="/chat">Chat</Link>
         </Menu.Item>
@@ -102,9 +95,6 @@ function RootLayout() {
         </Menu.Item>
         <Menu.Item key="echarts">
           <Link to="/echarts">Echarts</Link>
-        </Menu.Item>
-        <Menu.Item key="chartJS">
-          <Link to="/chartjs">ChartJS</Link>
         </Menu.Item>
         <Menu.Item key="post">
           <Link to="/post">Post</Link>

@@ -33,8 +33,6 @@ function Chat() {
     } as any);
     const channel = pusher.subscribe('chat');
     channel.bind('message', (data: any) => {
-      console.log('received data', data, chats, [...chats, data]);
-
       setChats((old: any) => {
         return [...old, data];
       });
