@@ -14,6 +14,7 @@ export const getColumnsFromListData = (data: any) => {
 
   data &&
     data.length > 0 &&
+    // eslint-disable-next-line array-callback-return
     Object.keys(data[0]).map((i: any) => {
       columns.push({
         title: i,
