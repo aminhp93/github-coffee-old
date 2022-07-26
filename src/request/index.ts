@@ -92,7 +92,7 @@ export const PostUrls = {
 
 export const ChatUrls = {
   getChatList: `${baseUrl}/api/chats/`,
-  createChat: `${baseUrl}/api/chat/`,
+  createChat: `${baseUrl}/api/chats/`,
 };
 
 export const UserUrls = {
