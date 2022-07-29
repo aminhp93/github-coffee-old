@@ -25,7 +25,6 @@ const ChatBox = ({ text, username, handleTextChange }: IProps) => (
           <div className="clearfix"></div>
         </div>
       </div>
-      <h4 className="greetings">Hello, {username}</h4>
     </div>
   </div>
 );

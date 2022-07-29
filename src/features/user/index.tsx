@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Button, notification } from 'antd';
+import { Button, Input, notification } from 'antd';
 import { UserService } from 'services/user';
 
 export interface IUserProps {}
 
 export default function User(props: IUserProps) {
   const [user, setUser] = useState({} as any);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
       const requestData = {
-        username: 'aminhp93',
-        password: '1',
+        username,
+        password,
       };
       const res = await UserService.getAccessToken(requestData);
       localStorage.removeItem('ACCESS_TOKEN');
@@ -41,6 +43,14 @@ export default function User(props: IUserProps) {
     }
   };
 
+  const handleChangeUsername = (e: any) => {
+    setUsername(e.target.value);
+  };
+
+  const handleChangePassword = (e: any) => {
+    setPassword(e.target.value);
+  };
+
   useEffect(() => {
     getAuthUser();
   }, []);
@@ -55,7 +65,15 @@ export default function User(props: IUserProps) {
       ) : (
         <div className="amin-flex">
           <div>No user</div>
-          <Button onClick={handleLogin}>Login</Button>
+          <div>
+            <div>
+              <Input placeholder="Username" onChange={handleChangeUsername} />
+            </div>
+            <div>
+              <Input placeholder="Password" onChange={handleChangePassword} />
+            </div>
+            <Button onClick={handleLogin}>Login</Button>
+          </div>
         </div>
       )}
     </div>

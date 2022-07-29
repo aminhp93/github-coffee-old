@@ -47,7 +47,6 @@ const request = (options: any) => {
     },
     ...options,
   };
-  console.log(finalOptions, options);
   const onSuccess = (res: any) => res;
   const onError = (err: any) => {};
 
