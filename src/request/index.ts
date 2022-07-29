@@ -92,6 +92,7 @@ export const PostUrls = {
 export const ChatUrls = {
   getChatList: `${baseUrl}/api/chats/`,
   createChat: `${baseUrl}/api/chats/`,
+  getPusherToken: `${baseUrl}/api/chats/pusher/auth/`,
 };
 
 export const UserUrls = {

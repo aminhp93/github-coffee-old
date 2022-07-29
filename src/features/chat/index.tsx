@@ -24,25 +24,11 @@ function Chat() {
     }
   };
 
-  const getPusherToken = (channel: string, socketId: string) => {
-    return request({
-      method: 'POST',
-      data: {
-        channel_name: channel,
-        socket_id: socketId,
-      },
-      url: 'http://localhost:8000/api/chats/pusher/auth/',
-    });
-  };
-
   useEffect(() => {
     getChat();
   }, []);
 
   useEffect(() => {
-    // const username: any = window.prompt('Username: ', 'Anonymous');
-    // setUsername(username);
-
     const pusher = new Pusher(config.pusher.key, {
       cluster: config.pusher.cluster,
       encrypted: true,
@@ -51,7 +37,10 @@ function Chat() {
         return {
           authorize: async (socketId: any, cb: any) => {
             try {
-              const res: any = await getPusherToken(channel.name, socketId);
+              const res: any = await ChatService.getPusherToken(
+                channel.name,
+                socketId
+              );
               console.log('authSuccess', res);
               cb(false, res.data);
             } catch (e) {

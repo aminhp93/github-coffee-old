@@ -14,4 +14,14 @@ export const ChatService = {
       data,
     });
   },
+  getPusherToken(channel: string, socketId: string) {
+    return request({
+      method: 'POST',
+      data: {
+        channel_name: channel,
+        socket_id: socketId,
+      },
+      url: ChatUrls.getPusherToken,
+    });
+  },
 };
