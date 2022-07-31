@@ -8,13 +8,15 @@ import { ChatService } from 'services/chat';
 import { Row, Col } from 'antd';
 
 function Chat() {
-  const [text, setText] = useState('');
   const [chats, setChats] = useState([] as any);
   const [users, setUsers] = useState({} as any);
 
   const getChat = async () => {
     try {
       const res = await ChatService.getChatList();
+      res.data.sort((a: any, b: any) =>
+        a.created_at.localeCompare(b.created_at)
+      );
       setChats(res.data);
       console.log(res);
     } catch (e) {
@@ -52,9 +54,12 @@ function Chat() {
     const channel = pusher.subscribe('chat');
     channel.bind('message', (data: any) => {
       setChats((old: any) => {
-        return [...old, data];
+        const newChat = [...old, data];
+        newChat.sort((a: any, b: any) =>
+          a.created_at.localeCompare(b.created_at)
+        );
+        return newChat;
       });
-      setText('');
     });
 
     const presence_members_channel = pusher.subscribe('presence-members');

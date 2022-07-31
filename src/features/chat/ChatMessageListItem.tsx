@@ -13,13 +13,13 @@ const ChatMessageListItem = ({ chat }: IProps) => {
   console.log(13, getParsedJson(chat.message));
   return (
     <>
-      <div key={uuidv4()} className="flex">
+      <div className="flex">
         <div className="ChatMessageListItem-avatar">ID: {chat.sender}</div>
         <div className="ChatMessageListItem-message-container">
           <div>{moment(chat.created_at).format('YYYY-MM-DD, hh:mm')}</div>
           <div>
             <CustomPlate
-              id={String(uuidv4())}
+              id={`ChatMessageListItem-${chat.id}`}
               hideToolBar
               value={getParsedJson(chat.message)}
             />
