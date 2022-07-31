@@ -21,6 +21,8 @@ import CustomEcharts from 'features/echarts';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import User from 'features/user';
+import CustomGridLayout from 'components/CustomGridLayout';
+import { useNavigate } from 'react-router-dom';
 
 notification.config({
   placement: 'bottomLeft',
@@ -63,46 +65,63 @@ function App() {
 }
 
 function RootLayout() {
-  const [keyMenu, setKeyMenu] = useState('storyTellerBusiness');
+  let navigate = useNavigate();
+  const layout = [
+    { i: 'note', x: 0, y: 0, w: 1, h: 1, label: 'Note', linkTo: '/note' },
+    {
+      i: 'bashProfile',
+      x: 1,
+      y: 0,
+      w: 1,
+      h: 1,
+      label: 'Bash profile',
+      linkTo: '/bash-profile',
+    },
+    { i: 'demo', x: 2, y: 0, w: 1, h: 1, label: 'demo', linkTo: '/demo' },
+    { i: 'test', x: 3, y: 0, w: 1, h: 1, label: 'test', linkTo: '/test' },
+    { i: 'api', x: 0, y: 1, w: 1, h: 1, label: 'api', linkTo: '/api' },
+    { i: 'chat', x: 1, y: 1, w: 1, h: 1, label: 'chat', linkTo: '/chat' },
+    { i: 'stock', x: 2, y: 1, w: 1, h: 1, label: 'stock', linkTo: '/stock' },
+    {
+      i: 'echarts',
+      x: 3,
+      y: 1,
+      w: 1,
+      h: 1,
+      label: 'echarts',
+      linkTo: '/echarts',
+    },
+    { i: 'post', x: 0, y: 2, w: 1, h: 1, label: 'post', linkTo: '/post' },
+    { i: 'user', x: 1, y: 2, w: 1, h: 1, label: 'user', linkTo: '/user' },
+    {
+      i: 'coworking',
+      x: 2,
+      y: 2,
+      w: 1,
+      h: 1,
+      label: 'coworking',
+      linkTo: '/coworking',
+    },
+  ];
 
-  const handleChangeMenu = (e: any) => {
-    setKeyMenu(e.key);
+  const handleCb = (data: any) => {
+    navigate(data.linkTo);
   };
 
   return (
-    <div className="RootLayout">
-      <Menu mode="inline" onClick={handleChangeMenu} selectedKeys={[keyMenu]}>
-        <Menu.Item key="note">
-          <Link to="/note">Note</Link>
-        </Menu.Item>
-        <Menu.Item key="bashProfile">
-          <Link to="/bash-profile">Bash profile</Link>
-        </Menu.Item>
-        <Menu.Item key="demo">
-          <Link to="/demo">Demo</Link>
-        </Menu.Item>
-        <Menu.Item key="test">
-          <Link to="/test">Test</Link>
-        </Menu.Item>
-        <Menu.Item key="api">
-          <Link to="/api">API</Link>
-        </Menu.Item>
-        <Menu.Item key="chat">
-          <Link to="/chat">Chat</Link>
-        </Menu.Item>
-        <Menu.Item key="stock">
-          <Link to="/stock">Stock</Link>
-        </Menu.Item>
-        <Menu.Item key="echarts">
-          <Link to="/echarts">Echarts</Link>
-        </Menu.Item>
-        <Menu.Item key="post">
-          <Link to="/post">Post</Link>
-        </Menu.Item>
-        <Menu.Item key="user">
-          <Link to="/user">User</Link>
-        </Menu.Item>
-      </Menu>
+    <div className="RootLayout" style={{ height: '100%', overflow: 'auto' }}>
+      <CustomGridLayout layout={layout} cb={handleCb} />
+      {/* <Link to="/note">Note</Link>
+      <Link to="/bash-profile">Bash profile</Link>
+      <Link to="/demo">Demo</Link>
+      <Link to="/test">Test</Link>
+      <Link to="/api">API</Link>
+      <Link to="/chat">Chat</Link>
+      <Link to="/stock">Stock</Link>
+      <Link to="/echarts">Echarts</Link>
+      <Link to="/post">Post</Link>
+      <Link to="/user">User</Link>
+      <Link to="/user">Coworking</Link> */}
     </div>
   );
 }
