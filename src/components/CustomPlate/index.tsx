@@ -140,9 +140,17 @@ const cbUploadImage = async (data: any) => {
   return res.data.image.display_url;
 };
 
+const handleKeyDown = (e: any) => {
+  console.log('down', e);
+};
+
 const plugins = createMyPlugins(
   [
-    createParagraphPlugin(),
+    createParagraphPlugin({
+      handlers: {
+        onKeyDown: handleKeyDown,
+      } as any,
+    }),
     createBlockquotePlugin(),
     createTodoListPlugin(),
     // createHeadingPlugin(),
@@ -194,7 +202,17 @@ const plugins = createMyPlugins(
     createJuicePlugin() as MyPlatePlugin,
   ],
   {
-    components,
+    components: {
+      ...components,
+      handlers: {
+        onKeyDown: (event: any, editor: any, next: any) => {
+          // Implement custom event logic...
+          console.log('down');
+          // When no value is returned, the next handlers will be executed when
+          // isPropagationStopped was not set on the event
+        },
+      } as any,
+    },
   }
 );
 
@@ -229,13 +247,10 @@ const CustomPlate = (props: IProps) => {
           editableProps={CONFIG.editableProps}
           // initialValue={VALUES.playground}
           plugins={plugins}
-          readOnly
           {...props}
         >
           <MarkBallonToolbar />
-
           <MentionCombobox items={MENTIONABLES} />
-
           <CursorOverlayContainer containerRef={containerRef} />
         </Plate>
       </div>

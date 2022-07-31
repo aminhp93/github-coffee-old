@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react';
 import Pusher from 'pusher-js';
-import ChatList from './ChatList';
+import ChatMessageList from './ChatMessageList';
 import ChatBox from './ChatBox';
+import ChatUserList from './ChatUserList';
 import config from 'config';
 import { ChatService } from 'services/chat';
-import request from 'request';
-import { channel } from 'diagnostics_channel';
 import { Row, Col } from 'antd';
 
 function Chat() {
   const [text, setText] = useState('');
-  const [username, setUsername] = useState('test username');
   const [chats, setChats] = useState([] as any);
   const [users, setUsers] = useState({} as any);
 
@@ -50,6 +48,7 @@ function Chat() {
         };
       },
     } as any);
+
     const channel = pusher.subscribe('chat');
     channel.bind('message', (data: any) => {
       setChats((old: any) => {
@@ -69,17 +68,22 @@ function Chat() {
     );
 
     presence_members_channel.bind('pusher:member_added', (data: any) => {
-      console.log('member_added', data);
-      const newUsers: any = { ...users };
-      newUsers[data.id] = data.info;
-      setUsers(newUsers);
+      console.log('member_added', data, users);
+
+      setUsers((prevNewUsers: any) => {
+        const newUsers: any = { ...prevNewUsers };
+        newUsers[data.id] = data.info;
+        return newUsers;
+      });
     });
 
     presence_members_channel.bind('pusher:member_removed', (data: any) => {
       console.log('member_removed', data);
-      const newUsers: any = { ...users };
-      delete newUsers[data.id];
-      setUsers(newUsers);
+      setUsers((prevNewUsers: any) => {
+        const newUsers: any = { ...prevNewUsers };
+        delete newUsers[data.id];
+        return newUsers;
+      });
     });
 
     presence_members_channel.bind('pusher:subscription_error', (data: any) => {
@@ -87,38 +91,26 @@ function Chat() {
     });
   }, []);
 
-  const handleTextChange = async (e: any) => {
-    if (e.keyCode === 13) {
-      const payload = {
-        message: text,
-      };
-      // await ChatService.getChatList();
-      const res = await ChatService.createChat(payload);
-    } else {
-      setText(e.target.value);
-    }
+  const handleCb = async (data: any) => {
+    const payload = {
+      message: data.message,
+    };
+    await ChatService.createChat(payload);
   };
 
   return (
     <div className="Chat">
-      <Row>
-        <Col span={12}>
-          <div>
-            <ChatList chats={chats} />
-            <ChatBox
-              text={text}
-              username={username}
-              handleTextChange={handleTextChange}
-            />
-          </div>
+      <Row style={{ height: '100%' }}>
+        <Col xs={0} sm={0} md={4}>
+          <ChatUserList users={Object.values(users)} />
         </Col>
-        <Col span={12}>
-          <div>
-            <div>All online users</div>
+        <Col xs={24} sm={24} md={20} style={{ height: '100%' }}>
+          <div className="ChatListMessagesContainer">
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <ChatMessageList chats={chats} />
+            </div>
             <div>
-              {Object.keys(users).map((i: any) => {
-                return <div>{users[i].username}</div>;
-              })}
+              <ChatBox cb={handleCb} />
             </div>
           </div>
         </Col>

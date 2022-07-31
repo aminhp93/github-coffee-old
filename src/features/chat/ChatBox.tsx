@@ -1,32 +1,53 @@
-import React from 'react';
-import './ChatBox.css';
-
+import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import CustomPlate from 'components/CustomPlate';
+import { Button, Checkbox, Form, Input, notification } from 'antd';
+import { getPlateActions } from '@udecode/plate';
 interface IProps {
-  text: string;
-  username: string;
-  handleTextChange: any;
+  cb: any;
 }
 
-const ChatBox = ({ text, username, handleTextChange }: IProps) => (
-  <div>
-    <div className="row">
-      <div className="col-xs-12">
-        <div className="chat">
-          <div className="col-xs-5 col-xs-offset-3">
-            <input
-              type="text"
-              value={text}
-              placeholder="chat here..."
-              className="form-control"
-              onChange={handleTextChange}
-              onKeyDown={handleTextChange}
-            />
-          </div>
-          <div className="clearfix"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
+const ChatBox = ({ cb }: IProps) => {
+  const [form] = Form.useForm();
+
+  const onFinish = async (values: any) => {
+    try {
+      console.log('Success:', values);
+      const { message } = values;
+      const dataCreate = {
+        message: JSON.stringify(message),
+      };
+      cb && cb(dataCreate);
+      getPlateActions('ChatBox123').resetEditor();
+      // form.resetFields();
+    } catch (e) {
+      notification.error({ message: 'Create failed' });
+    }
+  };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log('Failed:', errorInfo);
+  };
+
+  return (
+    <Form
+      form={form}
+      name="basic"
+      onFinish={onFinish}
+      onFinishFailed={onFinishFailed}
+      autoComplete="off"
+      className="ChatBox"
+    >
+      <Form.Item name="message" style={{ flex: 1 }}>
+        <CustomPlate id={'ChatBox123'} hideToolBar />
+      </Form.Item>
+      <Form.Item>
+        <Button type="primary" htmlType="submit">
+          Send
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
 
 export default ChatBox;
