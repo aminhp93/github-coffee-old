@@ -17,7 +17,7 @@ import Test from 'features/test/Test';
 import API from 'features/api/API';
 import Chat from 'features/chat';
 import Stock from 'features/stock/Stock';
-import CustomEcharts from 'features/echarts';
+import CustomEcharts from 'components/Echarts';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import User from 'features/user';

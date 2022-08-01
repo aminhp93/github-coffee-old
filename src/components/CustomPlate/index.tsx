@@ -146,11 +146,7 @@ const handleKeyDown = (e: any) => {
 
 const plugins = createMyPlugins(
   [
-    createParagraphPlugin({
-      handlers: {
-        onKeyDown: handleKeyDown,
-      } as any,
-    }),
+    createParagraphPlugin(),
     createBlockquotePlugin(),
     createTodoListPlugin(),
     // createHeadingPlugin(),
