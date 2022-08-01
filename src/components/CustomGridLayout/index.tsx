@@ -23,6 +23,7 @@ export default function CustomGridLayout({
     );
   };
   const getBg = () => {
+    return 'white';
     const randomColor = Math.floor(Math.random() * 16777215).toString(16);
     return '#' + randomColor;
   };
@@ -32,7 +33,7 @@ export default function CustomGridLayout({
       className="layout"
       layouts={{ lg: layout, md: layout, sm: layout, xs: layout, xxs: layout }}
       breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-      cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+      cols={{ lg: 12, md: 12, sm: 12, xs: 12, xxs: 12 }}
       onBreakpointChange={onBreakpointChange}
     >
       {layout.map((i: any) => {

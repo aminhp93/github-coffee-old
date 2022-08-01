@@ -18,7 +18,14 @@ const ChatBox = ({ cb }: IProps) => {
         message: JSON.stringify(message),
       };
       cb && cb(dataCreate);
+      console.log(getPlateActions);
       getPlateActions('ChatBox123').resetEditor();
+      getPlateActions('ChatBox123').value([
+        {
+          children: [{ text: '' }],
+          type: 'p',
+        },
+      ]);
       // form.resetFields();
     } catch (e) {
       notification.error({ message: 'Create failed' });
