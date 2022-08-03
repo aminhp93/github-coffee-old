@@ -4,3 +4,4 @@ export * from './note';
 export * from './post';
 export * from './stock';
 export * from './user';
+export * from './github';

@@ -99,3 +99,13 @@ export const UserUrls = {
   getAuthUser: `${baseUrl}/api/me/`,
   getAccessToken: `${baseUrl}/api/token/`,
 };
+
+export const GitHubUrls = {
+  getUsersDetail: (userId: string) => `https://api.github.com/users/${userId}`,
+  getReposList: (userId: string) =>
+    `https://api.github.com/users/${userId}/repos`,
+  getReposDetail: (userId: string, repoId: string) =>
+    `https://api.github.com/repos/${userId}/${repoId}`,
+  getReposDetailLanguages: (userId: string, repoId: string) =>
+    `https://api.github.com/repos/${userId}/${repoId}/languages`,
+};

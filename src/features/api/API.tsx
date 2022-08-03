@@ -14,6 +14,10 @@ export default function API(props: IAPIProps) {
       <div>{`https://api-2023.herokuapp.com/api/posts/post-1/`}</div>
       <Divider />
       <div>{`https://api-2023.herokuapp.com/api/chats/`}</div>
+      <Divider />
+      <div>{`https://api.github.com/users/aminhp93`}</div>
+      <div>{`https://api.github.com/users/aminhp93/repos`}</div>
+      <div>{`https://api.github.com/users/aminhp93/REPO_NAME/languages}`}</div>
     </div>
   );
 }

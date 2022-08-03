@@ -200,14 +200,6 @@ const plugins = createMyPlugins(
   {
     components: {
       ...components,
-      handlers: {
-        onKeyDown: (event: any, editor: any, next: any) => {
-          // Implement custom event logic...
-          console.log('down');
-          // When no value is returned, the next handlers will be executed when
-          // isPropagationStopped was not set on the event
-        },
-      } as any,
     },
   }
 );
