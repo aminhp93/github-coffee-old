@@ -4,17 +4,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
 import { GitHubService } from 'services';
 import { Octokit } from '@octokit/rest';
+import { Button, Input, notification } from 'antd';
 
 export interface ITestProps {}
 
 export default function Test(props: ITestProps) {
+  const [gitHubToken, setGitHubToken] = useLocalStorage('gitHubToken', null);
+
   const [data, setData] = useState([] as any);
+
+  console.log(gitHubToken);
 
   const fetchData = async () => {
     try {
       // Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
       const octokit = new Octokit({
-        auth: `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`,
+        auth: gitHubToken,
       });
 
       const {
@@ -55,15 +60,25 @@ export default function Test(props: ITestProps) {
     } catch (e) {}
   };
 
-  useEffect(() => {
+  const handleClickFetch = () => {
+    if (!gitHubToken) {
+      return notification.error({ message: 'No token' });
+    }
     fetchData();
-  });
+  };
+
+  const handleChange = (e: any) => {
+    setGitHubToken(e.target.value);
+  };
 
   console.log(data);
 
   return (
     <div>
       <Component />
+
+      <Input onChange={(e) => handleChange(e)} />
+      <Button onClick={handleClickFetch}>Fetch</Button>
       <div>
         {data.map((i: any) => {
           return <div>{i.name}</div>;
