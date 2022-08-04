@@ -64,12 +64,19 @@ export default function Test(props: ITestProps) {
         //     })
         //   );
 
-        const newPromise = octokit.rest.repos.listLanguages({
-          owner: 'aminhp93',
-          repo: i.name,
-        });
+        const newPromise = async () => {
+          const res = await octokit.rest.repos.listLanguages({
+            owner: 'aminhp93',
+            repo: i.name,
+          });
+          return {
+            res,
+            repo: i.name,
+          };
+        };
+        console.log(newPromise);
 
-        list_promises.push(newPromise);
+        list_promises.push(newPromise());
       });
 
       Promise.all(list_promises)
