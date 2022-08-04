@@ -1,26 +1,24 @@
-import request from 'request';
 import React, { useState, useEffect, useRef } from 'react';
 
 import { useLocalStorage } from 'usehooks-ts';
 import { GitHubService } from 'services';
 import { Octokit } from '@octokit/rest';
-import { Button, Input, notification } from 'antd';
+import { Button, Input, notification, Divider } from 'antd';
+import moment from 'moment';
 
 export interface ITestProps {}
 
 export default function Test(props: ITestProps) {
-  const [gitHubToken, setGitHubToken] = useLocalStorage('gitHubToken', null);
-
+  const [gitHubToken, setGitHubToken] = useLocalStorage('gitHubToken', '');
   const [data, setData] = useState([] as any);
+  let octokit: any;
 
   console.log(gitHubToken);
 
   const fetchData = async () => {
+    if (!octokit) return;
     try {
       // Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
-      const octokit = new Octokit({
-        auth: gitHubToken,
-      });
 
       const {
         data: { login },
@@ -41,13 +39,6 @@ export default function Test(props: ITestProps) {
             repo: i.name,
           })
         );
-
-        // list_promises.push(
-        //   octokit.rest.repos.listCommits({
-        //     owner: 'aminhp93',
-        //     repo: i.name,
-        //   })
-        // );
       });
 
       Promise.all(list_promises)
@@ -55,9 +46,43 @@ export default function Test(props: ITestProps) {
           console.log(res);
           const mappedData = res.map((i) => i.data);
           setData(mappedData);
+          fetchLanguages(mappedData);
         })
         .catch((e) => {});
     } catch (e) {}
+  };
+
+  const fetchLanguages = (data: any) => {
+    if (!octokit) return;
+    try {
+      const list_promises: any = [];
+      data.map((i: any) => {
+        //  list_promises.push(
+        //     octokit.rest.repos.listCommits({
+        //       owner: 'aminhp93',
+        //       repo: i.name,
+        //     })
+        //   );
+
+        const newPromise = octokit.rest.repos.listLanguages({
+          owner: 'aminhp93',
+          repo: i.name,
+        });
+
+        list_promises.push(newPromise);
+      });
+
+      Promise.all(list_promises)
+        .then((res) => {
+          console.log(res);
+
+          // setData(mappedData);
+          return res;
+        })
+        .catch((e) => {});
+    } catch (e) {
+      //
+    }
   };
 
   const handleClickFetch = () => {
@@ -73,6 +98,12 @@ export default function Test(props: ITestProps) {
 
   console.log(data);
 
+  useEffect(() => {
+    octokit = new Octokit({
+      auth: gitHubToken,
+    });
+  }, []);
+
   return (
     <div>
       <Component />
@@ -81,7 +112,21 @@ export default function Test(props: ITestProps) {
       <Button onClick={handleClickFetch}>Fetch</Button>
       <div>
         {data.map((i: any) => {
-          return <div>{i.name}</div>;
+          return (
+            <>
+              <div style={{ display: 'flex' }}>
+                <div style={{ width: '100px' }}>{i.name}</div>
+                <div style={{ width: '100px' }}>
+                  {moment(i.created_at).format('YYYY-MM-DD')}
+                </div>
+                <div style={{ width: '100px' }}>
+                  {moment(i.updated_at).format('YYYY-MM-DD')}
+                </div>
+                <div style={{ width: '100px' }}>{i.language}</div>
+              </div>
+              <Divider />
+            </>
+          );
         })}
       </div>
     </div>
