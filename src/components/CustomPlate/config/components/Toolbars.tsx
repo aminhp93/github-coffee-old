@@ -1,38 +1,38 @@
-import 'tippy.js/animations/scale.css'
-import 'tippy.js/dist/tippy.css'
-import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt'
-import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock'
-import { Highlight } from '@styled-icons/boxicons-regular/Highlight'
-import { Subscript } from '@styled-icons/foundation/Subscript'
-import { Superscript } from '@styled-icons/foundation/Superscript'
-import { BorderAll } from '@styled-icons/material/BorderAll'
-import { BorderBottom } from '@styled-icons/material/BorderBottom'
-import { BorderClear } from '@styled-icons/material/BorderClear'
-import { BorderLeft } from '@styled-icons/material/BorderLeft'
-import { BorderRight } from '@styled-icons/material/BorderRight'
-import { BorderTop } from '@styled-icons/material/BorderTop'
-import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter'
-import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify'
-import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft'
-import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight'
-import { FormatBold } from '@styled-icons/material/FormatBold'
-import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease'
-import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease'
-import { FormatItalic } from '@styled-icons/material/FormatItalic'
-import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted'
-import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered'
-import { FormatQuote } from '@styled-icons/material/FormatQuote'
-import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough'
-import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined'
-import { Keyboard } from '@styled-icons/material/Keyboard'
-import { Looks3 } from '@styled-icons/material/Looks3'
-import { Looks4 } from '@styled-icons/material/Looks4'
-import { Looks5 } from '@styled-icons/material/Looks5'
-import { Looks6 } from '@styled-icons/material/Looks6'
-import { LooksOne } from '@styled-icons/material/LooksOne'
-import { LooksTwo } from '@styled-icons/material/LooksTwo'
-import { Check } from '@styled-icons/material/Check'
-import { TippyProps } from '@tippyjs/react'
+import 'tippy.js/animations/scale.css';
+import 'tippy.js/dist/tippy.css';
+import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
+import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
+import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
+import { Subscript } from '@styled-icons/foundation/Subscript';
+import { Superscript } from '@styled-icons/foundation/Superscript';
+import { BorderAll } from '@styled-icons/material/BorderAll';
+import { BorderBottom } from '@styled-icons/material/BorderBottom';
+import { BorderClear } from '@styled-icons/material/BorderClear';
+import { BorderLeft } from '@styled-icons/material/BorderLeft';
+import { BorderRight } from '@styled-icons/material/BorderRight';
+import { BorderTop } from '@styled-icons/material/BorderTop';
+import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
+import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
+import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
+import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
+import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease';
+import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
+import { FormatItalic } from '@styled-icons/material/FormatItalic';
+import { FormatListBulleted } from '@styled-icons/material/FormatListBulleted';
+import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
+import { FormatQuote } from '@styled-icons/material/FormatQuote';
+import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
+import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
+import { Keyboard } from '@styled-icons/material/Keyboard';
+import { Looks3 } from '@styled-icons/material/Looks3';
+import { Looks4 } from '@styled-icons/material/Looks4';
+import { Looks5 } from '@styled-icons/material/Looks5';
+import { Looks6 } from '@styled-icons/material/Looks6';
+import { LooksOne } from '@styled-icons/material/LooksOne';
+import { LooksTwo } from '@styled-icons/material/LooksTwo';
+import { Check } from '@styled-icons/material/Check';
+import { TippyProps } from '@tippyjs/react';
 import {
   addColumn,
   addRow,
@@ -76,16 +76,16 @@ import {
   MarkToolbarButton,
   MediaEmbedToolbarButton,
   TableToolbarButton,
-} from '@udecode/plate'
-import { Link } from '@styled-icons/material/Link'
-import { Image } from '@styled-icons/material/Image'
-import { OndemandVideo } from '@styled-icons/material/OndemandVideo'
-import { FontDownload } from '@styled-icons/material/FontDownload'
-import { FormatColorText } from '@styled-icons/material/FormatColorText'
-import { useMyPlateEditorRef } from '../typescript'
+} from '@udecode/plate';
+import { Link } from '@styled-icons/material/Link';
+import { Image } from '@styled-icons/material/Image';
+import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
+import { FontDownload } from '@styled-icons/material/FontDownload';
+import { FormatColorText } from '@styled-icons/material/FormatColorText';
+import { useMyPlateEditorRef } from '../typescript';
 
 export const BasicElementToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <>
@@ -93,7 +93,7 @@ export const BasicElementToolbarButtons = () => {
         type={getPluginType(editor, ELEMENT_H1)}
         icon={<LooksOne />}
       />
-      <BlockToolbarButton
+      {/* <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H2)}
         icon={<LooksTwo />}
       />
@@ -112,7 +112,7 @@ export const BasicElementToolbarButtons = () => {
       <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H6)}
         icon={<Looks6 />}
-      />
+      /> */}
       <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
@@ -122,38 +122,38 @@ export const BasicElementToolbarButtons = () => {
         icon={<CodeBlock />}
       />
     </>
-  )
-}
+  );
+};
 
 export const IndentToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <>
       <ToolbarButton
         onMouseDown={(e) => {
-          if (!editor) return
+          if (!editor) return;
 
-          outdent(editor)
-          e.preventDefault()
+          outdent(editor);
+          e.preventDefault();
         }}
         icon={<FormatIndentDecrease />}
       />
       <ToolbarButton
         onMouseDown={(e) => {
-          if (!editor) return
+          if (!editor) return;
 
-          indent(editor)
-          e.preventDefault()
+          indent(editor);
+          e.preventDefault();
         }}
         icon={<FormatIndentIncrease />}
       />
     </>
-  )
-}
+  );
+};
 
 export const ListToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <>
@@ -166,8 +166,8 @@ export const ListToolbarButtons = () => {
         icon={<FormatListNumbered />}
       />
     </>
-  )
-}
+  );
+};
 
 export const AlignToolbarButtons = () => {
   return (
@@ -177,11 +177,11 @@ export const AlignToolbarButtons = () => {
       <AlignToolbarButton value="right" icon={<FormatAlignRight />} />
       <AlignToolbarButton value="justify" icon={<FormatAlignJustify />} />
     </>
-  )
-}
+  );
+};
 
 export const BasicMarkToolbarButtons = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <>
@@ -216,47 +216,47 @@ export const BasicMarkToolbarButtons = () => {
         icon={<Subscript />}
       />
     </>
-  )
-}
+  );
+};
 
 export const KbdToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <MarkToolbarButton
       type={getPluginType(editor, MARK_KBD)}
       icon={<Keyboard />}
     />
-  )
-}
+  );
+};
 
 export const HighlightToolbarButton = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
   return (
     <MarkToolbarButton
       type={getPluginType(editor, MARK_HIGHLIGHT)}
       icon={<Highlight />}
     />
-  )
-}
+  );
+};
 
 export const TableToolbarButtons = () => (
   <>
     <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
-    <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
+    {/* <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
     <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
     <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
     <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
-    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
+    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} /> */}
   </>
-)
+);
 
 export const MarkBallonToolbar = () => {
-  const editor = useMyPlateEditorRef()!
+  const editor = useMyPlateEditorRef()!;
 
-  const arrow = false
-  const theme = 'dark'
+  const arrow = false;
+  const theme = 'dark';
   const tooltip: TippyProps = {
     arrow: true,
     delay: 0,
@@ -264,7 +264,7 @@ export const MarkBallonToolbar = () => {
     hideOnClick: false,
     offset: [0, 17],
     placement: 'top',
-  }
+  };
 
   return (
     <BalloonToolbar
@@ -290,8 +290,8 @@ export const MarkBallonToolbar = () => {
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
       />
     </BalloonToolbar>
-  )
-}
+  );
+};
 
 export const ToolbarButtons = () => (
   <>
@@ -317,4 +317,4 @@ export const ToolbarButtons = () => (
     <MediaEmbedToolbarButton icon={<OndemandVideo />} />
     <TableToolbarButtons />
   </>
-)
+);

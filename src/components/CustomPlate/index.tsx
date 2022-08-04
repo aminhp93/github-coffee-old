@@ -217,32 +217,37 @@ const CustomPlate = (props: IProps) => {
   const containerRef = useRef(null);
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      {!props.hideToolBar && (
-        <PlateEventProvider>
-          <HeadingToolbar>
-            <ToolbarButtons />
-          </HeadingToolbar>
-        </PlateEventProvider>
-      )}
+    <div style={{ height: '100%' }} className="CustomPlate">
+      <DndProvider backend={HTML5Backend}>
+        {!props.hideToolBar && (
+          <PlateEventProvider>
+            <HeadingToolbar>
+              <ToolbarButtons />
+            </HeadingToolbar>
+          </PlateEventProvider>
+        )}
 
-      <div
-        ref={containerRef}
-        style={{ position: 'relative' }}
-        className="CustomPlate"
-      >
-        <Plate<MyValue>
-          editableProps={CONFIG.editableProps}
-          // initialValue={VALUES.playground}
-          plugins={plugins}
-          {...props}
+        <div
+          ref={containerRef}
+          style={{
+            position: 'relative',
+            flex: 1,
+            overflow: 'auto',
+          }}
         >
-          <MarkBallonToolbar />
-          <MentionCombobox items={MENTIONABLES} />
-          <CursorOverlayContainer containerRef={containerRef} />
-        </Plate>
-      </div>
-    </DndProvider>
+          <Plate<MyValue>
+            editableProps={CONFIG.editableProps}
+            // initialValue={VALUES.playground}
+            plugins={plugins}
+            {...props}
+          >
+            <MarkBallonToolbar />
+            <MentionCombobox items={MENTIONABLES} />
+            <CursorOverlayContainer containerRef={containerRef} />
+          </Plate>
+        </div>
+      </DndProvider>
+    </div>
   );
 };
 

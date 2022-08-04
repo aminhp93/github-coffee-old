@@ -1,44 +1,34 @@
-import { useEffect, useState } from 'react';
-import PostListItem from './PostListItem';
+import { useState, useCallback } from 'react';
 import { IPost } from 'types';
-import { PostService } from 'services';
-import { Button } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import PostListItem from './PostListItem';
 
-interface Props {
-  cb: any;
+export interface IPostListProps {
+  cb?: any;
+  listPosts: IPost[];
 }
 
-export default function PostList({ cb }: Props) {
-  const navigate = useNavigate();
+export default function PostList({ cb, listPosts }: IPostListProps) {
+  const [selectedPost, setSelectedPost] = useState({} as IPost);
 
-  const [listPost, setListPost] = useState<IPost[]>([]);
-
-  const fetch = async () => {
-    try {
-      const res = await PostService.listPost();
-      setListPost(res.data.results);
-    } catch (e) {
-      //
-    }
-  };
-
-  const handleCreatePost = async () => {
-    navigate('/post/create');
-  };
-
-  useEffect(() => {
-    fetch();
+  const handleSelect = useCallback((data: any) => {
+    setSelectedPost(data);
+    cb && cb(data);
   }, []);
 
   return (
-    <div>
-      <div>
-        <Button onClick={handleCreatePost}>Create post</Button>
+    <div style={{ display: 'flex' }}>
+      <div style={{ width: '20rem', overflow: 'auto' }}>
+        {listPosts.map((i: IPost, index) => {
+          return (
+            <PostListItem
+              selected={selectedPost.slug === i.slug}
+              key={index}
+              data={i}
+              handleSelect={handleSelect}
+            />
+          );
+        })}
       </div>
-      {listPost.map((i: IPost) => {
-        return <PostListItem data={i} cb={cb} />;
-      })}
     </div>
   );
 }

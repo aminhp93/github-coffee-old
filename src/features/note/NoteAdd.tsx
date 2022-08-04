@@ -42,7 +42,7 @@ export default function NoteAdd(props: Props) {
   };
 
   return (
-    <div>
+    <div style={{ height: '100%' }}>
       <Button
         type="primary"
         danger
@@ -52,13 +52,28 @@ export default function NoteAdd(props: Props) {
         Create
       </Button>
 
-      <div style={{ flex: 1 }}>
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         <Input onChange={handleChangeNote} />
-        <CustomPlate
-          id={String(plateId)}
-          value={note}
-          onChange={handleChange}
-        />
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',
+          }}
+        >
+          <CustomPlate
+            id={String(plateId)}
+            value={note}
+            onChange={handleChange}
+          />
+        </div>
       </div>
     </div>
   );

@@ -79,71 +79,64 @@ const MemoizedNoteDetail = React.memo(function NoteDetail({ id }: IProps) {
   if (loading) return <Spin />;
 
   return (
-    <div className="Note">
-      <div style={{ height: '100%' }}>
-        <div style={{ height: '50px' }}>
+    <div className="NoteDetail">
+      <Button
+        type="primary"
+        danger
+        onClick={handleUpdate}
+        style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+      >
+        Update
+      </Button>
+      {confirmDelete ? (
+        <>
           <Button
             type="primary"
             danger
-            onClick={handleUpdate}
-            style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '160px',
+              zIndex: 1,
+            }}
+            onClick={() => handleDelete()}
           >
-            Update
+            Confirm delete
           </Button>
-          {confirmDelete ? (
-            <>
-              <Button
-                type="primary"
-                danger
-                style={{
-                  position: 'fixed',
-                  bottom: '20px',
-                  right: '160px',
-                  zIndex: 1,
-                }}
-                onClick={() => handleDelete()}
-              >
-                Confirm delete
-              </Button>
-              <Button
-                style={{
-                  position: 'fixed',
-                  bottom: '20px',
-                  right: '20px',
-                  zIndex: 1,
-                }}
-                onClick={() => setConfirmDelete(false)}
-              >
-                Cancel delete
-              </Button>
-            </>
-          ) : (
-            <Button
-              type="primary"
-              danger
-              onClick={() => setConfirmDelete(true)}
-              style={{
-                position: 'fixed',
-                bottom: '20px',
-                right: '20px',
-                zIndex: 1,
-              }}
-            >
-              Delete
-            </Button>
-          )}
-        </div>
-        <Input
-          value={noteTitle}
-          onChange={(e) => setNoteTitle(e.target.value)}
+          <Button
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              zIndex: 1,
+            }}
+            onClick={() => setConfirmDelete(false)}
+          >
+            Cancel delete
+          </Button>
+        </>
+      ) : (
+        <Button
+          type="primary"
+          danger
+          onClick={() => setConfirmDelete(true)}
+          style={{
+            position: 'fixed',
+            bottom: '20px',
+            right: '20px',
+            zIndex: 1,
+          }}
+        >
+          Delete
+        </Button>
+      )}
+      <Input value={noteTitle} onChange={(e) => setNoteTitle(e.target.value)} />
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <CustomPlate
+          id={String(plateId)}
+          value={note}
+          onChange={handleChange}
         />
-        <div style={{ flex: 1 }}>
-          <CustomPlate
-            id={String(plateId)}
-            value={note}
-            onChange={handleChange}
-          />
-        </div>
       </div>
     </div>
   );
