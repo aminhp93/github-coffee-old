@@ -1,16 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 import { useLocalStorage } from 'usehooks-ts';
-import { GitHubService } from 'services';
 import { Octokit } from '@octokit/rest';
-import { Button, Input, notification, Divider } from 'antd';
+import { Button, Input, notification, Divider, Spin } from 'antd';
 import moment from 'moment';
+import sum from 'lodash/sum';
+import groupBy from 'lodash/groupBy';
+import keyBy from 'lodash/keyBy';
+
+const GITHUB_ACCOUNT = 'paulnguyen-mn';
 
 export interface ITestProps {}
 
 export default function Test(props: ITestProps) {
   const [gitHubToken, setGitHubToken] = useLocalStorage('gitHubToken', '');
   const [data, setData] = useState([] as any);
+  const [loading, setLoading] = useState(false);
   let octokit: any;
 
   console.log(gitHubToken);
@@ -26,8 +31,8 @@ export default function Test(props: ITestProps) {
       console.log('Hello, %s', login);
 
       const res: any = await octokit.rest.repos.listForUser({
-        username: 'aminhp93',
-        per_page: 10,
+        username: GITHUB_ACCOUNT,
+        per_page: 30,
         page: 1,
       });
 
@@ -35,21 +40,24 @@ export default function Test(props: ITestProps) {
       res.data.map((i: any) => {
         list_promises.push(
           octokit.rest.repos.get({
-            owner: 'aminhp93',
+            owner: GITHUB_ACCOUNT,
             repo: i.name,
           })
         );
       });
-
+      setLoading(true);
       Promise.all(list_promises)
         .then((res) => {
           console.log(res);
+          setLoading(false);
           const mappedData = res.map((i) => i.data);
           setData(mappedData);
           fetchLanguages(mappedData);
         })
         .catch((e) => {});
-    } catch (e) {}
+    } catch (e) {
+      setLoading(false);
+    }
   };
 
   const fetchLanguages = (data: any) => {
@@ -66,7 +74,7 @@ export default function Test(props: ITestProps) {
 
         const newPromise = async () => {
           const res = await octokit.rest.repos.listLanguages({
-            owner: 'aminhp93',
+            owner: GITHUB_ACCOUNT,
             repo: i.name,
           });
           return {
@@ -78,17 +86,42 @@ export default function Test(props: ITestProps) {
 
         list_promises.push(newPromise());
       });
-
+      setLoading(true);
       Promise.all(list_promises)
         .then((res) => {
           console.log(res);
+          setLoading(false);
+          const objRes = keyBy(res, 'repo');
+          const newData = [...data];
+          console.log(newData);
+          newData.map((i) => {
+            i.languages = objRes[i.name].res.data;
 
-          // setData(mappedData);
+            const listLanguages: any = [];
+            Object.keys(i.languages).map((j) => {
+              listLanguages.push({
+                language: j,
+                count: i.languages[j],
+              });
+            });
+
+            i.languagesShort = listLanguages
+              .sort((a: any, b: any) => b.count - a.count)
+              .splice(0, 3);
+
+            i.languagesCount = sum(Object.values(i.languages));
+            console.log(i);
+            return i;
+          });
+
+          newData.sort((a, b) => b.languagesCount - a.languagesCount);
+          console.log(newData);
+          setData(newData);
           return res;
         })
         .catch((e) => {});
     } catch (e) {
-      //
+      setLoading(false);
     }
   };
 
@@ -105,18 +138,27 @@ export default function Test(props: ITestProps) {
 
   console.log(data);
 
-  useEffect(() => {
-    octokit = new Octokit({
-      auth: gitHubToken,
-    });
-  }, []);
+  const renderSummary = () => {
+    const count = groupBy(data, 'language');
+    console.log(count);
+    return (
+      <div>
+        Summary
+        <div>
+          {Object.keys(count).map((i) => {
+            return (
+              <div>
+                {i} - {count[i].length}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
-  return (
-    <div>
-      <Component />
-
-      <Input onChange={(e) => handleChange(e)} />
-      <Button onClick={handleClickFetch}>Fetch</Button>
+  const renderList = () => {
+    return (
       <div>
         {data.map((i: any) => {
           return (
@@ -130,11 +172,48 @@ export default function Test(props: ITestProps) {
                   {moment(i.updated_at).format('YYYY-MM-DD')}
                 </div>
                 <div style={{ width: '100px' }}>{i.language}</div>
+                <div style={{ width: '100px' }}>{i.languagesCount}</div>
+                <div style={{ flex: 1, display: 'flex', overflow: 'auto' }}>
+                  {i.languagesShort &&
+                    i.languagesShort.map((j: any) => {
+                      return (
+                        <div style={{ width: '100px' }}>
+                          <div>{j.language}</div>
+                          <div>{j.count}</div>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
               <Divider />
             </>
           );
         })}
+      </div>
+    );
+  };
+
+  useEffect(() => {
+    octokit = new Octokit({
+      auth: gitHubToken,
+    });
+  }, []);
+
+  return (
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      <Component />
+      {loading && <Spin />}
+      <Input onChange={(e) => handleChange(e)} />
+      <Button onClick={handleClickFetch}>Fetch</Button>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div>{renderSummary()}</div>
+        <div style={{ flex: 1, overflow: 'auto' }}>{renderList()}</div>
       </div>
     </div>
   );
