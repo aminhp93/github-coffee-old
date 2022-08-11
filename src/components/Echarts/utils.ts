@@ -1,187 +1,233 @@
 import random from "lodash/random";
 import moment from "moment";
+import { useEffect, useRef } from "react";
 
-const colors = ["#5470C6", "#EE6666", "green"];
+export const DATE_FORMAT = "YYYY-MM-DD";
+export const COLORS = ["#5470C6", "#EE6666", "green", "red", "blue"];
 
-export const MULTIPLE_AXIS_OPTION = {
-	color: colors,
-	tooltip: {
-		trigger: "none",
-		axisPointer: {
-			type: "cross",
-		},
+export const LIST_START_TIME_FRAME = [
+	{
+		value: "choose_from_calendar",
+		label: "Choose from calendar",
+		countDay: 0,
 	},
-	legend: {},
-	grid: {
-		top: 40,
-		bottom: 80,
-	},
-	dataZoom: [
-		{
-			type: "slider",
-			yAxisIndex: 0,
-			filterMode: "none",
-		},
-		{
-			type: "inside",
-			yAxisIndex: 0,
-			filterMode: "none",
-		},
-	],
-	xAxis: [
-		{
-			offset: 0,
-			position: "bottom",
-			type: "category",
-			axisTick: {
-				alignWithLabel: true,
-			},
-			axisLine: {
-				onZero: false,
-				lineStyle: {
-					color: colors[1],
-				},
-			},
-			axisPointer: {
-				label: {
-					formatter: function (params: any) {
-						return (
-							"Precipitation  " +
-							params.value +
-							(params.seriesData.length ? "：" + params.seriesData[0].data : "")
-						);
-					},
-				},
-			},
-			// prettier-ignore
-			data: ['2016-1', '2016-2', '2016-3', '2016-4', '2016-5', '2016-6', '2016-7', '2016-8', '2016-9', '2016-10', '2016-11', '2016-12'],
-		},
-		{
-			type: "category",
-			position: "bottom",
-			offset: 20,
-			axisTick: {
-				alignWithLabel: true,
-			},
-			axisLine: {
-				onZero: false,
-				lineStyle: {
-					color: colors[0],
-				},
-			},
-			axisPointer: {
-				label: {
-					formatter: function (params: any) {
-						return (
-							"Precipitation  " +
-							params.value +
-							(params.seriesData.length ? "：" + params.seriesData[0].data : "")
-						);
-					},
-				},
-			},
-			// prettier-ignore
-			data: ['2015-1', '2015-2', '2015-3', '2015-4', '2015-5', '2015-6', '2015-7', '2015-8', '2015-9', '2015-10', '2015-11', '2015-12'],
-		},
-		{
-			type: "category",
-			position: "bottom",
-			offset: 40,
-			axisTick: {
-				alignWithLabel: true,
-			},
-			axisLine: {
-				onZero: false,
-				lineStyle: {
-					color: colors[2],
-				},
-			},
-			axisPointer: {
-				label: {
-					formatter: function (params: any) {
-						return (
-							"Precipitation  " +
-							params.value +
-							(params.seriesData.length ? "：" + params.seriesData[0].data : "")
-						);
-					},
-				},
-			},
-			// prettier-ignore
-			data: ['2017-1', '2017-2', '2017-3', '2017-4', '2017-5', '2017-6', '2017-7', '2017-8', '2017-9', '2017-10', '2017-11', '2017-12'],
-		},
-	],
-	yAxis: [
-		{
-			type: "value",
-		},
-	],
-	series: [
-		{
-			name: "Precipitation(2015)",
-			type: "line",
-			smooth: true,
-			emphasis: {
-				focus: "series",
-			},
-			data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3],
-		},
-		{
-			name: "Precipitation(2016)",
-			type: "line",
-			smooth: true,
-			emphasis: {
-				focus: "series",
-			},
-			data: [3.9, 5.9, 11.1, 18.7, 48.3, 69.2, 231.6, 46.6, 55.4, 18.4, 10.3, 0.7],
-		},
-		{
-			name: "Precipitation(2017)",
-			type: "line",
-			smooth: true,
-			emphasis: {
-				focus: "series",
-			},
-			data: [5.9, 11.1, 18.7, 48.3, 69.2, 231.6, 46.6, 55.4, 18.4, 10.3, 0.7, 9.8],
-		},
-	],
-};
-
-export const LIST_TIME_FRAME = [
 	{
 		value: "last_15_mins",
 		label: "Last 15 minutes",
+		countDay: 0,
 	},
 	{
 		value: "last_30_mins",
 		label: "Last 30 minutes",
+		countDay: 0,
 	},
 	{
-		value: "yesterday",
-		label: "Yesterday",
+		value: "last_hour",
+		label: "Last Hour",
+		countDay: 0,
+	},
+	{
+		value: "last_2_hours",
+		label: "Last 2 hours",
+		countDay: 0,
+	},
+	{
+		value: "last_4_hours",
+		label: "Last 4 hours",
+		countDay: 0,
+	},
+	{
+		value: "last_6_hours",
+		label: "Last 6 hours",
+		countDay: 0,
+	},
+	{
+		value: "last_12_hours",
+		label: "Last 12 hours",
+		countDay: 0,
+	},
+	{
+		value: "last_day",
+		label: "Last Day",
+		countDay: 1,
+	},
+	{
+		value: "last_2_days",
+		label: "Last 2 days",
+		countDay: 2,
+	},
+	{
+		value: "last_3_days",
+		label: "Last 3 days",
+		countDay: 3,
+	},
+	{
+		value: "last_4_days",
+		label: "Last 4 days",
+		countDay: 4,
+	},
+	{
+		value: "last_5_days",
+		label: "Last 5 days",
+		countDay: 5,
+	},
+	{
+		value: "last_6_days",
+		label: "Last 6 days",
+		countDay: 6,
 	},
 	{
 		value: "last_week",
-		label: "Last week",
+		label: "Last Week",
+		countDay: 7,
+	},
+	{
+		value: "last_x_weeks",
+		label: "Last X weeks",
+		countDay: 14,
+	},
+	{
+		value: "last_x_weeks_2",
+		label: "Last x weeks 2",
+		countDay: 21,
 	},
 	{
 		value: "last_month",
 		label: "Last month",
+		countDay: 30,
 	},
 	{
-		value: "all_time",
-		label: "All time",
+		value: "last_3_months",
+		label: "Last 3 months",
+		countDay: 1 * 30 * 3,
+	},
+	{
+		value: "last_6_months",
+		label: "Last 6 months",
+		countDay: 1 * 30 * 6,
+	},
+	{
+		value: "last_year",
+		label: "Last year",
+		countDay: 1 * 30 * 12,
+	},
+	{
+		value: "last_18_months",
+		label: "Last 18 months",
+		countDay: 1 * 30 * 18,
 	},
 ];
 
-export const LIST_CHART_TYPE = [
+export const LIST_END_TIME_FRAME = [
 	{
-		value: "line_chart",
-		label: "Line chart",
+		value: "choose_from_calendar",
+		label: "Choose from calendar",
+		countDay: 0,
 	},
 	{
-		value: "bar_chart",
-		label: "bar chart",
+		value: "next_15_mins",
+		label: "15 minutes",
+		countDay: 0,
+	},
+	{
+		value: "next_30_mins",
+		label: "30 minutes",
+		countDay: 0,
+	},
+	{
+		value: "next_hour",
+		label: "Hour",
+		countDay: 0,
+	},
+	{
+		value: "next_2_hours",
+		label: "2 hours",
+		countDay: 0,
+	},
+	{
+		value: "next_4_hours",
+		label: "4 hours",
+		countDay: 0,
+	},
+	{
+		value: "next_6_hours",
+		label: "6 hours",
+		countDay: 0,
+	},
+	{
+		value: "next_12_hours",
+		label: "12 hours",
+		countDay: 0,
+	},
+	{
+		value: "next_day",
+		label: "Day",
+		countDay: 1,
+	},
+	{
+		value: "next_2_days",
+		label: "2 days",
+		countDay: 2,
+	},
+	{
+		value: "next_3_days",
+		label: "3 days",
+		countDay: 3,
+	},
+	{
+		value: "next_4_days",
+		label: "4 days",
+		countDay: 4,
+	},
+	{
+		value: "next_5_days",
+		label: "5 days",
+		countDay: 5,
+	},
+	{
+		value: "next_6_days",
+		label: "6 days",
+		countDay: 6,
+	},
+	{
+		value: "next_week",
+		label: "Week",
+		countDay: 7,
+	},
+	{
+		value: "next_x_weeks",
+		label: "X weeks",
+		countDay: 14,
+	},
+	{
+		value: "next_x_weeks_2",
+		label: "x weeks 2",
+		countDay: 21,
+	},
+	{
+		value: "next_month",
+		label: "month",
+		countDay: 30,
+	},
+	{
+		value: "next_3_months",
+		label: "3 months",
+		countDay: 1 * 30 * 3,
+	},
+	{
+		value: "next_6_months",
+		label: "6 months",
+		countDay: 1 * 30 * 6,
+	},
+	{
+		value: "next_year",
+		label: "year",
+		countDay: 1 * 30 * 12,
+	},
+	{
+		value: "next_18_months",
+		label: "18 months",
+		countDay: 1 * 30 * 18,
 	},
 ];
 
@@ -222,9 +268,12 @@ export const TITLE_OPTION = {
 
 export const TOOLTIP_OPTION = {
 	tooltip: {
-		trigger: "none",
+		trigger: "axis",
 		axisPointer: {
 			type: "cross",
+		},
+		position: function (pt: any) {
+			return [pt[0], "10%"];
 		},
 	},
 };
@@ -245,8 +294,8 @@ export const TOOLBOX_OPTION = {
 			dataZoom: {
 				yAxisIndex: "none",
 			},
-			restore: {},
-			saveAsImage: {},
+			// restore: {},
+			// saveAsImage: {},
 		},
 	},
 };
@@ -255,12 +304,67 @@ export const XAXIS_OPTION = {
 	xAxis: {
 		position: "bottom",
 		triggerEvent: true,
+		type: "category",
+		// axisLine: {
+		// 	show: false
+		// }
+		// type: "log",
+		nameTextStyle: {
+			color: "red",
+		},
+		// data: [
+		// 	{
+		// 		textStyle: {
+		// 			color: "red",
+		// 		},
+		// 	},
+		// ],
+		axisLabel: {
+			// inside: true,
+			// margin: 40,
+			// formatter: [
+			// 	'{a|Style "a" is applied to this snippet}',
+			// 	'{b|Style "b" is applied to this snippet}This snippet use default style{x|use style "x"}',
+			// ].join("\n"),
+			// rich: {
+			// 	a: {
+			// 		color: "red",
+			// 		lineHeight: 10,
+			// 	},
+			// 	b: {
+			// 		backgroundColor: {
+			// 			image: "xxx/xxx.jpg",
+			// 		},
+			// 		height: 40,
+			// 	},
+			// 	x: {
+			// 		fontSize: 18,
+			// 		fontFamily: "Microsoft YaHei",
+			// 		borderColor: "#449933",
+			// 		borderRadius: 4,
+			// 	},
+			// },
+		},
+		// minorTick: {
+		// 	show: true,
+		// },
+		// minorSplitLine: {
+		// 	show: true,
+		// },
 	},
 };
 
 export const YAXIS_OPTION = {
 	yAxis: {
 		triggerEvent: true,
+		// min: 50,
+		// max: 100,
+		// minorTick: {
+		// 	show: true,
+		// },
+		// minorSplitLine: {
+		// 	show: true,
+		// },
 	},
 };
 
@@ -271,29 +375,24 @@ export const SERIES_OPTION = {
 		lineStyle: {
 			width: 0.5,
 		},
-		markLine: {
-			silent: true,
-			lineStyle: {
-				color: "#333",
-			},
-			data: [
-				{
-					yAxis: 50,
-				},
-				{
-					yAxis: 100,
-				},
-				{
-					yAxis: 150,
-				},
-				{
-					yAxis: 200,
-				},
-				{
-					yAxis: 300,
-				},
-			],
-		},
+		// markLine: {
+		// 	silent: true,
+		// 	lineStyle: {
+		// 		color: "#333",
+		// 	},
+		// 	data: [
+		// 		{ yAxis: 50 },
+		// 		{ yAxis: 100 },
+		// 		{ yAxis: 150 },
+		// 		{ yAxis: 200 },
+		// 		{ yAxis: 300 },
+		// 		{ xAxis: 1 },
+		// 		{ xAxis: 3 },
+		// 		{ xAxis: 5 },
+		// 		{ xAxis: 7 },
+		// 	],
+		// },
+		clip: true,
 	},
 };
 
@@ -348,11 +447,25 @@ export const DEFAULT_OPTION: any = {
 	...TOOLTIP_OPTION,
 	...GRID_OPTION,
 	...TOOLBOX_OPTION,
-	...XAXIS_OPTION,
-	...YAXIS_OPTION,
-	...SERIES_OPTION,
-	...VISUALMAP_OPTION,
-	...DARK_MODE_OPTION,
+	// ...XAXIS_OPTION,
+	// ...YAXIS_OPTION,
+	// ...SERIES_OPTION,
+	// ...VISUALMAP_OPTION,
+	...LIGHT_MODE_OPTION,
+	color: COLORS,
+	dataZoom: [
+		{
+			type: "inside",
+			start: 50,
+			end: 100,
+		},
+
+		{
+			type: "slider",
+			start: 50,
+			end: 100,
+		},
+	],
 };
 
 export const getDay = (value: string) => {
@@ -375,34 +488,212 @@ export const getDay = (value: string) => {
 };
 
 export const getRows = (data: any) => {
-	return data.map((i: any, index: any) => {
-		console.log(i);
+	if (!data) return [];
+	return data.map((i: any) => {
 		return {
-			id: index,
-			object_name: `Breed Tank ${index}`,
-			description: "Temperature Drop",
+			id: i.id,
+			object_name: i.name,
+			description: `Description ${i.name}`,
 			average: random(1, 100) / 10,
 			min: random(1, 100) / 10,
 			max: random(1, 100) / 10,
 			unit: "%",
-			hide_all: "Hide",
-			remove_all: "Remove",
-			tag: ["Breed", "Tank1", "Chart"],
+			hide: "Hide",
+			remove: "Remove",
+			color: i.color,
+			toggle_right_axis: "Toggle",
 		};
 	});
 };
 
-export const createFakeFullData = () => {
+export const initFakeData = () => {
 	let result: any = [];
-	const COUNT = 100000;
+	const COUNT = 20;
 	for (let i = 0; i < COUNT; i++) {
-		const item = [
-			moment()
-				.add(COUNT - i, "days")
-				.format("YYYY-MM-DD"),
-			random(1, 500),
-		];
+		const item = [moment().add(i, "days").format(DATE_FORMAT), random(1, 500)];
 		result.push(item);
 	}
 	return result;
+};
+
+function getDatesInRange(startDate: any, endDate: any) {
+	const date = new Date(startDate.getTime());
+
+	const dates = [];
+
+	while (date <= endDate) {
+		dates.push(new Date(date));
+		date.setDate(date.getDate() + 1);
+	}
+
+	return dates;
+}
+
+export const addFakeDataBetween = (startDate: any, endDate: any) => {
+	const list = getDatesInRange(new Date(startDate), new Date(endDate));
+
+	return list.map((i: any) => {
+		return [moment(i).format(DATE_FORMAT), random(1, 500)];
+	});
+};
+
+export const addFakeData = (date: any, count: number) => {
+	let result: any = [];
+	if (count > 0) {
+		for (let i = 0; i < count; i++) {
+			const item = [
+				moment(date)
+					.add(i + 1, "days")
+					.format(DATE_FORMAT),
+				random(1, 500),
+			];
+			result.push(item);
+		}
+	} else if (count < 0) {
+		for (let i = count; i < 0; i++) {
+			const item = [
+				moment(date)
+					.add(i + 1, "days")
+					.format(DATE_FORMAT),
+				random(1, 500),
+			];
+			result.push(item);
+		}
+	}
+	console.log("addFakeData", result, date, count);
+
+	return result;
+};
+
+export const DEFAULT_START_TIME_FRAME = LIST_START_TIME_FRAME[16];
+export const DEFAULT_END_TIME_FRAME = LIST_END_TIME_FRAME[10];
+
+export const waitApi = () => {
+	return new Promise<void>((resolve, reject) => {
+		setTimeout(() => {
+			resolve();
+		}, 500);
+	});
+};
+
+export function useInterval(callback: any, delay: any) {
+	const savedCallback = useRef();
+
+	useEffect(() => {
+		savedCallback.current = callback;
+	});
+
+	useEffect(() => {
+		function tick() {
+			// 👇️ ts-nocheck disables type checking for entire file
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-nocheck
+
+			// 👇️ ts-ignore ignores any ts errors on the next line
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
+			savedCallback.current();
+		}
+
+		if (delay !== null) {
+			let id = setInterval(tick, delay);
+			return () => clearInterval(id);
+		}
+	}, [delay]);
+}
+
+export const MULTIPLE_AXIS_DATA = [{ id: 1 }, { id: 2 }, { id: 3 }].map((i: any, index) => {
+	const data = initFakeData();
+	i.name = `Name ${index}`;
+	i.offset = 20 * index;
+	i.color = COLORS[index];
+	i.seriesData = data.map((j: any) => j[1]);
+	i.xAxisData = data.map((j: any) => j[0]);
+	return i;
+});
+
+const getMarkLine = (data: any) => {
+	const result: any = [];
+	data.map((i: any, index: number) => {
+		if (index % 1 === 0) {
+			result.push({
+				xAxis: index,
+			});
+		}
+	});
+	return result;
+};
+
+export const getNewOption = (newData: any, oldOption: any) => {
+	return {
+		...oldOption,
+		legend: {
+			data: newData.map((i: any) => {
+				return i.name;
+			}),
+		},
+		xAxis: newData.map((i: any) => {
+			return {
+				type: "category",
+				position: "bottom",
+				offset: i.offset,
+				axisTick: {
+					alignWithLabel: true,
+				},
+				axisLine: {
+					onZero: false,
+					lineStyle: {
+						color: i.color,
+					},
+				},
+				// axisPointer: {
+				//     label: {
+				//         formatter: function (params: any) {
+				//             return (
+				//                 // params.value +
+				//                 (params.seriesData.length ? params.seriesData[0].data : "")
+				//             );
+				//         },
+				//     },
+				// },
+				// prettier-ignore
+				data: i.xAxisData,
+				id: i.id,
+			};
+		}),
+		yAxis: newData.map((i: any) => {
+			return {
+				type: "value",
+				name: i.name,
+				position: i.position,
+			};
+		}),
+		series: newData.map((i: any) => {
+			return {
+				name: i.name,
+				yAxisIndex: i.yAxisIndex,
+				type: "line",
+				smooth: true,
+				emphasis: {
+					focus: "series",
+				},
+				data: i.seriesData,
+				id: i.id,
+				lineStyle: {
+					color: i.lineStyle?.color,
+				},
+				markLine: {
+					symbol: ["none", "none"],
+					label: { show: false },
+					data: getMarkLine(i.xAxisData),
+					lineStyle: {
+						color: "#1E294B",
+						type: "solid",
+						opacity: 0.6,
+						width: 0.6,
+					},
+				},
+			};
+		}),
+	};
 };

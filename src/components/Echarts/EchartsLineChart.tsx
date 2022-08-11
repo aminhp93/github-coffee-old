@@ -1,105 +1,47 @@
-import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import Switch from '@mui/material/Switch';
-// method echarts
-import { getInstanceByDom, init } from 'echarts';
-
-// type echarts
-import {
-    ECharts, SetOptionOpts
-} from 'echarts';
+import Box from '@mui/material/Box';
+import { ECharts, getInstanceByDom, init } from 'echarts';
 import get from 'lodash/get';
-import { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-
-import { DARK_MODE_OPTION, LIGHT_MODE_OPTION } from './utils';
-
+import { useEffect, useRef } from "react";
+import EchartsLineChartHeader from './EchartsLineChartHeader';
+import EchartsSettings from './EchartsLineChartSettings';
+import { DEFAULT_OPTION } from './utils';
 
 interface Props {
-    cbLoadMore?: any;
-    loading?: boolean;
+    data?: any;
+    handleLoadMore?: any;
     option?: any;
-    settings?: SetOptionOpts;
+    handleChangeTime?: any;
+    handleRefresh?: any;
+    handleExport?: any;
+    handleCellClick?: any;
+    handleAdd?: any;
+    handleChangeColor?: any;
+    handleToggleRightAxis?: any;
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export default function EchartsLineChart({
-    cbLoadMore,
-    loading,
-    option,
-    settings,
+    data,
+    option = DEFAULT_OPTION,
+    handleChangeTime,
+    handleLoadMore,
+    handleRefresh,
+    handleExport,
+    handleCellClick,
+    handleAdd,
+    handleChangeColor,
+    handleToggleRightAxis
 }: Props) {
-    const [darkMode, setDarkMode] = useState('auto' as any)
+
+    console.log('EchartsLineChart')
+
     const chartRef = useRef<HTMLDivElement>(null);
-    let chart: any;
-    // console.log('EchartsLineChart', option)
+    const btnRef = useRef<HTMLDivElement>(null);
 
-    const handleSwitchDarkMode = (e: any) => {
-        console.log(e.target.checked)
+    const handleChangeSettings = (newOptions: any) => {
         if (chartRef.current !== null) {
             const chart = getInstanceByDom(chartRef.current);
-            chart?.setOption(e.target.checked ? DARK_MODE_OPTION : LIGHT_MODE_OPTION)
-        }
-    }
-
-    const handleSwitchDataZoom = (e: any) => {
-        console.log(e.target.checked)
-        if (chartRef.current !== null) {
-            const chart = getInstanceByDom(chartRef.current);
-            chart?.setOption(e.target.checked ? {
-                dataZoom: [
-                    {
-                        type: 'slider',
-                        startValue: '2015-01-01',
-                    },
-                    {
-                        type: 'inside',
-                        startValue: '2015-01-01',
-                    }
-                ]
-            } : {
-                dataZoom: [{
-                    type: 'inside',
-                    startValue: '2015-01-01',
-                }]
-
-            })
-        }
-    }
-
-    const handleSwitchAxisPointer = (e: any) => {
-        console.log(e.target.checked)
-        if (chartRef.current !== null) {
-            const chart = getInstanceByDom(chartRef.current);
-            chart?.setOption(e.target.checked ? {
-                tooltip: {
-                    show: true,
-                    trigger: 'none',
-                    axisPointer: {
-                        type: 'cross'
-                    }
-                }
-            } : {
-                tooltip: {
-                    show: false
-                }
-            })
-        }
-    }
-
-    const handleSwitchStepLine = (e: any) => {
-        console.log(e.target.checked)
-        if (chartRef.current !== null) {
-            const chart = getInstanceByDom(chartRef.current);
-            chart?.setOption(e.target.checked ? {
-                series: {
-                    step: "start"
-                }
-            } : {
-                series: {
-                    step: false
-                }
-            })
+            chart?.setOption(newOptions)
         }
     }
 
@@ -155,7 +97,10 @@ export default function EchartsLineChart({
             chart.on('datazoom', function (params: any) {
                 console.log('datazoom', params)
                 if (params.start === 0 || get(params, 'batch[0].start') === 0) {
-                    cbLoadMore && cbLoadMore()
+                    console.log('loadmore')
+                    if (btnRef.current) {
+                        btnRef.current.click()
+                    }
                 }
             })
 
@@ -240,64 +185,80 @@ export default function EchartsLineChart({
         if (chartRef.current !== null) {
             const chart = getInstanceByDom(chartRef.current);
             const old: any = chart?.getOption()
-
-            console.log(old, option)
-            if (old?.dataZoom && old?.series?.length && option?.series?.data) {
-                let oldDataZoom = old?.dataZoom[0]
-
-                // Get length of new added data, list old data, list new data
-                const addedDataLength = option.series.data.length - old.series[0].data.length
-                const oldDataLength = oldDataZoom.endValue / (oldDataZoom.end / 100)
-                const newDataLength = oldDataLength + addedDataLength
-
-                // Calculate new start and end of insider zoom
-                oldDataZoom.start = 100 * (oldDataZoom.startValue) / newDataLength
-                oldDataZoom.end = 100 * (oldDataZoom.endValue) / newDataLength
-
-                // Calculate start and end of slider zoom
-                let oldDataZoom2 = old?.dataZoom[1]
-                oldDataZoom2.start = 100 * (oldDataZoom2.startValue) / newDataLength
-                oldDataZoom2.end = 100 * (oldDataZoom2.endValue) / newDataLength
-
-                const newOption = { ...option, dataZoom: old?.dataZoom }
-                option && chart?.setOption(newOption)
-            } else {
-                option && chart?.setOption(option)
+            const settings: any = {}
+            if (option?.xAxis?.length < old?.xAxis?.length) {
+                settings.notMerge = true
+                // settings.replaceMerge = 'xAxis'
             }
+            console.log('updated chart', chart, old, option)
+
+            if (old?.dataZoom && old?.dataZoom.length && old?.series?.length && option?.series?.length) {
+                // Get datazoom type === "inside"
+                console.log(197, old?.dataZoom, option?.dataZoom)
+                let oldDataZoom = old?.dataZoom.filter((i: any) => i.type === "inside")[0]
+                if (oldDataZoom) {
+
+                    // Get length of new added data, list old data, list new data
+                    const addedDataLength = option.series[0].data.length - old.series[0].data.length
+                    const oldDataLength = oldDataZoom.endValue / (oldDataZoom.end / 100)
+                    const newDataLength = oldDataLength + addedDataLength
+
+                    // Check add to bottom or add to top
+
+                    const addedValueLength = option.addPosition === "bottom" ? addedDataLength : 0
+
+                    // Calculate new start and end of insider zoom
+                    oldDataZoom.start = 100 * (oldDataZoom.startValue + addedValueLength) / newDataLength
+                    oldDataZoom.end = 100 * (oldDataZoom.endValue + addedValueLength) / newDataLength
+
+                    // Calculate start and end of slider zoom
+                    let oldDataZoom2 = old?.dataZoom.filter((i: any) => i.type === "slider")[0]
+                    if (oldDataZoom2) {
+                        oldDataZoom2.start = 100 * (oldDataZoom2.startValue + addedValueLength) / newDataLength
+                        oldDataZoom2.end = 100 * (oldDataZoom2.endValue + addedValueLength) / newDataLength
+                    }
 
 
+
+                    const newOption = { ...option, dataZoom: old?.dataZoom }
+                    option && chart?.setOption(newOption, settings)
+                    return
+                }
+            }
+            option && chart?.setOption(option, settings)
         }
-    }, [option, settings]) // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
+    }, [option]) // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
-    useEffect(() => {
-        // Update chart
-        if (chartRef.current !== null) {
-            const chart = getInstanceByDom(chartRef.current);
-            loading === true ? chart?.showLoading() : chart?.hideLoading()
-        }
-    }, [loading])
+    return <div style={{ position: "relative", padding: "4rem", border: "1px solid black" }}>
+        <EchartsLineChartHeader
+            handleChangeTime={handleChangeTime}
+            handleRefresh={() => {
+                if (chartRef.current !== null) {
+                    const chart = getInstanceByDom(chartRef.current);
+                    chart?.clear()
+                }
+                handleRefresh()
+            }} />
 
-    // console.log('render', darkMode, chart, option)
-
-    return <div >
+        <div ref={btnRef} onClick={handleLoadMore} style={{ display: "none" }} />
         <div ref={chartRef} style={{
             width: '100%',
             height: '500px',
             padding: "10px",
             borderRadius: "10px",
         }} />
-        <div>
-            <FormGroup>
-                <FormControlLabel control={<Switch defaultChecked onChange={handleSwitchDarkMode} />} label="Dark mode" />
-                <FormControlLabel control={<Switch defaultChecked onChange={handleSwitchDataZoom} />} label="Data zoom slider" />
-                <FormControlLabel control={<Switch defaultChecked onChange={handleSwitchAxisPointer} />} label="Axis pointer" />
-                <FormControlLabel control={<Switch defaultChecked onChange={handleSwitchStepLine} />} label="Step line" />
-            </FormGroup>
 
-        </div>
-        <Button onClick={() => {
-            console.log('click')
-            setDarkMode(uuidv4())
-        }}>test render</Button>
+        <Box>
+            <EchartsSettings
+                data={data}
+                chartRef={chartRef}
+                handleExport={handleExport}
+                handleChangeSettings={handleChangeSettings}
+                handleAdd={handleAdd}
+                handleCellClick={handleCellClick}
+                handleChangeColor={handleChangeColor}
+                handleToggleRightAxis={handleToggleRightAxis}
+            />
+        </Box>
     </div >
 }
