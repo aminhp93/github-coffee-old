@@ -7,6 +7,7 @@ import moment from 'moment';
 import sum from 'lodash/sum';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
+import FirebaseCustom from 'components/FirebaseCustom';
 
 const GITHUB_ACCOUNT = 'paulnguyen-mn';
 
@@ -210,7 +211,10 @@ export default function Test(props: ITestProps) {
       <Component />
       {loading && <Spin />}
       <Input onChange={(e) => handleChange(e)} />
+
       <Button onClick={handleClickFetch}>Fetch</Button>
+      <FirebaseCustom />
+
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div>{renderSummary()}</div>
         <div style={{ flex: 1, overflow: 'auto' }}>{renderList()}</div>
