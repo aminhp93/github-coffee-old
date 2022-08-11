@@ -3,8 +3,8 @@ const path = require('path');
 // const CracoAlias = require("craco-alias");
 const { EnvironmentPlugin, ProvidePlugin, DefinePlugin } = require('webpack');
 const childprocess = require('child_process');
-const BundleAnalyzerPlugin =
-  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+// const BundleAnalyzerPlugin =
+//   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   plugins: [
@@ -53,7 +53,7 @@ module.exports = {
         new DefinePlugin({
           'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
         }),
-        new BundleAnalyzerPlugin(),
+        // new BundleAnalyzerPlugin(),
       ],
     },
   },
