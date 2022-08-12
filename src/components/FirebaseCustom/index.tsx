@@ -23,9 +23,10 @@ const firebaseConfig: any = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+console.log(app);
 // Initialize Firebase Auth
 const auth = getAuth();
-const analytics = getAnalytics(app);
+console.log(auth);
 
 const useLogin = () => {
   const [error, setError] = useState(false);
@@ -37,7 +38,9 @@ const useLogin = () => {
     setIsPending(true);
 
     try {
+      console.log(signInWithPopup, auth, provider);
       const res = await signInWithPopup(auth, provider);
+      console.log(res);
       if (!res) {
         throw new Error('Could not complete signup');
       }
