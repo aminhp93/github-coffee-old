@@ -17,6 +17,7 @@ interface Props {
     handleAdd?: any;
     handleChangeColor?: any;
     handleToggleRightAxis?: any;
+    handleShowHideChart?: any;
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -30,7 +31,8 @@ export default function EchartsLineChart({
     handleCellClick,
     handleAdd,
     handleChangeColor,
-    handleToggleRightAxis
+    handleToggleRightAxis,
+    handleShowHideChart
 }: Props) {
 
     console.log('EchartsLineChart')
@@ -258,6 +260,7 @@ export default function EchartsLineChart({
                 handleCellClick={handleCellClick}
                 handleChangeColor={handleChangeColor}
                 handleToggleRightAxis={handleToggleRightAxis}
+                handleShowHideChart={handleShowHideChart}
             />
         </Box>
     </div >

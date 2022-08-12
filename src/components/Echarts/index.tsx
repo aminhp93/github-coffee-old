@@ -8,7 +8,7 @@ import Grid from '@mui/material/Grid';
 import Input from '@mui/material/Input';
 import { useEffect, useState } from "react";
 import EchartsLineChart from './EchartsLineChart';
-import { addFakeData, addFakeDataBetween, COLORS, DEFAULT_OPTION, getNewOption, MULTIPLE_AXIS_DATA, useInterval, waitApi } from './utils';
+import { addFakeData, DEFAULT_OPTION, getNewOption, MULTIPLE_AXIS_DATA, useInterval, waitApi } from './utils';
 
 export default function Echarts(): React.ReactElement {
     const [option, setOption] = useState(DEFAULT_OPTION as any);
@@ -36,20 +36,25 @@ export default function Echarts(): React.ReactElement {
     }, isRunning ? delay : null);
 
     const handleChangeTime = (newTime: any) => {
-        console.log(newTime)
-        const newData = [{ id: 1 }, { id: 2 }, { id: 3 }].map((i: any, index) => {
-            const data = addFakeDataBetween(newTime.start, newTime.end)
-            i.name = `Name ${index}`;
-            i.offset = 20 * index;
-            i.color = COLORS[index];
-            i.seriesData = data.map((j: any) => j[1]);
-            i.xAxisData = data.map((j: any) => j[0]);
-            return i;
-        })
+        // console.log(newTime)
+        // const newData = [{ id: 1 }, { id: 2 }, { id: 3 }].map((i: any, index) => {
+        //     const data = addFakeDataBetween(newTime.start, newTime.end)
+        //     i.name = `Name ${index}`;
+        //     // i.offset = index;
+        //     i.lineStyle = {
+        //         color: COLORS[index]
+        //     }
+        //     i.seriesData = data.map((j: any) => j[1]);
+        //     i.xAxisData = data.map((j: any) => j[0]);
+        //     i.yAxisIndex = 0;
+        //     i.position = "left";
+        //     i.selected = true
+        //     return i;
+        // })
 
-        const newOption = getNewOption(newData, { ...option, addPosition: "" })
-        setData(newData)
-        setOption(newOption)
+        // const newOption = getNewOption(newData, { ...option, addPosition: "" })
+        // setData(newData)
+        // setOption(newOption)
     };
 
     const handleLoadMore = async () => {
@@ -112,14 +117,14 @@ export default function Echarts(): React.ReactElement {
         const newData = [...data]
         newData.push(item)
         setData(newData)
-        setOption(getNewOption(newData, option))
+        setOption(getNewOption(newData, { ...option }))
     }
 
     const handleCellClick = (e: any) => {
         if (e.field === 'remove') {
             let newData = [...data];
             newData = newData.filter(i => i.id !== e.id)
-            setOption(getNewOption(newData, option))
+            setOption(getNewOption(newData, { ...option }))
             setData(newData)
         }
     }
@@ -138,16 +143,31 @@ export default function Echarts(): React.ReactElement {
             }
             return i
         })
+
+        setOption(getNewOption(newData, option))
+        setData(newData)
+    }
+
+    const handleShowHideChart = (dataCb: any, value: any) => {
+        console.log(dataCb, value)
+        let newData = [...data];
+
+        newData.map(i => {
+            if (i.id === dataCb.id) {
+                i.selected = value
+            }
+        })
+
         setOption(getNewOption(newData, option))
         setData(newData)
     }
 
     useEffect(() => {
-        const newData = [...data]
-        newData.push(MULTIPLE_AXIS_DATA[0])
-        newData.push(MULTIPLE_AXIS_DATA[1])
-        setData(newData)
-        setOption(getNewOption(newData, option))
+        // const newData = [...data]
+        // newData.push(MULTIPLE_AXIS_DATA[0])
+        // newData.push(MULTIPLE_AXIS_DATA[1])
+        // setData(newData)
+        // setOption(getNewOption(newData, option))
     }, [])
 
     return <Container style={{ maxWidth: 1800 }}>
@@ -176,6 +196,7 @@ export default function Echarts(): React.ReactElement {
                         handleCellClick={handleCellClick}
                         handleChangeColor={handleChangeColor}
                         handleToggleRightAxis={handleToggleRightAxis}
+                        handleShowHideChart={handleShowHideChart}
                     />
                 </Box>
             </Grid>

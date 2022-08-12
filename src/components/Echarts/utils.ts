@@ -281,8 +281,8 @@ export const TOOLTIP_OPTION = {
 export const GRID_OPTION = {
 	grid: {
 		top: "20%",
-		left: "10%",
-		right: "10%",
+		left: "5%",
+		right: "5%",
 		bottom: "20%",
 	},
 };
@@ -297,102 +297,6 @@ export const TOOLBOX_OPTION = {
 			// restore: {},
 			// saveAsImage: {},
 		},
-	},
-};
-
-export const XAXIS_OPTION = {
-	xAxis: {
-		position: "bottom",
-		triggerEvent: true,
-		type: "category",
-		// axisLine: {
-		// 	show: false
-		// }
-		// type: "log",
-		nameTextStyle: {
-			color: "red",
-		},
-		// data: [
-		// 	{
-		// 		textStyle: {
-		// 			color: "red",
-		// 		},
-		// 	},
-		// ],
-		axisLabel: {
-			// inside: true,
-			// margin: 40,
-			// formatter: [
-			// 	'{a|Style "a" is applied to this snippet}',
-			// 	'{b|Style "b" is applied to this snippet}This snippet use default style{x|use style "x"}',
-			// ].join("\n"),
-			// rich: {
-			// 	a: {
-			// 		color: "red",
-			// 		lineHeight: 10,
-			// 	},
-			// 	b: {
-			// 		backgroundColor: {
-			// 			image: "xxx/xxx.jpg",
-			// 		},
-			// 		height: 40,
-			// 	},
-			// 	x: {
-			// 		fontSize: 18,
-			// 		fontFamily: "Microsoft YaHei",
-			// 		borderColor: "#449933",
-			// 		borderRadius: 4,
-			// 	},
-			// },
-		},
-		// minorTick: {
-		// 	show: true,
-		// },
-		// minorSplitLine: {
-		// 	show: true,
-		// },
-	},
-};
-
-export const YAXIS_OPTION = {
-	yAxis: {
-		triggerEvent: true,
-		// min: 50,
-		// max: 100,
-		// minorTick: {
-		// 	show: true,
-		// },
-		// minorSplitLine: {
-		// 	show: true,
-		// },
-	},
-};
-
-export const SERIES_OPTION = {
-	series: {
-		triggerLineEvent: true,
-		type: "line",
-		lineStyle: {
-			width: 0.5,
-		},
-		// markLine: {
-		// 	silent: true,
-		// 	lineStyle: {
-		// 		color: "#333",
-		// 	},
-		// 	data: [
-		// 		{ yAxis: 50 },
-		// 		{ yAxis: 100 },
-		// 		{ yAxis: 150 },
-		// 		{ yAxis: 200 },
-		// 		{ yAxis: 300 },
-		// 		{ xAxis: 1 },
-		// 		{ xAxis: 3 },
-		// 		{ xAxis: 5 },
-		// 		{ xAxis: 7 },
-		// 	],
-		// },
-		clip: true,
 	},
 };
 
@@ -443,6 +347,16 @@ export const VISUALMAP_OPTION = {
 };
 
 export const DEFAULT_OPTION: any = {
+	// xAxis: [
+	// 	{
+	// 		min: 0,
+	// 		max: 100,
+	// 	},
+	// ],
+	// yAxis: {
+	// 	min: -20,
+	// 	max: 120,
+	// },
 	...TITLE_OPTION,
 	...TOOLTIP_OPTION,
 	...GRID_OPTION,
@@ -489,6 +403,7 @@ export const getDay = (value: string) => {
 
 export const getRows = (data: any) => {
 	if (!data) return [];
+	console.log(data);
 	return data.map((i: any) => {
 		return {
 			id: i.id,
@@ -500,7 +415,7 @@ export const getRows = (data: any) => {
 			unit: "%",
 			hide: "Hide",
 			remove: "Remove",
-			color: i.color,
+			color: i.lineStyle?.color,
 			toggle_right_axis: "Toggle",
 		};
 	});
@@ -605,10 +520,16 @@ export function useInterval(callback: any, delay: any) {
 export const MULTIPLE_AXIS_DATA = [{ id: 1 }, { id: 2 }, { id: 3 }].map((i: any, index) => {
 	const data = initFakeData();
 	i.name = `Name ${index}`;
-	i.offset = 20 * index;
-	i.color = COLORS[index];
+	// i.offset = index;
+	i.lineStyle = {
+		color: COLORS[index],
+	};
 	i.seriesData = data.map((j: any) => j[1]);
 	i.xAxisData = data.map((j: any) => j[0]);
+	i.yAxisIndex = 0;
+	i.position = "left";
+	i.selected = true;
+
 	return i;
 });
 
@@ -624,26 +545,37 @@ const getMarkLine = (data: any) => {
 	return result;
 };
 
+const getSelected = (data: any) => {
+	const result: any = {};
+	data.map((i: any) => {
+		result[i.name] = i.selected;
+	});
+	return result;
+};
+
 export const getNewOption = (newData: any, oldOption: any) => {
+	console.log(oldOption.legend?.selected);
 	return {
 		...oldOption,
 		legend: {
 			data: newData.map((i: any) => {
 				return i.name;
 			}),
+			show: false,
+			selected: getSelected(newData),
 		},
 		xAxis: newData.map((i: any) => {
 			return {
 				type: "category",
 				position: "bottom",
-				offset: i.offset,
+				offset: 0,
 				axisTick: {
 					alignWithLabel: true,
 				},
 				axisLine: {
 					onZero: false,
 					lineStyle: {
-						color: i.color,
+						color: "black",
 					},
 				},
 				// axisPointer: {
@@ -659,6 +591,28 @@ export const getNewOption = (newData: any, oldOption: any) => {
 				// prettier-ignore
 				data: i.xAxisData,
 				id: i.id,
+				axisLabel: {
+					color: "#1E294B",
+					formatter: (value: any, index: any) => {
+						const x = document.createElement("div");
+						x.innerText = "123";
+						return ["{a|08:37}", `{b|${value}}`, "{c|Thursday}"].join("\n");
+					},
+					rich: {
+						a: {
+							color: "#1E294B",
+							opacity: "0.6",
+						},
+						b: {
+							color: "#1E294B",
+							opacity: "0.8",
+						},
+						c: {
+							color: "#1E294B",
+							opacity: "0.6",
+						},
+					},
+				},
 			};
 		}),
 		yAxis: newData.map((i: any) => {
@@ -666,6 +620,9 @@ export const getNewOption = (newData: any, oldOption: any) => {
 				type: "value",
 				name: i.name,
 				position: i.position,
+				axisLabel: {
+					color: "#1E294B",
+				},
 			};
 		}),
 		series: newData.map((i: any) => {
@@ -676,6 +633,7 @@ export const getNewOption = (newData: any, oldOption: any) => {
 				smooth: true,
 				emphasis: {
 					focus: "series",
+					...i.emphasis,
 				},
 				data: i.seriesData,
 				id: i.id,

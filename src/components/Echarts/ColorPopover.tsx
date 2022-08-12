@@ -24,6 +24,7 @@ export default function ColorPopover({ color: defaultColor, cb }: IProps) {
     const handleSelectColor = (data: any) => {
         setColor(data)
         cb && cb(data)
+        handleClose()
     }
 
     const open = Boolean(anchorEl);

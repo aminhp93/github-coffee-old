@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react';
 import { makeStyles } from "tss-react/mui";
 import ColorPopover from './ColorPopover';
 import EchartsLineChartSettingsTable from './EchartsLineChartSettingsTable';
+import ShowHideButton from './ShowHideButton';
 import { getRows } from './utils';
-
 
 const useStyles = makeStyles()(theme => {
   return {
@@ -44,6 +44,7 @@ export interface IEchartsSettingsProps {
   handleCellClick: any;
   handleChangeColor: any;
   handleToggleRightAxis: any;
+  handleShowHideChart: any;
 }
 
 export default function EchartsSettings({
@@ -54,7 +55,8 @@ export default function EchartsSettings({
   handleAdd,
   handleCellClick,
   handleChangeColor,
-  handleToggleRightAxis
+  handleToggleRightAxis,
+  handleShowHideChart
 }: IEchartsSettingsProps) {
   // const [darkMode, setDarkMode] = useState(option && option.darkMode === "auto" ? true : false)
   const { classes } = useStyles();
@@ -88,7 +90,7 @@ export default function EchartsSettings({
       renderCell: (data: any) => {
         return <Box display="flex">
           <ColorPopover color={data?.row?.color} cb={(color: string) => handleChangeColor(data, color)} />
-          <Box>{data.row.object_name}</Box>
+          <Box ml={1}>{data.row.object_name}</Box>
         </Box>
       }
     },
@@ -106,7 +108,13 @@ export default function EchartsSettings({
         </Box>
       }
     },
-    { field: 'hide', headerName: 'HIDE' },
+    {
+      field: 'hide',
+      headerName: 'HIDE',
+      renderCell: (data: any) => {
+        return <ShowHideButton data={data} cb={handleShowHideChart} />
+      }
+    },
     { field: 'remove', headerName: 'REMOVE' },
   ];
 
