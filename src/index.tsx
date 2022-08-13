@@ -4,14 +4,13 @@ import ReactDOM from 'react-dom/client';
 import 'styles/index.less';
 import '../node_modules/react-grid-layout/css/styles.css';
 import '../node_modules/react-resizable/css/styles.css';
+import { useNavigate } from 'react-router-dom';
 
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
-import { useState } from 'react';
-import { Menu, notification } from 'antd';
+import { Menu, notification, Divider } from 'antd';
 import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
-import BashProfile from 'features/BashProfile';
 import Demo from 'features/demo/Demo';
 import Test from 'features/test/Test';
 import API from 'features/api/API';
@@ -21,8 +20,7 @@ import CustomEcharts from 'components/Echarts';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import User from 'features/user';
-import CustomGridLayout from 'components/CustomGridLayout';
-import { useNavigate } from 'react-router-dom';
+import Dashboard from 'features/dashboard';
 
 notification.config({
   placement: 'bottomLeft',
@@ -34,94 +32,112 @@ const root = ReactDOM.createRoot(document.getElementById('root') as any);
 root.render(
   <React.Fragment>
     <Provider store={store}>
-      <App />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
     </Provider>
   </React.Fragment>
 );
 
+const LIST_ROUTER = [
+  {
+    linkTo: '/api',
+    label: 'API',
+  },
+  {
+    linkTo: '/chat',
+    label: 'chat',
+  },
+  {
+    linkTo: '/dashboard',
+    label: 'dashboard',
+  },
+  {
+    linkTo: '/demo',
+    label: 'demo',
+  },
+  {
+    linkTo: '/echarts',
+    label: 'echarts',
+  },
+  // {
+  //   linkTo: '/note/add/',
+  //   label: 'note/add/',
+  // },
+  // {
+  //   linkTo: '/note',
+  //   label: 'note',
+  // },
+  // {
+  //   linkTo: '/post/create/',
+  //   label: 'post/create/',
+  // },
+  {
+    linkTo: '/post',
+    label: 'post',
+  },
+  {
+    linkTo: '/stock',
+    label: 'stock',
+  },
+  {
+    linkTo: '/test',
+    label: 'test',
+  },
+  {
+    linkTo: '/user',
+    label: 'user',
+  },
+];
+
 function App() {
   console.log(process.env);
-  return (
-    <div className="container">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<RootLayout />} />
-          <Route path="note/add/" element={<NoteAdd />} />
-          <Route path="note" element={<Note />} />
-          <Route path="demo" element={<Demo />} />
-          <Route path="test" element={<Test />} />
-          <Route path="bash-profile" element={<BashProfile />} />
-          <Route path="api" element={<API />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="stock" element={<Stock />} />
-          <Route path="echarts" element={<CustomEcharts />} />
-          <Route path="post/create/" element={<PostCreate />} />
-          <Route path="post" element={<Post />} />
-          <Route path="user" element={<User />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
-  );
-}
-
-function RootLayout() {
   let navigate = useNavigate();
-  const layout = [
-    { i: 'note', x: 0, y: 0, w: 3, h: 1, label: 'Note', linkTo: '/note' },
-    {
-      i: 'bashProfile',
-      x: 3,
-      y: 0,
-      w: 3,
-      h: 1,
-      label: 'Bash profile',
-      linkTo: '/bash-profile',
-    },
-    { i: 'demo', x: 6, y: 0, w: 3, h: 1, label: 'demo', linkTo: '/demo' },
-    { i: 'test', x: 9, y: 0, w: 3, h: 1, label: 'test', linkTo: '/test' },
-    { i: 'api', x: 0, y: 1, w: 3, h: 1, label: 'api', linkTo: '/api' },
-    { i: 'chat', x: 3, y: 1, w: 3, h: 1, label: 'chat', linkTo: '/chat' },
-    { i: 'stock', x: 6, y: 1, w: 3, h: 1, label: 'stock', linkTo: '/stock' },
-    {
-      i: 'echarts',
-      x: 9,
-      y: 1,
-      w: 3,
-      h: 1,
-      label: 'echarts',
-      linkTo: '/echarts',
-    },
-    { i: 'post', x: 0, y: 2, w: 3, h: 1, label: 'post', linkTo: '/post' },
-    { i: 'user', x: 3, y: 2, w: 3, h: 1, label: 'user', linkTo: '/user' },
-    {
-      i: 'coworking',
-      x: 6,
-      y: 2,
-      w: 3,
-      h: 1,
-      label: 'coworking',
-      linkTo: '/coworking',
-    },
-  ];
 
-  const handleCb = (data: any) => {
-    navigate(data.linkTo);
+  const renderSideBar = () => {
+    return (
+      <div className="RootLayout" style={{ height: '100%', overflow: 'auto' }}>
+        {LIST_ROUTER.map((i: any) => {
+          return (
+            <>
+              <div onClick={() => navigate(i.linkTo)}>{i.label}</div>
+              <Divider />
+            </>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
-    <div className="RootLayout" style={{ height: '100%', overflow: 'auto' }}>
-      <CustomGridLayout layout={layout} cb={handleCb} />
-      {/* <Link to="/note">Note</Link>
-      <Link to="/bash-profile">Bash profile</Link>
-      <Link to="/demo">Demo</Link>
-      <Link to="/test">Test</Link>
-      <Link to="/api">API</Link>
-      <Link to="/chat">Chat</Link>
-      <Link to="/stock">Stock</Link>
-      <Link to="/echarts">Echarts</Link>
-      <Link to="/post">Post</Link>
-      <Link to="/user">User</Link>
-      <Link to="/user">Coworking</Link> */}
+    <div className="container">
+      <div style={{ width: '10rem' }}>{renderSideBar()}</div>
+      <div style={{ flex: 1 }}>
+        <Routes>
+          <Route path="api" element={<API />} />
+          <Route path="chat" element={<Chat />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="demo" element={<Demo />} />
+          <Route path="echarts" element={<CustomEcharts />} />
+          <Route path="note/add/" element={<NoteAdd />} />
+          <Route path="note" element={<Note />} />
+          <Route path="post/create/" element={<PostCreate />} />
+          <Route path="post" element={<Post />} />
+          <Route path="stock" element={<Stock />} />
+          <Route path="test" element={<Test />} />
+          <Route path="user" element={<User />} />
+
+          <Route
+            path="*"
+            element={
+              <main style={{ padding: '1rem' }}>
+                <p>There's nothing here!</p>
+              </main>
+            }
+          />
+          <Route path="/" element={<div />} />
+        </Routes>
+      </div>
     </div>
   );
 }

@@ -42,8 +42,8 @@ export default function PostCreate() {
     <div>
       <Form
         name="basic"
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
+        labelCol={{ span: 4 }}
+        wrapperCol={{ span: 20 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
@@ -72,19 +72,7 @@ export default function PostCreate() {
           name="body"
           rules={[{ required: false, message: 'Please input your body!' }]}
         >
-          <CustomPlate
-            id={String(plateId)}
-            //   value={note}
-            //   onChange={handleChange}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="remember"
-          valuePropName="checked"
-          wrapperCol={{ offset: 8, span: 16 }}
-        >
-          <Checkbox>Remember me</Checkbox>
+          <CustomPlate id={String(plateId)} />
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

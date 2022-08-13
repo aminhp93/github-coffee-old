@@ -15,7 +15,7 @@ const Post = () => {
     setSelectedPost(data);
   }, []);
 
-  const getListNotes = async () => {
+  const getListPosts = async () => {
     try {
       const res = await PostService.listPost();
       if (res?.data?.results) {
@@ -27,13 +27,13 @@ const Post = () => {
   };
 
   useEffect(() => {
-    getListNotes();
+    getListPosts();
   }, []);
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       <div style={{ width: '20rem', overflow: 'auto' }}>
-        <Button onClick={() => navigate('/note/add')}>Add post</Button>
+        <Button onClick={() => navigate('/post/create')}>Create post</Button>
         <PostList listPosts={listPosts} cb={handleSelect} />
       </div>
       <div style={{ flex: 1, display: 'flex', height: '100%' }}>
