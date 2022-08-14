@@ -26,9 +26,14 @@ export default function PostCreate() {
         body: JSON.stringify(body),
         description,
       };
-      await PostService.createPost(dataCreate);
-      navigate('/post');
-      notification.success({ message: 'Create success' });
+      const res = await PostService.createPost(dataCreate);
+      console.log(res);
+      if (res && res.data) {
+        navigate('/post');
+        notification.success({ message: 'Create success' });
+      } else {
+        notification.error({ message: 'Create failed' });
+      }
     } catch (e) {
       notification.error({ message: 'Create failed' });
     }

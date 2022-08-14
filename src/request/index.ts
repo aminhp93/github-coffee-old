@@ -96,8 +96,11 @@ export const ChatUrls = {
 };
 
 export const UserUrls = {
-  getAuthUser: `${baseUrl}/api/me/`,
+  getAuthUser: `${baseUrl}/api/users/firebase/auth/`,
+  checkAuthUser: `${baseUrl}/api/users/firebase/auth/`,
   getAccessToken: `${baseUrl}/api/token/`,
+  getPublic: `${baseUrl}/api/users/public/`,
+  getProtected: `${baseUrl}/api/users/protected/`,
 };
 
 export const GitHubUrls = {

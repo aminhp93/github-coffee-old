@@ -39,11 +39,14 @@ const useLogin = () => {
 
     try {
       console.log(signInWithPopup, auth, provider);
-      const res = await signInWithPopup(auth, provider);
-      console.log(res);
+      const res: any = await signInWithPopup(auth, provider);
       if (!res) {
         throw new Error('Could not complete signup');
       }
+
+      localStorage.removeItem('ACCESS_TOKEN');
+      localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
+      console.log(res);
 
       const user = res.user;
       console.log(user);
