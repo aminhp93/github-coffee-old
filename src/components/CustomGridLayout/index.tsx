@@ -41,9 +41,10 @@ export default function CustomGridLayout({
           <div
             key={i.i}
             style={{ background: getBg() }}
-            onClick={() => cb && cb(i)}
+            // onClick={() => cb && cb(i)}
           >
-            {i.label}
+            {/* {i.label} */}
+            {i.component}
           </div>
         );
       })}

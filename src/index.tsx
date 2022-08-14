@@ -5,22 +5,23 @@ import 'styles/index.less';
 import '../node_modules/react-grid-layout/css/styles.css';
 import '../node_modules/react-resizable/css/styles.css';
 import { useNavigate } from 'react-router-dom';
-
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
-import { Menu, notification, Divider } from 'antd';
-import Note from 'features/note';
-import NoteAdd from 'features/note/NoteAdd';
-import Demo from 'features/demo/Demo';
-import Test from 'features/test/Test';
+import { notification, Divider } from 'antd';
+
 import API from 'features/api/API';
 import Chat from 'features/chat';
-import Stock from 'features/stock/Stock';
 import CustomEcharts from 'components/Echarts';
+import Dashboard from 'features/dashboard';
+import Demo from 'features/demo/Demo';
+import Note from 'features/note';
+import NoteAdd from 'features/note/NoteAdd';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
+import Stock from 'features/stock/Stock';
+import TaskManager from 'features/taskManager';
+import Test from 'features/test/Test';
 import User from 'features/user';
-import Dashboard from 'features/dashboard';
 
 notification.config({
   placement: 'bottomLeft',
@@ -77,6 +78,10 @@ const LIST_ROUTER = [
     label: 'post',
   },
   {
+    linkTo: '/taskManager',
+    label: 'task manager',
+  },
+  {
     linkTo: '/stock',
     label: 'stock',
   },
@@ -124,6 +129,7 @@ function App() {
           <Route path="post/create/" element={<PostCreate />} />
           <Route path="post" element={<Post />} />
           <Route path="stock" element={<Stock />} />
+          <Route path="taskManager" element={<TaskManager />} />
           <Route path="test" element={<Test />} />
           <Route path="user" element={<User />} />
 
