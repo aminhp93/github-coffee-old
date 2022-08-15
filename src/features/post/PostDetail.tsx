@@ -50,7 +50,7 @@ const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
     try {
       const data = {
         title: postTitle,
-        content: JSON.stringify(post),
+        body: JSON.stringify(post),
       };
       await PostService.updatePost(slug, data);
       notification.success({
@@ -73,6 +73,7 @@ const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
   };
 
   const handleChange = (e: any) => {
+    console.log(e);
     setPost(e);
   };
 
