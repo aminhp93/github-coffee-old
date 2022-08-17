@@ -219,13 +219,13 @@ const CustomPlate = (props: IProps) => {
   return (
     <div style={{ height: '100%' }} className="CustomPlate">
       <DndProvider backend={HTML5Backend}>
-        {!props.hideToolBar && (
+        {/* {!props.hideToolBar && (
           <PlateEventProvider>
             <HeadingToolbar>
               <ToolbarButtons />
             </HeadingToolbar>
           </PlateEventProvider>
-        )}
+        )} */}
 
         <div
           ref={containerRef}

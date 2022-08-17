@@ -89,10 +89,10 @@ export const BasicElementToolbarButtons = () => {
 
   return (
     <>
-      <BlockToolbarButton
+      {/* <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H1)}
         icon={<LooksOne />}
-      />
+      /> */}
       {/* <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H2)}
         icon={<LooksTwo />}
@@ -205,7 +205,7 @@ export const BasicMarkToolbarButtons = () => {
         type={getPluginType(editor, MARK_CODE)}
         icon={<CodeAlt />}
       />
-      <MarkToolbarButton
+      {/* <MarkToolbarButton
         type={getPluginType(editor, MARK_SUPERSCRIPT)}
         clear={getPluginType(editor, MARK_SUBSCRIPT)}
         icon={<Superscript />}
@@ -214,7 +214,7 @@ export const BasicMarkToolbarButtons = () => {
         type={getPluginType(editor, MARK_SUBSCRIPT)}
         clear={getPluginType(editor, MARK_SUPERSCRIPT)}
         icon={<Subscript />}
-      />
+      /> */}
     </>
   );
 };
@@ -274,7 +274,7 @@ export const MarkBallonToolbar = () => {
       theme={theme}
       arrow={arrow}
     >
-      <MarkToolbarButton
+      {/* <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
@@ -288,7 +288,8 @@ export const MarkBallonToolbar = () => {
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
-      />
+      /> */}
+      <ToolbarButtons />
     </BalloonToolbar>
   );
 };

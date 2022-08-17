@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { notification, Divider } from 'antd';
+import { CloseOutlined } from '@ant-design/icons';
 
 import API from 'features/api/API';
 import Chat from 'features/chat';
@@ -105,7 +106,13 @@ function App() {
         {LIST_ROUTER.map((i: any) => {
           return (
             <>
-              <div onClick={() => navigate(i.linkTo)}>{i.label}</div>
+              <div
+                className="App-sidebar-item"
+                onClick={() => navigate(i.linkTo)}
+              >
+                <CloseOutlined style={{ marginLeft: '2px' }} />
+                <span className="App-sidebar-label">{i.label}</span>
+              </div>
               <Divider />
             </>
           );
@@ -115,9 +122,9 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <div style={{ width: '10rem' }}>{renderSideBar()}</div>
-      <div style={{ flex: 1 }}>
+    <div style={{ display: 'flex' }}>
+      <div className="App-sidebar">{renderSideBar()}</div>
+      <div style={{ flex: 1, overflow: 'auto' }}>
         <Routes>
           <Route path="api" element={<API />} />
           <Route path="chat" element={<Chat />} />

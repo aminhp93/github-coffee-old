@@ -43,8 +43,12 @@ export default function PostCreate() {
     console.log('Failed:', errorInfo);
   };
 
+  const handleChange = (data: any) => {
+    console.log(data);
+  };
+
   return (
-    <div>
+    <div className="PostCreate">
       <Form
         name="basic"
         labelCol={{ span: 4 }}
@@ -77,7 +81,7 @@ export default function PostCreate() {
           name="body"
           rules={[{ required: false, message: 'Please input your body!' }]}
         >
-          <CustomPlate id={String(plateId)} />
+          <CustomPlate id={String(plateId)} onChange={handleChange} />
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
