@@ -23,6 +23,8 @@ import Stock from 'features/stock/Stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test/Test';
 import User from 'features/user';
+import TradingViewChart from 'components/TradingViewChart/ChartTV';
+import GoldenLayoutWrapper from 'components/GoldenLayoutWrapper';
 
 notification.config({
   placement: 'bottomLeft',
@@ -62,6 +64,10 @@ const LIST_ROUTER = [
     linkTo: '/echarts',
     label: 'echarts',
   },
+  {
+    linkTo: '/goldenLayout',
+    label: 'Goldenlayout',
+  },
   // {
   //   linkTo: '/note/add/',
   //   label: 'note/add/',
@@ -74,6 +80,10 @@ const LIST_ROUTER = [
   //   linkTo: '/post/create/',
   //   label: 'post/create/',
   // },
+  {
+    linkTo: '/tradingViewChart',
+    label: 'tradingViewChart',
+  },
   {
     linkTo: '/post',
     label: 'post',
@@ -131,6 +141,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="demo" element={<Demo />} />
           <Route path="echarts" element={<CustomEcharts />} />
+          <Route path="goldenLayout" element={<GoldenLayoutWrapper />} />
+          <Route path="tradingViewChart" element={<TradingViewChart />} />
           <Route path="note/add/" element={<NoteAdd />} />
           <Route path="note" element={<Note />} />
           <Route path="post/create/" element={<PostCreate />} />
