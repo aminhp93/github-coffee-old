@@ -1,56 +1,58 @@
-import { GoldenLayout, LayoutConfig } from 'golden-layout';
-import { useEffect } from 'react';
+import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
+import './App.css';
+import 'flexlayout-react/style/light.css';
+import Post from 'features/post';
 
-const myLayout: LayoutConfig = {
-  root: {
+const json: IJsonModel = {
+  global: { tabEnableFloat: true },
+  borders: [],
+  layout: {
     type: 'row',
-    content: [
+    weight: 100,
+    children: [
       {
-        title: 'My Component 1',
-        type: 'component',
-        componentType: 'MyComponent',
-        width: 50,
+        type: 'tabset',
+        weight: 50,
+        children: [
+          {
+            type: 'tab',
+            name: 'One',
+            component: 'button',
+          },
+        ],
       },
       {
-        title: 'My Component 2',
-        type: 'component',
-        componentType: 'MyComponent',
-        // componentState: { text: 'Component 2' }
+        type: 'tabset',
+        weight: 50,
+        children: [
+          {
+            type: 'tab',
+            name: 'Two',
+            component: 'post',
+          },
+        ],
       },
     ],
   },
 };
 
-const MyComponent = () => {
-  return <div>My compoent</div>;
-};
+const model = Model.fromJson(json);
 
-const GoldenLayoutWrapper = () => {
-  useEffect(() => {
-    const menuContainerElement = document.querySelector('#menuContainer');
-    const addMenuItemElement = document.querySelector('#addMenuItem');
-    const layoutElement: any = document.querySelector('#layoutContainer');
-
-    addMenuItemElement &&
-      addMenuItemElement.addEventListener('click', (event) => {
-        goldenLayout.addComponent('MyComponent', undefined, 'Added Component');
-      });
-
-    const goldenLayout = new GoldenLayout(layoutElement);
-
-    goldenLayout.registerComponent('MyComponent', MyComponent);
-
-    goldenLayout.loadLayout(myLayout);
-  }, []);
+function FlexLayout() {
+  const factory = (node: TabNode) => {
+    const component = node.getComponent();
+    if (component === 'button') {
+      return <button>{node.getName()}</button>;
+    } else if (component === 'post') {
+      return <Post />;
+    }
+  };
 
   return (
-    <div id="wrapper">
-      <ul id="menuContainer">
-        <li id="addMenuItem">Add another component</li>
-      </ul>
-      <div id="layoutContainer"></div>
+    <div style={{ position: 'relative', height: '100%' }}>
+      <Layout model={model} factory={factory} />;
     </div>
   );
-};
+}
 
-export default GoldenLayoutWrapper;
+export default FlexLayout;
