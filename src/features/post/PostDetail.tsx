@@ -1,10 +1,11 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { Button, Input, notification, Spin } from 'antd';
+import { useState, useEffect, memo } from 'react';
+import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { v4 as uuidv4 } from 'uuid';
 import { IPost } from 'types';
 import { PostService } from 'services';
+import { useDebounce } from 'usehooks-ts';
+import { DeleteOutlined, CheckOutlined } from '@ant-design/icons';
 
 interface IProps {
   slug: string;
@@ -17,7 +18,7 @@ const DEFAULT_POST = [
   },
 ];
 
-const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
+const MemoizedPostDetail = memo(function PostDetail({ slug }: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
   const [post, setPost] = useState(DEFAULT_POST);
   const [postTitle, setPostTitle] = useState('');
@@ -47,16 +48,22 @@ const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
   }, [slug]);
 
   const handleUpdate = async () => {
+    console.log('handleUpdate');
     try {
       const data = {
         title: postTitle,
         body: JSON.stringify(post),
       };
-      await PostService.updatePost(slug, data);
-      notification.success({
-        message: `Update ${postTitle} successfully`,
-      });
+      setLoading(true);
+      const res = await PostService.updatePost(slug, data);
+      setLoading(false);
+      if (res && res.data) {
+        //
+      } else {
+        notification.error({ message: 'Error Update Post' });
+      }
     } catch (e) {
+      setLoading(false);
       notification.error({ message: 'Error Update Post' });
     }
   };
@@ -77,18 +84,23 @@ const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
     setPost(e);
   };
 
-  if (loading) return <Spin />;
+  const debouncePost = useDebounce(post, 1000);
+
+  useEffect(() => {
+    handleUpdate();
+  }, [debouncePost]);
 
   return (
-    <div className="PostDetail">
+    <div className="PostDetail width-100">
       <Button
         type="primary"
-        danger
+        // danger
+        loading={loading}
         onClick={handleUpdate}
+        icon={<CheckOutlined />}
         style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
-      >
-        Update
-      </Button>
+      />
+
       {confirmDelete ? (
         <>
           <Button
@@ -121,15 +133,14 @@ const MemoizedPostDetail = React.memo(function PostDetail({ slug }: IProps) {
           type="primary"
           danger
           onClick={() => setConfirmDelete(true)}
+          icon={<DeleteOutlined />}
           style={{
             position: 'fixed',
             bottom: '20px',
             right: '20px',
             zIndex: 1,
           }}
-        >
-          Delete
-        </Button>
+        ></Button>
       )}
       <Input value={postTitle} onChange={(e) => setPostTitle(e.target.value)} />
       <div style={{ flex: 1, overflow: 'auto' }}>

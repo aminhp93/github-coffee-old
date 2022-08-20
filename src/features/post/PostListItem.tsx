@@ -1,6 +1,4 @@
 import { memo } from 'react';
-import { Divider } from 'antd';
-
 interface IPostListItemProps {
   data: any;
   handleSelect: any;
@@ -14,7 +12,6 @@ function PostListItem({ data, handleSelect, selected }: IPostListItemProps) {
       onClick={() => handleSelect(data)}
     >
       <div>{`${data.id} - ${data.title}`}</div>
-      <Divider />
     </div>
   );
 }

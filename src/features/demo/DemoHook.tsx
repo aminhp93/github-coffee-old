@@ -1,7 +1,6 @@
 import { add, update, remove, fetchRandom, selectDemo } from './demoSlice';
 import { Button, Divider } from 'antd';
 import { useAppSelector, useAppDispatch } from 'app/hooks';
-import { useNavigate } from 'react-router-dom';
 
 function DemoHook() {
   const demo = useAppSelector(selectDemo);

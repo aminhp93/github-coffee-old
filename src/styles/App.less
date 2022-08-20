@@ -1,0 +1,34 @@
+.App-sidebar {
+  height: 100%;
+  overflow: auto;
+  border-right: 1px solid @gray-100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.App-sidebar-label {
+  display: none;
+}
+
+@media (min-width: 1020px) {
+  .App-sidebar {
+    width: 10rem;
+  }
+
+  .App-sidebar-label {
+    display: block;
+  }
+}
+
+.App-sidebar-item {
+  display: flex;
+  // padding: 8px 0;
+  height: 32px;
+  align-items: center;
+}
+
+.App-sidebar-item:hover {
+  background: @gray-100;
+  cursor: pointer;
+}

@@ -16,19 +16,17 @@ export default function PostList({ cb, listPosts }: IPostListProps) {
   }, []);
 
   return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ width: '20rem', overflow: 'auto' }}>
-        {listPosts.map((i: IPost, index) => {
-          return (
-            <PostListItem
-              selected={selectedPost.slug === i.slug}
-              key={index}
-              data={i}
-              handleSelect={handleSelect}
-            />
-          );
-        })}
-      </div>
+    <div className="PostList flex">
+      {listPosts.map((i: IPost, index) => {
+        return (
+          <PostListItem
+            selected={selectedPost.slug === i.slug}
+            key={index}
+            data={i}
+            handleSelect={handleSelect}
+          />
+        );
+      })}
     </div>
   );
 }

@@ -8,7 +8,15 @@ import { useNavigate } from 'react-router-dom';
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { notification, Divider } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  UserOutlined,
+  WechatOutlined,
+  LineChartOutlined,
+  DashboardOutlined,
+  OrderedListOutlined,
+  StockOutlined,
+} from '@ant-design/icons';
 
 import API from 'features/api/API';
 import Chat from 'features/chat';
@@ -25,6 +33,9 @@ import Test from 'features/test/Test';
 import User from 'features/user';
 import TradingViewChart from 'components/TradingViewChart/ChartTV';
 import GoldenLayoutWrapper from 'components/GoldenLayoutWrapper';
+
+import { useAppSelector, useAppDispatch } from 'app/hooks';
+import { selectUser, update } from 'features/user/userSlice';
 
 notification.config({
   placement: 'bottomLeft',
@@ -47,26 +58,32 @@ const LIST_ROUTER = [
   {
     linkTo: '/api',
     label: 'API',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/chat',
     label: 'chat',
+    icon: <WechatOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/dashboard',
     label: 'dashboard',
+    icon: <DashboardOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/demo',
     label: 'demo',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/echarts',
     label: 'echarts',
+    icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/goldenLayout',
     label: 'Goldenlayout',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   // {
   //   linkTo: '/note/add/',
@@ -83,57 +100,78 @@ const LIST_ROUTER = [
   {
     linkTo: '/tradingViewChart',
     label: 'tradingViewChart',
+    icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/post',
     label: 'post',
+    icon: <OrderedListOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/taskManager',
     label: 'task manager',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/stock',
     label: 'stock',
+    icon: <StockOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/test',
     label: 'test',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
-  {
-    linkTo: '/user',
-    label: 'user',
-  },
+  // {
+  //   linkTo: '/user',
+  //   label: 'user',
+  // },
 ];
 
 function App() {
   console.log(process.env);
   let navigate = useNavigate();
+  const user = useAppSelector(selectUser);
 
   const renderSideBar = () => {
     return (
-      <div className="RootLayout" style={{ height: '100%', overflow: 'auto' }}>
+      <div style={{ height: '100%', overflow: 'auto' }}>
         {LIST_ROUTER.map((i: any) => {
           return (
-            <>
-              <div
-                className="App-sidebar-item"
-                onClick={() => navigate(i.linkTo)}
-              >
-                <CloseOutlined style={{ marginLeft: '2px' }} />
-                <span className="App-sidebar-label">{i.label}</span>
-              </div>
-              <Divider />
-            </>
+            <div
+              className="App-sidebar-item"
+              onClick={() => navigate(i.linkTo)}
+            >
+              {i.icon}
+              <span className="App-sidebar-label">{i.label}</span>
+            </div>
           );
         })}
       </div>
     );
   };
 
+  const renderSideBarFooter = () => {
+    return (
+      <div>
+        <div className="App-sidebar-item" onClick={() => navigate('/user')}>
+          <UserOutlined style={{ margin: '0 8px' }} />
+          <span className="App-sidebar-label">
+            {process.env.NODE_ENV === 'production' ? '[DEV] ' : '[PRO] '}
+
+            {user?.username || 'No user'}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div style={{ display: 'flex' }}>
-      <div className="App-sidebar">{renderSideBar()}</div>
+    <div style={{ display: 'flex', height: '100%' }}>
+      <div className="App-sidebar">
+        {renderSideBar()}
+        {renderSideBarFooter()}
+      </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <Routes>
           <Route path="api" element={<API />} />

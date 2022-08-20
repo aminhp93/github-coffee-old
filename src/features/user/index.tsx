@@ -2,10 +2,16 @@ import { useEffect, useState } from 'react';
 import { Button, Input, notification } from 'antd';
 import { UserService } from 'services/user';
 import { IUser } from 'types';
-// Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
-import { GithubAuthProvider, signInWithPopup, getAuth } from 'firebase/auth';
+import {
+  GithubAuthProvider,
+  signInWithPopup,
+  getAuth,
+  onAuthStateChanged,
+  getIdToken,
+} from 'firebase/auth';
+import { useAppSelector, useAppDispatch } from 'app/hooks';
+import { selectUser, update } from './userSlice';
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -24,17 +30,18 @@ const firebaseConfig: any = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-console.log(app);
+// console.log(app);
 // Initialize Firebase Auth
 const auth = getAuth();
-console.log(auth);
+// console.log('auth', auth);
 
 export interface IUserProps {}
 
 export default function User(props: IUserProps) {
-  const provider = new GithubAuthProvider();
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
 
-  const [user, setUser] = useState({} as IUser);
+  const provider = new GithubAuthProvider();
 
   const handleLogin = async () => {
     try {
@@ -57,14 +64,14 @@ export default function User(props: IUserProps) {
 
   const handleLogout = () => {
     localStorage.removeItem('ACCESS_TOKEN');
-    setUser({} as IUser);
+    dispatch(update({}));
     notification.success({ message: 'Logout success' });
   };
 
   const getAuthUser = async (headers?: any) => {
     try {
       const res = await UserService.getAuthUser(headers);
-      setUser(res.data);
+      dispatch(update(res.data));
     } catch (e) {
       notification.error({ message: 'Get user failed' });
     }
@@ -72,6 +79,11 @@ export default function User(props: IUserProps) {
 
   useEffect(() => {
     getAuthUser();
+    // firebase.auth().currentUser.getIdToken();
+    // onAuthStateChanged(auth, async (res: any) => {
+    //   const idToken = await res.getIdToken();
+    //   console.log('onAuthStateChanged', res, idToken);
+    // });
   }, []);
 
   return (
