@@ -275,6 +275,7 @@ Datafeeds.UDFCompatibleDatafeed.prototype.searchSymbols = function (
   onResultReadyCallback
 ) {
   var MAX_SEARCH_RESULTS = 30;
+  console.log(278, searchString, this, onResultReadyCallback);
 
   if (!this._configuration) {
     onResultReadyCallback([]);
@@ -331,6 +332,7 @@ Datafeeds.UDFCompatibleDatafeed.prototype.resolveSymbol = function (
   onSymbolResolvedCallback,
   onResolveErrorCallback
 ) {
+  console.log('resolveSymbol');
   if (symbolName.includes(':')) return;
   var that = this;
 
@@ -364,12 +366,14 @@ Datafeeds.UDFCompatibleDatafeed.prototype.resolveSymbol = function (
 
   if (!this._configuration.supports_group_request) {
     let url =
-      'https://finfo-api.vndirect.com.vn/v4/stocks?symbol=' + symbolName;
+      // 'https://finfo-api.vndirect.com.vn/v4/stocks?symbol=' + symbolName;
+      'https://dchart-api.vndirect.com.vn/dchart/symbols?symbol=' + symbolName;
+
     axios
       .get(url)
       .then((response) => {
         if (response.data) {
-          let symbolObj = response.data.data[0];
+          let symbolObj = response.data;
           this.cbSymbol(symbolObj);
           const groupRequest = {
             name: symbolObj.symbol,
