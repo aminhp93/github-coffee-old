@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import CustomPlate from 'components/CustomPlate';
 import { Button, Checkbox, Form, Input, notification } from 'antd';
 import { getPlateActions } from '@udecode/plate';
+import './ChatBox.less';
 interface IProps {
   cb: any;
 }

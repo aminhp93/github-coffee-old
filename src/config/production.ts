@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
+  env: 'production',
   apiUrl: 'https://api-2023.herokuapp.com',
   pusher: {
     app_id: '1435319',

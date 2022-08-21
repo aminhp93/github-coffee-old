@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import './PostListItem.less';
 interface IPostListItemProps {
   data: any;
   handleSelect: any;

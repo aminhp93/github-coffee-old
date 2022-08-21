@@ -1,7 +1,9 @@
 import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
-import './App.css';
 import 'flexlayout-react/style/light.css';
+import './CustomFlexLayout.less';
+
 import Post from 'features/post';
+import Stock from 'features/stock';
 
 const json: IJsonModel = {
   global: { tabEnableFloat: true },
@@ -16,8 +18,8 @@ const json: IJsonModel = {
         children: [
           {
             type: 'tab',
-            name: 'One',
-            component: 'button',
+            name: 'stock',
+            component: 'stock',
           },
         ],
       },
@@ -27,7 +29,7 @@ const json: IJsonModel = {
         children: [
           {
             type: 'tab',
-            name: 'Two',
+            name: 'post',
             component: 'post',
           },
         ],
@@ -41,15 +43,15 @@ const model = Model.fromJson(json);
 function FlexLayout() {
   const factory = (node: TabNode) => {
     const component = node.getComponent();
-    if (component === 'button') {
-      return <button>{node.getName()}</button>;
+    if (component === 'stock') {
+      return <Stock />;
     } else if (component === 'post') {
       return <Post />;
     }
   };
 
   return (
-    <div style={{ position: 'relative', height: '100%' }}>
+    <div className="CustomFlexLayout relative height-100">
       <Layout model={model} factory={factory} />;
     </div>
   );

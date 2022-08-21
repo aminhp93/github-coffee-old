@@ -6,6 +6,7 @@ import { PostService } from 'services';
 import PostDetail from './PostDetail';
 import { IPost } from 'types';
 import { PlusOutlined } from '@ant-design/icons';
+import './index.less';
 
 const Post = () => {
   let navigate = useNavigate();
@@ -25,6 +26,18 @@ const Post = () => {
     } catch (e) {
       notification.error({ message: 'error' });
     }
+  };
+
+  const handleCbUpdate = (data: any) => {
+    setSelectedPost(data);
+    const newListPosts = [...listPosts];
+    const mappedNewListPosts: any = newListPosts.map((i: any) => {
+      if (i.id === data.id) {
+        return data;
+      }
+      return i;
+    });
+    setListPosts(mappedNewListPosts);
   };
 
   useEffect(() => {
@@ -47,7 +60,7 @@ const Post = () => {
       </div>
       <div className="PostDetailContainer flex flex-1 height-100">
         {selectedPost && selectedPost.id ? (
-          <PostDetail slug={selectedPost.slug} />
+          <PostDetail slug={selectedPost.slug} cbUpdate={handleCbUpdate} />
         ) : (
           <div className="width-100">No post selected</div>
         )}

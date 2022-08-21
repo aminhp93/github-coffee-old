@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
+  env: 'development',
   apiUrl: 'http://localhost:8000',
   pusher: {
     app_id: '1435319',

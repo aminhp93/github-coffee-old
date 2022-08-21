@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { store } from './app/store';
 import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
 import { notification, Divider } from 'antd';
+import config from 'config';
 import {
   CloseOutlined,
   UserOutlined,
@@ -27,12 +28,12 @@ import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
-import Stock from 'features/stock/Stock';
+import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test/Test';
 import User from 'features/user';
-import TradingViewChart from 'components/TradingViewChart/ChartTV';
-import GoldenLayoutWrapper from 'components/GoldenLayoutWrapper';
+import CustomTradingView from 'components/CustomTradingView/ChartTV';
+import CustomFlexLayout from 'components/CustomFlexLayout';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
@@ -81,8 +82,8 @@ const LIST_ROUTER = [
     icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
   },
   {
-    linkTo: '/goldenLayout',
-    label: 'Goldenlayout',
+    linkTo: '/flexLayout',
+    label: 'Flex layout',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   // {
@@ -98,8 +99,8 @@ const LIST_ROUTER = [
   //   label: 'post/create/',
   // },
   {
-    linkTo: '/tradingViewChart',
-    label: 'tradingViewChart',
+    linkTo: '/tradingView',
+    label: 'Trading View',
     icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
   },
   {
@@ -157,7 +158,7 @@ function App() {
         <div className="App-sidebar-item" onClick={() => navigate('/user')}>
           <UserOutlined style={{ margin: '0 8px' }} />
           <span className="App-sidebar-label">
-            {process.env.NODE_ENV === 'production' ? '[DEV] ' : '[PRO] '}
+            {config.env === 'production' ? '[PRO] ' : '[DEV] '}
 
             {user?.username || 'No user'}
           </span>
@@ -179,8 +180,8 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="demo" element={<Demo />} />
           <Route path="echarts" element={<CustomEcharts />} />
-          <Route path="goldenLayout" element={<GoldenLayoutWrapper />} />
-          <Route path="tradingViewChart" element={<TradingViewChart />} />
+          <Route path="flexLayout" element={<CustomFlexLayout />} />
+          <Route path="tradingView" element={<CustomTradingView />} />
           <Route path="note/add/" element={<NoteAdd />} />
           <Route path="note" element={<Note />} />
           <Route path="post/create/" element={<PostCreate />} />

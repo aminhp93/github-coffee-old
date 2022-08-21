@@ -9,6 +9,7 @@ import { DeleteOutlined, CheckOutlined } from '@ant-design/icons';
 
 interface IProps {
   slug: string;
+  cbUpdate: any;
 }
 
 const DEFAULT_POST = [
@@ -18,7 +19,10 @@ const DEFAULT_POST = [
   },
 ];
 
-const MemoizedPostDetail = memo(function PostDetail({ slug }: IProps) {
+const MemoizedPostDetail = memo(function PostDetail({
+  slug,
+  cbUpdate,
+}: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
   const [post, setPost] = useState(DEFAULT_POST);
   const [postTitle, setPostTitle] = useState('');
@@ -49,6 +53,7 @@ const MemoizedPostDetail = memo(function PostDetail({ slug }: IProps) {
 
   const handleUpdate = async () => {
     console.log('handleUpdate');
+    if (!postTitle) return;
     try {
       const data = {
         title: postTitle,
@@ -56,9 +61,10 @@ const MemoizedPostDetail = memo(function PostDetail({ slug }: IProps) {
       };
       setLoading(true);
       const res = await PostService.updatePost(slug, data);
+
       setLoading(false);
       if (res && res.data) {
-        //
+        cbUpdate && cbUpdate(res.data);
       } else {
         notification.error({ message: 'Error Update Post' });
       }
@@ -84,11 +90,16 @@ const MemoizedPostDetail = memo(function PostDetail({ slug }: IProps) {
     setPost(e);
   };
 
-  const debouncePost = useDebounce(post, 1000);
+  const debouncePost = useDebounce(post, 300);
+  const debouncePostTitle = useDebounce(postTitle, 300);
 
   useEffect(() => {
     handleUpdate();
   }, [debouncePost]);
+
+  useEffect(() => {
+    handleUpdate();
+  }, [debouncePostTitle]);
 
   return (
     <div className="PostDetail width-100">

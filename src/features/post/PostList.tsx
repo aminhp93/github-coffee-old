@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { IPost } from 'types';
 import PostListItem from './PostListItem';
-
+import './PostList.less';
 export interface IPostListProps {
   cb?: any;
   listPosts: IPost[];

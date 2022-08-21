@@ -75,6 +75,7 @@ import {
   MyPlatePlugin,
   MyValue,
 } from './config/typescript';
+import './CustomPlate.less'
 
 // Migrate to v8 - Part 1: https://www.loom.com/share/71596199ad5a47c2b58cdebab26f4642
 // Migrate to v8 - Part 2: https://www.loom.com/share/d85c89220ffa4fe2b6f934a6c6530689

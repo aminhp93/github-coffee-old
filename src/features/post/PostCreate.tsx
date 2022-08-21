@@ -4,6 +4,7 @@ import { PostService } from 'services';
 import CustomPlate from 'components/CustomPlate';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from 'react-router-dom';
+import './PostCreate.less';
 
 export default function PostCreate() {
   const navigate = useNavigate();
