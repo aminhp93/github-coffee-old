@@ -2,6 +2,7 @@
 export default {
   env: 'production',
   apiUrl: 'https://api-2023.herokuapp.com',
+  tradingViewUseVnDirect: true,
   pusher: {
     app_id: '1435319',
     key: '15ee77871e1ed5258044',

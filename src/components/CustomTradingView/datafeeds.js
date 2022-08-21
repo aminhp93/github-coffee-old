@@ -1,19 +1,8 @@
 /* eslint-disable no-loop-func */
+import request, { CustomTradingViewUrls, RedirectUrls } from 'request';
 import axios from 'axios';
-// import { getDataHistoryUrl } from "utils/request";
+import config from 'config';
 
-function getDataHistoryUrl(symbol, resolution, fromDate, toDate) {
-  return (
-    'https://dchart-api.vndirect.com.vn/dchart/history?symbol=' +
-    symbol +
-    '&resolution=' +
-    resolution +
-    '&from=' +
-    fromDate +
-    '&to=' +
-    toDate
-  );
-}
 /*
 	This class implements interaction with UDF-compatible datafeed.
 
@@ -275,6 +264,7 @@ Datafeeds.UDFCompatibleDatafeed.prototype.searchSymbols = function (
   onResultReadyCallback
 ) {
   var MAX_SEARCH_RESULTS = 30;
+  console.log(278, searchString, this, onResultReadyCallback);
 
   if (!this._configuration) {
     onResultReadyCallback([]);
@@ -282,21 +272,38 @@ Datafeeds.UDFCompatibleDatafeed.prototype.searchSymbols = function (
   }
 
   if (this._configuration.supports_search) {
-    let url =
-      'https://dchart-api.vndirect.com.vn/dchart/search?limit=30&query=' +
-      searchString +
-      '&type=&exchange=';
-    axios
-      .get(url)
-      .then((response) => {
-        if (response.data) {
-          onResultReadyCallback(response.data);
-        }
+    if (config.tradingViewUseVnDirect) {
+      axios({
+        url: CustomTradingViewUrls.getSearchInfoSymbol(searchString),
+        method: 'GET',
       })
-      .catch((error) => {
-        console.log(error.response);
-        onResultReadyCallback([]);
-      });
+        .then((response) => {
+          if (response.data) {
+            onResultReadyCallback(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          onResultReadyCallback([]);
+        });
+    } else {
+      request({
+        url: RedirectUrls.get,
+        method: 'GET',
+        params: {
+          redirect_url: CustomTradingViewUrls.getSearchInfoSymbol(searchString),
+        },
+      })
+        .then((response) => {
+          if (response.data) {
+            onResultReadyCallback(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          onResultReadyCallback([]);
+        });
+    }
   } else {
     if (!this._symbolSearch) {
       throw new Error(
@@ -331,6 +338,7 @@ Datafeeds.UDFCompatibleDatafeed.prototype.resolveSymbol = function (
   onSymbolResolvedCallback,
   onResolveErrorCallback
 ) {
+  console.log('resolveSymbol');
   if (symbolName.includes(':')) return;
   var that = this;
 
@@ -363,50 +371,100 @@ Datafeeds.UDFCompatibleDatafeed.prototype.resolveSymbol = function (
   }
 
   if (!this._configuration.supports_group_request) {
-    let url =
-      'https://finfo-api.vndirect.com.vn/v4/stocks?symbol=' + symbolName;
-    axios
-      .get(url)
-      .then((response) => {
-        if (response.data) {
-          let symbolObj = response.data.data[0];
-          this.cbSymbol(symbolObj);
-          const groupRequest = {
-            name: symbolObj.symbol,
-            'exchange-traded': symbolObj.floor,
-            'exchange-listed': symbolObj.floor,
-            exchange: symbolObj.floor,
-            timezone: 'America/New_York',
-            minmov: 1,
-            minmov2: 0,
-            pointvalue: 1,
-            session: '1000-1613',
-            has_intraday: true,
-            intraday_multipliers: ['1', '5', '30', '60', '120', 'D'],
-            time_frames: [
-              { text: '1d', resolution: '1', description: '1 Day' },
-              { text: '1w', resolution: '5', description: '1 Week' },
-              { text: '1m', resolution: '30', description: '1 Month' },
-              { text: '3m', resolution: '60', description: '3 Months' },
-              { text: '6m', resolution: '120', description: '6 Months' },
-              { text: '1y', resolution: 'D', description: '1 Year' },
-            ],
-            has_no_volume: false,
-            description: symbolObj.company,
-            type: 'stock',
-            supported_resolutions: ['1', '5', '30', '60', '120', 'D'],
-            pricescale: 1000,
-            ticker: symbolObj.symbol,
-            originSymbol: symbolObj.symbol,
-          };
-          var data = parseJSONorNot(groupRequest);
-          onResultReady(data);
-        }
+    if (config.tradingViewUseVnDirect) {
+      axios({
+        url: CustomTradingViewUrls.getSymbolDetail(symbolName),
+        method: 'GET',
       })
-      .catch((error) => {
-        console.log(error.response);
-        onResolveErrorCallback('error');
-      });
+        .then((response) => {
+          if (response.data) {
+            let symbolObj = response.data;
+            this.cbSymbol(symbolObj);
+            const groupRequest = {
+              name: symbolObj.symbol,
+              'exchange-traded': symbolObj.floor,
+              'exchange-listed': symbolObj.floor,
+              exchange: symbolObj.floor,
+              timezone: 'America/New_York',
+              minmov: 1,
+              minmov2: 0,
+              pointvalue: 1,
+              session: '1000-1613',
+              has_intraday: true,
+              intraday_multipliers: ['1', '5', '30', '60', '120', 'D'],
+              time_frames: [
+                { text: '1d', resolution: '1', description: '1 Day' },
+                { text: '1w', resolution: '5', description: '1 Week' },
+                { text: '1m', resolution: '30', description: '1 Month' },
+                { text: '3m', resolution: '60', description: '3 Months' },
+                { text: '6m', resolution: '120', description: '6 Months' },
+                { text: '1y', resolution: 'D', description: '1 Year' },
+              ],
+              has_no_volume: false,
+              description: symbolObj.company,
+              type: 'stock',
+              supported_resolutions: ['1', '5', '30', '60', '120', 'D'],
+              pricescale: 1000,
+              ticker: symbolObj.symbol,
+              originSymbol: symbolObj.symbol,
+            };
+            var data = parseJSONorNot(groupRequest);
+            onResultReady(data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          onResolveErrorCallback('error');
+        });
+    } else {
+      request({
+        url: RedirectUrls.get,
+        method: 'GET',
+        params: {
+          redirect_url: CustomTradingViewUrls.getSymbolDetail(symbolName),
+        },
+      })
+        .then((response) => {
+          if (response.data) {
+            let symbolObj = response.data;
+            this.cbSymbol(symbolObj);
+            const groupRequest = {
+              name: symbolObj.symbol,
+              'exchange-traded': symbolObj.floor,
+              'exchange-listed': symbolObj.floor,
+              exchange: symbolObj.floor,
+              timezone: 'America/New_York',
+              minmov: 1,
+              minmov2: 0,
+              pointvalue: 1,
+              session: '1000-1613',
+              has_intraday: true,
+              intraday_multipliers: ['1', '5', '30', '60', '120', 'D'],
+              time_frames: [
+                { text: '1d', resolution: '1', description: '1 Day' },
+                { text: '1w', resolution: '5', description: '1 Week' },
+                { text: '1m', resolution: '30', description: '1 Month' },
+                { text: '3m', resolution: '60', description: '3 Months' },
+                { text: '6m', resolution: '120', description: '6 Months' },
+                { text: '1y', resolution: 'D', description: '1 Year' },
+              ],
+              has_no_volume: false,
+              description: symbolObj.company,
+              type: 'stock',
+              supported_resolutions: ['1', '5', '30', '60', '120', 'D'],
+              pricescale: 1000,
+              ticker: symbolObj.symbol,
+              originSymbol: symbolObj.symbol,
+            };
+            var data = parseJSONorNot(groupRequest);
+            onResultReady(data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          onResolveErrorCallback('error');
+        });
+    }
   } else {
     if (this._initializationFinished) {
       this._symbolsStorage.resolveSymbol(
@@ -445,51 +503,100 @@ Datafeeds.UDFCompatibleDatafeed.prototype.getBars = function (
     ]);
   }
   if (!symbolInfo.name) return;
-  let url = getDataHistoryUrl(
+  let url = CustomTradingViewUrls.getDataHistoryUrl(
     symbolInfo.name,
     resolution,
     rangeStartDate,
     rangeEndDate
   );
-  axios
-    .get(url)
-    .then((response) => {
-      if (response.data) {
-        var data = parseJSONorNot(response.data);
-        var nodata = data.s === 'no_data';
-        var bars = [];
-        //	data is JSON having format {s: "status" (ok, no_data, error),
-        //  v: [volumes], t: [times], o: [opens], h: [highs], l: [lows], c:[closes], nb: "optional_unixtime_if_no_data"}
-        var barsCount = nodata ? 0 : data.t.length;
-        var volumePresent = typeof data.v !== 'undefined';
-        var ohlPresent = typeof data.o !== 'undefined';
-
-        for (var i = 0; i < barsCount; ++i) {
-          var barValue = {
-            time: data.t[i] * 1000,
-            close: +data.c[i],
-          };
-          if (ohlPresent) {
-            barValue.open = +data.o[i];
-            barValue.high = +data.h[i];
-            barValue.low = +data.l[i];
-          } else {
-            barValue.open = barValue.high = barValue.low = +barValue.close;
-          }
-          if (volumePresent) {
-            barValue.volume = +data.v[i];
-          }
-          bars.push(barValue);
-        }
-        onDataCallback(bars, {
-          noData: nodata,
-          nextTime: data.nb || data.nextTime,
-        });
-      }
+  if (config.tradingViewUseVnDirect) {
+    axios({
+      url,
+      method: 'GET',
     })
-    .catch((error) => {
-      console.log(error.response);
-    });
+      .then((response) => {
+        if (response.data) {
+          var data = parseJSONorNot(response.data);
+          var nodata = data.s === 'no_data';
+          var bars = [];
+          //	data is JSON having format {s: "status" (ok, no_data, error),
+          //  v: [volumes], t: [times], o: [opens], h: [highs], l: [lows], c:[closes], nb: "optional_unixtime_if_no_data"}
+          var barsCount = nodata ? 0 : data.t.length;
+          var volumePresent = typeof data.v !== 'undefined';
+          var ohlPresent = typeof data.o !== 'undefined';
+
+          for (var i = 0; i < barsCount; ++i) {
+            var barValue = {
+              time: data.t[i] * 1000,
+              close: +data.c[i],
+            };
+            if (ohlPresent) {
+              barValue.open = +data.o[i];
+              barValue.high = +data.h[i];
+              barValue.low = +data.l[i];
+            } else {
+              barValue.open = barValue.high = barValue.low = +barValue.close;
+            }
+            if (volumePresent) {
+              barValue.volume = +data.v[i];
+            }
+            bars.push(barValue);
+          }
+          onDataCallback(bars, {
+            noData: nodata,
+            nextTime: data.nb || data.nextTime,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  } else {
+    request({
+      url: RedirectUrls.get,
+      params: {
+        redirect_url: url,
+      },
+      method: 'GET',
+    })
+      .then((response) => {
+        if (response.data) {
+          var data = parseJSONorNot(response.data);
+          var nodata = data.s === 'no_data';
+          var bars = [];
+          //	data is JSON having format {s: "status" (ok, no_data, error),
+          //  v: [volumes], t: [times], o: [opens], h: [highs], l: [lows], c:[closes], nb: "optional_unixtime_if_no_data"}
+          var barsCount = nodata ? 0 : data.t.length;
+          var volumePresent = typeof data.v !== 'undefined';
+          var ohlPresent = typeof data.o !== 'undefined';
+
+          for (var i = 0; i < barsCount; ++i) {
+            var barValue = {
+              time: data.t[i] * 1000,
+              close: +data.c[i],
+            };
+            if (ohlPresent) {
+              barValue.open = +data.o[i];
+              barValue.high = +data.h[i];
+              barValue.low = +data.l[i];
+            } else {
+              barValue.open = barValue.high = barValue.low = +barValue.close;
+            }
+            if (volumePresent) {
+              barValue.volume = +data.v[i];
+            }
+            bars.push(barValue);
+          }
+          onDataCallback(bars, {
+            noData: nodata,
+            nextTime: data.nb || data.nextTime,
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  }
 };
 
 Datafeeds.UDFCompatibleDatafeed.prototype.subscribeBars = function (

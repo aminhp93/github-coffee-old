@@ -2,6 +2,7 @@
 export default {
   env: 'development',
   apiUrl: 'http://localhost:8000',
+  tradingViewUseVnDirect: true,
   pusher: {
     app_id: '1435319',
     key: '15ee77871e1ed5258044',

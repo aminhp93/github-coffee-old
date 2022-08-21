@@ -5,21 +5,11 @@ import Datafeeds from './datafeeds';
 import axios from 'axios';
 import { connect } from 'react-redux';
 import chartTV_constants from './chartTV_constants';
-// import {
-//   getSaveLayoutChartUrl,
-//   getAllLayoutsUrl
-// } from "utils/request";
+import { CustomTradingViewUrls } from 'request';
+
 // import FormData from "form-data";
 
 // import { updateSelectedSymbolSuccess } from 'reducers/selectedSymbol';
-
-function getSaveLayoutChartUrl(id) {
-  return `https://chart-api.vndirect.com.vn/1.1/charts?client=vnds_trading_view&user=vnds-0001813109&chart=${id}`;
-}
-
-function getAllLayoutsUrl() {
-  return 'https://chart-api.vndirect.com.vn/1.1/charts?client=vnds_trading_view&user=vnds-0001813109';
-}
 
 class ChartTV extends React.Component {
   constructor(props) {
@@ -123,7 +113,7 @@ class ChartTV extends React.Component {
       if (this.state.symbol === this.widget._options.symbol) return;
     }
     this.widget._options.symbol = this.state.symbol;
-    let url = getAllLayoutsUrl();
+    let url = CustomTradingViewUrls.getAllLayoutsUrl;
     let listLayout;
     await axios
       .get(url)
@@ -146,7 +136,7 @@ class ChartTV extends React.Component {
       return;
     }
     let id = listLayout[indexLayout].id;
-    url = getSaveLayoutChartUrl(id);
+    url = CustomTradingViewUrls.getSaveLayoutChartUrl(id);
     await axios
       .get(url)
       .then((response) => {
@@ -187,7 +177,7 @@ class ChartTV extends React.Component {
   async saveLayoutChart(div) {
     let listLayout;
     await axios
-      .get(getAllLayoutsUrl())
+      .get(CustomTradingViewUrls.getAllLayoutsUrl)
       .then((response) => {
         console.log(response);
         listLayout = response.data.data;
@@ -226,7 +216,7 @@ class ChartTV extends React.Component {
           let id = listLayout[indexLayout].id;
           content.id = id;
           formData.append('content', JSON.stringify(content));
-          let url = getSaveLayoutChartUrl(id);
+          let url = CustomTradingViewUrls.getSaveLayoutChartUrl(id);
           div.innerText = 'Updating';
           axios
             .post(url, formData)
@@ -248,7 +238,7 @@ class ChartTV extends React.Component {
           formData.append('content', JSON.stringify(content));
           div.innerText = 'Createing';
           axios
-            .post(getAllLayoutsUrl(), formData)
+            .post(CustomTradingViewUrls.getAllLayoutsUrl, formData)
             .then((response) => {
               div.innerText = 'Done';
               setTimeout(() => {

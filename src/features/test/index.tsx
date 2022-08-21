@@ -8,6 +8,8 @@ import sum from 'lodash/sum';
 import groupBy from 'lodash/groupBy';
 import keyBy from 'lodash/keyBy';
 import FirebaseCustom from 'components/FirebaseCustom';
+import request, { CustomTradingViewUrls, RedirectUrls } from 'request';
+import qs from 'qs';
 
 const GITHUB_ACCOUNT = 'paulnguyen-mn';
 
@@ -194,11 +196,21 @@ export default function Test(props: ITestProps) {
     );
   };
 
+  // useEffect(() => {
+  //   octokit = new Octokit({
+  //     auth: gitHubToken,
+  //   });
+  // }, []);
+
   useEffect(() => {
-    octokit = new Octokit({
-      auth: gitHubToken,
+    request({
+      url: RedirectUrls.get,
+      method: 'GET',
+      params: {
+        redirect_url: CustomTradingViewUrls.getSearchInfoSymbol('FPT'),
+      },
     });
-  }, []);
+  });
 
   return (
     <div

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from 'config';
+import qs from 'qs';
 import {
   GithubAuthProvider,
   signInWithPopup,
@@ -16,6 +17,9 @@ let headers = {
 
 const client = axios.create({
   headers,
+  paramsSerializer: (params) => {
+    return qs.stringify(params);
+  },
 });
 
 // Add authenitcation token to request header
@@ -126,4 +130,26 @@ export const GitHubUrls = {
     `https://api.github.com/repos/${userId}/${repoId}`,
   getReposDetailLanguages: (userId: string, repoId: string) =>
     `https://api.github.com/repos/${userId}/${repoId}/languages`,
+};
+
+export const CustomTradingViewUrls = {
+  getAllLayoutsUrl:
+    'https://chart-api.vndirect.com.vn/1.1/charts?client=vnds_trading_view&user=vnds-0001813109',
+  getSaveLayoutChartUrl: (id: number) =>
+    `https://chart-api.vndirect.com.vn/1.1/charts?client=vnds_trading_view&user=vnds-0001813109&chart=${id}`,
+  getSearchInfoSymbol: (searchString: string) =>
+    `https://dchart-api.vndirect.com.vn/dchart/search?limit=30&query=${searchString}&type=&exchange=`,
+  getDataHistoryUrl: (
+    symbol: string,
+    resolution: string,
+    fromDate: string,
+    toDate: string
+  ) =>
+    `https://dchart-api.vndirect.com.vn/dchart/history?symbol=${symbol}&resolution=${resolution}&from=${fromDate}&to=${toDate}`,
+  getSymbolDetail: (symbol: string) =>
+    `https://dchart-api.vndirect.com.vn/dchart/symbols?symbol=${symbol}`,
+};
+
+export const RedirectUrls = {
+  get: `${baseUrl}/api/redirects/`,
 };

@@ -30,7 +30,7 @@ import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
-import Test from 'features/test/Test';
+import Test from 'features/test';
 import User from 'features/user';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
 import CustomFlexLayout from 'components/CustomFlexLayout';
