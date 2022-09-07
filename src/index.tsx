@@ -34,9 +34,11 @@ import Test from 'features/test';
 import User from 'features/user';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
 import CustomFlexLayout from 'components/CustomFlexLayout';
+import { alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
+import type {} from '@mui/x-date-pickers/themeAugmentation';
 
 notification.config({
   placement: 'bottomLeft',
@@ -45,13 +47,36 @@ notification.config({
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
+const theme = createTheme({});
+
+const themeCompOverrides = createTheme(theme, {
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          background: 'red',
+        },
+      },
+    },
+    MuiDatePicker: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'red',
+        },
+      },
+    },
+  },
+});
+
 root.render(
   <React.Fragment>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
+    <ThemeProvider theme={themeCompOverrides}>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </ThemeProvider>
   </React.Fragment>
 );
 
