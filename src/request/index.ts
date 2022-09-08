@@ -52,11 +52,11 @@ const request = async (options: any) => {
   const accessToken = localStorage.getItem('ACCESS_TOKEN');
   const resToken = await onAuthStateChanged(getAuth(), async (res: any) => {
     const idToken = await res.getIdToken();
-    console.log('onAuthStateChanged', res, idToken);
+    // console.log('onAuthStateChanged', res, idToken);
     return idToken;
   });
 
-  console.log('resToken', resToken);
+  // console.log('resToken', resToken);
 
   const finalOptions = {
     ...{
@@ -145,7 +145,8 @@ export const CustomTradingViewUrls = {
     fromDate: string,
     toDate: string
   ) =>
-    `https://dchart-api.vndirect.com.vn/dchart/history?symbol=${symbol}&resolution=${resolution}&from=${fromDate}&to=${toDate}`,
+    // `https://dchart-api.vndirect.com.vn/dchart/history?symbol=${symbol}&resolution=${resolution}&from=${fromDate}&to=${toDate}`,
+    `https://chart.wichart.vn/data/history?symbol=${symbol}&resolution=${resolution}&from=${fromDate}&to=${toDate}`,
   getSymbolDetail: (symbol: string) =>
     `https://dchart-api.vndirect.com.vn/dchart/symbols?symbol=${symbol}`,
 };

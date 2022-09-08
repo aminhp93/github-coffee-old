@@ -10,6 +10,7 @@ import { CustomTradingViewUrls } from 'request';
 import request from 'request';
 import { StockService } from 'services';
 import moment from 'moment';
+import { random } from 'lodash';
 
 const DATE_FORMAT = 'HH:mm';
 
@@ -64,6 +65,7 @@ export default function StockMarketOverview() {
       field: 'chart',
       width: 500,
       renderCell: (data: any) => {
+        const max = random(10, 20);
         const history = data.row.history;
         const option = {
           tooltip: {
@@ -109,12 +111,12 @@ export default function StockMarketOverview() {
                 },
               },
             },
-            data: (history?.t || []).map((i: any) => i * 1000).slice(0, 1000),
+            data: (history?.t || []).map((i: any) => i * 1000).slice(0, max),
           },
           yAxis: {},
           series: [
             {
-              data: (history?.v || []).slice(0, 1000),
+              data: (history?.v || []).slice(0, max),
               type: 'line',
             },
           ],
@@ -188,52 +190,47 @@ export default function StockMarketOverview() {
 
     return {
       symbol,
-      res: res.data,
+      res: res?.data || [],
     };
   };
 
   const fetchData4 = async (data: any) => {
-    console.log(
-      data,
-      changePercentMin,
-      changePercentMax,
-      estimatedVolumeChange
-    );
-    const filteredData = data.filter(
-      (i: any) =>
-        i.changePercent > changePercentMin &&
-        i.changePercent < changePercentMax &&
-        i.estimatedVolumeChange > estimatedVolumeChange
-    );
-    console.log(filteredData);
-    if (!filtered) return;
     const listPromises: any = [];
-    filteredData.forEach((i: any) => {
+    data.forEach((i: any) => {
       listPromises.push(getDataHistoryUrl(i.symbol));
     });
 
     return Promise.all(listPromises).then((res) => {
       const keyByRes = keyBy(res, 'symbol');
-      const newData = filteredData.map((i: any) => {
+      const newData = data.map((i: any) => {
         i.history = keyByRes[i.symbol].res;
         return i;
       });
-      setData4(newData);
+
+      const dataSource = filtered
+        ? newData.filter(
+            (i: any) =>
+              i.changePercent > changePercentMin &&
+              i.changePercent < changePercentMax &&
+              i.estimatedVolumeChange > estimatedVolumeChange
+          )
+        : newData;
+      setData4(dataSource);
     });
   };
 
   const fetchList = async () => {
     const res = await StockService.getWatchlist();
     if (res && res.data) {
-      setListWatchlists(res.data);
-      fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
-      fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
-      fetch(res.data, 'watching').then((res) => setData3(res));
-      fetch(res.data, 'thanh_khoan_vua').then((res) => {
-        setData4(res);
+      // setListWatchlists(res.data);
+      // fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
+      // fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
+      // fetch(res.data, 'watching').then((res) => setData3(res));
+      fetch(res.data, 'watching').then((res) => {
+        // setData4(res);
         fetchData4(res);
       });
-      fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
+      // fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
     }
   };
 
@@ -285,17 +282,17 @@ export default function StockMarketOverview() {
   };
 
   const handleFilter = () => {
-    if (filtered) {
-      setFiltered(false);
-      setChangePercentMax(0);
-      setChangePercentMin(0);
-      setEstimatedVolumeChange(0);
-    } else {
-      setFiltered(true);
-      setChangePercentMax(5);
-      setChangePercentMin(1);
-      setEstimatedVolumeChange(50);
-    }
+    // if (filtered) {
+    //   setFiltered(false);
+    //   setChangePercentMax(0);
+    //   setChangePercentMin(0);
+    //   setEstimatedVolumeChange(0);
+    // } else {
+    //   setFiltered(true);
+    //   setChangePercentMax(5);
+    //   setChangePercentMin(1);
+    //   setEstimatedVolumeChange(50);
+    // }
   };
 
   useEffect(() => {
@@ -304,15 +301,6 @@ export default function StockMarketOverview() {
       fetchList();
     }, 1000 * 30);
   }, []);
-
-  const dataSource = filtered
-    ? data4.filter(
-        (i: any) =>
-          i.changePercent > changePercentMin &&
-          i.changePercent < changePercentMax &&
-          i.estimatedVolumeChange > estimatedVolumeChange
-      )
-    : data4;
 
   const renderWatchList = (name: string, data: any) => {
     return (
@@ -358,7 +346,7 @@ export default function StockMarketOverview() {
         <div style={{ flex: 1 }}>
           <div style={{ height: 850, width: '100%' }}>
             <DataGrid
-              rows={dataSource.map((i: any) => {
+              rows={data4.map((i: any) => {
                 i.id = i.symbol;
                 return i;
               })}
@@ -402,10 +390,10 @@ export default function StockMarketOverview() {
       className="StockMarketOverview"
     >
       <div style={{ display: 'flex', width: '100%' }}>
-        {renderWatchList('bds', data1)}
+        {/* {renderWatchList('bds', data1)}
         {renderWatchList('ck', data2)}
         {renderWatchList('ngan hang', data5)}
-        {renderWatchList('watching', data3)}
+        {renderWatchList('watching', data3)} */}
         {renderPotentialBuyTable()}
       </div>
     </div>
