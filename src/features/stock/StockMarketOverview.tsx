@@ -24,7 +24,7 @@ export default function StockMarketOverview() {
   const [editable, setEditable] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [changePercentMin, setChangePercentMin] = useState(0);
-  const [changePercentMax, setChangePercentMax] = useState(0);
+  const [changePercentMax, setChangePercentMax] = useState(5);
   const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
 
   const columnsMuiTable: GridColDef[] = [
@@ -50,7 +50,6 @@ export default function StockMarketOverview() {
       width: 500,
       renderCell: (data: any) => {
         const history = data.row.history;
-        console.log(history);
         const option = {
           tooltip: {
             trigger: 'axis',
@@ -78,27 +77,10 @@ export default function StockMarketOverview() {
             axisLabel: {
               formatter: (value: any) => {
                 moment.locale('en');
-                return (
-                  `{hour|${moment(parseInt(value)).format('HH:mm:ss')}}` +
-                  '\n' +
-                  `{date|${moment(parseInt(value)).format('DD MMM YYYY')}}` +
-                  '\n' +
-                  `{day|${moment(parseInt(value)).format('dddd')}}` +
-                  '\n'
-                );
+                return `{hour|${moment(parseInt(value)).format('HH:mm')}}`;
               },
               rich: {
                 hour: {
-                  color: '#1E294B',
-                  opacity: 0.6,
-                },
-                date: {
-                  color: '#1E294B',
-                  opacity: 0.8,
-                  fontWeight: 700,
-                  padding: [4, 0, 4, 0],
-                },
-                day: {
                   color: '#1E294B',
                   opacity: 0.6,
                 },
@@ -106,10 +88,7 @@ export default function StockMarketOverview() {
             },
             alignTicks: true,
             axisPointer: {
-              // show: true,
               label: {
-                // show: true,
-                // color: "red",
                 formatter: (data: any) => {
                   return moment(parseInt(data.value)).format(DATE_FORMAT);
                 },
@@ -122,38 +101,13 @@ export default function StockMarketOverview() {
             {
               data: (history?.v || []).slice(0, 1000),
               type: 'line',
-              // triggerLineEvent: true,
             },
           ],
         };
 
         return (
           <div style={{ overflow: 'auto', width: '100%' }}>
-            <Echarts
-              // option={{
-              //   xAxis: {
-              //     data: [100, 200, 300],
-              //   },
-              //   yAxis: {},
-              //   series: [
-              //     {
-              //       data: [10, 22, 28],
-              //       type: 'line',
-              //       // stack: 'x',
-              //       // stackStrategy: 'all',
-              //       // areaStyle: {}
-              //     },
-              //     {
-              //       data: [5, 4, 3],
-              //       type: 'line',
-              //       // stack: 'x',
-              //       // stackStrategy: 'all',
-              //       // areaStyle: {}
-              //     },
-              //   ],
-              // }}
-              option={option}
-            />
+            <Echarts option={option} />
           </div>
         );
       },
@@ -198,56 +152,58 @@ export default function StockMarketOverview() {
     });
   };
 
-  const fetchData4 = async (data: any) => {
-    const listPromises: any = [];
-    data.forEach((i: any) => {
-      const start = String(moment('2022-08-09 09:00').format('X'));
-      const end = String(moment('2022-08-09 15:00').format('X'));
+  const getDataHistoryUrl = async (symbol: string) => {
+    const startDate = moment();
+    startDate.set({
+      hour: 9,
+      minute: 0,
+    });
+    const endDate = moment();
+    endDate.set({
+      hour: 15,
+      minute: 0,
+    });
+    const start = String(startDate.format('X'));
+    const end = String(endDate.format('X'));
 
-      listPromises.push(
-        request({
-          method: 'GET',
-          url: CustomTradingViewUrls.getDataHistoryUrl(
-            i.symbol,
-            '1',
-            start,
-            end
-          ),
-        })
-      );
+    const res = await request({
+      method: 'GET',
+      url: CustomTradingViewUrls.getDataHistoryUrl(symbol, '1', start, end),
+    });
+
+    return {
+      symbol,
+      res: res.data,
+    };
+  };
+
+  const fetchData4 = async (data: any) => {
+    console.log(
+      data,
+      changePercentMin,
+      changePercentMax,
+      estimatedVolumeChange
+    );
+    const filteredData = data.filter(
+      (i: any) =>
+        i.changePercent > changePercentMin &&
+        i.changePercent < changePercentMax &&
+        i.estimatedVolumeChange > estimatedVolumeChange
+    );
+    console.log(filteredData);
+    if (!filtered) return;
+    const listPromises: any = [];
+    filteredData.forEach((i: any) => {
+      listPromises.push(getDataHistoryUrl(i.symbol));
     });
 
     return Promise.all(listPromises).then((res) => {
-      let mappedData = res
-        .map((i: any) => {
-          const listItem = i.data;
-          const changePercent =
-            ((listItem[0].priceClose - listItem[1].priceClose) /
-              listItem[1].priceClose) *
-            100;
-          const todayItem = listItem[0];
-          // listItem.splice(0, 1)
-          const averageVolume15Days = meanBy(listItem, 'dealVolume');
-
-          const estimatedVolumeChange =
-            (todayItem.dealVolume / averageVolume15Days) * 100;
-          return {
-            symbol: todayItem.symbol,
-            changePercent: Number(changePercent.toFixed(1)),
-            estimatedVolumeChange: Number(estimatedVolumeChange.toFixed(0)),
-            todayVolume: (todayItem.dealVolume / 1000000).toFixed(2),
-            averageVolume15Days: (averageVolume15Days / 1000000).toFixed(2),
-          };
-        })
-        .sort((a: any, b: any) => {
-          return b.changePercent - a.changePercent;
-        });
-
-      // newData = data.map((i: any) => {
-      //   i.history = res.data;
-      //   return i;
-      // });
-      // setData4(newData);
+      const keyByRes = keyBy(res, 'symbol');
+      const newData = filteredData.map((i: any) => {
+        i.history = keyByRes[i.symbol].res;
+        return i;
+      });
+      setData4(newData);
     });
   };
 
@@ -259,7 +215,6 @@ export default function StockMarketOverview() {
       fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
       fetch(res.data, 'watching').then((res) => setData3(res));
       fetch(res.data, 'thanh_khoan_vua').then((res) => {
-        console.log(112, res);
         setData4(res);
         fetchData4(res);
       });
@@ -407,11 +362,8 @@ export default function StockMarketOverview() {
   const dataSource = filtered
     ? data4.filter(
         (i: any) =>
-          changePercentMin &&
           i.changePercent > changePercentMin &&
-          changePercentMax &&
           i.changePercent < changePercentMax &&
-          estimatedVolumeChange &&
           i.estimatedVolumeChange > estimatedVolumeChange
       )
     : data4;
@@ -455,18 +407,17 @@ export default function StockMarketOverview() {
   };
 
   const renderPotentialBuyTable = () => {
-    console.log(dataSource);
     return (
       <div style={{ margin: '0 20px', display: 'flex' }}>
         <div>
-          <div style={{ height: 400, width: '100%' }}>
+          <div style={{ height: 850, width: '100%' }}>
             <DataGrid
               rows={dataSource.map((i: any) => {
                 i.id = i.symbol;
                 return i;
               })}
               columns={columnsMuiTable}
-              pageSize={5}
+              pageSize={6}
               rowHeight={120}
               rowsPerPageOptions={[5]}
               checkboxSelection
