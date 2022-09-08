@@ -10,6 +10,7 @@ import keyBy from 'lodash/keyBy';
 import FirebaseCustom from 'components/FirebaseCustom';
 import request, { CustomTradingViewUrls, RedirectUrls } from 'request';
 import qs from 'qs';
+import axios from 'axios';
 
 const GITHUB_ACCOUNT = 'paulnguyen-mn';
 
@@ -203,14 +204,27 @@ export default function Test(props: ITestProps) {
   // }, []);
 
   useEffect(() => {
-    request({
-      url: RedirectUrls.get,
+    // request({
+    //   url: RedirectUrls.g
+    //   method: 'GET',
+    //   params: {
+    //     redirect_url: CustomTradingViewUrls.getSearchInfoSymbol('FPT'),
+    //   },
+    // });
+    const symbol = 'LAS';
+    const resolution = '1';
+    const from = parseInt(moment('08/26/2022 09:00').format('X'));
+    const to = parseInt(moment('08/26/2022 09:00').format('X'));
+
+    axios({
       method: 'GET',
-      params: {
-        redirect_url: CustomTradingViewUrls.getSearchInfoSymbol('FPT'),
-      },
+      url: `https://dchart-api.vndirect.com.vn/dchart/history?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}`,
     });
-  });
+    // axios({
+    //   method: 'GET',
+    //   url: `https://dchart-api.vndirect.com.vn/dchart/history?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}`,
+    // });
+  }, []);
 
   return (
     <div

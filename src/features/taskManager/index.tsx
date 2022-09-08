@@ -1,7 +1,10 @@
-import { Input, Progress } from 'antd';
+import { useEffect, useState } from 'react';
+import { Input, Progress, Slider } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Contanier from './Container';
+import ReactSlider from 'react-slider';
+import './index.less';
 
 const LIST_TASK = [
   {
@@ -26,6 +29,12 @@ const TOTAL_TIME = 240;
 export interface TaskManagerProps {}
 
 export default function TaskManager(props: TaskManagerProps) {
+  const [progress, setProgress] = useState(10);
+
+  console.log(process.env);
+
+  const handleSlide = (newProgress: any) => setProgress(newProgress);
+
   return (
     <div>
       <div style={{ display: 'flex' }}>
@@ -60,6 +69,20 @@ export default function TaskManager(props: TaskManagerProps) {
       <DndProvider backend={HTML5Backend}>
         <Contanier />
       </DndProvider>
+      {/* <div style={{ background: 'white', margin: '0 20px' }}>
+        <ReactSlider
+          className="horizontal-slider"
+          thumbClassName="example-thumb"
+          trackClassName="example-track"
+          defaultValue={[0, 20, 50, 100]}
+          ariaLabel={['Leftmost thumb', 'Middle thumb', 'Rightmost thumb']}
+          renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
+          renderTrack={(props, state) => <div {...props}>track</div>}
+          renderMark={(props) => <span {...props}>mark</span>}
+          pearling
+          minDistance={10}
+        />
+      </div> */}
     </div>
   );
 }

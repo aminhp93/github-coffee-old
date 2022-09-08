@@ -29,15 +29,17 @@ const firebaseConfig: any = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// initializeApp(firebaseConfig);
 // console.log(app);
 // Initialize Firebase Auth
-const auth = getAuth();
+
 // console.log('auth', auth);
 
 export interface IUserProps {}
 
 export default function User(props: IUserProps) {
+  console.log(41);
+  const auth = getAuth();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
 
@@ -78,12 +80,8 @@ export default function User(props: IUserProps) {
   };
 
   useEffect(() => {
+    console.log(83);
     getAuthUser();
-    // firebase.auth().currentUser.getIdToken();
-    // onAuthStateChanged(auth, async (res: any) => {
-    //   const idToken = await res.getIdToken();
-    //   console.log('onAuthStateChanged', res, idToken);
-    // });
   }, []);
 
   return (

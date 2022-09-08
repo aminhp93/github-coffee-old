@@ -50,13 +50,6 @@ client.interceptors.response.use(
 
 const request = async (options: any) => {
   const accessToken = localStorage.getItem('ACCESS_TOKEN');
-  const resToken = await onAuthStateChanged(getAuth(), async (res: any) => {
-    const idToken = await res.getIdToken();
-    console.log('onAuthStateChanged', res, idToken);
-    return idToken;
-  });
-
-  console.log('resToken', resToken);
 
   const finalOptions = {
     ...{

@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect, Fragment } from 'react';
 import { Provider } from 'react-redux';
 import ReactDOM from 'react-dom/client';
 import 'styles/index.less';
@@ -18,6 +18,7 @@ import {
   OrderedListOutlined,
   StockOutlined,
 } from '@ant-design/icons';
+import { UserService } from 'services/user';
 
 import API from 'features/api/API';
 import Chat from 'features/chat';
@@ -37,6 +38,14 @@ import CustomFlexLayout from 'components/CustomFlexLayout';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
+import {
+  GithubAuthProvider,
+  signInWithPopup,
+  getAuth,
+  onAuthStateChanged,
+  getIdToken,
+  onIdTokenChanged,
+} from 'firebase/auth';
 
 notification.config({
   placement: 'bottomLeft',
@@ -46,13 +55,13 @@ notification.config({
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
 root.render(
-  <React.Fragment>
+  <Fragment>
     <Provider store={store}>
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </Provider>
-  </React.Fragment>
+  </Fragment>
 );
 
 const LIST_ROUTER = [
@@ -132,6 +141,7 @@ const LIST_ROUTER = [
 function App() {
   console.log(process.env);
   let navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
   const renderSideBar = () => {
@@ -166,6 +176,32 @@ function App() {
       </div>
     );
   };
+
+  const getAuthUser = async (headers?: any) => {
+    try {
+      const res = await UserService.getAuthUser(headers);
+      dispatch(update(res.data));
+    } catch (e) {
+      notification.error({ message: 'Get user failed' });
+    }
+  };
+
+  useEffect(() => {
+    getAuthUser();
+    onAuthStateChanged(getAuth(), async (res: any) => {
+      console.log('onAuthStateChanged', res);
+      const idToken = await res.getIdToken();
+      console.log('onAuthStateChanged', idToken);
+      // localStorage.removeItem('ACCESS_TOKEN');
+      // localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
+      return idToken;
+    });
+    onIdTokenChanged(getAuth(), async (res: any) => {
+      console.log('onIdTokenChanged', res);
+      const idToken = await res.getIdToken();
+      console.log('idToken', idToken);
+    });
+  }, []);
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
