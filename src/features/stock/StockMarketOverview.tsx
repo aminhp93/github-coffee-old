@@ -3,8 +3,16 @@ import { keyBy, meanBy } from 'lodash';
 import { notification, Table, Button } from 'antd';
 import axios from 'axios';
 import { CloseOutlined } from '@ant-design/icons';
-
+import Echarts from 'components/Echarts';
+import * as React from 'react';
+import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
+import { CustomTradingViewUrls } from 'request';
+import request from 'request';
 import { StockService } from 'services';
+import moment from 'moment';
+import { random } from 'lodash';
+
+const DATE_FORMAT = 'HH:mm';
 
 export default function StockMarketOverview() {
   const [listWatchlists, setListWatchlists] = useState([]);
@@ -16,9 +24,112 @@ export default function StockMarketOverview() {
   const [filtered, setFiltered] = useState(false);
   const [editable, setEditable] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [changePercentMin, setChangePercentMin] = useState(0);
-  const [changePercentMax, setChangePercentMax] = useState(0);
-  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
+  const [changePercentMin, setChangePercentMin] = useState(1);
+  const [changePercentMax, setChangePercentMax] = useState(5);
+  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
+
+  const columnsMuiTable: GridColDef[] = [
+    {
+      field: 'symbol',
+      width: 100,
+      renderCell: (data: any) => {
+        return (
+          <div style={{ width: '60px' }}>
+            {data.row.symbol}{' '}
+            {editable && (
+              <CloseOutlined
+                style={{ marginLeft: '2px' }}
+                onClick={() => handleRemove(data.row.symbol)}
+              />
+            )}{' '}
+          </div>
+        );
+      },
+    },
+    {
+      field: '%volume',
+      width: 100,
+      renderCell: (data: any) => {
+        return <div>{data.row.estimatedVolumeChange}</div>;
+      },
+    },
+    {
+      field: '%change',
+      width: 100,
+      renderCell: (data: any) => {
+        return <div>{data.row.changePercent}</div>;
+      },
+    },
+
+    {
+      field: 'chart',
+      width: 500,
+      renderCell: (data: any) => {
+        const max = random(10, 20);
+        const history = data.row.history;
+        const option = {
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              animation: false,
+              label: {
+                backgroundColor: '#ccc',
+                borderColor: '#aaa',
+                borderWidth: 1,
+                shadowBlur: 0,
+                shadowOffsetX: 0,
+                shadowOffsetY: 0,
+                color: '#222',
+              },
+            },
+          },
+          grid: {
+            top: 6,
+            left: 80,
+            right: 40,
+            bottom: 20,
+          },
+          xAxis: {
+            axisLabel: {
+              formatter: (value: any) => {
+                moment.locale('en');
+                return `{hour|${moment(parseInt(value)).format('HH:mm')}}`;
+              },
+              rich: {
+                hour: {
+                  color: '#1E294B',
+                  opacity: 0.6,
+                },
+              },
+            },
+            alignTicks: true,
+            axisPointer: {
+              label: {
+                formatter: (data: any) => {
+                  return moment(parseInt(data.value)).format(DATE_FORMAT);
+                },
+              },
+            },
+            data: (history?.t || []).map((i: any) => i * 1000).slice(0, max),
+          },
+          yAxis: {},
+          series: [
+            {
+              data: (history?.v || []).slice(0, max),
+              type: 'line',
+            },
+          ],
+        };
+
+        return (
+          <div style={{ overflow: 'auto', width: '100%' }}>
+            <Echarts option={option} />
+          </div>
+        );
+      },
+    },
+  ];
 
   const fetch = async (listWatchlists: any, watchlistName: string) => {
     const xxx = keyBy(listWatchlists, 'name');
@@ -58,15 +169,68 @@ export default function StockMarketOverview() {
     });
   };
 
+  const getDataHistoryUrl = async (symbol: string) => {
+    const startDate = moment();
+    startDate.set({
+      hour: 9,
+      minute: 0,
+    });
+    const endDate = moment();
+    endDate.set({
+      hour: 15,
+      minute: 0,
+    });
+    const start = String(startDate.format('X'));
+    const end = String(endDate.format('X'));
+
+    const res = await request({
+      method: 'GET',
+      url: CustomTradingViewUrls.getDataHistoryUrl(symbol, '1', start, end),
+    });
+
+    return {
+      symbol,
+      res: res?.data || [],
+    };
+  };
+
+  const fetchData4 = async (data: any) => {
+    const listPromises: any = [];
+    data.forEach((i: any) => {
+      listPromises.push(getDataHistoryUrl(i.symbol));
+    });
+
+    return Promise.all(listPromises).then((res) => {
+      const keyByRes = keyBy(res, 'symbol');
+      const newData = data.map((i: any) => {
+        i.history = keyByRes[i.symbol].res;
+        return i;
+      });
+
+      const dataSource = filtered
+        ? newData.filter(
+            (i: any) =>
+              i.changePercent > changePercentMin &&
+              i.changePercent < changePercentMax &&
+              i.estimatedVolumeChange > estimatedVolumeChange
+          )
+        : newData;
+      setData4(dataSource);
+    });
+  };
+
   const fetchList = async () => {
     const res = await StockService.getWatchlist();
     if (res && res.data) {
-      setListWatchlists(res.data);
-      fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
-      fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
-      fetch(res.data, 'watching').then((res) => setData3(res));
-      fetch(res.data, 'aim_to_buy').then((res) => setData4(res));
-      fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
+      // setListWatchlists(res.data);
+      // fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
+      // fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
+      // fetch(res.data, 'watching').then((res) => setData3(res));
+      fetch(res.data, 'watching').then((res) => {
+        // setData4(res);
+        fetchData4(res);
+      });
+      // fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
     }
   };
 
@@ -118,79 +282,25 @@ export default function StockMarketOverview() {
   };
 
   const handleFilter = () => {
-    if (filtered) {
-      setFiltered(false);
-      setChangePercentMax(0);
-      setChangePercentMin(0);
-      setEstimatedVolumeChange(0);
-    } else {
-      setFiltered(true);
-      setChangePercentMax(5);
-      setChangePercentMin(1);
-      setEstimatedVolumeChange(50);
-    }
+    // if (filtered) {
+    //   setFiltered(false);
+    //   setChangePercentMax(0);
+    //   setChangePercentMin(0);
+    //   setEstimatedVolumeChange(0);
+    // } else {
+    //   setFiltered(true);
+    //   setChangePercentMax(5);
+    //   setChangePercentMin(1);
+    //   setEstimatedVolumeChange(50);
+    // }
   };
 
   useEffect(() => {
     fetchList();
-    // setInterval(() => {
-    //     fetchList()
-    // }, 60000)
+    setInterval(() => {
+      fetchList();
+    }, 1000 * 30);
   }, []);
-
-  const columns = [
-    {
-      title: 'Symbol',
-      sorter: (a: any, b: any) => {
-        return a.symbol.localeCompare(b.symbol);
-      },
-      render: (i: any) => {
-        return (
-          <div style={{ width: '60px' }}>
-            {i.symbol}{' '}
-            {editable && (
-              <CloseOutlined
-                style={{ marginLeft: '2px' }}
-                onClick={() => handleRemove(i.symbol)}
-              />
-            )}{' '}
-          </div>
-        );
-      },
-    },
-    {
-      title: '%change',
-      sorter: (a: any, b: any) => {
-        return a.changePercent - b.changePercent;
-      },
-      align: 'right' as 'right',
-      render: (data: any) => {
-        return data.changePercent;
-      },
-    },
-    {
-      title: '%volume',
-      sorter: (a: any, b: any) => {
-        return a.estimatedVolumeChange - b.estimatedVolumeChange;
-      },
-      align: 'right' as 'right',
-      render: (data: any) => {
-        return data.estimatedVolumeChange;
-      },
-    },
-  ];
-
-  const dataSource = filtered
-    ? data4.filter(
-        (i: any) =>
-          changePercentMin &&
-          i.changePercent > changePercentMin &&
-          changePercentMax &&
-          i.changePercent < changePercentMax &&
-          estimatedVolumeChange &&
-          i.estimatedVolumeChange > estimatedVolumeChange
-      )
-    : data4;
 
   const renderWatchList = (name: string, data: any) => {
     return (
@@ -232,18 +342,25 @@ export default function StockMarketOverview() {
 
   const renderPotentialBuyTable = () => {
     return (
-      <div style={{ margin: '0 20px', display: 'flex' }}>
-        <div style={{ width: '300px' }}>
-          <Table
-            size="small"
-            dataSource={dataSource}
-            columns={columns}
-            pagination={false}
-            scroll={{ y: 500 }}
-          />
+      <div style={{ margin: '0 20px', display: 'flex', flex: 1 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ height: 850, width: '100%' }}>
+            <DataGrid
+              rows={data4.map((i: any) => {
+                i.id = i.symbol;
+                return i;
+              })}
+              columns={columnsMuiTable}
+              pageSize={6}
+              rowHeight={120}
+              rowsPerPageOptions={[5]}
+              checkboxSelection
+            />
+          </div>
         </div>
+
         <div style={{ marginLeft: '20px' }}>
-          <div>
+          {/* <div>
             {confirmReset ? (
               <div style={{ display: 'flex' }}>
                 <Button onClick={handleReset}>Sure</Button>
@@ -253,7 +370,7 @@ export default function StockMarketOverview() {
               <Button onClick={() => setConfirmReset(true)}> Reset</Button>
             )}
             <Button onClick={() => setEditable(!editable)}>Edit</Button>
-          </div>
+          </div> */}
           <div>
             <Button onClick={handleFilter}>
               Turn {filtered ? 'Off' : 'On'} Filtered
@@ -272,12 +389,12 @@ export default function StockMarketOverview() {
       style={{ background: 'white', display: 'flex' }}
       className="StockMarketOverview"
     >
-      <div style={{ display: 'flex' }}>
-        {renderWatchList('bds', data1)}
+      <div style={{ display: 'flex', width: '100%' }}>
+        {/* {renderWatchList('bds', data1)}
         {renderWatchList('ck', data2)}
         {renderWatchList('ngan hang', data5)}
-        {renderWatchList('watching', data3)}
-        {/* {renderPotentialBuyTable()} */}
+        {renderWatchList('watching', data3)} */}
+        {renderPotentialBuyTable()}
       </div>
     </div>
   );

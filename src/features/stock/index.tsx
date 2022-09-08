@@ -6,11 +6,14 @@ import StockHistoryTrade from './StockHistoryTrade';
 import StockTools from './StockTools';
 import StockMarketOverview from './StockMarketOverview';
 import StockNews from './StockNews';
+import StockFitler from './StockFitler';
+import './index.less';
 
 export default function Stock() {
   const [modal, setModal] = useState('');
   const [showStockMarketOverview, setShowStockMarketOverview] = useState(true);
-  const [showStockNews, setShowStockNews] = useState(true);
+  const [showStockNews, setShowStockNews] = useState(false);
+  const [showStockFilter, setShowStockFilter] = useState(false);
 
   const handleChangeMenu = (e: any) => {
     if (e.key === 'tools') {
@@ -29,7 +32,7 @@ export default function Stock() {
   );
 
   return (
-    <div className="Stock">
+    <div className="Stock flex height-100">
       <div className="Stock-header">
         <div style={{ flex: 1 }}>Stock</div>
         <div className="Stock-header-menu">
@@ -50,6 +53,12 @@ export default function Stock() {
             <StockNews />
           </div>
         )}
+
+        {showStockFilter && (
+          <div style={{ flex: 1 }}>
+            <StockFitler />
+          </div>
+        )}
       </div>
       <div className="flex" style={{ background: 'gray' }}>
         <Button
@@ -64,6 +73,13 @@ export default function Stock() {
           onClick={() => setShowStockNews(!showStockNews)}
         >
           StockNews
+        </Button>
+
+        <Button
+          type={showStockFilter ? 'primary' : undefined}
+          onClick={() => setShowStockFilter(!showStockFilter)}
+        >
+          StockFitler
         </Button>
       </div>
       {modal && (

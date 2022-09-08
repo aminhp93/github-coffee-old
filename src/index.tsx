@@ -35,9 +35,11 @@ import Test from 'features/test';
 import User from 'features/user';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
 import CustomFlexLayout from 'components/CustomFlexLayout';
+import { alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 
 import { useAppSelector, useAppDispatch } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
+<<<<<<< HEAD
 import {
   GithubAuthProvider,
   signInWithPopup,
@@ -46,6 +48,9 @@ import {
   getIdToken,
   onIdTokenChanged,
 } from 'firebase/auth';
+=======
+import type {} from '@mui/x-date-pickers/themeAugmentation';
+>>>>>>> 58428aaed80ddf3038a7fd225a469713b708217f
 
 notification.config({
   placement: 'bottomLeft',
@@ -54,14 +59,37 @@ notification.config({
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
+const theme = createTheme({});
+
+const themeCompOverrides = createTheme(theme, {
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          background: 'red',
+        },
+      },
+    },
+    MuiDatePicker: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'red',
+        },
+      },
+    },
+  },
+});
+
 root.render(
-  <Fragment>
-    <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </Provider>
-  </Fragment>
+  <React.Fragment>
+    <ThemeProvider theme={themeCompOverrides}>
+      <Provider store={store}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </Provider>
+    </ThemeProvider>
+  </React.Fragment>
 );
 
 const LIST_ROUTER = [
