@@ -20,7 +20,7 @@ export default function StockMarketOverview() {
   const [data3, setData3] = useState([] as any);
   const [data4, setData4] = useState([] as any);
   const [data5, setData5] = useState([] as any);
-  const [filtered, setFiltered] = useState(true);
+  const [filtered, setFiltered] = useState(false);
   const [editable, setEditable] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const [changePercentMin, setChangePercentMin] = useState(1);
@@ -45,6 +45,21 @@ export default function StockMarketOverview() {
         );
       },
     },
+    {
+      field: '%volume',
+      width: 100,
+      renderCell: (data: any) => {
+        return <div>{data.row.estimatedVolumeChange}</div>;
+      },
+    },
+    {
+      field: '%change',
+      width: 100,
+      renderCell: (data: any) => {
+        return <div>{data.row.changePercent}</div>;
+      },
+    },
+
     {
       field: 'chart',
       width: 500,
@@ -290,75 +305,6 @@ export default function StockMarketOverview() {
     }, 1000 * 30);
   }, []);
 
-  const columns = [
-    {
-      title: 'Symbol',
-      sorter: (a: any, b: any) => {
-        return a.symbol.localeCompare(b.symbol);
-      },
-      render: (i: any) => {
-        return (
-          <div style={{ width: '60px' }}>
-            {i.symbol}{' '}
-            {editable && (
-              <CloseOutlined
-                style={{ marginLeft: '2px' }}
-                onClick={() => handleRemove(i.symbol)}
-              />
-            )}{' '}
-          </div>
-        );
-      },
-    },
-    {
-      title: '%change',
-      sorter: (a: any, b: any) => {
-        return a.changePercent - b.changePercent;
-      },
-      align: 'right' as 'right',
-      render: (data: any) => {
-        return data.changePercent;
-      },
-    },
-    {
-      title: '%volume',
-      sorter: (a: any, b: any) => {
-        return a.estimatedVolumeChange - b.estimatedVolumeChange;
-      },
-      align: 'right' as 'right',
-      render: (data: any) => {
-        return data.estimatedVolumeChange;
-      },
-    },
-    {
-      title: 'CHeck mo gap',
-    },
-    {
-      title: 'CHeck co nen khong',
-    },
-    {
-      title: 'CHeck gap can (profit/loss)',
-    },
-    {
-      title: 'Chart',
-      render: () => {
-        return (
-          <div
-            style={{
-              height: '100px',
-              overflow: 'auto',
-            }}
-          >
-            {/* <Echarts />; */}
-          </div>
-        );
-      },
-    },
-    {
-      title: 'CHeck interval 5m, lenh lon vao luc nao',
-    },
-  ];
-
   const dataSource = filtered
     ? data4.filter(
         (i: any) =>
@@ -408,8 +354,8 @@ export default function StockMarketOverview() {
 
   const renderPotentialBuyTable = () => {
     return (
-      <div style={{ margin: '0 20px', display: 'flex' }}>
-        <div>
+      <div style={{ margin: '0 20px', display: 'flex', flex: 1 }}>
+        <div style={{ flex: 1 }}>
           <div style={{ height: 850, width: '100%' }}>
             <DataGrid
               rows={dataSource.map((i: any) => {
@@ -421,15 +367,6 @@ export default function StockMarketOverview() {
               rowHeight={120}
               rowsPerPageOptions={[5]}
               checkboxSelection
-            />
-          </div>
-          <div style={{ width: '700px' }}>
-            <Table
-              size="small"
-              dataSource={dataSource}
-              columns={columns}
-              pagination={false}
-              scroll={{ y: 500 }}
             />
           </div>
         </div>
@@ -464,7 +401,7 @@ export default function StockMarketOverview() {
       style={{ background: 'white', display: 'flex' }}
       className="StockMarketOverview"
     >
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', width: '100%' }}>
         {renderWatchList('bds', data1)}
         {renderWatchList('ck', data2)}
         {renderWatchList('ngan hang', data5)}
