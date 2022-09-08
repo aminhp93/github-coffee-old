@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { Modal, Menu, Dropdown, Button } from 'antd';
 import { MoreOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu, Modal } from 'antd';
+import { useState } from 'react';
 
+import './index.less';
+import StockFitler from './StockFitler';
 import StockHistoryTrade from './StockHistoryTrade';
-import StockTools from './StockTools';
 import StockMarketOverview from './StockMarketOverview';
 import StockNews from './StockNews';
-import StockFitler from './StockFitler';
-import './index.less';
+import StockTools from './StockTools';
 
 export default function Stock() {
   const [modal, setModal] = useState('');

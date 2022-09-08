@@ -1,16 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Button, Input, notification } from 'antd';
-import { UserService } from 'services/user';
-import { IUser } from 'types';
+import { Button, notification } from 'antd';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { initializeApp } from 'firebase/app';
-import {
-  GithubAuthProvider,
-  signInWithPopup,
-  getAuth,
-  onAuthStateChanged,
-  getIdToken,
-} from 'firebase/auth';
-import { useAppSelector, useAppDispatch } from 'app/hooks';
+import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useEffect } from 'react';
+import { UserService } from 'services/user';
 import { selectUser, update } from './userSlice';
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -29,7 +22,7 @@ const firebaseConfig: any = {
 };
 
 // Initialize Firebase
-// initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 // console.log(app);
 // Initialize Firebase Auth
 

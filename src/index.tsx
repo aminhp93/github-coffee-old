@@ -1,29 +1,28 @@
-import { useEffect, Fragment } from 'react';
-import { Provider } from 'react-redux';
-import ReactDOM from 'react-dom/client';
-import 'styles/index.less';
-import '../node_modules/react-grid-layout/css/styles.css';
-import '../node_modules/react-resizable/css/styles.css';
-import { useNavigate } from 'react-router-dom';
-import { store } from './app/store';
-import { Routes, Route, BrowserRouter, Link } from 'react-router-dom';
-import { notification, Divider } from 'antd';
-import config from 'config';
 import {
   CloseOutlined,
-  UserOutlined,
-  WechatOutlined,
   LineChartOutlined,
-  DashboardOutlined,
   OrderedListOutlined,
   StockOutlined,
+  UserOutlined,
+  WechatOutlined,
 } from '@ant-design/icons';
+import { notification } from 'antd';
+import config from 'config';
+import * as React from 'react';
+import { useEffect } from 'react';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { UserService } from 'services/user';
+import 'styles/index.less';
+import { store } from './app/store';
 
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CustomFlexLayout from 'components/CustomFlexLayout';
+import CustomTradingView from 'components/CustomTradingView/ChartTV';
+import CustomEcharts from 'components/Echarts';
 import API from 'features/api/API';
 import Chat from 'features/chat';
-import CustomEcharts from 'components/Echarts';
-import Dashboard from 'features/dashboard';
 import Demo from 'features/demo/Demo';
 import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
@@ -33,24 +32,9 @@ import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
-import CustomTradingView from 'components/CustomTradingView/ChartTV';
-import CustomFlexLayout from 'components/CustomFlexLayout';
-import { alpha, createTheme, ThemeProvider } from '@mui/material/styles';
 
-import { useAppSelector, useAppDispatch } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
-<<<<<<< HEAD
-import {
-  GithubAuthProvider,
-  signInWithPopup,
-  getAuth,
-  onAuthStateChanged,
-  getIdToken,
-  onIdTokenChanged,
-} from 'firebase/auth';
-=======
-import type {} from '@mui/x-date-pickers/themeAugmentation';
->>>>>>> 58428aaed80ddf3038a7fd225a469713b708217f
 
 notification.config({
   placement: 'bottomLeft',
@@ -102,11 +86,6 @@ const LIST_ROUTER = [
     linkTo: '/chat',
     label: 'chat',
     icon: <WechatOutlined style={{ margin: '0 8px' }} />,
-  },
-  {
-    linkTo: '/dashboard',
-    label: 'dashboard',
-    icon: <DashboardOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/demo',
@@ -216,19 +195,19 @@ function App() {
 
   useEffect(() => {
     getAuthUser();
-    onAuthStateChanged(getAuth(), async (res: any) => {
-      console.log('onAuthStateChanged', res);
-      const idToken = await res.getIdToken();
-      console.log('onAuthStateChanged', idToken);
-      // localStorage.removeItem('ACCESS_TOKEN');
-      // localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
-      return idToken;
-    });
-    onIdTokenChanged(getAuth(), async (res: any) => {
-      console.log('onIdTokenChanged', res);
-      const idToken = await res.getIdToken();
-      console.log('idToken', idToken);
-    });
+    // onAuthStateChanged(getAuth(), async (res: any) => {
+    //   console.log('onAuthStateChanged', res);
+    //   const idToken = await res.getIdToken();
+    //   console.log('onAuthStateChanged', idToken);
+    //   // localStorage.removeItem('ACCESS_TOKEN');
+    //   // localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
+    //   return idToken;
+    // });
+    // onIdTokenChanged(getAuth(), async (res: any) => {
+    //   console.log('onIdTokenChanged', res);
+    //   const idToken = await res.getIdToken();
+    //   console.log('idToken', idToken);
+    // });
   }, []);
 
   return (
@@ -241,7 +220,6 @@ function App() {
         <Routes>
           <Route path="api" element={<API />} />
           <Route path="chat" element={<Chat />} />
-          <Route path="dashboard" element={<Dashboard />} />
           <Route path="demo" element={<Demo />} />
           <Route path="echarts" element={<CustomEcharts />} />
           <Route path="flexLayout" element={<CustomFlexLayout />} />

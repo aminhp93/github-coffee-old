@@ -1,13 +1,6 @@
 import axios from 'axios';
 import config from 'config';
 import qs from 'qs';
-import {
-  GithubAuthProvider,
-  signInWithPopup,
-  getAuth,
-  onAuthStateChanged,
-  getIdToken,
-} from 'firebase/auth';
 
 const baseUrl = config.apiUrl;
 
@@ -50,16 +43,6 @@ client.interceptors.response.use(
 
 const request = async (options: any) => {
   const accessToken = localStorage.getItem('ACCESS_TOKEN');
-<<<<<<< HEAD
-=======
-  const resToken = await onAuthStateChanged(getAuth(), async (res: any) => {
-    const idToken = await res.getIdToken();
-    // console.log('onAuthStateChanged', res, idToken);
-    return idToken;
-  });
-
-  // console.log('resToken', resToken);
->>>>>>> 58428aaed80ddf3038a7fd225a469713b708217f
 
   const finalOptions = {
     ...{

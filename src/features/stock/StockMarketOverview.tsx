@@ -1,16 +1,13 @@
-import { useState, useEffect } from 'react';
-import { keyBy, meanBy } from 'lodash';
-import { notification, Table, Button } from 'antd';
-import axios from 'axios';
 import { CloseOutlined } from '@ant-design/icons';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Button, notification } from 'antd';
+import axios from 'axios';
 import Echarts from 'components/Echarts';
-import * as React from 'react';
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-import { CustomTradingViewUrls } from 'request';
-import request from 'request';
-import { StockService } from 'services';
+import { keyBy, meanBy, random } from 'lodash';
 import moment from 'moment';
-import { random } from 'lodash';
+import { useEffect, useState } from 'react';
+import request, { CustomTradingViewUrls } from 'request';
+import { StockService } from 'services';
 
 const DATE_FORMAT = 'HH:mm';
 
