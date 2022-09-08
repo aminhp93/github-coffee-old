@@ -23,9 +23,9 @@ export default function StockMarketOverview() {
   const [filtered, setFiltered] = useState(true);
   const [editable, setEditable] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
-  const [changePercentMin, setChangePercentMin] = useState(0);
+  const [changePercentMin, setChangePercentMin] = useState(1);
   const [changePercentMax, setChangePercentMax] = useState(5);
-  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
+  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
 
   const columnsMuiTable: GridColDef[] = [
     {
