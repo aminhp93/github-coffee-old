@@ -23,7 +23,7 @@ endDate.set({
 const start = startDate.format('X');
 const end = endDate.format('X');
 const timeFrame = '1';
-const NUMBER_UNIT_REDUCED = 1000000;
+const NUMBER_UNIT_REDUCED = 1000;
 
 export default function StockMarketOverview() {
   const [listWatchlists, setListWatchlists] = useState([]);
@@ -217,7 +217,6 @@ export default function StockMarketOverview() {
   };
 
   const fetchList = async () => {
-    console.log('fetchelist');
     const res = await StockService.getWatchlist();
     if (res && res.data) {
       // setListWatchlists(res.data);
@@ -239,7 +238,6 @@ export default function StockMarketOverview() {
               i.history = keyByRes[i.symbol].res;
               return i;
             });
-            console.log(filtered);
             const dataSource = filtered
               ? newData.filter(
                   (i: any) =>

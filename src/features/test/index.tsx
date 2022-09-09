@@ -1,28 +1,30 @@
-import { Button } from '@mui/material';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { Dayjs } from 'dayjs';
-import * as React from 'react';
+import { ChangeEvent, useState } from 'react';
 
-export default function BasicDatePicker() {
-  const [value, setValue] = React.useState<Dayjs | null>(null);
+import { useCountdown } from 'usehooks-ts';
 
+export default function Component() {
+  const [intervalValue, setIntervalValue] = useState<number>(1000);
+  const [count, { startCountdown, stopCountdown, resetCountdown }] =
+    useCountdown({
+      countStart: 60,
+      intervalMs: intervalValue,
+    });
+
+  const handleChangeIntervalValue = (event: ChangeEvent<HTMLInputElement>) => {
+    setIntervalValue(Number(event.target.value));
+  };
   return (
-    <Box sx={{ background: 'white' }}>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          label="Basic example"
-          value={value}
-          onChange={(newValue) => {
-            setValue(newValue);
-          }}
-          renderInput={(params) => <TextField {...params} />}
-        />
-      </LocalizationProvider>
-      <Button>button</Button>
-    </Box>
+    <div>
+      <p>Count: {count}</p>
+
+      <input
+        type="number"
+        value={intervalValue}
+        onChange={handleChangeIntervalValue}
+      />
+      <button onClick={startCountdown}>start</button>
+      <button onClick={stopCountdown}>stop</button>
+      <button onClick={resetCountdown}>reset</button>
+    </div>
   );
 }
