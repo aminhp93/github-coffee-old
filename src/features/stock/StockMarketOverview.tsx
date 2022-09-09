@@ -3,13 +3,27 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Button, notification } from 'antd';
 import axios from 'axios';
 import Echarts from 'components/Echarts';
-import { keyBy, meanBy, random } from 'lodash';
+import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 import request, { CustomTradingViewUrls } from 'request';
 import { StockService } from 'services';
 
 const DATE_FORMAT = 'HH:mm';
+const startDate = moment();
+startDate.set({
+  hour: 9,
+  minute: 0,
+});
+const endDate = moment();
+endDate.set({
+  hour: 15,
+  minute: 0,
+});
+const start = startDate.format('X');
+const end = endDate.format('X');
+const timeFrame = '1';
+const NUMBER_UNIT_REDUCED = 1000000;
 
 export default function StockMarketOverview() {
   const [listWatchlists, setListWatchlists] = useState([]);
@@ -44,41 +58,50 @@ export default function StockMarketOverview() {
       },
     },
     {
-      field: '%volume',
+      field: 'estimatedVolumeChange',
+      headerName: '%volume',
       width: 100,
-      renderCell: (data: any) => {
-        return <div>{data.row.estimatedVolumeChange}</div>;
-      },
     },
     {
-      field: '%change',
+      field: 'changePercent',
+      headerName: '%change',
+
       width: 100,
-      renderCell: (data: any) => {
-        return <div>{data.row.changePercent}</div>;
-      },
     },
 
     {
       field: 'chart',
       width: 500,
       renderCell: (data: any) => {
-        const max = random(10, 20);
         const history = data.row.history;
+        const listTime = (history?.t || []).map((i: any) => i * 1000);
+        let temp = 0;
+        let result = 0;
+        const listTotalVolume = (history.v || []).map((i: any) => {
+          result = temp + i;
+          temp = result;
+          return result;
+        });
+
+        const estimatedVolume = listTotalVolume.map((i: any, index: number) => {
+          const date = listTime[index];
+          const diffMinute =
+            moment(date).diff(moment(parseInt(start) * 1000), 'minutes') + 1;
+          return Number(
+            ((i * 255) / diffMinute / NUMBER_UNIT_REDUCED).toFixed(0)
+          );
+        });
+
+        const listAverageVolume15Days = estimatedVolume.map(
+          (i: any) => data.row.averageVolume15Days
+        );
+
         const option = {
           tooltip: {
             trigger: 'axis',
             axisPointer: {
               type: 'cross',
               animation: false,
-              label: {
-                backgroundColor: '#ccc',
-                borderColor: '#aaa',
-                borderWidth: 1,
-                shadowBlur: 0,
-                shadowOffsetX: 0,
-                shadowOffsetY: 0,
-                color: '#222',
-              },
             },
           },
           grid: {
@@ -108,13 +131,19 @@ export default function StockMarketOverview() {
                 },
               },
             },
-            data: (history?.t || []).map((i: any) => i * 1000).slice(0, max),
+            data: listTime,
           },
           yAxis: {},
           series: [
             {
-              data: (history?.v || []).slice(0, max),
+              data: estimatedVolume,
               type: 'line',
+              showSymbol: false,
+            },
+            {
+              type: 'line',
+              data: listAverageVolume15Days,
+              showSymbol: false,
             },
           ],
         };
@@ -155,8 +184,12 @@ export default function StockMarketOverview() {
             symbol: todayItem.symbol,
             changePercent: Number(changePercent.toFixed(1)),
             estimatedVolumeChange: Number(estimatedVolumeChange.toFixed(0)),
-            todayVolume: (todayItem.dealVolume / 1000000).toFixed(2),
-            averageVolume15Days: (averageVolume15Days / 1000000).toFixed(2),
+            todayVolume: Number(
+              (todayItem.dealVolume / NUMBER_UNIT_REDUCED).toFixed(2)
+            ),
+            averageVolume15Days: Number(
+              (averageVolume15Days / NUMBER_UNIT_REDUCED).toFixed(0)
+            ),
           };
         })
         .sort((a: any, b: any) => {
@@ -167,22 +200,14 @@ export default function StockMarketOverview() {
   };
 
   const getDataHistoryUrl = async (symbol: string) => {
-    const startDate = moment();
-    startDate.set({
-      hour: 9,
-      minute: 0,
-    });
-    const endDate = moment();
-    endDate.set({
-      hour: 15,
-      minute: 0,
-    });
-    const start = String(startDate.format('X'));
-    const end = String(endDate.format('X'));
-
     const res = await request({
       method: 'GET',
-      url: CustomTradingViewUrls.getDataHistoryUrl(symbol, '1', start, end),
+      url: CustomTradingViewUrls.getDataHistoryUrl(
+        symbol,
+        timeFrame,
+        start,
+        end
+      ),
     });
 
     return {
@@ -191,40 +216,41 @@ export default function StockMarketOverview() {
     };
   };
 
-  const fetchData4 = async (data: any) => {
-    const listPromises: any = [];
-    data.forEach((i: any) => {
-      listPromises.push(getDataHistoryUrl(i.symbol));
-    });
-
-    return Promise.all(listPromises).then((res) => {
-      const keyByRes = keyBy(res, 'symbol');
-      const newData = data.map((i: any) => {
-        i.history = keyByRes[i.symbol].res;
-        return i;
-      });
-
-      const dataSource = filtered
-        ? newData.filter(
-            (i: any) =>
-              i.changePercent > changePercentMin &&
-              i.changePercent < changePercentMax &&
-              i.estimatedVolumeChange > estimatedVolumeChange
-          )
-        : newData;
-      setData4(dataSource);
-    });
-  };
-
   const fetchList = async () => {
+    console.log('fetchelist');
     const res = await StockService.getWatchlist();
     if (res && res.data) {
       // setListWatchlists(res.data);
       // fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
       // fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
       // fetch(res.data, 'watching').then((res) => setData3(res));
-      fetch(res.data, 'watching').then((res) => {
+      fetch(res.data, 'thanh_khoan_vua').then((res) => {
         // setData4(res);
+
+        const fetchData4 = async (data: any) => {
+          const listPromises: any = [];
+          data.forEach((i: any) => {
+            listPromises.push(getDataHistoryUrl(i.symbol));
+          });
+
+          return Promise.all(listPromises).then((res) => {
+            const keyByRes = keyBy(res, 'symbol');
+            const newData = data.map((i: any) => {
+              i.history = keyByRes[i.symbol].res;
+              return i;
+            });
+            console.log(filtered);
+            const dataSource = filtered
+              ? newData.filter(
+                  (i: any) =>
+                    i.changePercent > changePercentMin &&
+                    i.changePercent < changePercentMax &&
+                    i.estimatedVolumeChange > estimatedVolumeChange
+                )
+              : newData;
+            setData4(dataSource);
+          });
+        };
         fetchData4(res);
       });
       // fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
@@ -279,25 +305,18 @@ export default function StockMarketOverview() {
   };
 
   const handleFilter = () => {
-    // if (filtered) {
-    //   setFiltered(false);
-    //   setChangePercentMax(0);
-    //   setChangePercentMin(0);
-    //   setEstimatedVolumeChange(0);
-    // } else {
-    //   setFiltered(true);
-    //   setChangePercentMax(5);
-    //   setChangePercentMin(1);
-    //   setEstimatedVolumeChange(50);
-    // }
+    setFiltered(!filtered);
   };
+
+  useEffect(() => {}, [filtered]);
 
   useEffect(() => {
     fetchList();
-    setInterval(() => {
+    const id = setInterval(() => {
       fetchList();
-    }, 1000 * 30);
-  }, []);
+    }, 1000 * 10);
+    return () => clearInterval(id);
+  }, [filtered]);
 
   const renderWatchList = (name: string, data: any) => {
     return (
@@ -369,6 +388,11 @@ export default function StockMarketOverview() {
             <Button onClick={() => setEditable(!editable)}>Edit</Button>
           </div> */}
           <div>
+            <div>
+              <div>StartDate {startDate.format()}</div>
+              <div>EndDate {endDate.format()}</div>
+              <div>Timeframe {timeFrame}</div>
+            </div>
             <Button onClick={handleFilter}>
               Turn {filtered ? 'Off' : 'On'} Filtered
             </Button>

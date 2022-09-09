@@ -8,7 +8,7 @@ interface Props {
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export default function EchartsLineChart({ option }: Props) {
-  console.log('EchartsLineChart');
+  // console.log('EchartsLineChart');
 
   const chartRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLDivElement>(null);
