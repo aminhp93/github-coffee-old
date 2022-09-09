@@ -1,30 +1,69 @@
-import { ChangeEvent, useState } from 'react';
+import { Button } from 'antd';
+import { useAppDispatch, useAppSelector } from 'app/hooks';
+import Echarts from 'components/Echarts';
+import { add, selectDemo } from 'features/demo/demoSlice';
+import { memo, useState } from 'react';
 
-import { useCountdown } from 'usehooks-ts';
+const Child = ({ cb }: any) => {
+  console.log('child');
+  const handleClick = () => {
+    console.log('click child');
+    cb && cb();
+  };
+  return <div onClick={handleClick}>Child</div>;
+};
+
+const option = {
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross',
+    },
+  },
+  xAxis: {
+    data: [1, 2],
+  },
+  yAxis: {},
+  series: [
+    {
+      data: [1, 2],
+      type: 'line',
+      triggerLineEvent: true,
+    },
+  ],
+};
+
+const MemoChild = memo(Child);
 
 export default function Component() {
-  const [intervalValue, setIntervalValue] = useState<number>(1000);
-  const [count, { startCountdown, stopCountdown, resetCountdown }] =
-    useCountdown({
-      countStart: 60,
-      intervalMs: intervalValue,
-    });
+  console.log('component');
+  const dispatch = useAppDispatch();
 
-  const handleChangeIntervalValue = (event: ChangeEvent<HTMLInputElement>) => {
-    setIntervalValue(Number(event.target.value));
+  const demo = useAppSelector(selectDemo);
+  const [count, setCount] = useState(1);
+
+  const handleClick = () => {
+    console.log(count);
+    setCount((count) => count + 1);
   };
+
+  // const handleHighlight = useCallback(
+  //   (data: any) => {
+  //     console.log(data, demo);
+  //   },
+  //   [demo]
+  // );
+
   return (
     <div>
       <p>Count: {count}</p>
-
-      <input
-        type="number"
-        value={intervalValue}
-        onChange={handleChangeIntervalValue}
+      <Button onClick={() => dispatch(add())}>Add</Button>
+      <button onClick={handleClick}>increase</button>
+      {/* <MemoChild cb={handleClick} /> */}
+      <Echarts
+        option={option}
+        // handleHighlight={handleHighlight}
       />
-      <button onClick={startCountdown}>start</button>
-      <button onClick={stopCountdown}>stop</button>
-      <button onClick={resetCountdown}>reset</button>
     </div>
   );
 }

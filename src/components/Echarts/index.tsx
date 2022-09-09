@@ -1,34 +1,26 @@
 import { ECharts, getInstanceByDom, init } from 'echarts';
-import get from 'lodash/get';
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 interface Props {
   option?: any;
+  handleHighlight?: any;
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export default function EchartsLineChart({ option }: Props) {
-  // console.log('EchartsLineChart');
+function EchartsLineChart({ option, handleHighlight }: Props) {
+  console.log('EchartsLineChart');
 
   const chartRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize chart
     let chart: ECharts | undefined;
     if (chartRef.current !== null) {
       chart = init(chartRef.current);
-      option && chart?.setOption(option);
-
-      chart.on('datazoom', function (params: any) {
-        console.log('datazoom', params);
-        if (params.start === 0 || get(params, 'batch[0].start') === 0) {
-          console.log('loadmore');
-          if (btnRef.current) {
-            btnRef.current.click();
-          }
-        }
-      });
+      // chart &&
+      //   chart.on('highlight', function (params: any) {
+      //     console.log('highlight', params);
+      //     handleHighlight && handleHighlight(params);
+      //   });
     }
 
     // Add chart resize listener
@@ -45,18 +37,21 @@ export default function EchartsLineChart({ option }: Props) {
   }, []);
 
   useEffect(() => {
+    if (chartRef.current !== null) {
+      const chart = getInstanceByDom(chartRef.current);
+      chart &&
+        chart.on('highlight', function (params: any) {
+          console.log('highlight', params);
+          handleHighlight && handleHighlight(params);
+        });
+    }
+  }, [handleHighlight]);
+
+  useEffect(() => {
     // Update chart
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
-      const old: any = chart?.getOption();
-      const settings: any = {};
-      if (option?.xAxis?.length < old?.xAxis?.length) {
-        settings.notMerge = true;
-        // settings.replaceMerge = 'xAxis'
-      }
-      // console.log('updated chart', chart, old, option);
-
-      option && chart?.setOption(option, settings);
+      option && chart?.setOption(option);
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
@@ -71,3 +66,5 @@ export default function EchartsLineChart({ option }: Props) {
     />
   );
 }
+
+export default memo(EchartsLineChart);
