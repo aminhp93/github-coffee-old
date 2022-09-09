@@ -29,7 +29,7 @@ export const mapListDataHouseFinance = (data: any) => {
     const tienGoc = i.tongGiaTri / i.thoiGianVay;
     let giaTriConlai = i.tongGiaTri;
     const listTienTra: any = [];
-    times(i.thoiGianVay).map((j: any, index: number) => {
+    times(i.thoiGianVay).forEach((j: any, index: number) => {
       if (index !== 0) {
         giaTriConlai = giaTriConlai - tienGoc;
       }

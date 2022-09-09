@@ -1,19 +1,26 @@
 import { MoreOutlined } from '@ant-design/icons';
+import Box from '@mui/material/Box';
+import { makeStyles } from '@mui/styles';
 import { Button, Dropdown, Menu, Modal } from 'antd';
 import { useState } from 'react';
-
 import './index.less';
-import StockFitler from './StockFitler';
 import StockHistoryTrade from './StockHistoryTrade';
 import StockMarketOverview from './StockMarketOverview';
 import StockNews from './StockNews';
 import StockTools from './StockTools';
 
+const useStyles = makeStyles({
+  root: {
+    flexDirection: 'column',
+  },
+});
+
 export default function Stock() {
+  const classes = useStyles();
+
   const [modal, setModal] = useState('');
   const [showStockMarketOverview, setShowStockMarketOverview] = useState(true);
   const [showStockNews, setShowStockNews] = useState(false);
-  const [showStockFilter, setShowStockFilter] = useState(false);
 
   const handleChangeMenu = (e: any) => {
     if (e.key === 'tools') {
@@ -32,35 +39,29 @@ export default function Stock() {
   );
 
   return (
-    <div className="Stock flex height-100">
-      <div className="Stock-header">
-        <div style={{ flex: 1 }}>Stock</div>
-        <div className="Stock-header-menu">
+    <Box className={`${classes.root} Stock flex height-100`}>
+      <Box className="Stock-header flex" mx={2} my={1}>
+        <Box style={{ flex: 1 }}>Stock</Box>
+        <Box className="Stock-header-menu">
           <Dropdown overlay={menu} trigger={['click']}>
             <MoreOutlined className="font-size-30 color-black" />
           </Dropdown>
-        </div>
-      </div>
-      <div className="flex" style={{ flex: 1, overflow: 'hidden' }}>
+        </Box>
+      </Box>
+      <Box className="flex" style={{ flex: 1, overflow: 'auto' }}>
         {showStockMarketOverview && (
-          <div style={{ flex: 1 }}>
+          <Box className="flex" style={{ flex: 1 }}>
             <StockMarketOverview />
-          </div>
+          </Box>
         )}
 
         {showStockNews && (
-          <div style={{ flex: 1 }}>
+          <Box className="flex" style={{ flex: 1 }}>
             <StockNews />
-          </div>
+          </Box>
         )}
-
-        {showStockFilter && (
-          <div style={{ flex: 1 }}>
-            <StockFitler />
-          </div>
-        )}
-      </div>
-      <div className="flex" style={{ background: 'gray' }}>
+      </Box>
+      <Box className="flex" style={{ background: 'gray' }}>
         <Button
           type={showStockMarketOverview ? 'primary' : undefined}
           onClick={() => setShowStockMarketOverview(!showStockMarketOverview)}
@@ -74,14 +75,7 @@ export default function Stock() {
         >
           StockNews
         </Button>
-
-        <Button
-          type={showStockFilter ? 'primary' : undefined}
-          onClick={() => setShowStockFilter(!showStockFilter)}
-        >
-          StockFitler
-        </Button>
-      </div>
+      </Box>
       {modal && (
         <Modal
           centered
@@ -94,6 +88,6 @@ export default function Stock() {
           {modal === 'StockTools' && <StockTools />}
         </Modal>
       )}
-    </div>
+    </Box>
   );
 }

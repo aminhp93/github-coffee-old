@@ -32,6 +32,7 @@ import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
+import Work from 'features/work';
 
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
@@ -50,7 +51,7 @@ const themeCompOverrides = createTheme(theme, {
     MuiButton: {
       styleOverrides: {
         root: {
-          background: 'red',
+          // background: 'red',
         },
       },
     },
@@ -78,6 +79,14 @@ root.render(
 
 const LIST_ROUTER = [
   {
+    linkTo: '/work',
+    label: 'work',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+];
+
+const LIST_ROUTER_FOOTER = [
+  {
     linkTo: '/api',
     label: 'API',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
@@ -102,18 +111,6 @@ const LIST_ROUTER = [
     label: 'Flex layout',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
-  // {
-  //   linkTo: '/note/add/',
-  //   label: 'note/add/',
-  // },
-  // {
-  //   linkTo: '/note',
-  //   label: 'note',
-  // },
-  // {
-  //   linkTo: '/post/create/',
-  //   label: 'post/create/',
-  // },
   {
     linkTo: '/tradingView',
     label: 'Trading View',
@@ -139,10 +136,6 @@ const LIST_ROUTER = [
     label: 'test',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
-  // {
-  //   linkTo: '/user',
-  //   label: 'user',
-  // },
 ];
 
 function App() {
@@ -153,7 +146,7 @@ function App() {
 
   const renderSideBar = () => {
     return (
-      <div style={{ height: '100%', overflow: 'auto' }}>
+      <div style={{ overflow: 'auto' }}>
         {LIST_ROUTER.map((i: any) => {
           return (
             <div
@@ -170,6 +163,24 @@ function App() {
   };
 
   const renderSideBarFooter = () => {
+    return (
+      <div style={{ overflow: 'auto' }}>
+        {LIST_ROUTER_FOOTER.map((i: any) => {
+          return (
+            <div
+              className="App-sidebar-item"
+              onClick={() => navigate(i.linkTo)}
+            >
+              {i.icon}
+              <span className="App-sidebar-label">{i.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderSideBarFooter2 = () => {
     return (
       <div>
         <div className="App-sidebar-item" onClick={() => navigate('/user')}>
@@ -195,26 +206,24 @@ function App() {
 
   useEffect(() => {
     getAuthUser();
-    // onAuthStateChanged(getAuth(), async (res: any) => {
-    //   console.log('onAuthStateChanged', res);
-    //   const idToken = await res.getIdToken();
-    //   console.log('onAuthStateChanged', idToken);
-    //   // localStorage.removeItem('ACCESS_TOKEN');
-    //   // localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
-    //   return idToken;
-    // });
-    // onIdTokenChanged(getAuth(), async (res: any) => {
-    //   console.log('onIdTokenChanged', res);
-    //   const idToken = await res.getIdToken();
-    //   console.log('idToken', idToken);
-    // });
   }, []);
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       <div className="App-sidebar">
-        {renderSideBar()}
-        {renderSideBarFooter()}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            flexDirection: 'column',
+            flex: 1,
+          }}
+        >
+          {renderSideBar()}
+          {renderSideBarFooter()}
+        </div>
+
+        {renderSideBarFooter2()}
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <Routes>
@@ -232,6 +241,7 @@ function App() {
           <Route path="taskManager" element={<TaskManager />} />
           <Route path="test" element={<Test />} />
           <Route path="user" element={<User />} />
+          <Route path="work" element={<Work />} />
 
           <Route
             path="*"

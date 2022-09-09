@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { keyBy, flatten } from 'lodash';
-import moment from 'moment';
-import { List, Button, Input } from 'antd';
+import { Button, Input, List } from 'antd';
 import parse from 'html-react-parser';
+import { flatten, keyBy } from 'lodash';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
 
 import { StockService } from 'services';
 

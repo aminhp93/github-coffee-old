@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { Button, Input, notification, Spin } from 'antd';
+import axios from 'axios';
 import { chunk, minBy, orderBy } from 'lodash';
 import moment from 'moment';
+import { useEffect, useState } from 'react';
+import { StockService } from 'services';
 import {
   DATE_FORMAT,
-  MIN_TOTAL_VOLUME,
-  MIN_TOTAL_VALUE,
   MIN_MEDIUM_TOTOL_VALUE,
+  MIN_TOTAL_VALUE,
+  MIN_TOTAL_VOLUME,
 } from 'utils';
-import { StockService } from 'services';
 
 interface IProps {}
 

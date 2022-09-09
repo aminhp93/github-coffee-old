@@ -1,11 +1,11 @@
-import { Layout, Model, TabNode, IJsonModel } from 'flexlayout-react';
+import { IJsonModel, Layout, Model, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
 import Post from 'features/post';
 import Stock from 'features/stock';
 
-const json: IJsonModel = {
+const DEFAULT_JSON: IJsonModel = {
   global: { tabEnableFloat: true },
   borders: [],
   layout: {
@@ -37,11 +37,14 @@ const json: IJsonModel = {
     ],
   },
 };
+interface IProps {
+  json?: IJsonModel;
+}
 
-const model = Model.fromJson(json);
-
-function FlexLayout() {
+function FlexLayout({ json }: IProps) {
+  const model = Model.fromJson(json || DEFAULT_JSON);
   const factory = (node: TabNode) => {
+    console.log(node);
     const component = node.getComponent();
     if (component === 'stock') {
       return <Stock />;

@@ -1,75 +1,68 @@
-import { CloseOutlined } from '@ant-design/icons';
+import Brightness1Icon from '@mui/icons-material/Brightness1';
+import { Divider } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import { makeStyles } from '@mui/styles';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Button, notification } from 'antd';
-import axios from 'axios';
 import Echarts from 'components/Echarts';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import request, { CustomTradingViewUrls } from 'request';
 import { StockService } from 'services';
+import { useInterval } from 'usehooks-ts';
+import {
+  checkMarketOpen,
+  FULL_TIME_FORMAT,
+  getStartAndEndTime,
+  NUMBER_UNIT_REDUCED,
+  TIME_FORMAT,
+  TIME_FRAME,
+} from './utils';
 
-const DATE_FORMAT = 'HH:mm';
-const startDate = moment();
-startDate.set({
-  hour: 9,
-  minute: 0,
+const useStyles = makeStyles({
+  root: {
+    background: 'white',
+  },
+  potentialBuyTable: {
+    margin: '0 16px',
+  },
 });
-const endDate = moment();
-endDate.set({
-  hour: 15,
-  minute: 0,
-});
-const start = startDate.format('X');
-const end = endDate.format('X');
-const timeFrame = '1';
-const NUMBER_UNIT_REDUCED = 1000;
 
 export default function StockMarketOverview() {
-  const [listWatchlists, setListWatchlists] = useState([]);
-  const [data1, setData1] = useState([] as any);
-  const [data2, setData2] = useState([] as any);
-  const [data3, setData3] = useState([] as any);
+  const classes = useStyles();
+
   const [data4, setData4] = useState([] as any);
-  const [data5, setData5] = useState([] as any);
-  const [filtered, setFiltered] = useState(false);
-  const [editable, setEditable] = useState(false);
-  const [confirmReset, setConfirmReset] = useState(false);
+  const [filtered, setFiltered] = useState(true);
   const [changePercentMin, setChangePercentMin] = useState(1);
   const [changePercentMax, setChangePercentMax] = useState(5);
   const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
+  const [delay, setDelay] = useState<number>(1000 * 10);
+  const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
+
+  const { start, end } = getStartAndEndTime();
 
   const columnsMuiTable: GridColDef[] = [
     {
       field: 'symbol',
       width: 100,
-      renderCell: (data: any) => {
-        return (
-          <div style={{ width: '60px' }}>
-            {data.row.symbol}{' '}
-            {editable && (
-              <CloseOutlined
-                style={{ marginLeft: '2px' }}
-                onClick={() => handleRemove(data.row.symbol)}
-              />
-            )}{' '}
-          </div>
-        );
-      },
+      headerName: 'Symbol',
     },
     {
       field: 'estimatedVolumeChange',
-      headerName: '%volume',
+      headerName: '% volume',
       width: 100,
     },
     {
       field: 'changePercent',
-      headerName: '%change',
-
+      headerName: '% change',
       width: 100,
     },
 
     {
+      headerName: 'Estimated volume',
       field: 'chart',
       width: 500,
       renderCell: (data: any) => {
@@ -86,7 +79,10 @@ export default function StockMarketOverview() {
         const estimatedVolume = listTotalVolume.map((i: any, index: number) => {
           const date = listTime[index];
           const diffMinute =
-            moment(date).diff(moment(parseInt(start) * 1000), 'minutes') + 1;
+            moment(date).diff(
+              moment(parseInt(start.format('X')) * 1000),
+              'minutes'
+            ) + 1;
           return Number(
             ((i * 255) / diffMinute / NUMBER_UNIT_REDUCED).toFixed(0)
           );
@@ -127,7 +123,7 @@ export default function StockMarketOverview() {
             axisPointer: {
               label: {
                 formatter: (data: any) => {
-                  return moment(parseInt(data.value)).format(DATE_FORMAT);
+                  return moment(parseInt(data.value)).format(TIME_FORMAT);
                 },
               },
             },
@@ -204,9 +200,9 @@ export default function StockMarketOverview() {
       method: 'GET',
       url: CustomTradingViewUrls.getDataHistoryUrl(
         symbol,
-        timeFrame,
-        start,
-        end
+        TIME_FRAME,
+        start.format('X'),
+        end.format('X')
       ),
     });
 
@@ -219,13 +215,7 @@ export default function StockMarketOverview() {
   const fetchList = async () => {
     const res = await StockService.getWatchlist();
     if (res && res.data) {
-      // setListWatchlists(res.data);
-      // fetch(res.data, '8633_dau_co_va_BDS').then((res) => setData1(res));
-      // fetch(res.data, '8781_chung_khoan').then((res) => setData2(res));
-      // fetch(res.data, 'watching').then((res) => setData3(res));
       fetch(res.data, 'thanh_khoan_vua').then((res) => {
-        // setData4(res);
-
         const fetchData4 = async (data: any) => {
           const listPromises: any = [];
           data.forEach((i: any) => {
@@ -251,54 +241,6 @@ export default function StockMarketOverview() {
         };
         fetchData4(res);
       });
-      // fetch(res.data, '8355_ngan_hang').then((res) => setData5(res));
-    }
-  };
-
-  const handleReset = async () => {
-    const listThanhKhoanVua: any = keyBy(listWatchlists, 'watchlistID')[
-      '737544'
-    ];
-    const res = await axios({
-      method: 'PUT',
-      url: `https://restv2.fireant.vn/me/watchlists/1140364`,
-      headers: {
-        authorization:
-          'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
-      },
-      data: {
-        name: 'aim_to_buy',
-        symbols: listThanhKhoanVua.symbols,
-        userName: 'minhpn.org.ec1@gmail.com',
-        watchlistID: 1140364,
-      },
-    });
-    if (res && res.data) {
-      fetchList();
-      notification.success({ message: 'Success' });
-    }
-  };
-
-  const handleRemove = async (symbol: string) => {
-    const removedData = data4.filter((i: any) => i.symbol !== symbol);
-    setData4(removedData);
-    const res = await axios({
-      method: 'PUT',
-      url: `https://restv2.fireant.vn/me/watchlists/1140364`,
-      headers: {
-        authorization:
-          'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
-      },
-      data: {
-        name: 'aim_to_buy',
-        symbols: removedData.map((i: any) => i.symbol),
-        userName: 'minhpn.org.ec1@gmail.com',
-        watchlistID: 1140364,
-      },
-    });
-    if (res && res.data) {
-      fetchList();
-      notification.success({ message: 'Success' });
     }
   };
 
@@ -306,115 +248,79 @@ export default function StockMarketOverview() {
     setFiltered(!filtered);
   };
 
-  useEffect(() => {}, [filtered]);
-
   useEffect(() => {
     fetchList();
-    const id = setInterval(() => {
-      fetchList();
-    }, 1000 * 10);
-    return () => clearInterval(id);
   }, [filtered]);
 
-  const renderWatchList = (name: string, data: any) => {
-    return (
-      <div style={{ padding: '0 20px', borderRight: '1px solid black' }}>
-        <div>{name}</div>
-        {data.map((i: any) => {
-          let color = 'rgb(204, 170, 0)';
-          if (i.changePercent > 0) {
-            if (i.changePercent > 6.5) {
-              color = 'rgb(255, 0, 255)';
-            } else {
-              color = 'green';
-            }
-          }
-          if (i.changePercent < 0) {
-            if (i.changePercent < -6.5) {
-              color = 'rgb(0, 204, 204)';
-            } else {
-              color = 'red';
-            }
-          }
-          return (
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100px',
-                color,
-              }}
-            >
-              <div>{i.symbol} </div>
-              <div>{i.changePercent}</div>
-            </div>
-          );
-        })}
-      </div>
-    );
+  useInterval(fetchList, isPlaying ? delay : null);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setDelay(Number(event.target.value));
   };
 
   const renderPotentialBuyTable = () => {
     return (
-      <div style={{ margin: '0 20px', display: 'flex', flex: 1 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ height: 850, width: '100%' }}>
-            <DataGrid
-              rows={data4.map((i: any) => {
-                i.id = i.symbol;
-                return i;
-              })}
-              columns={columnsMuiTable}
-              pageSize={6}
-              rowHeight={120}
-              rowsPerPageOptions={[5]}
-              checkboxSelection
-            />
-          </div>
-        </div>
-
-        <div style={{ marginLeft: '20px' }}>
-          {/* <div>
-            {confirmReset ? (
-              <div style={{ display: 'flex' }}>
-                <Button onClick={handleReset}>Sure</Button>
-                <Button onClick={() => setConfirmReset(false)}>Cancel</Button>
-              </div>
-            ) : (
-              <Button onClick={() => setConfirmReset(true)}> Reset</Button>
-            )}
-            <Button onClick={() => setEditable(!editable)}>Edit</Button>
-          </div> */}
+      <Box className={`${classes.potentialBuyTable} flex flex-1`}>
+        <Box className="flex-1">
+          <DataGrid
+            rows={data4.map((i: any) => {
+              i.id = i.symbol;
+              return i;
+            })}
+            columns={columnsMuiTable}
+            pageSize={5}
+            rowHeight={120}
+            rowsPerPageOptions={[5]}
+            // checkboxSelection
+          />
+        </Box>
+        <Box style={{ marginLeft: '20px' }}>
           <div>
-            <div>
-              <div>StartDate {startDate.format()}</div>
-              <div>EndDate {endDate.format()}</div>
-              <div>Timeframe {timeFrame}</div>
-            </div>
-            <Button onClick={handleFilter}>
+            <Box>
+              <Box>Start {start.format(FULL_TIME_FORMAT)}</Box>
+              <Box>End {end.format(FULL_TIME_FORMAT)}</Box>
+              <Box>Timeframe {TIME_FRAME}</Box>
+            </Box>
+            <Divider />
+            <Button variant="outlined" onClick={handleFilter}>
               Turn {filtered ? 'Off' : 'On'} Filtered
             </Button>
             <div>Change Percent Min: {changePercentMin}</div>
             <div>Change Percent Max: {changePercentMax}</div>
             <div>Volume Change: {estimatedVolumeChange}</div>
+            <Divider />
+
+            <Box component="form" noValidate autoComplete="off">
+              <Button variant="outlined" onClick={() => setPlaying(!isPlaying)}>
+                {isPlaying ? 'Stop Interval' : 'Start Interval'}
+              </Button>
+              <TextField
+                sx={{ width: '80px', marginLeft: '8px' }}
+                id="filled-basic"
+                label="delay"
+                variant="filled"
+                value={delay}
+                onChange={handleChange}
+              />
+            </Box>
+            <Box>
+              {checkMarketOpen() ? 'Market Open' : 'Market Close'}
+              <IconButton
+                aria-label="brightness"
+                color={checkMarketOpen() ? 'success' : 'default'}
+              >
+                <Brightness1Icon />
+              </IconButton>
+            </Box>
           </div>
-        </div>
-      </div>
+        </Box>
+      </Box>
     );
   };
 
   return (
-    <div
-      style={{ background: 'white', display: 'flex' }}
-      className="StockMarketOverview"
-    >
-      <div style={{ display: 'flex', width: '100%' }}>
-        {/* {renderWatchList('bds', data1)}
-        {renderWatchList('ck', data2)}
-        {renderWatchList('ngan hang', data5)}
-        {renderWatchList('watching', data3)} */}
-        {renderPotentialBuyTable()}
-      </div>
-    </div>
+    <Box className={`${classes.root} width-100 flex`}>
+      {renderPotentialBuyTable()}
+    </Box>
   );
 }

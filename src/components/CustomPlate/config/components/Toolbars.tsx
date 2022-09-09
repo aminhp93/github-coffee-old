@@ -1,21 +1,15 @@
-import 'tippy.js/animations/scale.css';
-import 'tippy.js/dist/tippy.css';
 import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
-import { Subscript } from '@styled-icons/foundation/Subscript';
-import { Superscript } from '@styled-icons/foundation/Superscript';
 import { BorderAll } from '@styled-icons/material/BorderAll';
-import { BorderBottom } from '@styled-icons/material/BorderBottom';
-import { BorderClear } from '@styled-icons/material/BorderClear';
-import { BorderLeft } from '@styled-icons/material/BorderLeft';
-import { BorderRight } from '@styled-icons/material/BorderRight';
-import { BorderTop } from '@styled-icons/material/BorderTop';
+import { Check } from '@styled-icons/material/Check';
+import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
 import { FormatAlignJustify } from '@styled-icons/material/FormatAlignJustify';
 import { FormatAlignLeft } from '@styled-icons/material/FormatAlignLeft';
 import { FormatAlignRight } from '@styled-icons/material/FormatAlignRight';
 import { FormatBold } from '@styled-icons/material/FormatBold';
+import { FormatColorText } from '@styled-icons/material/FormatColorText';
 import { FormatIndentDecrease } from '@styled-icons/material/FormatIndentDecrease';
 import { FormatIndentIncrease } from '@styled-icons/material/FormatIndentIncrease';
 import { FormatItalic } from '@styled-icons/material/FormatItalic';
@@ -24,35 +18,28 @@ import { FormatListNumbered } from '@styled-icons/material/FormatListNumbered';
 import { FormatQuote } from '@styled-icons/material/FormatQuote';
 import { FormatStrikethrough } from '@styled-icons/material/FormatStrikethrough';
 import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
+import { Image } from '@styled-icons/material/Image';
 import { Keyboard } from '@styled-icons/material/Keyboard';
-import { Looks3 } from '@styled-icons/material/Looks3';
-import { Looks4 } from '@styled-icons/material/Looks4';
-import { Looks5 } from '@styled-icons/material/Looks5';
-import { Looks6 } from '@styled-icons/material/Looks6';
-import { LooksOne } from '@styled-icons/material/LooksOne';
-import { LooksTwo } from '@styled-icons/material/LooksTwo';
-import { Check } from '@styled-icons/material/Check';
+import { Link } from '@styled-icons/material/Link';
+import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
 import { TippyProps } from '@tippyjs/react';
 import {
-  addColumn,
-  addRow,
+  AlignToolbarButton,
   BalloonToolbar,
-  deleteColumn,
-  deleteRow,
-  deleteTable,
+  BlockToolbarButton,
+  CodeBlockToolbarButton,
+  ColorPickerToolbarDropdown,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
-  ELEMENT_H1,
-  ELEMENT_H2,
-  ELEMENT_H3,
-  ELEMENT_H4,
-  ELEMENT_H5,
-  ELEMENT_H6,
   ELEMENT_OL,
   ELEMENT_UL,
   getPluginType,
+  ImageToolbarButton,
   indent,
   insertTable,
+  LinkToolbarButton,
+  ListToolbarButton,
+  MarkToolbarButton,
   MARK_BG_COLOR,
   MARK_BOLD,
   MARK_CODE,
@@ -61,27 +48,14 @@ import {
   MARK_ITALIC,
   MARK_KBD,
   MARK_STRIKETHROUGH,
-  MARK_SUBSCRIPT,
-  MARK_SUPERSCRIPT,
   MARK_UNDERLINE,
-  outdent,
-  AlignToolbarButton,
-  ToolbarButton,
-  CodeBlockToolbarButton,
-  ColorPickerToolbarDropdown,
-  BlockToolbarButton,
-  ImageToolbarButton,
-  LinkToolbarButton,
-  ListToolbarButton,
-  MarkToolbarButton,
   MediaEmbedToolbarButton,
+  outdent,
   TableToolbarButton,
+  ToolbarButton,
 } from '@udecode/plate';
-import { Link } from '@styled-icons/material/Link';
-import { Image } from '@styled-icons/material/Image';
-import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
-import { FontDownload } from '@styled-icons/material/FontDownload';
-import { FormatColorText } from '@styled-icons/material/FormatColorText';
+import 'tippy.js/animations/scale.css';
+import 'tippy.js/dist/tippy.css';
 import { useMyPlateEditorRef } from '../typescript';
 
 export const BasicElementToolbarButtons = () => {
