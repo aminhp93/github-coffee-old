@@ -9,4 +9,13 @@ export default {
     secret: '4c2b97bec11d18dc8a13',
     cluster: 'ap1',
   },
+  firebase: {
+    apiKey: 'AIzaSyD10PnOvnUmemjEhTLJuDKQ7-oUiMd2e38',
+    authDomain: 'reactjs-with-redux.firebaseapp.com',
+    projectId: 'reactjs-with-redux',
+    storageBucket: 'reactjs-with-redux.appspot.com',
+    messagingSenderId: '37847634387',
+    appId: '1:37847634387:web:ef0e42e463e2a333c0df26',
+    measurementId: 'G-JPBLGYGNZ1',
+  },
 };

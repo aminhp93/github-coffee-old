@@ -19,7 +19,7 @@ const client = axios.create({
 client.interceptors.request.use(
   async (config) => {
     // Try refreshing the session, without relying on the cache
-
+   
     return {
       ...config,
     };

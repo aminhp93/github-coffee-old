@@ -33,14 +33,18 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
 import Work from 'features/work';
+import { initializeApp } from 'firebase/app';
 
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 notification.config({
   placement: 'bottomLeft',
   duration: 3,
 });
+
+initializeApp(config.firebase);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
@@ -138,6 +142,16 @@ const LIST_ROUTER_FOOTER = [
   },
 ];
 
+const LIST_ROUTER_PUBLIC: any = [];
+
+const LIST_ROUTER_FOOTER_PUBLIC = [
+  {
+    linkTo: '/stock',
+    label: 'stock',
+    icon: <StockOutlined style={{ margin: '0 8px' }} />,
+  },
+];
+
 function App() {
   console.log(process.env);
   let navigate = useNavigate();
@@ -145,9 +159,10 @@ function App() {
   const user = useAppSelector(selectUser);
 
   const renderSideBar = () => {
+    const list = user && user.id ? LIST_ROUTER : LIST_ROUTER_PUBLIC;
     return (
       <div style={{ overflow: 'auto' }}>
-        {LIST_ROUTER.map((i: any) => {
+        {list.map((i: any) => {
           return (
             <div
               className="App-sidebar-item"
@@ -163,9 +178,11 @@ function App() {
   };
 
   const renderSideBarFooter = () => {
+    const list =
+      user && user.id ? LIST_ROUTER_FOOTER : LIST_ROUTER_FOOTER_PUBLIC;
     return (
       <div style={{ overflow: 'auto' }}>
-        {LIST_ROUTER_FOOTER.map((i: any) => {
+        {list.map((i: any) => {
           return (
             <div
               className="App-sidebar-item"
@@ -187,7 +204,6 @@ function App() {
           <UserOutlined style={{ margin: '0 8px' }} />
           <span className="App-sidebar-label">
             {config.env === 'production' ? '[PRO] ' : '[DEV] '}
-
             {user?.username || 'No user'}
           </span>
         </div>
@@ -205,7 +221,16 @@ function App() {
   };
 
   useEffect(() => {
-    getAuthUser();
+    const auth = getAuth();
+    onAuthStateChanged(auth, (data: any) => {
+      console.log('onAuthStateChanged', data);
+      localStorage.removeItem('ACCESS_TOKEN');
+      localStorage.setItem('ACCESS_TOKEN', data.accessToken);
+      const headers = {
+        Authorization: `Bearer ${data.accessToken}`,
+      };
+      getAuthUser(headers);
+    });
   }, []);
 
   return (
@@ -226,33 +251,49 @@ function App() {
         {renderSideBarFooter2()}
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <Routes>
-          <Route path="api" element={<API />} />
-          <Route path="chat" element={<Chat />} />
-          <Route path="demo" element={<Demo />} />
-          <Route path="echarts" element={<CustomEcharts />} />
-          <Route path="flexLayout" element={<CustomFlexLayout />} />
-          <Route path="tradingView" element={<CustomTradingView />} />
-          <Route path="note/add/" element={<NoteAdd />} />
-          <Route path="note" element={<Note />} />
-          <Route path="post/create/" element={<PostCreate />} />
-          <Route path="post" element={<Post />} />
-          <Route path="stock" element={<Stock />} />
-          <Route path="taskManager" element={<TaskManager />} />
-          <Route path="test" element={<Test />} />
-          <Route path="user" element={<User />} />
-          <Route path="work" element={<Work />} />
+        {user && user.id ? (
+          <Routes>
+            <Route path="api" element={<API />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="demo" element={<Demo />} />
+            <Route path="echarts" element={<CustomEcharts />} />
+            <Route path="flexLayout" element={<CustomFlexLayout />} />
+            <Route path="tradingView" element={<CustomTradingView />} />
+            <Route path="note/add/" element={<NoteAdd />} />
+            <Route path="note" element={<Note />} />
+            <Route path="post/create/" element={<PostCreate />} />
+            <Route path="post" element={<Post />} />
+            <Route path="stock" element={<Stock />} />
+            <Route path="taskManager" element={<TaskManager />} />
+            <Route path="test" element={<Test />} />
+            <Route path="user" element={<User />} />
+            <Route path="work" element={<Work />} />
 
-          <Route
-            path="*"
-            element={
-              <main style={{ padding: '1rem' }}>
-                <p>There's nothing here!</p>
-              </main>
-            }
-          />
-          <Route path="/" element={<div />} />
-        </Routes>
+            <Route
+              path="*"
+              element={
+                <main style={{ padding: '1rem' }}>
+                  <p>There's nothing here!</p>
+                </main>
+              }
+            />
+            <Route path="/" element={<div />} />
+          </Routes>
+        ) : (
+          <Routes>
+            <Route path="stock" element={<Stock />} />
+            <Route path="user" element={<User />} />
+            <Route
+              path="*"
+              element={
+                <main style={{ padding: '1rem' }}>
+                  <p>There's nothing here!</p>
+                </main>
+              }
+            />
+            <Route path="/" element={<div />} />
+          </Routes>
+        )}
       </div>
     </div>
   );

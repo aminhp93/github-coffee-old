@@ -1,6 +1,5 @@
 import { Button, notification } from 'antd';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
-import { initializeApp } from 'firebase/app';
 import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useEffect } from 'react';
 import { UserService } from 'services/user';
@@ -11,18 +10,9 @@ import { selectUser, update } from './userSlice';
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig: any = {
-  apiKey: 'AIzaSyD10PnOvnUmemjEhTLJuDKQ7-oUiMd2e38',
-  authDomain: 'reactjs-with-redux.firebaseapp.com',
-  projectId: 'reactjs-with-redux',
-  storageBucket: 'reactjs-with-redux.appspot.com',
-  messagingSenderId: '37847634387',
-  appId: '1:37847634387:web:ef0e42e463e2a333c0df26',
-  measurementId: 'G-JPBLGYGNZ1',
-};
 
 // Initialize Firebase
-initializeApp(firebaseConfig);
+
 // console.log(app);
 // Initialize Firebase Auth
 
