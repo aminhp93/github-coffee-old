@@ -22,13 +22,21 @@ export const checkMarketOpen = (): boolean => {
 };
 
 export const getStartAndEndTime = () => {
-  const start = moment();
+  const current = moment();
+  let add = 0;
+  if (current.format('ddd') === 'Sat') {
+    add = -1;
+  } else if (current.format('ddd') === 'Sun') {
+    add = -2;
+  }
+  const start = moment().add(add, 'days');
+
   start.set({
     hour: 9,
     minute: 0,
   });
 
-  const end = moment();
+  const end = moment().add(add, 'days');
   end.set({
     hour: 15,
     minute: 0,
