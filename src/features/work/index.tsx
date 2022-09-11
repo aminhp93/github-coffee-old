@@ -3,7 +3,7 @@ import { IJsonModel } from 'flexlayout-react';
 
 export interface IWokrProps {}
 
-export default function Wokr(props: IWokrProps) {
+export default function Work(props: IWokrProps) {
   const json: IJsonModel = {
     global: {
       tabEnableFloat: true,
@@ -14,30 +14,21 @@ export default function Wokr(props: IWokrProps) {
     borders: [
       {
         type: 'border',
-        selected: 2,
+        // selected: 2,
         location: 'bottom',
         children: [
           {
             type: 'tab',
-            id: '#7f607333-a914-403c-b46d-57d871a82576',
-            name: 'Output',
-            component: 'grid',
-            enableClose: false,
-            icon: 'images/bar_chart.svg',
-          },
-          {
-            type: 'tab',
             id: '#2a50a894-0744-4696-bf4e-54ae83185ebc',
-            name: 'Terminal',
-            component: 'grid',
+            name: 'Post',
+            component: 'post',
             enableClose: false,
-            icon: 'images/terminal.svg',
           },
           {
             type: 'tab',
             id: '#2966f663-cf93-4efe-8d4a-e6c3bb475991',
-            name: 'Layout JSON',
-            component: 'json',
+            name: 'Post',
+            component: 'post',
           },
         ],
       },
@@ -50,9 +41,8 @@ export default function Wokr(props: IWokrProps) {
             id: '#bf47f3eb-86a7-4e56-b413-e7f8086b4b2c',
             name: 'Navigation',
             altName: 'The Navigation Tab',
-            component: 'grid',
+            component: 'nagivation',
             enableClose: false,
-            icon: 'images/folder.svg',
           },
         ],
       },
@@ -64,10 +54,9 @@ export default function Wokr(props: IWokrProps) {
           {
             type: 'tab',
             id: '#a02e66f1-14b1-4403-a9f3-99f356d382c6',
-            name: 'Options',
-            component: 'grid',
+            name: 'Setting',
+            component: 'setting',
             enableClose: false,
-            icon: 'images/settings.svg',
           },
         ],
       },
@@ -84,14 +73,8 @@ export default function Wokr(props: IWokrProps) {
             {
               type: 'tab',
               id: '#7df660c1-907f-4ef3-ac7e-78b8bdbbc994',
-              name: 'One',
+              name: 'Stock',
               component: 'stock',
-            },
-            {
-              type: 'tab',
-              id: '#3e2864b3-2728-48ed-93e0-ab21b5c19920',
-              name: 'Two',
-              component: 'grid',
             },
           ],
           active: true,
@@ -99,5 +82,6 @@ export default function Wokr(props: IWokrProps) {
       ],
     },
   };
+
   return <CustomFlexLayout json={json} />;
 }

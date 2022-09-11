@@ -1,3 +1,4 @@
+import { CheckCircleOutlined } from '@ant-design/icons';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
 import { Divider } from '@mui/material';
 import Box from '@mui/material/Box';
@@ -6,6 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import { makeStyles } from '@mui/styles';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Spin } from 'antd';
 import Echarts from 'components/Echarts';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
@@ -41,6 +43,7 @@ export default function StockMarketOverview() {
   const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
   const [delay, setDelay] = useState<number>(1000 * 10);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
+  const [loading, setLoading] = useState(false);
 
   const { start, end } = getStartAndEndTime();
 
@@ -162,37 +165,43 @@ export default function StockMarketOverview() {
         StockService.getHistoricalQuotes(i, undefined, undefined, 'fireant')
       );
     });
-    return Promise.all(listPromises).then((res) => {
-      let mappedData = res
-        .map((i: any) => {
-          const listItem = i.data;
-          const changePercent =
-            ((listItem[0].priceClose - listItem[1].priceClose) /
-              listItem[1].priceClose) *
-            100;
-          const todayItem = listItem[0];
-          // listItem.splice(0, 1)
-          const averageVolume15Days = meanBy(listItem, 'dealVolume');
+    setLoading(true);
+    return Promise.all(listPromises)
+      .then((res) => {
+        setLoading(false);
+        let mappedData = res
+          .map((i: any) => {
+            const listItem = i.data;
+            const changePercent =
+              ((listItem[0].priceClose - listItem[1].priceClose) /
+                listItem[1].priceClose) *
+              100;
+            const todayItem = listItem[0];
+            // listItem.splice(0, 1)
+            const averageVolume15Days = meanBy(listItem, 'dealVolume');
 
-          const estimatedVolumeChange =
-            (todayItem.dealVolume / averageVolume15Days) * 100;
-          return {
-            symbol: todayItem.symbol,
-            changePercent: Number(changePercent.toFixed(1)),
-            estimatedVolumeChange: Number(estimatedVolumeChange.toFixed(0)),
-            todayVolume: Number(
-              (todayItem.dealVolume / NUMBER_UNIT_REDUCED).toFixed(2)
-            ),
-            averageVolume15Days: Number(
-              (averageVolume15Days / NUMBER_UNIT_REDUCED).toFixed(0)
-            ),
-          };
-        })
-        .sort((a: any, b: any) => {
-          return b.changePercent - a.changePercent;
-        });
-      return mappedData;
-    });
+            const estimatedVolumeChange =
+              (todayItem.dealVolume / averageVolume15Days) * 100;
+            return {
+              symbol: todayItem.symbol,
+              changePercent: Number(changePercent.toFixed(1)),
+              estimatedVolumeChange: Number(estimatedVolumeChange.toFixed(0)),
+              todayVolume: Number(
+                (todayItem.dealVolume / NUMBER_UNIT_REDUCED).toFixed(2)
+              ),
+              averageVolume15Days: Number(
+                (averageVolume15Days / NUMBER_UNIT_REDUCED).toFixed(0)
+              ),
+            };
+          })
+          .sort((a: any, b: any) => {
+            return b.changePercent - a.changePercent;
+          });
+        return mappedData;
+      })
+      .catch((e) => {
+        setLoading(false);
+      });
   };
 
   const getDataHistoryUrl = async (symbol: string) => {
@@ -213,34 +222,47 @@ export default function StockMarketOverview() {
   };
 
   const fetchList = async () => {
-    const res = await StockService.getWatchlist();
-    if (res && res.data) {
-      fetch(res.data, 'thanh_khoan_vua').then((res) => {
-        const fetchData4 = async (data: any) => {
-          const listPromises: any = [];
-          data.forEach((i: any) => {
-            listPromises.push(getDataHistoryUrl(i.symbol));
-          });
+    try {
+      setLoading(true);
+      const res = await StockService.getWatchlist();
+      if (res && res.data) {
+        fetch(res.data, 'thanh_khoan_vua').then((res) => {
+          setLoading(false);
 
-          return Promise.all(listPromises).then((res) => {
-            const keyByRes = keyBy(res, 'symbol');
-            const newData = data.map((i: any) => {
-              i.history = keyByRes[i.symbol].res;
-              return i;
+          const fetchData4 = async (data: any) => {
+            const listPromises: any = [];
+            data.forEach((i: any) => {
+              listPromises.push(getDataHistoryUrl(i.symbol));
             });
-            const dataSource = filtered
-              ? newData.filter(
-                  (i: any) =>
-                    i.changePercent > changePercentMin &&
-                    i.changePercent < changePercentMax &&
-                    i.estimatedVolumeChange > estimatedVolumeChange
-                )
-              : newData;
-            setData4(dataSource);
-          });
-        };
-        fetchData4(res);
-      });
+            setLoading(true);
+            return Promise.all(listPromises)
+              .then((res) => {
+                setLoading(false);
+                const keyByRes = keyBy(res, 'symbol');
+                const newData = data.map((i: any) => {
+                  i.history = keyByRes[i.symbol].res;
+                  return i;
+                });
+                const dataSource = filtered
+                  ? newData.filter(
+                      (i: any) =>
+                        i.changePercent > changePercentMin &&
+                        i.changePercent < changePercentMax &&
+                        i.estimatedVolumeChange > estimatedVolumeChange
+                    )
+                  : newData;
+                setData4(dataSource);
+              })
+              .catch((e) => {
+                setLoading(false);
+              });
+          };
+          fetchData4(res);
+        });
+      }
+    } catch (e) {
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -276,6 +298,10 @@ export default function StockMarketOverview() {
         </Box>
         <Box style={{ marginLeft: '20px' }}>
           <div>
+            <Box>
+              {loading ? 'Loading' : 'Done loading'}{' '}
+              {loading ? <Spin /> : <CheckCircleOutlined />}
+            </Box>
             <Box>
               <Box>Start {start.format(FULL_TIME_FORMAT)}</Box>
               <Box>End {end.format(FULL_TIME_FORMAT)}</Box>
@@ -319,7 +345,7 @@ export default function StockMarketOverview() {
   };
 
   return (
-    <Box className={`${classes.root} width-100 flex`}>
+    <Box className={`${classes.root} width-100 flex height-100`}>
       {renderPotentialBuyTable()}
     </Box>
   );

@@ -1,11 +1,15 @@
-import { useState, useEffect, memo } from 'react';
+import {
+  CheckCircleOutlined,
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { v4 as uuidv4 } from 'uuid';
-import { IPost } from 'types';
+import { memo, useEffect, useState } from 'react';
 import { PostService } from 'services';
-import { useDebounce } from 'usehooks-ts';
-import { DeleteOutlined, CheckOutlined } from '@ant-design/icons';
+import { IPost } from 'types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
   slug: string;
@@ -29,6 +33,7 @@ const MemoizedPostDetail = memo(function PostDetail({
   const [postObj, setPostObj] = useState({} as IPost);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isUpdated, setIsUpdated] = useState<boolean>(true);
 
   const getStockPost = async () => {
     try {
@@ -61,7 +66,7 @@ const MemoizedPostDetail = memo(function PostDetail({
       };
       setLoading(true);
       const res = await PostService.updatePost(slug, data);
-
+      setIsUpdated(true);
       setLoading(false);
       if (res && res.data) {
         cbUpdate && cbUpdate(res.data);
@@ -88,29 +93,41 @@ const MemoizedPostDetail = memo(function PostDetail({
   const handleChange = (e: any) => {
     console.log(e);
     setPost(e);
+    setIsUpdated(false);
   };
 
-  const debouncePost = useDebounce(post, 300);
-  const debouncePostTitle = useDebounce(postTitle, 300);
-
   useEffect(() => {
-    handleUpdate();
-  }, [debouncePost]);
-
-  useEffect(() => {
-    handleUpdate();
-  }, [debouncePostTitle]);
+    setIsUpdated(true);
+  }, [slug]);
 
   return (
     <div className="PostDetail width-100">
-      <Button
-        type="primary"
-        // danger
-        loading={loading}
-        onClick={handleUpdate}
-        icon={<CheckOutlined />}
-        style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
-      />
+      {isUpdated ? (
+        <Button
+          type="primary"
+          // danger
+          icon={<CheckCircleOutlined />}
+          style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+        />
+      ) : (
+        <>
+          <Button
+            type="primary"
+            // danger
+            loading={loading}
+            onClick={handleUpdate}
+            icon={<CheckOutlined />}
+            style={{ position: 'fixed', top: '20px', right: '60px', zIndex: 1 }}
+          />
+          <Button
+            type="primary"
+            danger
+            loading={loading}
+            icon={<CloseOutlined />}
+            style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+          />
+        </>
+      )}
 
       {confirmDelete ? (
         <>
