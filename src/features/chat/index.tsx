@@ -1,13 +1,18 @@
-import { useEffect, useState } from 'react';
-import Pusher from 'pusher-js';
-import ChatMessageList from './ChatMessageList';
-import ChatBox from './ChatBox';
-import ChatUserList from './ChatUserList';
+import { Box } from '@mui/material';
+import { Col, Row } from 'antd';
 import config from 'config';
+import Pusher from 'pusher-js';
+import { useEffect, useState } from 'react';
 import { ChatService } from 'services/chat';
-import { Row, Col } from 'antd';
+import ChatBox from './ChatBox';
+import ChatMessageList from './ChatMessageList';
+import ChatUserList from './ChatUserList';
 
-function Chat() {
+interface IProps {
+  hideOnlineUsers?: boolean;
+}
+
+const Chat = ({ hideOnlineUsers }: IProps) => {
   const [chats, setChats] = useState([] as any);
   const [users, setUsers] = useState({} as any);
 
@@ -104,24 +109,34 @@ function Chat() {
   };
 
   return (
-    <div className="Chat">
+    <div className="Chat height-100">
       <Row style={{ height: '100%' }}>
-        <Col xs={0} sm={0} md={4}>
+        <Col xs={0} sm={0} md={hideOnlineUsers ? 0 : 4}>
           <ChatUserList users={Object.values(users)} />
         </Col>
-        <Col xs={24} sm={24} md={20} style={{ height: '100%' }}>
-          <div className="ChatListMessagesContainer">
-            <div style={{ flex: 1, overflow: 'auto' }}>
+        <Col
+          xs={24}
+          sm={24}
+          md={hideOnlineUsers ? 24 : 20}
+          style={{ height: '100%' }}
+        >
+          <Box
+            className="ChatListMessagesContainer height-100 flex"
+            style={{ flexDirection: 'column', justifyContent: 'space-between' }}
+          >
+            <Box
+              style={{ flex: 1, overflow: 'auto', background: 'lightgreen' }}
+            >
               <ChatMessageList chats={chats} />
-            </div>
-            <div>
+            </Box>
+            <Box sx={{ height: '100px' }}>
               <ChatBox cb={handleCb} />
-            </div>
-          </div>
+            </Box>
+          </Box>
         </Col>
       </Row>
     </div>
   );
-}
+};
 
 export default Chat;

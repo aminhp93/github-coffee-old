@@ -2,6 +2,7 @@ import { IJsonModel, Layout, Model, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
+import Chat from 'features/chat';
 import Post from 'features/post';
 import Stock from 'features/stock';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
@@ -39,6 +40,14 @@ const DEFAULT_JSON: IJsonModel = {
     ],
   },
 };
+
+const COMPONENT_OBJ: { [index: string]: any } = {
+  Stock: <Stock />,
+  Post: <Post />,
+  StockMarketOverview: <StockMarketOverview />,
+  StockNews: <StockNews />,
+  Chat: <Chat hideOnlineUsers />,
+};
 interface IProps {
   json?: IJsonModel;
 }
@@ -47,16 +56,8 @@ function FlexLayout({ json }: IProps) {
   const model = Model.fromJson(json || DEFAULT_JSON);
   const factory = (node: TabNode) => {
     console.log(node);
-    const component = node.getComponent();
-    if (component === 'stock') {
-      return <Stock />;
-    } else if (component === 'post') {
-      return <Post />;
-    } else if (component === 'StockMarketOverview') {
-      return <StockMarketOverview />;
-    } else if (component === 'StockNews') {
-      return <StockNews />;
-    }
+    const component: any = node.getComponent();
+    return COMPONENT_OBJ[component];
   };
 
   return (

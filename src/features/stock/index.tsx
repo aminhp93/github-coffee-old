@@ -15,7 +15,7 @@ const useStyles = makeStyles({
   },
 });
 
-export default function Stock() {
+const Stock: React.FunctionComponent = () => {
   const classes = useStyles();
 
   const [modal, setModal] = useState('');
@@ -129,4 +129,6 @@ export default function Stock() {
       )}
     </Box>
   );
-}
+};
+
+export default Stock;

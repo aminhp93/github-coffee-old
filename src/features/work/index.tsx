@@ -3,7 +3,7 @@ import { IJsonModel } from 'flexlayout-react';
 
 export interface IWokrProps {}
 
-export default function Work(props: IWokrProps) {
+const Work: React.FunctionComponent = (props: IWokrProps) => {
   const json: IJsonModel = {
     global: {
       tabEnableFloat: true,
@@ -21,27 +21,7 @@ export default function Work(props: IWokrProps) {
             type: 'tab',
             id: '#2a50a894-0744-4696-bf4e-54ae83185ebc',
             name: 'Post',
-            component: 'post',
-            enableClose: false,
-          },
-          {
-            type: 'tab',
-            id: '#2966f663-cf93-4efe-8d4a-e6c3bb475991',
-            name: 'Post',
-            component: 'post',
-          },
-        ],
-      },
-      {
-        type: 'border',
-        location: 'left',
-        children: [
-          {
-            type: 'tab',
-            id: '#bf47f3eb-86a7-4e56-b413-e7f8086b4b2c',
-            name: 'Navigation',
-            altName: 'The Navigation Tab',
-            component: 'nagivation',
+            component: 'Post',
             enableClose: false,
           },
         ],
@@ -53,9 +33,9 @@ export default function Work(props: IWokrProps) {
         children: [
           {
             type: 'tab',
-            id: '#a02e66f1-14b1-4403-a9f3-99f356d382c6',
-            name: 'Setting',
-            component: 'setting',
+            id: '#2966f663-cf93-4efe-8d4a-e6c3bb475991',
+            name: 'Chat',
+            component: 'Chat',
             enableClose: false,
           },
         ],
@@ -84,4 +64,6 @@ export default function Work(props: IWokrProps) {
   };
 
   return <CustomFlexLayout json={json} />;
-}
+};
+
+export default Work;

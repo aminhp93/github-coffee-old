@@ -1,32 +1,38 @@
-import 'tippy.js/dist/tippy.css';
-import { useRef } from 'react';
-import axios from 'axios';
 import {
-  createPlateUI,
-  HeadingToolbar,
-  MentionCombobox,
-  Plate,
+  AutoformatPlugin,
   createAlignPlugin,
   createAutoformatPlugin,
   createBlockquotePlugin,
   createBoldPlugin,
   createCodeBlockPlugin,
   createCodePlugin,
+  createComboboxPlugin,
+  createDeserializeCsvPlugin,
+  createDeserializeDocxPlugin,
+  createDeserializeMdPlugin,
+  createDndPlugin,
   createExitBreakPlugin,
+  createFontBackgroundColorPlugin,
+  createFontColorPlugin,
+  createFontSizePlugin,
   // createHeadingPlugin,
   createHighlightPlugin,
-  createKbdPlugin,
+  createHorizontalRulePlugin,
   createImagePlugin,
+  createIndentPlugin,
   createItalicPlugin,
+  createKbdPlugin,
   createLinkPlugin,
   createListPlugin,
   createMediaEmbedPlugin,
+  createMentionPlugin,
   createNodeIdPlugin,
+  createNormalizeTypesPlugin,
   createParagraphPlugin,
+  createPlateUI,
   createResetNodePlugin,
   createSelectOnBackspacePlugin,
   createSoftBreakPlugin,
-  createDndPlugin,
   createStrikethroughPlugin,
   createSubscriptPlugin,
   createSuperscriptPlugin,
@@ -34,48 +40,35 @@ import {
   createTodoListPlugin,
   createTrailingBlockPlugin,
   createUnderlinePlugin,
-  createComboboxPlugin,
-  createMentionPlugin,
-  createIndentPlugin,
-  createFontColorPlugin,
-  createFontBackgroundColorPlugin,
-  createDeserializeMdPlugin,
-  createDeserializeCsvPlugin,
-  createNormalizeTypesPlugin,
-  createFontSizePlugin,
-  createHorizontalRulePlugin,
-  createDeserializeDocxPlugin,
-  PlateEventProvider,
-  AutoformatPlugin,
   ELEMENT_CODE_BLOCK,
+  MentionCombobox,
+  Plate,
   StyledElement,
 } from '@udecode/plate';
+import { createJuicePlugin } from '@udecode/plate-juice';
 import {
   createExcalidrawPlugin,
   ELEMENT_EXCALIDRAW,
   ExcalidrawElement,
 } from '@udecode/plate-ui-excalidraw';
-import { createJuicePlugin } from '@udecode/plate-juice';
-import {
-  MarkBallonToolbar,
-  ToolbarButtons,
-} from './config/components/Toolbars';
-import { withStyledPlaceHolders } from './config/components/withStyledPlaceHolders';
-import { withStyledDraggables } from './config/components/withStyledDraggables';
+import axios from 'axios';
+import { useRef } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { MENTIONABLES } from './config/mentionables';
-import { CONFIG } from './config/config';
-import { VALUES } from './config/values/values';
-import { createDragOverCursorPlugin } from './config/plugins';
+import 'tippy.js/dist/tippy.css';
 import { CursorOverlayContainer } from './config/components/CursorOverlayContainer';
+import { MarkBallonToolbar } from './config/components/Toolbars';
+import { withStyledDraggables } from './config/components/withStyledDraggables';
+import { CONFIG } from './config/config';
+import { MENTIONABLES } from './config/mentionables';
+import { createDragOverCursorPlugin } from './config/plugins';
 import {
   createMyPlugins,
   MyEditor,
   MyPlatePlugin,
   MyValue,
 } from './config/typescript';
-import './CustomPlate.less'
+import './CustomPlate.less';
 
 // Migrate to v8 - Part 1: https://www.loom.com/share/71596199ad5a47c2b58cdebab26f4642
 // Migrate to v8 - Part 2: https://www.loom.com/share/d85c89220ffa4fe2b6f934a6c6530689
@@ -218,7 +211,7 @@ const CustomPlate = (props: IProps) => {
   const containerRef = useRef(null);
 
   return (
-    <div style={{ height: '100%' }} className="CustomPlate">
+    <div className="CustomPlate height-100 width-100">
       <DndProvider backend={HTML5Backend}>
         {/* {!props.hideToolBar && (
           <PlateEventProvider>

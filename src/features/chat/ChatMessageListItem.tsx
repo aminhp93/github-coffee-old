@@ -1,9 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
+import { Box } from '@mui/material';
 import { Divider } from 'antd';
-import moment from 'moment';
+import CustomPlate from 'components/CustomPlate';
 import { IChat } from 'types';
 import { getParsedJson } from 'utils';
-import CustomPlate from 'components/CustomPlate';
 
 interface IProps {
   chat: IChat;
@@ -13,19 +12,21 @@ const ChatMessageListItem = ({ chat }: IProps) => {
   console.log(13, getParsedJson(chat.message));
   return (
     <>
-      <div className="flex">
-        <div className="ChatMessageListItem-avatar">ID: {chat.sender}</div>
-        <div className="ChatMessageListItem-message-container">
-          <div>{moment(chat.created_at).format('YYYY-MM-DD, hh:mm')}</div>
-          <div>
-            <CustomPlate
-              id={`ChatMessageListItem-${chat.id}`}
-              hideToolBar
-              value={getParsedJson(chat.message)}
-            />
-          </div>
-        </div>
-      </div>
+      <Box className="flex">
+        <Box
+          className="ChatMessageListItem-avatar"
+          sx={{ width: '50px', background: 'red' }}
+        >
+          ID: {chat.sender}
+        </Box>
+        <Box className="ChatMessageListItem-message-container flex-1">
+          <CustomPlate
+            id={`ChatMessageListItem-${chat.id}`}
+            hideToolBar
+            value={getParsedJson(chat.message)}
+          />
+        </Box>
+      </Box>
       <Divider />
     </>
   );
