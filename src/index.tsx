@@ -223,7 +223,7 @@ function App() {
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, (data: any) => {
-      console.log('onAuthStateChanged1', data);
+      console.log('onAuthStateChanged1', data, JSON.stringify(data));
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.setItem('ACCESS_TOKEN', data.accessToken);
       const headers = {

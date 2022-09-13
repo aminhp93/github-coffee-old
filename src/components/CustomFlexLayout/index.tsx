@@ -50,10 +50,12 @@ const COMPONENT_OBJ: { [index: string]: any } = {
 };
 interface IProps {
   json?: IJsonModel;
+  onModelChange?: any;
 }
 
-function FlexLayout({ json }: IProps) {
+function FlexLayout({ json, onModelChange }: IProps) {
   const model = Model.fromJson(json || DEFAULT_JSON);
+
   const factory = (node: TabNode) => {
     console.log(node);
     const component: any = node.getComponent();
@@ -62,7 +64,13 @@ function FlexLayout({ json }: IProps) {
 
   return (
     <div className="CustomFlexLayout relative height-100 width-100">
-      <Layout model={model} factory={factory} />;
+      <Layout
+        model={model}
+        factory={factory}
+        // onAction={handleOnAction}
+        onModelChange={onModelChange}
+      />
+      ;
     </div>
   );
 }

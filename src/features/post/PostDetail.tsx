@@ -107,7 +107,12 @@ const MemoizedPostDetail = memo(function PostDetail({
           type="primary"
           // danger
           icon={<CheckCircleOutlined />}
-          style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            zIndex: 1,
+          }}
         />
       ) : (
         <>
@@ -117,14 +122,24 @@ const MemoizedPostDetail = memo(function PostDetail({
             loading={loading}
             onClick={handleUpdate}
             icon={<CheckOutlined />}
-            style={{ position: 'fixed', top: '20px', right: '60px', zIndex: 1 }}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '60px',
+              zIndex: 1,
+            }}
           />
           <Button
             type="primary"
             danger
             loading={loading}
             icon={<CloseOutlined />}
-            style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1 }}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              zIndex: 1,
+            }}
           />
         </>
       )}
@@ -135,7 +150,7 @@ const MemoizedPostDetail = memo(function PostDetail({
             type="primary"
             danger
             style={{
-              position: 'fixed',
+              position: 'absolute',
               bottom: '20px',
               right: '160px',
               zIndex: 1,
@@ -146,7 +161,7 @@ const MemoizedPostDetail = memo(function PostDetail({
           </Button>
           <Button
             style={{
-              position: 'fixed',
+              position: 'absolute',
               bottom: '20px',
               right: '20px',
               zIndex: 1,
@@ -163,7 +178,7 @@ const MemoizedPostDetail = memo(function PostDetail({
           onClick={() => setConfirmDelete(true)}
           icon={<DeleteOutlined />}
           style={{
-            position: 'fixed',
+            position: 'absolute',
             bottom: '20px',
             right: '20px',
             zIndex: 1,

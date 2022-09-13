@@ -5,13 +5,14 @@ export const DATE_FORMAT = 'YYYY-MM-DD';
 export const TIME_FORMAT = 'HH:mm';
 export const FULL_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
 export const TIME_FRAME = '1';
+export const DELAY_TIME = 1000 * 60;
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
   const hour = currentTime.format('H');
   const date = currentTime.format('ddd');
   if (
-    parseInt(hour) > 9 &&
+    parseInt(hour) > 8 &&
     parseInt(hour) < 15 &&
     date !== 'Sun' &&
     date !== 'Sat'

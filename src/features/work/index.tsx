@@ -4,7 +4,9 @@ import { IJsonModel } from 'flexlayout-react';
 export interface IWokrProps {}
 
 const Work: React.FunctionComponent = (props: IWokrProps) => {
-  const json: IJsonModel = {
+  const savedLayout = localStorage.getItem('flexLayoutModel_Work');
+
+  let json: IJsonModel = {
     global: {
       tabEnableFloat: true,
       tabSetMinWidth: 100,
@@ -54,7 +56,8 @@ const Work: React.FunctionComponent = (props: IWokrProps) => {
               type: 'tab',
               id: '#7df660c1-907f-4ef3-ac7e-78b8bdbbc994',
               name: 'Stock',
-              component: 'stock',
+              component: 'Stock',
+              enableClose: false,
             },
           ],
           active: true,
@@ -63,7 +66,17 @@ const Work: React.FunctionComponent = (props: IWokrProps) => {
     },
   };
 
-  return <CustomFlexLayout json={json} />;
+  if (savedLayout) {
+    json = JSON.parse(savedLayout);
+  }
+
+  const handleOnModelChange = (data: any) => {
+    console.log(data);
+    localStorage.removeItem('flexLayoutModel_Work');
+    localStorage.setItem('flexLayoutModel_Work', JSON.stringify(data.toJson()));
+  };
+
+  return <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />;
 };
 
 export default Work;

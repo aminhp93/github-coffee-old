@@ -15,14 +15,14 @@ const useStyles = makeStyles({
   },
 });
 
-const Stock: React.FunctionComponent = () => {
+const Stock = () => {
   const classes = useStyles();
 
   const [modal, setModal] = useState('');
-  const [showStockMarketOverview, setShowStockMarketOverview] = useState(true);
-  const [showStockNews, setShowStockNews] = useState(false);
 
-  const json: IJsonModel = {
+  const savedLayout = localStorage.getItem('flexLayoutModel_Stock');
+
+  let json: IJsonModel = {
     global: {
       tabEnableFloat: true,
       tabSetMinWidth: 100,
@@ -58,6 +58,19 @@ const Stock: React.FunctionComponent = () => {
     },
   };
 
+  if (savedLayout) {
+    json = JSON.parse(savedLayout);
+  }
+
+  const handleOnModelChange = (data: any) => {
+    console.log(data);
+    localStorage.removeItem('flexLayoutModel_Stock');
+    localStorage.setItem(
+      'flexLayoutModel_Stock',
+      JSON.stringify(data.toJson())
+    );
+  };
+
   const handleChangeMenu = (e: any) => {
     if (e.key === 'tools') {
       setModal('StockTools');
@@ -84,37 +97,9 @@ const Stock: React.FunctionComponent = () => {
         </Box>
       </Box>
       <Box className="flex" style={{ flex: 1, overflow: 'auto' }}>
-        <CustomFlexLayout json={json} />
+        <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />
       </Box>
 
-      {/* <Box className="flex" style={{ flex: 1, overflow: 'auto' }}>
-        {showStockMarketOverview && (
-          <Box className="flex" style={{ flex: 1 }}>
-            <StockMarketOverview />
-          </Box>
-        )}
-
-        {showStockNews && (
-          <Box className="flex" style={{ flex: 1 }}>
-            <StockNews />
-          </Box>
-        )}
-      </Box>
-      <Box className="flex" style={{ background: 'gray' }}>
-        <Button
-          type={showStockMarketOverview ? 'primary' : undefined}
-          onClick={() => setShowStockMarketOverview(!showStockMarketOverview)}
-        >
-          StockMarketOverview
-        </Button>
-
-        <Button
-          type={showStockNews ? 'primary' : undefined}
-          onClick={() => setShowStockNews(!showStockNews)}
-        >
-          StockNews
-        </Button>
-      </Box> */}
       {modal && (
         <Modal
           centered

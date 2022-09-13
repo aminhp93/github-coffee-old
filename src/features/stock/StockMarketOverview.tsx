@@ -17,6 +17,7 @@ import { StockService } from 'services';
 import { useInterval } from 'usehooks-ts';
 import {
   checkMarketOpen,
+  DELAY_TIME,
   FULL_TIME_FORMAT,
   getStartAndEndTime,
   NUMBER_UNIT_REDUCED,
@@ -41,7 +42,7 @@ export default function StockMarketOverview() {
   const [changePercentMin, setChangePercentMin] = useState(1);
   const [changePercentMax, setChangePercentMax] = useState(5);
   const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
-  const [delay, setDelay] = useState<number>(1000 * 10);
+  const [delay, setDelay] = useState<number>(DELAY_TIME);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
   const [loading, setLoading] = useState(false);
 
@@ -226,7 +227,7 @@ export default function StockMarketOverview() {
       setLoading(true);
       const res = await StockService.getWatchlist();
       if (res && res.data) {
-        fetch(res.data, 'thanh_khoan_vua').then((res) => {
+        fetch(res.data, 'thanh_khoan_vua').then((res: any) => {
           setLoading(false);
 
           const fetchData4 = async (data: any) => {
@@ -243,21 +244,23 @@ export default function StockMarketOverview() {
                   i.history = keyByRes[i.symbol].res;
                   return i;
                 });
-                const dataSource = filtered
-                  ? newData.filter(
-                      (i: any) =>
-                        i.changePercent > changePercentMin &&
-                        i.changePercent < changePercentMax &&
-                        i.estimatedVolumeChange > estimatedVolumeChange
-                    )
-                  : newData;
-                setData4(dataSource);
+                setData4(newData);
               })
               .catch((e) => {
                 setLoading(false);
               });
           };
-          fetchData4(res);
+
+          fetchData4(
+            filtered
+              ? res.filter(
+                  (i: any) =>
+                    i.changePercent > changePercentMin &&
+                    i.changePercent < changePercentMax &&
+                    i.estimatedVolumeChange > estimatedVolumeChange
+                )
+              : res
+          );
         });
       }
     } catch (e) {
@@ -293,7 +296,6 @@ export default function StockMarketOverview() {
             pageSize={5}
             rowHeight={120}
             rowsPerPageOptions={[5]}
-            // checkboxSelection
           />
         </Box>
         <Box style={{ marginLeft: '20px' }}>
