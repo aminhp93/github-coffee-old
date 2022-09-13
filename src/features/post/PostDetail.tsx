@@ -66,14 +66,17 @@ const MemoizedPostDetail = memo(function PostDetail({
       };
       setLoading(true);
       const res = await PostService.updatePost(slug, data);
-      setIsUpdated(true);
+
       setLoading(false);
       if (res && res.data) {
+        setIsUpdated(true);
         cbUpdate && cbUpdate(res.data);
       } else {
+        setIsUpdated(false);
         notification.error({ message: 'Error Update Post' });
       }
     } catch (e) {
+      setIsUpdated(false);
       setLoading(false);
       notification.error({ message: 'Error Update Post' });
     }
