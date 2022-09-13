@@ -242,9 +242,9 @@ export const MarkBallonToolbar = () => {
 
   return (
     <BalloonToolbar
-      popperOptions={{
-        placement: 'top',
-      }}
+      // popperOptions={{
+      //   placement: 'top',
+      // }}
       theme={theme}
       arrow={arrow}
     >

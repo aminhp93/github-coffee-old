@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "2023-reactjs-with-redux",
+  "short_name": "Github Coffee",
+  "name": "Github Coffee",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
