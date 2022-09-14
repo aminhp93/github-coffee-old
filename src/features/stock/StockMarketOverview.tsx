@@ -41,7 +41,7 @@ export default function StockMarketOverview() {
   const [filtered, setFiltered] = useState(true);
   const [changePercentMin, setChangePercentMin] = useState(1);
   const [changePercentMax, setChangePercentMax] = useState(5);
-  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(50);
+  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
   const [loading, setLoading] = useState(false);
@@ -255,8 +255,8 @@ export default function StockMarketOverview() {
             filtered
               ? res.filter(
                   (i: any) =>
-                    i.changePercent > changePercentMin &&
-                    i.changePercent < changePercentMax &&
+                    // i.changePercent > changePercentMin &&
+                    // i.changePercent < changePercentMax &&
                     i.estimatedVolumeChange > estimatedVolumeChange
                 )
               : res
