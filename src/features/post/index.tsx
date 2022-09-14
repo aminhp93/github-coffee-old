@@ -1,12 +1,12 @@
-import PostList from './PostList';
-import { Button, notification, Tooltip } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
-import { PostService } from 'services';
-import PostDetail from './PostDetail';
-import { IPost } from 'types';
 import { PlusOutlined } from '@ant-design/icons';
+import { Button, notification, Tooltip } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { PostService } from 'services';
+import { IPost } from 'types';
 import './index.less';
+import PostDetail from './PostDetail';
+import PostList from './PostList';
 
 const Post = () => {
   let navigate = useNavigate();

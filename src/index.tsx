@@ -28,6 +28,7 @@ import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
+import Snippet from 'features/snippet';
 import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test';
@@ -138,6 +139,11 @@ const LIST_ROUTER_FOOTER = [
   {
     linkTo: '/test',
     label: 'test',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/snippet',
+    label: 'snippet',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
 ];
@@ -268,6 +274,7 @@ function App() {
             <Route path="test" element={<Test />} />
             <Route path="user" element={<User />} />
             <Route path="work" element={<Work />} />
+            <Route path="snippet" element={<Snippet />} />
 
             <Route
               path="*"

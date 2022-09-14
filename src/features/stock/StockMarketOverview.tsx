@@ -25,6 +25,11 @@ import {
   TIME_FRAME,
 } from './utils';
 
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+
 const useStyles = makeStyles({
   root: {
     background: 'white',
@@ -45,6 +50,8 @@ export default function StockMarketOverview() {
   const [delay, setDelay] = useState<number>(DELAY_TIME);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
   const [loading, setLoading] = useState(false);
+  const [listWatchlist, setListWatchlist] = useState([]);
+  const [currentWatchlist, setCurrentWatchlist] = useState('');
 
   const { start, end } = getStartAndEndTime();
 
@@ -226,8 +233,9 @@ export default function StockMarketOverview() {
     try {
       setLoading(true);
       const res = await StockService.getWatchlist();
-      if (res && res.data) {
-        fetch(res.data, 'thanh_khoan_vua').then((res: any) => {
+      setListWatchlist(res.data);
+      if (res && res.data && currentWatchlist) {
+        fetch(res.data, currentWatchlist).then((res: any) => {
           setLoading(false);
 
           const fetchData4 = async (data: any) => {
@@ -269,13 +277,17 @@ export default function StockMarketOverview() {
     }
   };
 
+  const handleChangeWatchlist = (event: SelectChangeEvent) => {
+    setCurrentWatchlist(event.target.value as string);
+  };
+
   const handleFilter = () => {
     setFiltered(!filtered);
   };
 
   useEffect(() => {
     fetchList();
-  }, [filtered]);
+  }, [filtered, currentWatchlist]);
 
   useInterval(fetchList, isPlaying ? delay : null);
 
@@ -293,13 +305,33 @@ export default function StockMarketOverview() {
               return i;
             })}
             columns={columnsMuiTable}
-            pageSize={5}
+            pageSize={10}
             rowHeight={120}
-            rowsPerPageOptions={[5]}
+            rowsPerPageOptions={[10]}
           />
         </Box>
         <Box style={{ marginLeft: '20px' }}>
           <div>
+            <Box sx={{ minWidth: 120 }} mt={2}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Watchlist</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={currentWatchlist}
+                  label="Watchlist"
+                  onChange={handleChangeWatchlist}
+                >
+                  {listWatchlist.map((i: any) => {
+                    return (
+                      <MenuItem value={i.name} key={i.watchlistID}>
+                        {i.name}
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Box>
             <Box>
               {loading ? 'Loading' : 'Done loading'}{' '}
               {loading ? <Spin /> : <CheckCircleOutlined />}

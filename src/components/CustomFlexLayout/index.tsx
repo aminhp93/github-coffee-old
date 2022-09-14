@@ -4,6 +4,7 @@ import './CustomFlexLayout.less';
 
 import Chat from 'features/chat';
 import Post from 'features/post';
+import PostDetail from 'features/post/PostDetail';
 import Stock from 'features/stock';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
@@ -47,6 +48,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   StockMarketOverview: <StockMarketOverview />,
   StockNews: <StockNews />,
   Chat: <Chat hideOnlineUsers />,
+  Todos: <PostDetail slug="todos" />,
 };
 interface IProps {
   json?: IJsonModel;

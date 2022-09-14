@@ -1,8 +1,11 @@
+```
+
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectDemo } from 'features/demo/demoSlice';
 import { memo, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import README from '../../../src/README.md';
+import x from './test.spec'
 
 const Child = ({ cb }: any) => {
   console.log('child');
@@ -75,3 +78,5 @@ export default function Component() {
     </div>
   );
 }
+
+```

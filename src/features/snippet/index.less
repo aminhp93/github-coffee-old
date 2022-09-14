@@ -1,0 +1,20 @@
+@import 'styles';
+
+.Snippet {
+  pre {
+    position: relative;
+
+    .copy-button {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+  }
+
+  pre:hover {
+    .copy-button {
+      display: block;
+    }
+  }
+}

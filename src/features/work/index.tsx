@@ -40,6 +40,13 @@ const Work: React.FunctionComponent = (props: IWokrProps) => {
             component: 'Chat',
             enableClose: false,
           },
+          {
+            type: 'tab',
+            id: '#2966f663-cf93-4efe-8d4a-e6c3bb475992',
+            name: 'Todos',
+            component: 'Todos',
+            enableClose: false,
+          },
         ],
       },
     ],
