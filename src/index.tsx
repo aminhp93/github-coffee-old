@@ -1,12 +1,15 @@
 import {
   CloseOutlined,
+  HomeOutlined,
+  LeftOutlined,
   LineChartOutlined,
   OrderedListOutlined,
+  RightOutlined,
   StockOutlined,
   UserOutlined,
   WechatOutlined,
 } from '@ant-design/icons';
-import { notification } from 'antd';
+import { Button, notification } from 'antd';
 import config from 'config';
 import * as React from 'react';
 import { useEffect } from 'react';
@@ -17,6 +20,7 @@ import { UserService } from 'services/user';
 import 'styles/index.less';
 import { store } from './app/store';
 
+import Box from '@mui/material/Box';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
@@ -86,7 +90,7 @@ const LIST_ROUTER = [
   {
     linkTo: '/work',
     label: 'work',
-    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+    icon: <HomeOutlined style={{ margin: '0 8px' }} />,
   },
 ];
 
@@ -163,6 +167,7 @@ function App() {
   let navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
+  const [visibleSidebar, setVisibleSidebar] = React.useState(false);
 
   const renderSideBar = () => {
     const list = user && user.id ? LIST_ROUTER : LIST_ROUTER_PUBLIC;
@@ -241,7 +246,13 @@ function App() {
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <div className="App-sidebar">
+      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
+        <Box>
+          <Button
+            icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
+            onClick={() => setVisibleSidebar(!visibleSidebar)}
+          ></Button>
+        </Box>
         <div
           style={{
             display: 'flex',

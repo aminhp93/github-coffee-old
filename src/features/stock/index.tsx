@@ -41,15 +41,21 @@ const Stock = () => {
           children: [
             {
               type: 'tab',
-              id: '#7df660c1-907f-4ef3-ac7e-78b8bdbbc993',
+              id: '#StockMarketOverview',
               name: 'StockMarketOverview',
               component: 'StockMarketOverview',
             },
             {
               type: 'tab',
-              id: '#2966f663-cf93-4efe-8d4a-e6c3bb475992',
+              id: '#StockNews',
               name: 'StockNews',
               component: 'StockNews',
+            },
+            {
+              type: 'tab',
+              id: '#StockTable',
+              name: 'StockNews',
+              component: 'StockTable',
             },
           ],
           active: true,

@@ -25,6 +25,8 @@ import {
   TIME_FRAME,
 } from './utils';
 
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -52,7 +54,7 @@ export default function StockMarketOverview() {
   const [loading, setLoading] = useState(false);
   const [listWatchlist, setListWatchlist] = useState([]);
   const [currentWatchlist, setCurrentWatchlist] = useState('');
-
+  const [visibleSidebar, setVisibleSidebar] = useState(true);
   const { start, end } = getStartAndEndTime();
 
   const columnsMuiTable: GridColDef[] = [
@@ -298,7 +300,7 @@ export default function StockMarketOverview() {
   const renderPotentialBuyTable = () => {
     return (
       <Box className={`${classes.potentialBuyTable} flex flex-1`}>
-        <Box className="flex-1">
+        <Box className="flex-1" sx={{ position: 'relative' }}>
           <DataGrid
             rows={data4.map((i: any) => {
               i.id = i.symbol;
@@ -309,71 +311,98 @@ export default function StockMarketOverview() {
             rowHeight={120}
             rowsPerPageOptions={[10]}
           />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: '-28px',
+            }}
+          >
+            <Button
+              variant="outlined"
+              startIcon={
+                visibleSidebar ? (
+                  <ArrowForwardIosIcon />
+                ) : (
+                  <ArrowBackIosNewIcon />
+                )
+              }
+              onClick={() => setVisibleSidebar(!visibleSidebar)}
+            ></Button>
+          </Box>
         </Box>
-        <Box style={{ marginLeft: '20px' }}>
-          <div>
-            <Box sx={{ minWidth: 120 }} mt={2}>
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Watchlist</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  value={currentWatchlist}
-                  label="Watchlist"
-                  onChange={handleChangeWatchlist}
-                >
-                  {listWatchlist.map((i: any) => {
-                    return (
-                      <MenuItem value={i.name} key={i.watchlistID}>
-                        {i.name}
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box>
-              {loading ? 'Loading' : 'Done loading'}{' '}
-              {loading ? <Spin /> : <CheckCircleOutlined />}
-            </Box>
-            <Box>
-              <Box>Start {start.format(FULL_TIME_FORMAT)}</Box>
-              <Box>End {end.format(FULL_TIME_FORMAT)}</Box>
-              <Box>Timeframe {TIME_FRAME}</Box>
-            </Box>
-            <Divider />
-            <Button variant="outlined" onClick={handleFilter}>
-              Turn {filtered ? 'Off' : 'On'} Filtered
-            </Button>
-            <div>Change Percent Min: {changePercentMin}</div>
-            <div>Change Percent Max: {changePercentMax}</div>
-            <div>Volume Change: {estimatedVolumeChange}</div>
-            <Divider />
 
-            <Box component="form" noValidate autoComplete="off">
-              <Button variant="outlined" onClick={() => setPlaying(!isPlaying)}>
-                {isPlaying ? 'Stop Interval' : 'Start Interval'}
+        {visibleSidebar && (
+          <Box style={{ marginLeft: '20px' }}>
+            <div>
+              <Box sx={{ minWidth: 120 }} mt={2}>
+                <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label">
+                    Watchlist
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={currentWatchlist}
+                    label="Watchlist"
+                    onChange={handleChangeWatchlist}
+                  >
+                    {listWatchlist.map((i: any) => {
+                      return (
+                        <MenuItem value={i.name} key={i.watchlistID}>
+                          {i.name}
+                        </MenuItem>
+                      );
+                    })}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box>
+                {loading ? 'Loading' : 'Done loading'}{' '}
+                {loading ? <Spin /> : <CheckCircleOutlined />}
+              </Box>
+              <Box>
+                <Box>Start {start.format(FULL_TIME_FORMAT)}</Box>
+                <Box>End {end.format(FULL_TIME_FORMAT)}</Box>
+                <Box>Timeframe {TIME_FRAME}</Box>
+              </Box>
+              <Divider />
+              <Button variant="outlined" onClick={handleFilter}>
+                Turn {filtered ? 'Off' : 'On'} Filtered
               </Button>
-              <TextField
-                sx={{ width: '80px', marginLeft: '8px' }}
-                id="filled-basic"
-                label="delay"
-                variant="filled"
-                value={delay}
-                onChange={handleChange}
-              />
-            </Box>
-            <Box>
-              {checkMarketOpen() ? 'Market Open' : 'Market Close'}
-              <IconButton
-                aria-label="brightness"
-                color={checkMarketOpen() ? 'success' : 'default'}
-              >
-                <Brightness1Icon />
-              </IconButton>
-            </Box>
-          </div>
-        </Box>
+              <div>Change Percent Min: {changePercentMin}</div>
+              <div>Change Percent Max: {changePercentMax}</div>
+              <div>Volume Change: {estimatedVolumeChange}</div>
+              <Divider />
+
+              <Box component="form" noValidate autoComplete="off">
+                <Button
+                  variant="outlined"
+                  onClick={() => setPlaying(!isPlaying)}
+                >
+                  {isPlaying ? 'Stop Interval' : 'Start Interval'}
+                </Button>
+                <TextField
+                  sx={{ width: '80px', marginLeft: '8px' }}
+                  id="filled-basic"
+                  label="delay"
+                  variant="filled"
+                  value={delay}
+                  onChange={handleChange}
+                />
+              </Box>
+              <Box>
+                {checkMarketOpen() ? 'Market Open' : 'Market Close'}
+                <IconButton
+                  aria-label="brightness"
+                  color={checkMarketOpen() ? 'success' : 'default'}
+                >
+                  <Brightness1Icon />
+                </IconButton>
+              </Box>
+            </div>
+          </Box>
+        )}
       </Box>
     );
   };

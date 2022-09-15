@@ -8,6 +8,7 @@ import PostDetail from 'features/post/PostDetail';
 import Stock from 'features/stock';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
+import StockTable from 'features/stock/StockTable';
 
 const DEFAULT_JSON: IJsonModel = {
   global: { tabEnableFloat: true },
@@ -49,6 +50,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   StockNews: <StockNews />,
   Chat: <Chat hideOnlineUsers />,
   Todos: <PostDetail slug="todos" />,
+  StockTable: <StockTable />,
 };
 interface IProps {
   json?: IJsonModel;
