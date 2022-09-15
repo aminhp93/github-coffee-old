@@ -5,7 +5,10 @@ import { StockService } from 'services';
 
 import { useEffect } from 'react';
 
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -24,6 +27,7 @@ export default function StockTable() {
   const [listWatchlist, setListWatchlist] = React.useState([]);
   const [currentWatchlist, setCurrentWatchlist] = React.useState('');
   const [rows, setRows] = React.useState([] as any);
+  const [checkedFundamentals, setCheckedFundamentals] = React.useState(false);
 
   const handleChangeWatchlist = (event: SelectChangeEvent) => {
     setCurrentWatchlist(event.target.value as string);
@@ -49,6 +53,30 @@ export default function StockTable() {
     setListWatchlist(res.data);
   };
 
+  const handleChangeFundamentals = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCheckedFundamentals(event.target.checked);
+    const listPromises: any = [];
+    rows.forEach((i: any) => {
+      listPromises.push(StockService.getFundamental(i.symbol));
+    });
+    setLoading(true);
+    return Promise.all(listPromises)
+      .then((res) => {
+        setLoading(false);
+        const keyByRes = keyBy(res, 'symbol');
+        const newData = rows.map((i: any) => {
+          i.fundamentals = keyByRes[i.symbol].res;
+          return i;
+        });
+        setRows(newData);
+      })
+      .catch((e) => {
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
     handleUpdateRows();
   }, [currentWatchlist]);
@@ -58,9 +86,16 @@ export default function StockTable() {
   }, []);
 
   return (
-    <Box sx={{ height: 400, width: '100%' }}>
-      <Box>
-        <Box sx={{ minWidth: 120 }} mt={2}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        flexDirection: 'column',
+        height: '100%',
+      }}
+    >
+      <Box sx={{ flex: 1, marginTop: '8px' }}>
+        <Box sx={{ width: '100px' }}>
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">Watchlist</InputLabel>
             <Select
@@ -80,16 +115,32 @@ export default function StockTable() {
             </Select>
           </FormControl>
         </Box>
+        <Box>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={handleChangeFundamentals}
+                  checked={checkedFundamentals}
+                />
+              }
+              label="Fundamentals"
+            />
+          </FormGroup>
+        </Box>
       </Box>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        checkboxSelection
-        disableSelectionOnClick
-        experimentalFeatures={{ newEditingApi: true }}
-      />
+      <Box sx={{ height: '710px', width: '100%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          rowHeight={30}
+          pageSize={20}
+          rowsPerPageOptions={[5]}
+          checkboxSelection
+          disableSelectionOnClick
+          experimentalFeatures={{ newEditingApi: true }}
+        />
+      </Box>
     </Box>
   );
 }
