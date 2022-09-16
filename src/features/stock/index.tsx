@@ -54,7 +54,7 @@ const Stock = () => {
             {
               type: 'tab',
               id: '#StockTable',
-              name: 'StockNews',
+              name: 'StockTable',
               component: 'StockTable',
             },
           ],

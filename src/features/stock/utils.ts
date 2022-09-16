@@ -1,5 +1,6 @@
 import moment from 'moment';
 
+export const UNIT_BILLION = 1_000_000_000;
 export const NUMBER_UNIT_REDUCED = 1000;
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const TIME_FORMAT = 'HH:mm';

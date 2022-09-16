@@ -1,10 +1,12 @@
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import * as React from 'react';
 import { StockService } from 'services';
 
 import { useEffect } from 'react';
 
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -13,12 +15,39 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { keyBy } from 'lodash';
+import { UNIT_BILLION } from './utils';
+type TSymbolList = string[];
+type TSymbol = string;
 
-const columns: GridColDef[] = [
+const DEAFULT_COLUMNS: GridColDef[] = [
   {
     field: 'symbol',
     width: 100,
     headerName: 'Symbol',
+  },
+  {
+    field: 'marketCap',
+    width: 100,
+    headerName: 'marketCap (billion)',
+    align: 'right',
+    renderCell: (data: GridRenderCellParams) => {
+      return Number((data.row.marketCap / UNIT_BILLION).toFixed(0));
+    },
+  },
+  {
+    field: 'marketCapGreater1000',
+    width: 100,
+    align: 'center',
+
+    headerName: 'marketCapGreater1000',
+    renderCell: (data: GridRenderCellParams) => {
+      return data.row.marketCapGreater1000 ? (
+        // <CheckIcon color="success" />
+        <CheckBoxIcon color="success" />
+      ) : (
+        <DisabledByDefaultIcon color="error" />
+      );
+    },
   },
 ];
 
@@ -28,6 +57,9 @@ export default function StockTable() {
   const [currentWatchlist, setCurrentWatchlist] = React.useState('');
   const [rows, setRows] = React.useState([] as any);
   const [checkedFundamentals, setCheckedFundamentals] = React.useState(false);
+  const [columns, setColumns] = React.useState(DEAFULT_COLUMNS);
+  const [checkedMarketCapGreater1000, setCheckedMarketCapGreater1000] =
+    React.useState(false);
 
   const handleChangeWatchlist = (event: SelectChangeEvent) => {
     setCurrentWatchlist(event.target.value as string);
@@ -53,28 +85,91 @@ export default function StockTable() {
     setListWatchlist(res.data);
   };
 
-  const handleChangeFundamentals = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCheckedFundamentals(event.target.checked);
+  const fetchFundamentals = (data: TSymbolList) => {
+    if (!data || !data.length) return;
+
     const listPromises: any = [];
-    rows.forEach((i: any) => {
-      listPromises.push(StockService.getFundamental(i.symbol));
+    data.forEach((i: TSymbol) => {
+      listPromises.push(StockService.getFundamental(i));
     });
     setLoading(true);
+
     return Promise.all(listPromises)
       .then((res) => {
-        setLoading(false);
-        const keyByRes = keyBy(res, 'symbol');
-        const newData = rows.map((i: any) => {
-          i.fundamentals = keyByRes[i.symbol].res;
-          return i;
-        });
-        setRows(newData);
+        console.log(res);
+        // setLoading(false);
+        // const keyByRes = keyBy(res, 'symbol');
+        // const newData = rows.map((i: any) => {
+        //   i.fundamentals = keyByRes[i.symbol].res;
+        //   return i;
+        // });
+        // setRows(newData);
+        return res;
       })
       .catch((e) => {
         setLoading(false);
       });
+  };
+
+  const handleChangeFundamentals = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setCheckedFundamentals(event.target.checked);
+    const keyByWl = keyBy(listWatchlist, 'name');
+    if (!keyByWl) return;
+    const symbols: any = ((keyByWl[currentWatchlist] || {}) as any).symbols;
+    const res: any = await fetchFundamentals(symbols);
+    let newRows = [...rows];
+    const keyByRes = keyBy(res, 'symbol');
+    newRows = newRows.map((i: any) => {
+      i.fundamentals = keyByRes[i.symbol].data;
+      i.marketCap = i.fundamentals.marketCap;
+      i.marketCapGreater1000 = i.marketCap > 1_000_000_000_000;
+      return i;
+    });
+    setRows(newRows);
+  };
+
+  const handleChangeCheckedMarketCapGreater1000 = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    console.log(event.target.checked);
+    setCheckedMarketCapGreater1000(event.target.checked);
+    const filteredColumns = columns.filter(
+      (i: any) => i.field === 'marketCapGreater1000'
+    );
+    if (event.target.checked) {
+      if (filteredColumns.length > 0) {
+        //
+      } else {
+        const newColumns = [...columns];
+        newColumns.push({
+          field: 'marketCapGreater1000',
+          width: 100,
+          align: 'center',
+
+          headerName: 'marketCapGreater1000',
+          renderCell: (data: GridRenderCellParams) => {
+            return data.row.marketCapGreater1000 ? (
+              // <CheckIcon color="success" />
+              <CheckBoxIcon color="success" />
+            ) : (
+              <DisabledByDefaultIcon color="error" />
+            );
+          },
+        });
+        setColumns(newColumns);
+      }
+    } else {
+      if (filteredColumns.length > 0) {
+        const newColumns: any = columns.filter(
+          (i: any) => i.field !== 'marketCapGreater1000'
+        );
+        setColumns(newColumns);
+      } else {
+        //
+      }
+    }
   };
 
   useEffect(() => {
@@ -84,7 +179,7 @@ export default function StockTable() {
   useEffect(() => {
     fetchList();
   }, []);
-
+  console.log(rows);
   return (
     <Box
       sx={{
@@ -125,6 +220,19 @@ export default function StockTable() {
                 />
               }
               label="Fundamentals"
+            />
+          </FormGroup>
+        </Box>
+        <Box>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  onChange={handleChangeCheckedMarketCapGreater1000}
+                  checked={checkedMarketCapGreater1000}
+                />
+              }
+              label="checkedMarketCapGreater1000"
             />
           </FormGroup>
         </Box>
