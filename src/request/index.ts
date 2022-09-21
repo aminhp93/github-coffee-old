@@ -1,5 +1,6 @@
 import axios from 'axios';
 import config from 'config';
+import { getAuth, getIdToken } from 'firebase/auth';
 import qs from 'qs';
 
 const baseUrl = config.apiUrl;
@@ -19,7 +20,7 @@ const client = axios.create({
 client.interceptors.request.use(
   async (config) => {
     // Try refreshing the session, without relying on the cache
-   
+
     return {
       ...config,
     };
@@ -53,7 +54,28 @@ const request = async (options: any) => {
     ...options,
   };
   const onSuccess = (res: any) => res;
-  const onError = (err: any) => {};
+  const onError: any = async (err: any) => {
+    console.log(err);
+    if (!err.response || !err.response.data) return;
+    if (
+      err.response.data.detail &&
+      err.response.data.detail === 'Token expired'
+    ) {
+      const auth: any = getAuth();
+      const accessToken = await getIdToken(auth.currentUser);
+      console.log(accessToken);
+
+      localStorage.removeItem('ACCESS_TOKEN');
+      localStorage.setItem('ACCESS_TOKEN', accessToken);
+      const headers = {
+        Authorization: `Bearer ${accessToken}`,
+      };
+      return request({
+        ...options,
+        headers,
+      });
+    }
+  };
 
   return client(finalOptions).then(onSuccess).catch(onError);
 };
