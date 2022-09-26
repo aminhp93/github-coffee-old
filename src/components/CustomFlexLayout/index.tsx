@@ -10,22 +10,20 @@ import {
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
-import { Button } from 'antd';
+import Box from '@mui/material/Box';
+import FormControl from '@mui/material/FormControl';
+import MenuItem from '@mui/material/MenuItem';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Chat from 'features/chat';
+import ConnectDashboard from 'features/connectDashboard';
 import Post from 'features/post';
-import PostDetail from 'features/post/PostDetail';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/StockTable';
+import Todo from 'features/todo';
 import * as React from 'react';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-import Box from '@mui/material/Box';
-import ConnectDashboard from 'features/connectDashboard';
 
 const DEFAULT_JSON: IJsonModel = {
   global: { tabEnableFloat: true },
@@ -66,7 +64,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   StockMarketOverview: <StockMarketOverview />,
   StockNews: <StockNews />,
   Chat: <Chat hideOnlineUsers />,
-  Todos: <PostDetail slug="todos" />,
+  Todos: <Todo />,
   StockTable: <StockTable />,
   Snippet: <Snippet />,
   ConnectDashboard: <ConnectDashboard />,
@@ -143,18 +141,6 @@ function FlexLayout({ json, onModelChange }: IProps) {
 
   return (
     <div className="CustomFlexLayout relative height-100 width-100">
-      <Button
-        style={{
-          background: 'red',
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          zIndex: 1,
-        }}
-        onClick={onAddActiveClick}
-      >
-        Test add
-      </Button>
       <Layout
         model={model}
         factory={factory}

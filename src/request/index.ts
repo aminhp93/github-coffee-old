@@ -116,6 +116,14 @@ export const PostUrls = {
   deletePost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
 };
 
+export const TodoUrls = {
+  createTodo: `${baseUrl}/api/todos/create/`,
+  listTodo: `${baseUrl}/api/todos/`,
+  detailTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+  updateTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+  deleteTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+};
+
 export const ChatUrls = {
   getChatList: `${baseUrl}/api/chats/`,
   createChat: `${baseUrl}/api/chats/`,

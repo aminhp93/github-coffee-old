@@ -91,6 +91,7 @@ interface IProps {
 }
 
 const CustomPlate = (props: IProps) => {
+  console.log('customplate', props);
   const containerRef = useRef(null);
   const plugins = useMemo(
     () =>
