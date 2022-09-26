@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import copyToClipboard from './files/javascript/copyToClipboard.md';
-import CSVToArray from './files/javascript/CSVToArray.md';
+// import CSVToArray from './files/javascript/CSVToArray.md';
+import errorDatabase from './files/common/errorDatabase.md';
+import terminal from './files/common/terminal.md';
 
 import './index.less';
 
@@ -27,7 +29,7 @@ export default function Snippet() {
 
   const fetchList = () => {
     const listPromises: any = [];
-    [CSVToArray, copyToClipboard].map((i: any) => {
+    [terminal, errorDatabase, copyToClipboard].map((i: any) => {
       listPromises.push(fetch(i).then((res) => res.text()));
     });
     Promise.all(listPromises)

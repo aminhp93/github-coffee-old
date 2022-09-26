@@ -1,7 +1,14 @@
+## Copy text
+
 ```js
 const copyToClipboard = (text) =>
   navigator?.clipboard?.writeText(text) ?? false;
+```
 
-// Usage
+- Usage
+
+```js
 copyToClipboard('Hello World!');
 ```
+
+##
