@@ -1,29 +1,50 @@
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import * as React from 'react';
 import { ITodo } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  ScissorOutlined,
+} from '@ant-design/icons';
 
 interface IProps {
-  data: any;
-  onMarkDone: (data: ITodo) => void;
+  todoItem: any;
+  onMarkDone?: (data: ITodo) => void;
+  onDelete?: (data: ITodo) => void;
+  onUpdate?: (data: ITodo) => void;
 }
 
-function TodoListItem({ data, onMarkDone }: IProps) {
+function TodoListItem({ todoItem, onMarkDone, onUpdate, onDelete }: IProps) {
   const [plateId, setPlateId] = React.useState(null as any);
-  console.log(plateId);
+  const [value, setValue] = React.useState(JSON.parse(todoItem.body));
   const [isDone, setIsDone] = React.useState(false);
-  console.log('TodoListItem', data, JSON.parse(data.body));
+  const [isConfirmDelete, setIsConfirmDelete] = React.useState(false);
+  console.log('TodoListItem', todoItem, JSON.parse(todoItem.body));
 
   const handleDone = () => {
     setIsDone(!isDone);
-    onMarkDone && onMarkDone({ ...data, is_done: true });
+    onMarkDone && onMarkDone({ ...todoItem, is_done: true });
+  };
+
+  const handleUpdate = () => {
+    onUpdate && onUpdate({ ...todoItem, value });
+  };
+
+  const handleDelete = () => {
+    onDelete && onDelete(todoItem);
+  };
+
+  const handleChange = (data: any) => {
+    console.log(data);
+    setValue(data);
   };
 
   React.useEffect(() => {
     setPlateId(uuidv4());
-  }, [data]);
+  }, [todoItem]);
 
   return (
     <div
@@ -32,23 +53,66 @@ function TodoListItem({ data, onMarkDone }: IProps) {
         position: 'relative',
       }}
     >
-      {data.id}
-      <CustomPlate
-        id={String(plateId)}
-        value={JSON.parse(data.body)}
-        // onChange={handleChange}
-      />
+      {todoItem.id}
+      <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
       <div className="TodoListItem-toolbox">
-        <Button
-          style={{ zIndex: 1 }}
-          onClick={(e) => {
-            e.stopPropagation();
+        <Tooltip placement="right" title={todoItem.is_done ? 'Undo' : 'Done'}>
+          <Button
+            icon={<ScissorOutlined />}
+            style={{ zIndex: 1 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDone();
+            }}
+          />
+        </Tooltip>
+        <Tooltip placement="right" title="update">
+          <Button
+            icon={<CheckOutlined />}
+            style={{ zIndex: 1 }}
+            onClick={(e) => {
+              e.stopPropagation();
 
-            handleDone();
-          }}
-        >
-          {data.is_done ? 'Undo' : 'Done'}
-        </Button>
+              handleUpdate();
+            }}
+          />
+        </Tooltip>
+        <Tooltip placement="right" title="delete">
+          {isConfirmDelete ? (
+            <>
+              <Button
+                style={{ zIndex: 1 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  handleDelete();
+                }}
+              >
+                Confirm
+              </Button>
+              <Button
+                style={{ zIndex: 1 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  setIsConfirmDelete(false);
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <Button
+              icon={<DeleteOutlined />}
+              style={{ zIndex: 1 }}
+              onClick={(e) => {
+                e.stopPropagation();
+
+                setIsConfirmDelete(true);
+              }}
+            />
+          )}
+        </Tooltip>
       </div>
     </div>
   );

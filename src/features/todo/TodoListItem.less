@@ -8,5 +8,16 @@
 }
 
 .TodoListItem:hover .TodoListItem-toolbox {
-  display: block;
+  display: flex;
+  flex-direction: column;
+}
+
+.TodoListItem {
+  padding-right: 32px;
+  min-height: 100px;
+}
+
+.TodoListItem:hover,
+.TodoListItem::selection {
+  background-color: @gray-100;
 }

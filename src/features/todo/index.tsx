@@ -1,15 +1,16 @@
-import { notification, Select } from 'antd';
+import { Divider, Empty, notification, Select } from 'antd';
 import { useCallback, useState } from 'react';
 import { TodoService } from 'services';
 import { ITodo } from 'types';
 import TodoCreate from './TodoCreate';
-import TodoList from './TodoList';
+import TodoListItem from './TodoListItem';
 import * as React from 'react';
+import './index.less';
 
 const { Option } = Select;
 
 const Todo = () => {
-  const [listTodos, setListTodos] = useState([]);
+  const [listTodos, setListTodos] = useState<ITodo[]>([]);
   const [filter, setFilter] = useState({ is_done: false });
 
   const handleMarkDone = useCallback(
@@ -23,6 +24,51 @@ const Todo = () => {
         setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
         notification.success({
           message: 'Marked done',
+        });
+      } catch (error: any) {
+        notification.error({
+          message: 'Error',
+          description: error.message,
+        });
+      }
+    },
+    [filter]
+  );
+
+  const handleUpdate = useCallback(
+    async (data: any) => {
+      console.log('handleUpdate', filter);
+      try {
+        await TodoService.updateTodo(data.id, data);
+        setListTodos((old: ITodo[]) => {
+          const newList: ITodo[] = [...old];
+          const index = newList.findIndex((i: ITodo) => i.id === data.id);
+          if (index > 0) {
+            newList[index] = data;
+          }
+          return newList;
+        });
+        notification.success({
+          message: 'Update success',
+        });
+      } catch (error: any) {
+        notification.error({
+          message: 'Error',
+          description: error.message,
+        });
+      }
+    },
+    [filter]
+  );
+
+  const handleDelete = useCallback(
+    async (data: any) => {
+      console.log('handleDelete', filter);
+      try {
+        await TodoService.deleteTodo(data.id);
+        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
+        notification.success({
+          message: 'Delete success',
         });
       } catch (error: any) {
         notification.error({
@@ -82,7 +128,27 @@ const Todo = () => {
         <Option value="done">Done</Option>
         <Option value="not_done">Not done</Option>
       </Select>
-      <TodoList listTodos={listTodos} onMarkDone={handleMarkDone} />
+      <Divider style={{ margin: 0 }} />
+      {listTodos.length === 0 ? (
+        <Empty />
+      ) : (
+        <div className="TodoList">
+          {listTodos.map((i: ITodo, index) => {
+            return (
+              <>
+                <TodoListItem
+                  key={i.id}
+                  todoItem={i}
+                  onMarkDone={handleMarkDone}
+                  onDelete={handleDelete}
+                  onUpdate={handleUpdate}
+                />
+                <Divider style={{ margin: 0 }} />
+              </>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
