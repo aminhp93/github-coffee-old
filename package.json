@@ -62,7 +62,7 @@
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false craco start",
-    "build": "GENERATE_SOURCEMAP=false craco build ",
+    "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
     "analyze": "webpack-bundle-analyzer build/bundle.json",
     "test": "craco test"
   },
