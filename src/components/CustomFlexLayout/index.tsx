@@ -69,6 +69,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   Snippet: <Snippet />,
   ConnectDashboard: <ConnectDashboard />,
 };
+
 interface IProps {
   json?: IJsonModel;
   onModelChange?: any;
@@ -91,14 +92,6 @@ function FlexLayout({ json, onModelChange }: IProps) {
     console.log(node);
     const component: any = node.getComponent();
     return COMPONENT_OBJ[component];
-  };
-
-  const onAddActiveClick = (event: React.MouseEvent) => {
-    layoutRef!.current!.addTabToActiveTabSet({
-      component: 'grid',
-      icon: 'images/article.svg',
-      name: 'Grid ' + nextGridIndex++,
-    });
   };
 
   const onRenderTabSet = (
@@ -136,6 +129,7 @@ function FlexLayout({ json, onModelChange }: IProps) {
     layoutRef!.current!.addTabToTabSet(node.getId(), {
       component: componentName,
       name: componentName,
+      // enableClose: true,
     });
   };
 

@@ -9,7 +9,6 @@ interface IProps {
 }
 
 const ChatMessageListItem = ({ chat }: IProps) => {
-  console.log(13, getParsedJson(chat.message));
   return (
     <>
       <Box className="flex">
@@ -23,6 +22,7 @@ const ChatMessageListItem = ({ chat }: IProps) => {
           <CustomPlate
             id={`ChatMessageListItem-${chat.id}`}
             hideToolBar
+            readOnly
             value={getParsedJson(chat.message)}
           />
         </Box>

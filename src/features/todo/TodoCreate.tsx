@@ -51,25 +51,18 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   };
 
   return (
-    <>
-      <div className="TodoCreate flex">
-        <CustomPlate
-          id={String(plateId)}
-          value={value}
-          onChange={handleChange}
-        />
+    <div className="TodoCreate flex">
+      <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
 
-        <Button
-          loading={loading}
-          disabled={loading}
-          type="primary"
-          onClick={handleSubmit}
-        >
-          Add todo
-        </Button>
-      </div>
-      <Divider />
-    </>
+      <Button
+        loading={loading}
+        disabled={loading}
+        type="primary"
+        onClick={handleSubmit}
+      >
+        Add todo
+      </Button>
+    </div>
   );
 }
 

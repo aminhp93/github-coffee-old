@@ -120,6 +120,7 @@ const Todo = () => {
   return (
     <div className="width-100 height-100">
       <TodoCreate onCreateSuccess={getListTodos} />
+      <Divider />
       <Select
         defaultValue="not_done"
         style={{ width: 120 }}
@@ -128,12 +129,12 @@ const Todo = () => {
         <Option value="done">Done</Option>
         <Option value="not_done">Not done</Option>
       </Select>
-      <Divider style={{ margin: 0 }} />
+      <Divider />
       {listTodos.length === 0 ? (
         <Empty />
       ) : (
         <div className="TodoList">
-          {listTodos.map((i: ITodo, index) => {
+          {listTodos.map((i: ITodo) => {
             return (
               <>
                 <TodoListItem
@@ -143,7 +144,7 @@ const Todo = () => {
                   onDelete={handleDelete}
                   onUpdate={handleUpdate}
                 />
-                <Divider style={{ margin: 0 }} />
+                <Divider />
               </>
             );
           })}

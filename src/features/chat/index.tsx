@@ -1,20 +1,25 @@
 import { Box } from '@mui/material';
-import { Col, Row } from 'antd';
+import { Col } from 'antd';
 import config from 'config';
 import Pusher from 'pusher-js';
-import { useEffect, useState } from 'react';
 import { ChatService } from 'services/chat';
 import ChatBox from './ChatBox';
-import ChatMessageList from './ChatMessageList';
 import ChatUserList from './ChatUserList';
+import * as React from 'react';
+import ChatMessageListItem from './ChatMessageListItem';
+import { Divider } from 'antd';
+import { IChat } from 'types';
+import './index.less';
 
 interface IProps {
   hideOnlineUsers?: boolean;
 }
 
 const Chat = ({ hideOnlineUsers }: IProps) => {
-  const [chats, setChats] = useState([] as any);
-  const [users, setUsers] = useState({} as any);
+  const bottomRef = React.useRef(null as any);
+
+  const [chats, setChats] = React.useState([] as any);
+  const [users, setUsers] = React.useState({} as any);
 
   const getChat = async () => {
     try {
@@ -29,11 +34,18 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
     }
   };
 
-  useEffect(() => {
+  const handleCb = async (data: any) => {
+    const payload = {
+      message: data.message,
+    };
+    await ChatService.createChat(payload);
+  };
+
+  React.useEffect(() => {
     getChat();
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const pusher = new Pusher(config.pusher.key, {
       cluster: config.pusher.cluster,
       encrypted: true,
@@ -101,41 +113,49 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
     });
   }, []);
 
-  const handleCb = async (data: any) => {
-    const payload = {
-      message: data.message,
+  React.useEffect(() => {
+    // 👇️ scroll to bottom every time messages change
+    bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [chats]);
+
+  React.useEffect(() => {
+    // 👇️ scroll to bottom every time messages change
+    const timeoutId = setTimeout(() => {
+      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
     };
-    await ChatService.createChat(payload);
-  };
+  }, []);
 
   return (
-    <div className="Chat height-100">
-      <Row style={{ height: '100%' }}>
-        <Col xs={0} sm={0} md={hideOnlineUsers ? 0 : 4}>
-          <ChatUserList users={Object.values(users)} />
-        </Col>
-        <Col
-          xs={24}
-          sm={24}
-          md={hideOnlineUsers ? 24 : 20}
-          style={{ height: '100%' }}
-        >
-          <Box
-            className="ChatListMessagesContainer height-100 flex"
-            style={{ flexDirection: 'column', justifyContent: 'space-between' }}
-          >
-            <Box
-              style={{ flex: 1, overflow: 'auto', background: 'lightgreen' }}
-            >
-              <ChatMessageList chats={chats} />
+    <Box className="Chat height-100">
+      <Col xs={0} sm={0} md={hideOnlineUsers ? 0 : 4}>
+        <ChatUserList users={Object.values(users)} />
+      </Col>
+      <Col
+        xs={24}
+        sm={24}
+        md={hideOnlineUsers ? 24 : 20}
+        style={{ height: '100%' }}
+      >
+        <Box className="ChatListMessagesContainer height-100 flex">
+          <Box style={{ flex: 1, overflow: 'auto' }}>
+            <Box className="ChatMessageList">
+              {chats.map((chat: IChat) => {
+                return <ChatMessageListItem chat={chat} />;
+              })}
+              <Box ref={bottomRef} />
             </Box>
-            <Box sx={{ height: '100px' }}>
-              <ChatBox cb={handleCb} />
-            </Box>
+            <Divider />
           </Box>
-        </Col>
-      </Row>
-    </div>
+          <Box className="ChatBoxContainer">
+            <ChatBox cb={handleCb} />
+          </Box>
+        </Box>
+      </Col>
+    </Box>
   );
 };
 
