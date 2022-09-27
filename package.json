@@ -64,8 +64,9 @@
     "start": "GENERATE_SOURCEMAP=false craco start",
     "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
     "analyze": "webpack-bundle-analyzer build/bundle.json",
-    "test": "craco test",
+    "test:ci": "CI=true craco test",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "lint:fix": "eslint --fix .",
     "prepare": "husky install"
   },
   "eslintConfig": {
@@ -78,12 +79,8 @@
     "pre-commit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint",
-      "prettier --write"
-    ],
-    "*.{json,md,mdx,css,scss,html,yml,yaml}": [
-      "prettier --write"
+    "*": [
+      "eslint ./src --ext .js,.jsx,.ts,.tsx"
     ]
   },
   "browserslist": {
