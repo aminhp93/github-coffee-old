@@ -79,8 +79,9 @@
     "pre-commit": "lint-staged"
   },
   "lint-staged": {
-    "*": [
-      "eslint ./src --ext .js,.jsx,.ts,.tsx"
+    "*.{js,jsx,ts,tsx}": [
+      "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+      "react-scripts test --bail --watchAll=false --findRelatedTests --passWithNoTests"
     ]
   },
   "browserslist": {
