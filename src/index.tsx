@@ -38,6 +38,7 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
 import Work from 'features/work';
+import LibraryUpdate from 'features/libraryUpdate';
 import { initializeApp } from 'firebase/app';
 
 import { useAppDispatch, useAppSelector } from 'app/hooks';
@@ -150,6 +151,11 @@ const LIST_ROUTER_FOOTER = [
     label: 'snippet',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
+  {
+    linkTo: '/libraryUpdate',
+    label: 'libraryUpdate',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
 ];
 
 const LIST_ROUTER_PUBLIC: any = [];
@@ -231,6 +237,11 @@ function App() {
     }
   };
 
+  const handleChangeLayout = () => {
+    localStorage.removeItem('flexLayoutModel_Work');
+    window.location.reload();
+  };
+
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, (data: any) => {
@@ -245,8 +256,12 @@ function App() {
   }, []);
 
   return (
-    <div style={{ display: 'flex', height: '100%' }}>
-      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
+    <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
+      <div>
+        {renderSideBarFooter2()}
+        <Button onClick={() => handleChangeLayout()}>Default layout</Button>
+      </div>
+      {/* <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
         <Box>
           <Button
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
@@ -266,7 +281,7 @@ function App() {
         </div>
 
         {renderSideBarFooter2()}
-      </div>
+      </div> */}
       <div style={{ flex: 1, overflow: 'auto' }}>
         {user && user.id ? (
           <Routes>
@@ -286,6 +301,7 @@ function App() {
             <Route path="user" element={<User />} />
             <Route path="work" element={<Work />} />
             <Route path="snippet" element={<Snippet />} />
+            <Route path="libraryUpdate" element={<LibraryUpdate />} />
 
             <Route
               path="*"

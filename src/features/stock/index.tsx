@@ -68,15 +68,6 @@ const Stock = () => {
     json = JSON.parse(savedLayout);
   }
 
-  const handleOnModelChange = (data: any) => {
-    console.log(data);
-    localStorage.removeItem('flexLayoutModel_Stock');
-    localStorage.setItem(
-      'flexLayoutModel_Stock',
-      JSON.stringify(data.toJson())
-    );
-  };
-
   const handleChangeMenu = (e: any) => {
     if (e.key === 'tools') {
       setModal('StockTools');
@@ -103,7 +94,7 @@ const Stock = () => {
         </Box>
       </Box>
       <Box className="flex" style={{ flex: 1, overflow: 'auto' }}>
-        <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />
+        <CustomFlexLayout json={json} />
       </Box>
 
       {modal && (

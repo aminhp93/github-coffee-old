@@ -23,6 +23,8 @@ import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/StockTable';
 import Todo from 'features/todo';
+import StockHistoryTrade from 'features/stock/StockHistoryTrade';
+import StockTools from 'features/stock/StockTools';
 import * as React from 'react';
 
 const DEFAULT_JSON: IJsonModel = {
@@ -68,6 +70,8 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   StockTable: <StockTable />,
   Snippet: <Snippet />,
   ConnectDashboard: <ConnectDashboard />,
+  StockHistoryTrade: <StockHistoryTrade />,
+  StockTools: <StockTools />,
 };
 
 interface IProps {

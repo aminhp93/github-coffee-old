@@ -6,6 +6,9 @@ import TodoCreate from './TodoCreate';
 import TodoListItem from './TodoListItem';
 import * as React from 'react';
 import './index.less';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import update from 'immutability-helper';
 
 const { Option } = Select;
 
@@ -88,6 +91,16 @@ const Todo = () => {
       setFilter({ is_done: false });
     }
   };
+  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
+    setListTodos((prevCards: ITodo[]) =>
+      update(prevCards, {
+        $splice: [
+          [dragIndex, 1],
+          [hoverIndex, 0, prevCards[dragIndex] as ITodo],
+        ],
+      })
+    );
+  }, []);
 
   const getListTodos = async () => {
     try {
@@ -133,22 +146,27 @@ const Todo = () => {
       {listTodos.length === 0 ? (
         <Empty />
       ) : (
-        <div className="TodoList">
-          {listTodos.map((i: ITodo) => {
-            return (
-              <>
-                <TodoListItem
-                  key={i.id}
-                  todoItem={i}
-                  onMarkDone={handleMarkDone}
-                  onDelete={handleDelete}
-                  onUpdate={handleUpdate}
-                />
-                <Divider />
-              </>
-            );
-          })}
-        </div>
+        <DndProvider backend={HTML5Backend}>
+          <div className="TodoList">
+            {listTodos.map((i: ITodo, index) => {
+              return (
+                <>
+                  <TodoListItem
+                    id={i.id}
+                    key={i.id}
+                    index={index}
+                    todoItem={i}
+                    onMarkDone={handleMarkDone}
+                    onDelete={handleDelete}
+                    onUpdate={handleUpdate}
+                    moveCard={moveCard}
+                  />
+                  <Divider />
+                </>
+              );
+            })}
+          </div>
+        </DndProvider>
       )}
     </div>
   );
