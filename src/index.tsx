@@ -44,6 +44,7 @@ import { initializeApp } from 'firebase/app';
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Notification from './components/firebaseNotifications/Notification';
 
 notification.config({
   placement: 'bottomLeft',
@@ -311,7 +312,7 @@ function App() {
                 </main>
               }
             />
-            <Route path="/" element={<div />} />
+            <Route path="/" element={<Work />} />
           </Routes>
         ) : (
           <Routes>
@@ -329,6 +330,7 @@ function App() {
           </Routes>
         )}
       </div>
+      <Notification />
     </div>
   );
 }
