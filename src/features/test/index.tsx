@@ -1,15 +1,22 @@
-import { useEffect } from 'react';
+import { Button } from 'antd';
+import config from 'config';
+import request from 'request';
+
+const baseUrl = config.apiUrl;
 
 export default function Component() {
   console.log('component');
 
-  useEffect(() => {
-    // fetch(README)
-    //   .then((res) => res.text())
-    //   .then((text) => setText(text));
-  }, []);
+  const handleClick = () => {
+    request({
+      url: `${baseUrl}/api/pushnotification/`,
+      method: 'POST',
+    });
+  };
 
   return (
-    <div className="height-100 width-100" style={{ background: 'white' }}></div>
+    <div className="height-100 width-100" style={{ background: 'white' }}>
+      <Button onClick={handleClick}>Test</Button>
+    </div>
   );
 }

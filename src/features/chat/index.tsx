@@ -110,7 +110,8 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
     presence_members_channel.bind('pusher:subscription_error', (data: any) => {
       console.log('subscription_error', data);
     });
-  }, [users]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   React.useEffect(() => {
     // 👇️ scroll to bottom every time messages change

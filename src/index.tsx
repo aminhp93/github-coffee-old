@@ -235,6 +235,7 @@ function App() {
       (async (headers?: any) => {
         try {
           const res = await UserService.getAuthUser(headers);
+          console.log(238);
           dispatch(update(res.data));
         } catch (e) {
           notification.error({ message: 'Get user failed' });

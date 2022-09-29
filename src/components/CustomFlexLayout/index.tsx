@@ -24,6 +24,7 @@ import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/StockTable';
 import StockTools from 'features/stock/StockTools';
+import Test from 'features/test';
 import Todo from 'features/todo';
 import * as React from 'react';
 
@@ -72,6 +73,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   ConnectDashboard: <ConnectDashboard />,
   StockHistoryTrade: <StockHistoryTrade />,
   StockTools: <StockTools />,
+  Test: <Test />,
 };
 
 interface IProps {
