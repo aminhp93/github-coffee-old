@@ -1,16 +1,16 @@
-import { Button, Tooltip } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import * as React from 'react';
-import { ITodo } from 'types';
-import { v4 as uuidv4 } from 'uuid';
-import './TodoListItem.less';
 import {
   CheckOutlined,
   DeleteOutlined,
   ScissorOutlined,
 } from '@ant-design/icons';
-import { useDrag, useDrop } from 'react-dnd';
+import { Button, Tooltip } from 'antd';
+import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
+import * as React from 'react';
+import { useDrag, useDrop } from 'react-dnd';
+import { ITodo } from 'types';
+import { v4 as uuidv4 } from 'uuid';
+import './TodoListItem.less';
 
 interface IProps {
   id: number;
@@ -123,7 +123,7 @@ function TodoListItem({
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [, drag] = useDrag({
     type: 'card',
     item: () => {
       return { id, index };
@@ -133,7 +133,7 @@ function TodoListItem({
     }),
   });
 
-  const opacity = isDragging ? 0 : 1;
+  // const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
 
   React.useEffect(() => {

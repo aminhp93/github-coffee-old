@@ -1,8 +1,6 @@
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import CustomPlate from 'components/CustomPlate';
-import { Button, Checkbox, Form, Input, notification } from 'antd';
 import { getPlateActions } from '@udecode/plate';
+import { Button, Form, notification } from 'antd';
+import CustomPlate from 'components/CustomPlate';
 import './ChatBox.less';
 interface IProps {
   cb: any;

@@ -1,4 +1,4 @@
-import development from './development';
+// import development from './development';
 import production from './production';
 
 let config = production;

@@ -1,10 +1,10 @@
-import { Table, Button, notification } from 'antd';
+import { Button, notification, Table } from 'antd';
+import { sum, uniqBy } from 'lodash';
+import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
-import moment from 'moment';
-import { sum, uniqBy } from 'lodash';
 
-import { postAuthToken, fetchOrdersHistory } from 'reducers/account';
+import { fetchOrdersHistory, postAuthToken } from 'reducers/account';
 
 interface TProps {
   onClose?: any;
@@ -187,103 +187,103 @@ function StockHistoryTrade(props: TProps) {
 
   const [columns, setColumns] = useState(mainColumns);
 
-  const getHistoryTrade = async () => {
-    try {
-      const res = await props.postAuthToken({
-        username: 'username',
-        password: 'password',
-      });
-      const res2 = await props.fetchOrdersHistory(
-        res.data.token,
-        filterObj.startDate,
-        filterObj.endDate
-      );
-      if (res2.data) {
-        const filteredList = uniqBy(
-          res2.data.filter((i: any) => i.orderStatus === filterObj.orderStatus),
-          'orderID'
-        );
-        let ignoreSells: any = [];
-        const mappedList: any = filteredList.map((i: any) => {
-          if (
-            ignoreSells.filter((j: any) => j.orderID === i.orderID).length > 0
-          )
-            return i;
-          if (i.execType === 'NS') {
-            const listSell: any = [i];
-            let stop = false;
-            filteredList.forEach((j: any) => {
-              if (!stop) {
-                if (
-                  j.symbol === i.symbol &&
-                  j.transactionDate < i.transactionDate &&
-                  j.execType === 'NB'
-                ) {
-                  ignoreSells = ignoreSells.concat(listSell);
-                  stop = true;
-                }
-
-                if (
-                  j.symbol === i.symbol &&
-                  (j.transactionDate < i.transactionDate ||
-                    j.transactionDate === i.transactionDate) &&
-                  i.orderID !== j.orderID &&
-                  j.execType === 'NS'
-                ) {
-                  listSell.push(j);
-                }
-              }
-            });
-
-            const listBuy: any = [];
-            let totalVolumeBuy = 0;
-            const totalVolumeSell = sum(
-              listSell.map((i: any) => Number(i.matchQuantity))
-            );
-
-            let stop2 = false;
-            filteredList.forEach((j: any) => {
-              if (!stop2) {
-                if (totalVolumeBuy === totalVolumeSell) stop2 = true;
-
-                if (
-                  j.symbol === i.symbol &&
-                  j.execType === 'NB' &&
-                  j.transactionDate < i.transactionDate
-                ) {
-                  totalVolumeBuy += Number(j.matchQuantity);
-                  listBuy.push(j);
-                }
-              }
-            });
-
-            const start = sum(
-              listBuy.map(
-                (i: any) =>
-                  Number(i.matchQuantity) * Number(i.matchAveragePrice)
-              )
-            );
-            const end = sum(
-              listSell.map(
-                (i: any) =>
-                  Number(i.matchQuantity) * Number(i.matchAveragePrice)
-              )
-            );
-            i.finalChange = (((end - start) / start) * 100).toFixed(2);
-            i.initialAmount = start;
-          }
-          return i;
-        });
-        setListOrdersHistory(mappedList);
-      }
-    } catch (e) {
-      notification.error({ message: 'Error' });
-    }
-  };
-
   useEffect(() => {
-    getHistoryTrade();
-  }, []);
+    (async () => {
+      try {
+        const res = await props.postAuthToken({
+          username: 'username',
+          password: 'password',
+        });
+        const res2 = await props.fetchOrdersHistory(
+          res.data.token,
+          filterObj.startDate,
+          filterObj.endDate
+        );
+        if (res2.data) {
+          const filteredList = uniqBy(
+            res2.data.filter(
+              (i: any) => i.orderStatus === filterObj.orderStatus
+            ),
+            'orderID'
+          );
+          let ignoreSells: any = [];
+          const mappedList: any = filteredList.map((i: any) => {
+            if (
+              ignoreSells.filter((j: any) => j.orderID === i.orderID).length > 0
+            )
+              return i;
+            if (i.execType === 'NS') {
+              const listSell: any = [i];
+              let stop = false;
+              filteredList.forEach((j: any) => {
+                if (!stop) {
+                  if (
+                    j.symbol === i.symbol &&
+                    j.transactionDate < i.transactionDate &&
+                    j.execType === 'NB'
+                  ) {
+                    ignoreSells = ignoreSells.concat(listSell);
+                    stop = true;
+                  }
+
+                  if (
+                    j.symbol === i.symbol &&
+                    (j.transactionDate < i.transactionDate ||
+                      j.transactionDate === i.transactionDate) &&
+                    i.orderID !== j.orderID &&
+                    j.execType === 'NS'
+                  ) {
+                    listSell.push(j);
+                  }
+                }
+              });
+
+              const listBuy: any = [];
+              let totalVolumeBuy = 0;
+              const totalVolumeSell = sum(
+                listSell.map((i: any) => Number(i.matchQuantity))
+              );
+
+              let stop2 = false;
+              filteredList.forEach((j: any) => {
+                if (!stop2) {
+                  if (totalVolumeBuy === totalVolumeSell) stop2 = true;
+
+                  if (
+                    j.symbol === i.symbol &&
+                    j.execType === 'NB' &&
+                    j.transactionDate < i.transactionDate
+                  ) {
+                    totalVolumeBuy += Number(j.matchQuantity);
+                    listBuy.push(j);
+                  }
+                }
+              });
+
+              const start = sum(
+                listBuy.map(
+                  (i: any) =>
+                    Number(i.matchQuantity) * Number(i.matchAveragePrice)
+                )
+              );
+              const end = sum(
+                listSell.map(
+                  (i: any) =>
+                    Number(i.matchQuantity) * Number(i.matchAveragePrice)
+                )
+              );
+              i.finalChange = (((end - start) / start) * 100).toFixed(2);
+              i.initialAmount = start;
+            }
+            return i;
+          });
+          setListOrdersHistory(mappedList);
+        }
+      } catch (e) {
+        notification.error({ message: 'Error' });
+      }
+    })();
+  }, [filterObj.endDate, filterObj.orderStatus, filterObj.startDate, props]);
 
   return (
     <div>

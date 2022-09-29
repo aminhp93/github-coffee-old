@@ -30,30 +30,28 @@ const MemoizedPostDetail = memo(function PostDetail({
   const [plateId, setPlateId] = useState(uuidv4());
   const [post, setPost] = useState(DEFAULT_POST);
   const [postTitle, setPostTitle] = useState('');
-  const [postObj, setPostObj] = useState({} as IPost);
+  const [, setPostObj] = useState({} as IPost);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isUpdated, setIsUpdated] = useState<boolean>(true);
 
-  const getStockPost = async () => {
-    try {
-      setLoading(true);
-      const res: any = await PostService.detailPost(slug);
-      setLoading(false);
-
-      if (res.data) {
-        setPost(JSON.parse(res.data.body));
-        setPostTitle(res.data.title);
-        setPostObj(res.data);
-        setPlateId(uuidv4());
-      }
-    } catch (e) {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    getStockPost();
+    (async () => {
+      try {
+        setLoading(true);
+        const res: any = await PostService.detailPost(slug);
+        setLoading(false);
+
+        if (res.data) {
+          setPost(JSON.parse(res.data.body));
+          setPostTitle(res.data.title);
+          setPostObj(res.data);
+          setPlateId(uuidv4());
+        }
+      } catch (e) {
+        setLoading(false);
+      }
+    })();
   }, [slug]);
 
   const handleUpdate = async () => {

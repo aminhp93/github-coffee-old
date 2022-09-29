@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { INote } from 'types';
 import NoteListItem from './NoteListItem';
 
@@ -10,10 +10,13 @@ export interface INoteListProps {
 export default function NoteList({ cb, listNotes }: INoteListProps) {
   const [selectedNote, setSelectedNote] = useState({} as INote);
 
-  const handleSelect = useCallback((data: any) => {
-    setSelectedNote(data);
-    cb && cb(data);
-  }, []);
+  const handleSelect = useCallback(
+    (data: any) => {
+      setSelectedNote(data);
+      cb && cb(data);
+    },
+    [cb]
+  );
 
   return (
     <div style={{ display: 'flex' }}>

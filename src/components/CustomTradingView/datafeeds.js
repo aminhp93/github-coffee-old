@@ -1,7 +1,7 @@
 /* eslint-disable no-loop-func */
-import request, { CustomTradingViewUrls, RedirectUrls } from 'request';
 import axios from 'axios';
 import config from 'config';
+import request, { CustomTradingViewUrls, RedirectUrls } from 'request';
 
 /*
 	This class implements interaction with UDF-compatible datafeed.
@@ -1182,7 +1182,8 @@ Datafeeds.QuotesPulseUpdater.prototype._updateQuotes = function (
 };
 
 // if (typeof module !== 'undefined' && module && module.exports) {
-export default {
+const EXPORT = {
   UDFCompatibleDatafeed: Datafeeds.UDFCompatibleDatafeed,
 };
 // }
+export default EXPORT;

@@ -52,7 +52,7 @@ const DEAFULT_COLUMNS: GridColDef[] = [
 ];
 
 export default function StockTable() {
-  const [loading, setLoading] = React.useState(false);
+  const [, setLoading] = React.useState(false);
   const [listWatchlist, setListWatchlist] = React.useState([]);
   const [currentWatchlist, setCurrentWatchlist] = React.useState('');
   const [rows, setRows] = React.useState([] as any);
@@ -63,20 +63,6 @@ export default function StockTable() {
 
   const handleChangeWatchlist = (event: SelectChangeEvent) => {
     setCurrentWatchlist(event.target.value as string);
-  };
-
-  const handleUpdateRows = () => {
-    const keyByWl = keyBy(listWatchlist, 'name');
-    if (!keyByWl) return;
-    const symbols: any = ((keyByWl[currentWatchlist] || {}) as any).symbols;
-    if (!symbols) return;
-    const newRows = symbols.map((i: any) => {
-      return {
-        symbol: i,
-        id: i,
-      };
-    });
-    setRows(newRows);
   };
 
   const fetchList = async () => {
@@ -173,13 +159,25 @@ export default function StockTable() {
   };
 
   useEffect(() => {
-    handleUpdateRows();
-  }, [currentWatchlist]);
+    (() => {
+      const keyByWl = keyBy(listWatchlist, 'name');
+      if (!keyByWl) return;
+      const symbols: any = ((keyByWl[currentWatchlist] || {}) as any).symbols;
+      if (!symbols) return;
+      const newRows = symbols.map((i: any) => {
+        return {
+          symbol: i,
+          id: i,
+        };
+      });
+      setRows(newRows);
+    })();
+  }, [currentWatchlist, listWatchlist]);
 
   useEffect(() => {
     fetchList();
   }, []);
-  console.log(rows);
+
   return (
     <Box
       sx={{

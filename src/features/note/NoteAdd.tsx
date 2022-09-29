@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import { Button, notification, Input } from 'antd';
+import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { v4 as uuidv4 } from 'uuid';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NoteService } from 'services';
+import { v4 as uuidv4 } from 'uuid';
 
-interface Props {}
-
-export default function NoteAdd(props: Props) {
-  const [plateId, setPlateId] = useState(uuidv4());
+export default function NoteAdd() {
+  const [plateId] = useState(uuidv4());
   const [titleCreateNote, setTitleCreateNote] = useState(null);
   const [note, setNote] = useState([
     {

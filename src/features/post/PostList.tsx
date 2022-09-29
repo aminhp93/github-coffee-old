@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { IPost } from 'types';
-import PostListItem from './PostListItem';
 import './PostList.less';
+import PostListItem from './PostListItem';
 export interface IPostListProps {
   cb?: any;
   listPosts: IPost[];
@@ -10,10 +10,13 @@ export interface IPostListProps {
 export default function PostList({ cb, listPosts }: IPostListProps) {
   const [selectedPost, setSelectedPost] = useState({} as IPost);
 
-  const handleSelect = useCallback((data: any) => {
-    setSelectedPost(data);
-    cb && cb(data);
-  }, []);
+  const handleSelect = useCallback(
+    (data: any) => {
+      setSelectedPost(data);
+      cb && cb(data);
+    },
+    [cb]
+  );
 
   return (
     <div className="PostList flex">

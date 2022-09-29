@@ -19,12 +19,12 @@ import ConnectDashboard from 'features/connectDashboard';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
+import StockHistoryTrade from 'features/stock/StockHistoryTrade';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/StockTable';
-import Todo from 'features/todo';
-import StockHistoryTrade from 'features/stock/StockHistoryTrade';
 import StockTools from 'features/stock/StockTools';
+import Todo from 'features/todo';
 import * as React from 'react';
 
 const DEFAULT_JSON: IJsonModel = {
@@ -82,7 +82,6 @@ interface IProps {
 function FlexLayout({ json, onModelChange }: IProps) {
   const model = Model.fromJson(json || DEFAULT_JSON);
   let layoutRef: React.RefObject<Layout> = React.createRef();
-  let nextGridIndex: number = 1;
 
   const handleChange = (
     event: SelectChangeEvent,

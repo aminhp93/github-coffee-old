@@ -11,6 +11,7 @@ import { Spin } from 'antd';
 import Echarts from 'components/Echarts';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
+import * as React from 'react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import request, { CustomTradingViewUrls } from 'request';
 import { StockService } from 'services';
@@ -46,9 +47,9 @@ export default function StockMarketOverview() {
 
   const [data4, setData4] = useState([] as any);
   const [filtered, setFiltered] = useState(true);
-  const [changePercentMin, setChangePercentMin] = useState(1);
-  const [changePercentMax, setChangePercentMax] = useState(5);
-  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
+  const [changePercentMin] = useState(1);
+  const [changePercentMax] = useState(5);
+  const [estimatedVolumeChange] = useState(0);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
   const [loading, setLoading] = useState(false);
@@ -214,22 +215,25 @@ export default function StockMarketOverview() {
       });
   };
 
-  const getDataHistoryUrl = async (symbol: string) => {
-    const res = await request({
-      method: 'GET',
-      url: CustomTradingViewUrls.getDataHistoryUrl(
-        symbol,
-        TIME_FRAME,
-        start.format('X'),
-        end.format('X')
-      ),
-    });
+  const getDataHistoryUrl = React.useCallback(
+    async (symbol: string) => {
+      const res = await request({
+        method: 'GET',
+        url: CustomTradingViewUrls.getDataHistoryUrl(
+          symbol,
+          TIME_FRAME,
+          start.format('X'),
+          end.format('X')
+        ),
+      });
 
-    return {
-      symbol,
-      res: res?.data || [],
-    };
-  };
+      return {
+        symbol,
+        res: res?.data || [],
+      };
+    },
+    [end, start]
+  );
 
   const fetchList = async () => {
     try {
@@ -288,8 +292,54 @@ export default function StockMarketOverview() {
   };
 
   useEffect(() => {
-    fetchList();
-  }, [filtered, currentWatchlist]);
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await StockService.getWatchlist();
+        setListWatchlist(res.data);
+        if (res && res.data && currentWatchlist) {
+          fetch(res.data, currentWatchlist).then((res: any) => {
+            setLoading(false);
+
+            const fetchData4 = async (data: any) => {
+              const listPromises: any = [];
+              data.forEach((i: any) => {
+                listPromises.push(getDataHistoryUrl(i.symbol));
+              });
+              setLoading(true);
+              return Promise.all(listPromises)
+                .then((res) => {
+                  setLoading(false);
+                  const keyByRes = keyBy(res, 'symbol');
+                  const newData = data.map((i: any) => {
+                    i.history = keyByRes[i.symbol].res;
+                    return i;
+                  });
+                  setData4(newData);
+                })
+                .catch((e) => {
+                  setLoading(false);
+                });
+            };
+
+            fetchData4(
+              filtered
+                ? res.filter(
+                    (i: any) =>
+                      // i.changePercent > changePercentMin &&
+                      // i.changePercent < changePercentMax &&
+                      i.estimatedVolumeChange > estimatedVolumeChange
+                  )
+                : res
+            );
+          });
+        }
+      } catch (e) {
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [filtered, currentWatchlist, getDataHistoryUrl, estimatedVolumeChange]);
 
   useInterval(fetchList, isPlaying ? delay : null);
 

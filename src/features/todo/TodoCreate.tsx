@@ -1,4 +1,4 @@
-import { Button, Divider, notification } from 'antd';
+import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import * as React from 'react';
 import { useState } from 'react';

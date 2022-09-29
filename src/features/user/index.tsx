@@ -64,8 +64,15 @@ export default function User(props: IUserProps) {
 
   useEffect(() => {
     console.log(83);
-    getAuthUser();
-  }, []);
+    (async (headers?: any) => {
+      try {
+        const res = await UserService.getAuthUser(headers);
+        dispatch(update(res.data));
+      } catch (e) {
+        notification.error({ message: 'Get user failed' });
+      }
+    })();
+  }, [dispatch]);
 
   return (
     <div>

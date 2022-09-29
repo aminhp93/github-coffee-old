@@ -1,21 +1,14 @@
-import { useState } from 'react';
-import { Button, Checkbox, Form, Input, notification } from 'antd';
-import { PostService } from 'services';
+import { Button, Form, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { v4 as uuidv4 } from 'uuid';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PostService } from 'services';
+import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
 
 export default function PostCreate() {
   const navigate = useNavigate();
-
-  const [plateId, setPlateId] = useState(uuidv4());
-  // const [note, setNote] = useState([
-  //     {
-  //       children: [{ text: '' }],
-  //       type: 'p',
-  //     },
-  //   ]);
+  const [plateId] = useState(uuidv4());
 
   const onFinish = async (values: any) => {
     try {
