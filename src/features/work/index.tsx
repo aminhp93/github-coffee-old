@@ -1,6 +1,6 @@
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import { IJsonModel } from 'flexlayout-react';
-
+import { Button } from 'antd';
 export interface IWokrProps {}
 
 const Work: React.FunctionComponent = (props: IWokrProps) => {
@@ -77,7 +77,19 @@ const Work: React.FunctionComponent = (props: IWokrProps) => {
     localStorage.setItem('flexLayoutModel_Work', JSON.stringify(data.toJson()));
   };
 
-  return <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />;
+  const handleChangeLayout = () => {
+    localStorage.removeItem('flexLayoutModel_Work');
+    window.location.reload();
+  };
+
+  return (
+    <>
+      <div>
+        <Button onClick={() => handleChangeLayout()}>Reset layout</Button>
+      </div>
+      <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />;
+    </>
+  );
 };
 
 export default Work;

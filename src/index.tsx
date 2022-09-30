@@ -34,6 +34,16 @@ import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Notification from './components/firebaseNotifications/Notification';
+import {
+  HomeOutlined,
+  WechatOutlined,
+  CloseOutlined,
+  LineChartOutlined,
+  OrderedListOutlined,
+  StockOutlined,
+  RightOutlined,
+  LeftOutlined,
+} from '@ant-design/icons';
 
 notification.config({
   placement: 'bottomLeft',
@@ -77,132 +87,132 @@ root.render(
   </React.Fragment>
 );
 
-// const LIST_ROUTER = [
-//   {
-//     linkTo: '/work',
-//     label: 'work',
-//     icon: <HomeOutlined style={{ margin: '0 8px' }} />,
-//   },
-// ];
+const LIST_ROUTER = [
+  {
+    linkTo: '/work',
+    label: 'work',
+    icon: <HomeOutlined style={{ margin: '0 8px' }} />,
+  },
+];
 
-// const LIST_ROUTER_FOOTER = [
-//   {
-//     linkTo: '/api',
-//     label: 'API',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/chat',
-//     label: 'chat',
-//     icon: <WechatOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/demo',
-//     label: 'demo',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/echarts',
-//     label: 'echarts',
-//     icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/flexLayout',
-//     label: 'Flex layout',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/tradingView',
-//     label: 'Trading View',
-//     icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/post',
-//     label: 'post',
-//     icon: <OrderedListOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/taskManager',
-//     label: 'task manager',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/stock',
-//     label: 'stock',
-//     icon: <StockOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/test',
-//     label: 'test',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/snippet',
-//     label: 'snippet',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-//   {
-//     linkTo: '/libraryUpdate',
-//     label: 'libraryUpdate',
-//     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-//   },
-// ];
+const LIST_ROUTER_FOOTER = [
+  {
+    linkTo: '/api',
+    label: 'API',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/chat',
+    label: 'chat',
+    icon: <WechatOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/demo',
+    label: 'demo',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/echarts',
+    label: 'echarts',
+    icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/flexLayout',
+    label: 'Flex layout',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/tradingView',
+    label: 'Trading View',
+    icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/post',
+    label: 'post',
+    icon: <OrderedListOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/taskManager',
+    label: 'task manager',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/stock',
+    label: 'stock',
+    icon: <StockOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/test',
+    label: 'test',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/snippet',
+    label: 'snippet',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/libraryUpdate',
+    label: 'libraryUpdate',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+];
 
-// const LIST_ROUTER_PUBLIC: any = [];
+const LIST_ROUTER_PUBLIC: any = [];
 
-// const LIST_ROUTER_FOOTER_PUBLIC = [
-//   {
-//     linkTo: '/stock',
-//     label: 'stock',
-//     icon: <StockOutlined style={{ margin: '0 8px' }} />,
-//   },
-// ];
+const LIST_ROUTER_FOOTER_PUBLIC = [
+  {
+    linkTo: '/stock',
+    label: 'stock',
+    icon: <StockOutlined style={{ margin: '0 8px' }} />,
+  },
+];
 
 function App() {
   console.log(process.env);
   let navigate = useNavigate();
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
-  // const [visibleSidebar, setVisibleSidebar] = React.useState(false);
+  const [visibleSidebar, setVisibleSidebar] = React.useState(false);
 
-  // const renderSideBar = () => {
-  //   const list = user && user.id ? LIST_ROUTER : LIST_ROUTER_PUBLIC;
-  //   return (
-  //     <div style={{ overflow: 'auto' }}>
-  //       {list.map((i: any) => {
-  //         return (
-  //           <div
-  //             className="App-sidebar-item"
-  //             onClick={() => navigate(i.linkTo)}
-  //           >
-  //             {i.icon}
-  //             <span className="App-sidebar-label">{i.label}</span>
-  //           </div>
-  //         );
-  //       })}
-  //     </div>
-  //   );
-  // };
+  const renderSideBar = () => {
+    const list = user && user.id ? LIST_ROUTER : LIST_ROUTER_PUBLIC;
+    return (
+      <div style={{ overflow: 'auto' }}>
+        {list.map((i: any) => {
+          return (
+            <div
+              className="App-sidebar-item"
+              onClick={() => navigate(i.linkTo)}
+            >
+              {i.icon}
+              <span className="App-sidebar-label">{i.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
-  // const renderSideBarFooter = () => {
-  //   const list =
-  //     user && user.id ? LIST_ROUTER_FOOTER : LIST_ROUTER_FOOTER_PUBLIC;
-  //   return (
-  //     <div style={{ overflow: 'auto' }}>
-  //       {list.map((i: any) => {
-  //         return (
-  //           <div
-  //             className="App-sidebar-item"
-  //             onClick={() => navigate(i.linkTo)}
-  //           >
-  //             {i.icon}
-  //             <span className="App-sidebar-label">{i.label}</span>
-  //           </div>
-  //         );
-  //       })}
-  //     </div>
-  //   );
-  // };
+  const renderSideBarFooter = () => {
+    const list =
+      user && user.id ? LIST_ROUTER_FOOTER : LIST_ROUTER_FOOTER_PUBLIC;
+    return (
+      <div style={{ overflow: 'auto' }}>
+        {list.map((i: any) => {
+          return (
+            <div
+              className="App-sidebar-item"
+              onClick={() => navigate(i.linkTo)}
+            >
+              {i.icon}
+              <span className="App-sidebar-label">{i.label}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderSideBarFooter2 = () => {
     return (
@@ -218,11 +228,6 @@ function App() {
     );
   };
 
-  const handleChangeLayout = () => {
-    localStorage.removeItem('flexLayoutModel_Work');
-    window.location.reload();
-  };
-
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, (data: any) => {
@@ -235,28 +240,24 @@ function App() {
       (async (headers?: any) => {
         try {
           const res = await UserService.getAuthUser(headers);
-          console.log(238);
           dispatch(update(res.data));
         } catch (e) {
           notification.error({ message: 'Get user failed' });
         }
       })(headers);
     });
-  }, [dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-      <div>
-        {renderSideBarFooter2()}
-        <Button onClick={() => handleChangeLayout()}>Default layout</Button>
-      </div>
-      {/* <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
-        <Box>
+    <div style={{ display: 'flex', height: '100%' }}>
+      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
+        <div>
           <Button
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
           ></Button>
-        </Box>
+        </div>
         <div
           style={{
             display: 'flex',
@@ -270,7 +271,7 @@ function App() {
         </div>
 
         {renderSideBarFooter2()}
-      </div> */}
+      </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {user && user.id ? (
           <Routes>

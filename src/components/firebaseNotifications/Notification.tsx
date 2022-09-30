@@ -7,14 +7,14 @@ const Notification = () => {
 
   useEffect(() => {
     if (notification?.title) {
-      noti.success();
+      noti.success({ message: 'success' });
     }
   }, [notification]);
 
   requestForToken();
 
   onMessageListener()
-    .then((payload) => {
+    .then((payload: any) => {
       console.log(payload, 18);
       setNotification({
         title: payload?.notification?.title,
@@ -23,7 +23,7 @@ const Notification = () => {
     })
     .catch((err) => console.log('failed: ', err));
 
-  return <div>hello</div>;
+  return null;
 };
 
 export default Notification;

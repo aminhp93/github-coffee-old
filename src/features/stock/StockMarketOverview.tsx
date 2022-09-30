@@ -2,7 +2,7 @@ import { CheckCircleOutlined } from '@ant-design/icons';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
 import { Divider } from '@mui/material';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import { Button } from 'antd';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import { makeStyles } from '@mui/styles';
@@ -15,7 +15,6 @@ import * as React from 'react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import request, { CustomTradingViewUrls } from 'request';
 import { StockService } from 'services';
-import { useInterval } from 'usehooks-ts';
 import {
   checkMarketOpen,
   DELAY_TIME,
@@ -26,12 +25,12 @@ import {
   TIME_FRAME,
 } from './utils';
 
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { useInterval } from 'usehooks-ts';
+import { RightOutlined, LeftOutlined } from '@ant-design/icons';
 
 const useStyles = makeStyles({
   root: {
@@ -232,7 +231,8 @@ export default function StockMarketOverview() {
         res: res?.data || [],
       };
     },
-    [end, start]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
   );
 
   const fetchList = async () => {
@@ -339,7 +339,8 @@ export default function StockMarketOverview() {
         setLoading(false);
       }
     })();
-  }, [filtered, currentWatchlist, getDataHistoryUrl, estimatedVolumeChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, currentWatchlist, getDataHistoryUrl]);
 
   useInterval(fetchList, isPlaying ? delay : null);
 
@@ -361,25 +362,16 @@ export default function StockMarketOverview() {
             rowHeight={120}
             rowsPerPageOptions={[10]}
           />
-          <Box
-            sx={{
+
+          <Button
+            style={{
               position: 'absolute',
               top: 0,
-              right: '-28px',
+              right: '-16px',
             }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={
-                visibleSidebar ? (
-                  <ArrowForwardIosIcon />
-                ) : (
-                  <ArrowBackIosNewIcon />
-                )
-              }
-              onClick={() => setVisibleSidebar(!visibleSidebar)}
-            ></Button>
-          </Box>
+            icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
+            onClick={() => setVisibleSidebar(!visibleSidebar)}
+          />
         </Box>
 
         {visibleSidebar && (
@@ -417,7 +409,7 @@ export default function StockMarketOverview() {
                 <Box>Timeframe {TIME_FRAME}</Box>
               </Box>
               <Divider />
-              <Button variant="outlined" onClick={handleFilter}>
+              <Button onClick={handleFilter}>
                 Turn {filtered ? 'Off' : 'On'} Filtered
               </Button>
               <div>Change Percent Min: {changePercentMin}</div>
@@ -426,10 +418,7 @@ export default function StockMarketOverview() {
               <Divider />
 
               <Box component="form" noValidate autoComplete="off">
-                <Button
-                  variant="outlined"
-                  onClick={() => setPlaying(!isPlaying)}
-                >
+                <Button onClick={() => setPlaying(!isPlaying)}>
                   {isPlaying ? 'Stop Interval' : 'Start Interval'}
                 </Button>
                 <TextField
