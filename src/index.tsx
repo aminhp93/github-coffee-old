@@ -256,7 +256,7 @@ function App() {
           <Button
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
-          ></Button>
+          />
         </div>
         <div
           style={{
