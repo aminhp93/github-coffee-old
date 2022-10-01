@@ -1,78 +1,15 @@
 import CustomFlexLayout from 'components/CustomFlexLayout';
-import { IJsonModel } from 'flexlayout-react';
 import { Button } from 'antd';
-export interface IWokrProps {}
 
-const Work: React.FunctionComponent = (props: IWokrProps) => {
+const Work: React.FunctionComponent = () => {
   const savedLayout = localStorage.getItem('flexLayoutModel_Work');
-
-  let json: IJsonModel = {
-    global: {
-      tabEnableFloat: true,
-      tabSetMinWidth: 100,
-      tabSetMinHeight: 100,
-      borderMinSize: 100,
-    },
-    borders: [
-      {
-        type: 'border',
-        location: 'bottom',
-        children: [
-          {
-            type: 'tab',
-            id: '#2a50a894-0744-4696-bf4e-54ae83185ebc',
-            name: 'Post',
-            component: 'Post',
-          },
-        ],
-      },
-      {
-        type: 'border',
-        location: 'right',
-        children: [
-          {
-            type: 'tab',
-            id: '#2966f663-cf93-4efe-8d4a-e6c3bb475991',
-            name: 'Chat',
-            component: 'Chat',
-          },
-          {
-            type: 'tab',
-            id: '#2966f663-cf93-4efe-8d4a-e6c3bb475992',
-            name: 'Todos',
-            component: 'Todos',
-          },
-        ],
-      },
-    ],
-    layout: {
-      type: 'row',
-      id: '#bf8ddd18-4c40-4db2-9bb7-f66985943b44',
-      children: [
-        {
-          type: 'tabset',
-          id: '#4402c641-631c-40ba-b715-b49013cb75db',
-          weight: 12.5,
-          children: [
-            {
-              type: 'tab',
-              id: '#7df660c1-907f-4ef3-ac7e-78b8bdbbc994',
-              name: 'StockMarketOverview',
-              component: 'StockMarketOverview',
-            },
-          ],
-          active: true,
-        },
-      ],
-    },
-  };
+  let json;
 
   if (savedLayout) {
     json = JSON.parse(savedLayout);
   }
 
   const handleOnModelChange = (data: any) => {
-    console.log(data);
     localStorage.removeItem('flexLayoutModel_Work');
     localStorage.setItem('flexLayoutModel_Work', JSON.stringify(data.toJson()));
   };
@@ -83,12 +20,14 @@ const Work: React.FunctionComponent = (props: IWokrProps) => {
   };
 
   return (
-    <>
+    <div className="flex height-100" style={{ flexDirection: 'column' }}>
       <div>
         <Button onClick={() => handleChangeLayout()}>Reset layout</Button>
       </div>
-      <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />;
-    </>
+      <div className="flex-1">
+        <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />
+      </div>
+    </div>
   );
 };
 

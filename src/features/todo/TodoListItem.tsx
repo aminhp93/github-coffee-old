@@ -1,9 +1,5 @@
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  ScissorOutlined,
-} from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
+import { CheckOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Tooltip, Checkbox } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
@@ -149,19 +145,13 @@ function TodoListItem({
         position: 'relative',
       }}
     >
+      <Checkbox
+        defaultChecked={todoItem.is_done}
+        onClick={() => handleDone()}
+      ></Checkbox>
       {todoItem.id}
       <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
       <div className="TodoListItem-toolbox">
-        <Tooltip placement="right" title={todoItem.is_done ? 'Undo' : 'Done'}>
-          <Button
-            icon={<ScissorOutlined />}
-            style={{ zIndex: 1 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDone();
-            }}
-          />
-        </Tooltip>
         <Tooltip placement="right" title="update">
           <Button
             icon={<CheckOutlined />}

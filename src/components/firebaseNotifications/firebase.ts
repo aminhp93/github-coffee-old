@@ -4,6 +4,9 @@ import config from 'config';
 
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import request from 'request';
+
+const baseUrl = config.apiUrl;
 
 initializeApp(config.firebase);
 
@@ -17,6 +20,14 @@ export const requestForToken = () => {
       if (currentToken) {
         console.log('current token for client: ', currentToken);
         // Perform any other neccessary action with the token
+        // Store token in db and update it if it changes
+        request({
+          url: `${baseUrl}/api/pushnotification/create/`,
+          method: 'POST',
+          data: {
+            token: currentToken,
+          },
+        });
       } else {
         // Show permission request UI
         console.log(
