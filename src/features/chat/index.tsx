@@ -1,14 +1,13 @@
 import { Box } from '@mui/material';
-import { Col } from 'antd';
+import { Col, Divider } from 'antd';
 import config from 'config';
 import Pusher from 'pusher-js';
-import { ChatService } from 'services/chat';
-import ChatBox from './ChatBox';
-import ChatUserList from './ChatUserList';
 import * as React from 'react';
-import ChatMessageListItem from './ChatMessageListItem';
-import { Divider } from 'antd';
+import { ChatService } from 'services/chat';
 import { IChat } from 'types';
+import ChatBox from './ChatBox';
+import ChatMessageListItem from './ChatMessageListItem';
+import ChatUserList from './ChatUserList';
 import './index.less';
 
 interface IProps {
@@ -111,6 +110,7 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
     presence_members_channel.bind('pusher:subscription_error', (data: any) => {
       console.log('subscription_error', data);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {

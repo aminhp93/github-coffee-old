@@ -1,16 +1,12 @@
-import { Button, Tooltip } from 'antd';
+import { CheckOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, Tooltip, Checkbox } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { ITodo } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  ScissorOutlined,
-} from '@ant-design/icons';
-import { useDrag, useDrop } from 'react-dnd';
-import type { Identifier, XYCoord } from 'dnd-core';
 
 interface IProps {
   id: number;
@@ -123,7 +119,7 @@ function TodoListItem({
     },
   });
 
-  const [{ isDragging }, drag] = useDrag({
+  const [, drag] = useDrag({
     type: 'card',
     item: () => {
       return { id, index };
@@ -133,7 +129,7 @@ function TodoListItem({
     }),
   });
 
-  const opacity = isDragging ? 0 : 1;
+  // const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
 
   React.useEffect(() => {
@@ -149,19 +145,13 @@ function TodoListItem({
         position: 'relative',
       }}
     >
+      <Checkbox
+        defaultChecked={todoItem.is_done}
+        onClick={() => handleDone()}
+      ></Checkbox>
       {todoItem.id}
       <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
       <div className="TodoListItem-toolbox">
-        <Tooltip placement="right" title={todoItem.is_done ? 'Undo' : 'Done'}>
-          <Button
-            icon={<ScissorOutlined />}
-            style={{ zIndex: 1 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDone();
-            }}
-          />
-        </Tooltip>
         <Tooltip placement="right" title="update">
           <Button
             icon={<CheckOutlined />}

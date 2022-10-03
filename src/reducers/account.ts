@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState, AppThunk } from 'app/store';
+import { AppThunk } from 'app/store';
 
 import { AccountService } from 'services';
 

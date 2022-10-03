@@ -2,7 +2,7 @@ import { CheckCircleOutlined } from '@ant-design/icons';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
 import { Divider } from '@mui/material';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import { Button } from 'antd';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import { makeStyles } from '@mui/styles';
@@ -11,10 +11,10 @@ import { Spin } from 'antd';
 import Echarts from 'components/Echarts';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
+import * as React from 'react';
 import { ChangeEvent, useEffect, useState } from 'react';
 import request, { CustomTradingViewUrls } from 'request';
 import { StockService } from 'services';
-import { useInterval } from 'usehooks-ts';
 import {
   checkMarketOpen,
   DELAY_TIME,
@@ -25,12 +25,12 @@ import {
   TIME_FRAME,
 } from './utils';
 
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { useInterval } from 'usehooks-ts';
+import { RightOutlined, LeftOutlined } from '@ant-design/icons';
 
 const useStyles = makeStyles({
   root: {
@@ -46,9 +46,9 @@ export default function StockMarketOverview() {
 
   const [data4, setData4] = useState([] as any);
   const [filtered, setFiltered] = useState(true);
-  const [changePercentMin, setChangePercentMin] = useState(1);
-  const [changePercentMax, setChangePercentMax] = useState(5);
-  const [estimatedVolumeChange, setEstimatedVolumeChange] = useState(0);
+  const [changePercentMin] = useState(1);
+  const [changePercentMax] = useState(5);
+  const [estimatedVolumeChange] = useState(0);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
   const [isPlaying, setPlaying] = useState<boolean>(checkMarketOpen());
   const [loading, setLoading] = useState(false);
@@ -214,22 +214,26 @@ export default function StockMarketOverview() {
       });
   };
 
-  const getDataHistoryUrl = async (symbol: string) => {
-    const res = await request({
-      method: 'GET',
-      url: CustomTradingViewUrls.getDataHistoryUrl(
-        symbol,
-        TIME_FRAME,
-        start.format('X'),
-        end.format('X')
-      ),
-    });
+  const getDataHistoryUrl = React.useCallback(
+    async (symbol: string) => {
+      const res = await request({
+        method: 'GET',
+        url: CustomTradingViewUrls.getDataHistoryUrl(
+          symbol,
+          TIME_FRAME,
+          start.format('X'),
+          end.format('X')
+        ),
+      });
 
-    return {
-      symbol,
-      res: res?.data || [],
-    };
-  };
+      return {
+        symbol,
+        res: res?.data || [],
+      };
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   const fetchList = async () => {
     try {
@@ -288,8 +292,55 @@ export default function StockMarketOverview() {
   };
 
   useEffect(() => {
-    fetchList();
-  }, [filtered, currentWatchlist]);
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await StockService.getWatchlist();
+        setListWatchlist(res.data);
+        if (res && res.data && currentWatchlist) {
+          fetch(res.data, currentWatchlist).then((res: any) => {
+            setLoading(false);
+
+            const fetchData4 = async (data: any) => {
+              const listPromises: any = [];
+              data.forEach((i: any) => {
+                listPromises.push(getDataHistoryUrl(i.symbol));
+              });
+              setLoading(true);
+              return Promise.all(listPromises)
+                .then((res) => {
+                  setLoading(false);
+                  const keyByRes = keyBy(res, 'symbol');
+                  const newData = data.map((i: any) => {
+                    i.history = keyByRes[i.symbol].res;
+                    return i;
+                  });
+                  setData4(newData);
+                })
+                .catch((e) => {
+                  setLoading(false);
+                });
+            };
+
+            fetchData4(
+              filtered
+                ? res.filter(
+                    (i: any) =>
+                      // i.changePercent > changePercentMin &&
+                      // i.changePercent < changePercentMax &&
+                      i.estimatedVolumeChange > estimatedVolumeChange
+                  )
+                : res
+            );
+          });
+        }
+      } catch (e) {
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, currentWatchlist, getDataHistoryUrl]);
 
   useInterval(fetchList, isPlaying ? delay : null);
 
@@ -311,25 +362,16 @@ export default function StockMarketOverview() {
             rowHeight={120}
             rowsPerPageOptions={[10]}
           />
-          <Box
-            sx={{
+
+          <Button
+            style={{
               position: 'absolute',
               top: 0,
-              right: '-28px',
+              right: '-16px',
             }}
-          >
-            <Button
-              variant="outlined"
-              startIcon={
-                visibleSidebar ? (
-                  <ArrowForwardIosIcon />
-                ) : (
-                  <ArrowBackIosNewIcon />
-                )
-              }
-              onClick={() => setVisibleSidebar(!visibleSidebar)}
-            ></Button>
-          </Box>
+            icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
+            onClick={() => setVisibleSidebar(!visibleSidebar)}
+          />
         </Box>
 
         {visibleSidebar && (
@@ -367,7 +409,7 @@ export default function StockMarketOverview() {
                 <Box>Timeframe {TIME_FRAME}</Box>
               </Box>
               <Divider />
-              <Button variant="outlined" onClick={handleFilter}>
+              <Button onClick={handleFilter}>
                 Turn {filtered ? 'Off' : 'On'} Filtered
               </Button>
               <div>Change Percent Min: {changePercentMin}</div>
@@ -376,10 +418,7 @@ export default function StockMarketOverview() {
               <Divider />
 
               <Box component="form" noValidate autoComplete="off">
-                <Button
-                  variant="outlined"
-                  onClick={() => setPlaying(!isPlaying)}
-                >
+                <Button onClick={() => setPlaying(!isPlaying)}>
                   {isPlaying ? 'Stop Interval' : 'Start Interval'}
                 </Button>
                 <TextField

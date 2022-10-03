@@ -29,7 +29,7 @@ export default function Snippet() {
 
   const fetchList = () => {
     const listPromises: any = [];
-    [terminal, errorDatabase, copyToClipboard].map((i: any) => {
+    [terminal, errorDatabase, copyToClipboard].forEach((i: any) => {
       listPromises.push(fetch(i).then((res) => res.text()));
     });
     Promise.all(listPromises)

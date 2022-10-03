@@ -1,9 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Input, Progress, Slider } from 'antd';
+import { Input, Progress } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Contanier from './Container';
-import ReactSlider from 'react-slider';
 import './index.less';
 
 const LIST_TASK = [
@@ -29,11 +27,9 @@ const TOTAL_TIME = 240;
 export interface TaskManagerProps {}
 
 export default function TaskManager(props: TaskManagerProps) {
-  const [progress, setProgress] = useState(10);
+  // const [progress, setProgress] = useState(10);
 
-  console.log(process.env);
-
-  const handleSlide = (newProgress: any) => setProgress(newProgress);
+  // const handleSlide = (newProgress: any) => setProgress(newProgress);
 
   return (
     <div>

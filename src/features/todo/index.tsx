@@ -1,4 +1,6 @@
-import { Divider, Empty, notification, Select } from 'antd';
+import { Divider, Empty, notification, Radio } from 'antd';
+import type { RadioChangeEvent } from 'antd';
+
 import { useCallback, useState } from 'react';
 import { TodoService } from 'services';
 import { ITodo } from 'types';
@@ -10,19 +12,28 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 
-const { Option } = Select;
-
 const Todo = () => {
   const [listTodos, setListTodos] = useState<ITodo[]>([]);
-  const [filter, setFilter] = useState({ is_done: false });
+  const [filter, setFilter] = useState<'all' | 'active' | 'complete'>('active');
 
   const handleMarkDone = useCallback(
     async (data: any) => {
       console.log('handleMarkDone', filter);
       try {
+        const dataRequest: {
+          is_done?: boolean;
+        } = {};
+        if (filter === 'all') {
+          //
+        } else if (filter === 'active') {
+          dataRequest.is_done = false;
+        } else if (filter === 'complete') {
+          dataRequest.is_done = true;
+        }
+
         await TodoService.updateTodo(data.id, {
           ...data,
-          is_done: !filter.is_done,
+          ...dataRequest,
         });
         setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
         notification.success({
@@ -83,13 +94,9 @@ const Todo = () => {
     [filter]
   );
 
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
-    if (value === 'done') {
-      setFilter({ is_done: true });
-    } else if (value === 'not_done') {
-      setFilter({ is_done: false });
-    }
+  const handleChange = (e: RadioChangeEvent) => {
+    const value = e.target.value;
+    setFilter(value);
   };
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setListTodos((prevCards: ITodo[]) =>
@@ -104,7 +111,17 @@ const Todo = () => {
 
   const getListTodos = async () => {
     try {
-      const res = await TodoService.listTodo(filter);
+      const dataRequest: {
+        is_done?: boolean;
+      } = {};
+      if (filter === 'all') {
+        //
+      } else if (filter === 'active') {
+        dataRequest.is_done = false;
+      } else if (filter === 'complete') {
+        dataRequest.is_done = true;
+      }
+      const res = await TodoService.listTodo(dataRequest);
       if (res?.data?.results) {
         console.log('done call api');
         setListTodos(res.data.results);
@@ -117,7 +134,17 @@ const Todo = () => {
   React.useEffect(() => {
     (async () => {
       try {
-        const res = await TodoService.listTodo(filter);
+        const dataRequest: {
+          is_done?: boolean;
+        } = {};
+        if (filter === 'all') {
+          //
+        } else if (filter === 'active') {
+          dataRequest.is_done = false;
+        } else if (filter === 'complete') {
+          dataRequest.is_done = true;
+        }
+        const res = await TodoService.listTodo(dataRequest);
         if (res?.data?.results) {
           console.log('done call api');
           setListTodos(res.data.results);
@@ -133,15 +160,6 @@ const Todo = () => {
   return (
     <div className="width-100 height-100">
       <TodoCreate onCreateSuccess={getListTodos} />
-      <Divider />
-      <Select
-        defaultValue="not_done"
-        style={{ width: 120 }}
-        onChange={handleChange}
-      >
-        <Option value="done">Done</Option>
-        <Option value="not_done">Not done</Option>
-      </Select>
       <Divider />
       {listTodos.length === 0 ? (
         <Empty />
@@ -168,6 +186,12 @@ const Todo = () => {
           </div>
         </DndProvider>
       )}
+
+      <Radio.Group value={filter} onChange={handleChange}>
+        <Radio.Button value="all">All</Radio.Button>
+        <Radio.Button value="active">Active</Radio.Button>
+        <Radio.Button value="complete">Complete</Radio.Button>
+      </Radio.Group>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Button, Divider, notification } from 'antd';
+import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import * as React from 'react';
 import { useState } from 'react';
@@ -51,9 +51,8 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   };
 
   return (
-    <div className="TodoCreate flex">
+    <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
       <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
-
       <Button
         loading={loading}
         disabled={loading}

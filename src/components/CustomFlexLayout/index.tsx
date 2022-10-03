@@ -9,56 +9,23 @@ import {
 } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
+import { Dropdown, Menu } from 'antd';
 
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Chat from 'features/chat';
 import ConnectDashboard from 'features/connectDashboard';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
+import StockHistoryTrade from 'features/stock/StockHistoryTrade';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/StockTable';
-import Todo from 'features/todo';
-import StockHistoryTrade from 'features/stock/StockHistoryTrade';
 import StockTools from 'features/stock/StockTools';
+import Test from 'features/test';
+import Todo from 'features/todo';
 import * as React from 'react';
-
-const DEFAULT_JSON: IJsonModel = {
-  global: { tabEnableFloat: true },
-  borders: [],
-  layout: {
-    type: 'row',
-    weight: 100,
-    children: [
-      {
-        type: 'tabset',
-        weight: 50,
-        children: [
-          {
-            type: 'tab',
-            name: 'stock',
-            component: 'stock',
-          },
-        ],
-      },
-      {
-        type: 'tabset',
-        weight: 50,
-        children: [
-          {
-            type: 'tab',
-            name: 'post',
-            component: 'post',
-          },
-        ],
-      },
-    ],
-  },
-};
+import { DEFAULT_LAYOUT } from './utils';
+import { PlusOutlined } from '@ant-design/icons';
 
 const COMPONENT_OBJ: { [index: string]: any } = {
   Stock: <Stock />,
@@ -72,6 +39,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   ConnectDashboard: <ConnectDashboard />,
   StockHistoryTrade: <StockHistoryTrade />,
   StockTools: <StockTools />,
+  Test: <Test />,
 };
 
 interface IProps {
@@ -80,16 +48,11 @@ interface IProps {
 }
 
 function FlexLayout({ json, onModelChange }: IProps) {
-  const model = Model.fromJson(json || DEFAULT_JSON);
+  const model = Model.fromJson(json || DEFAULT_LAYOUT);
   let layoutRef: React.RefObject<Layout> = React.createRef();
-  let nextGridIndex: number = 1;
 
-  const handleChange = (
-    event: SelectChangeEvent,
-    node: TabSetNode | BorderNode
-  ) => {
-    // setComponent(event.target.value as string);
-    onAddFromTabSetButton(node, event.target.value);
+  const handleClickMenu = (e: any, node: TabSetNode | BorderNode) => {
+    onAddFromTabSetButton(node, e.key);
   };
 
   const factory = (node: TabNode) => {
@@ -102,26 +65,22 @@ function FlexLayout({ json, onModelChange }: IProps) {
     node: TabSetNode | BorderNode,
     renderValues: ITabSetRenderValues
   ) => {
+    const menu = (
+      <Menu onClick={(e) => handleClickMenu(e, node)}>
+        {Object.values(COMPONENT_OBJ).map((component, index) => {
+          return (
+            <Menu.Item key={Object.keys(COMPONENT_OBJ)[index]}>
+              {Object.keys(COMPONENT_OBJ)[index]}
+            </Menu.Item>
+          );
+        })}
+      </Menu>
+    );
+
     renderValues.stickyButtons.push(
-      <Box sx={{ minWidth: 120 }}>
-        <FormControl fullWidth>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            label="Component"
-            onChange={(e: any) => handleChange(e, node)}
-          >
-            {Object.values(COMPONENT_OBJ).map((component, index) => {
-              return (
-                <MenuItem value={Object.keys(COMPONENT_OBJ)[index]}>
-                  {Object.keys(COMPONENT_OBJ)[index]}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
-      </Box>
-      // <Button onClick={() => onAddFromTabSetButton(node, 'Snippet')}>+</Button>
+      <Dropdown overlay={menu} trigger={['click']}>
+        <PlusOutlined />
+      </Dropdown>
     );
   };
 

@@ -1,14 +1,4 @@
-import {
-  CloseOutlined,
-  HomeOutlined,
-  LeftOutlined,
-  LineChartOutlined,
-  OrderedListOutlined,
-  RightOutlined,
-  StockOutlined,
-  UserOutlined,
-  WechatOutlined,
-} from '@ant-design/icons';
+import { UserOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import config from 'config';
 import * as React from 'react';
@@ -20,7 +10,6 @@ import { UserService } from 'services/user';
 import 'styles/index.less';
 import { store } from './app/store';
 
-import Box from '@mui/material/Box';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
@@ -28,6 +17,7 @@ import CustomEcharts from 'components/Echarts';
 import API from 'features/api/API';
 import Chat from 'features/chat';
 import Demo from 'features/demo/Demo';
+import LibraryUpdate from 'features/libraryUpdate';
 import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
 import Post from 'features/post';
@@ -38,13 +28,22 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
 import Work from 'features/work';
-import LibraryUpdate from 'features/libraryUpdate';
 import { initializeApp } from 'firebase/app';
 
 import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import Notification from './components/firebaseNotifications/Notification';
+import {
+  HomeOutlined,
+  WechatOutlined,
+  CloseOutlined,
+  LineChartOutlined,
+  OrderedListOutlined,
+  StockOutlined,
+  RightOutlined,
+  LeftOutlined,
+} from '@ant-design/icons';
 
 notification.config({
   placement: 'bottomLeft',
@@ -229,20 +228,6 @@ function App() {
     );
   };
 
-  const getAuthUser = async (headers?: any) => {
-    try {
-      const res = await UserService.getAuthUser(headers);
-      dispatch(update(res.data));
-    } catch (e) {
-      notification.error({ message: 'Get user failed' });
-    }
-  };
-
-  const handleChangeLayout = () => {
-    localStorage.removeItem('flexLayoutModel_Work');
-    window.location.reload();
-  };
-
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, (data: any) => {
@@ -252,23 +237,27 @@ function App() {
       const headers = {
         Authorization: `Bearer ${data.accessToken}`,
       };
-      getAuthUser(headers);
+      (async (headers?: any) => {
+        try {
+          const res = await UserService.getAuthUser(headers);
+          dispatch(update(res.data));
+        } catch (e) {
+          notification.error({ message: 'Get user failed' });
+        }
+      })(headers);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-      <div>
-        {renderSideBarFooter2()}
-        <Button onClick={() => handleChangeLayout()}>Default layout</Button>
-      </div>
-      {/* <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
-        <Box>
+    <div style={{ display: 'flex', height: '100%' }}>
+      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
+        <div>
           <Button
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
-          ></Button>
-        </Box>
+          />
+        </div>
         <div
           style={{
             display: 'flex',
@@ -282,7 +271,7 @@ function App() {
         </div>
 
         {renderSideBarFooter2()}
-      </div> */}
+      </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {user && user.id ? (
           <Routes>

@@ -22,7 +22,6 @@ import { Image } from '@styled-icons/material/Image';
 import { Keyboard } from '@styled-icons/material/Keyboard';
 import { Link } from '@styled-icons/material/Link';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
-import { TippyProps } from '@tippyjs/react';
 import {
   AlignToolbarButton,
   BalloonToolbar,
@@ -227,18 +226,18 @@ export const TableToolbarButtons = () => (
 );
 
 export const MarkBallonToolbar = () => {
-  const editor = useMyPlateEditorRef()!;
+  // const editor = useMyPlateEditorRef()!;
 
   const arrow = false;
   const theme = 'dark';
-  const tooltip: TippyProps = {
-    arrow: true,
-    delay: 0,
-    duration: [200, 0],
-    hideOnClick: false,
-    offset: [0, 17],
-    placement: 'top',
-  };
+  // const tooltip: TippyProps = {
+  //   arrow: true,
+  //   delay: 0,
+  //   duration: [200, 0],
+  //   hideOnClick: false,
+  //   offset: [0, 17],
+  //   placement: 'top',
+  // };
 
   return (
     <BalloonToolbar

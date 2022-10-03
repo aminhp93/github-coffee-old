@@ -1,10 +1,9 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
 import { Button, Input, notification, Spin } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { v4 as uuidv4 } from 'uuid';
-import { INote } from 'types/note';
+import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { NoteService } from 'services';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
   id: number;
@@ -21,11 +20,10 @@ const MemoizedNoteDetail = React.memo(function NoteDetail({ id }: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
   const [note, setNote] = useState(DEFAULT_NOTE);
   const [noteTitle, setNoteTitle] = useState('');
-  const [noteObj, setNoteObj] = useState({} as INote);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const getStockNote = async () => {
+  const getStockNote = React.useCallback(async () => {
     try {
       setLoading(true);
       const res: any = await NoteService.detailNote(id);
@@ -34,17 +32,16 @@ const MemoizedNoteDetail = React.memo(function NoteDetail({ id }: IProps) {
       if (res.data && res.data.content) {
         setNote(JSON.parse(res.data.content));
         setNoteTitle(res.data.title);
-        setNoteObj(res.data);
         setPlateId(uuidv4());
       }
     } catch (e) {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     getStockNote();
-  }, [id]);
+  }, [getStockNote, id]);
 
   const handleUpdate = async () => {
     try {
