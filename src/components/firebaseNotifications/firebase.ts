@@ -22,7 +22,7 @@ export const requestForToken = () => {
         // Perform any other neccessary action with the token
         // Store token in db and update it if it changes
         request({
-          url: `${baseUrl}/api/pushnotification/create/`,
+          url: `${baseUrl}/api/pushnotifications/create/`,
           method: 'POST',
           data: {
             token: currentToken,

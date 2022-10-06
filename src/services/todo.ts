@@ -8,7 +8,13 @@ export const TodoService = {
       data,
     });
   },
-  listTodo(params: any) {
+  listTodo(params: any, requestUrl?: string) {
+    if (requestUrl) {
+      return request({
+        method: 'GET',
+        url: requestUrl,
+      });
+    }
     return request({
       method: 'GET',
       url: TodoUrls.listTodo,

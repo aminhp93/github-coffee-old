@@ -28,6 +28,7 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
 import Work from 'features/work';
+import Notice from 'features/notice';
 import { initializeApp } from 'firebase/app';
 
 import { useAppDispatch, useAppSelector } from 'app/hooks';
@@ -154,6 +155,11 @@ const LIST_ROUTER_FOOTER = [
   {
     linkTo: '/libraryUpdate',
     label: 'libraryUpdate',
+    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/notice',
+    label: 'notice',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
 ];
@@ -292,6 +298,7 @@ function App() {
             <Route path="work" element={<Work />} />
             <Route path="snippet" element={<Snippet />} />
             <Route path="libraryUpdate" element={<LibraryUpdate />} />
+            <Route path="notice" element={<Notice />} />
 
             <Route
               path="*"
