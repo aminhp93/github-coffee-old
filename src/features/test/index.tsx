@@ -21,6 +21,13 @@ export default function Component() {
     });
   };
 
+  const handleClickPayment = () => {
+    axios({
+      url: `${baseUrl}/api/payment/`,
+      method: 'POST',
+    });
+  };
+
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
       <Button onClick={handleClickPayment}>Click payment</Button>
