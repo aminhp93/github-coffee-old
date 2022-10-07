@@ -1,5 +1,9 @@
-import { CheckOutlined, DeleteOutlined } from '@ant-design/icons';
-import { Button, Tooltip, Checkbox } from 'antd';
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  FieldTimeOutlined,
+} from '@ant-design/icons';
+import { Button, Tooltip, Checkbox, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
@@ -7,7 +11,28 @@ import { useDrag, useDrop } from 'react-dnd';
 import { ITodo } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
+import Countdown from 'react-countdown';
+import moment from 'moment';
+import axios from 'axios';
+import config from 'config';
 
+const baseUrl = config.apiUrl;
+const Completionist = () => <span>You are good to go!</span>;
+
+const renderer = (props: any) => {
+  const { days, hours, minutes, seconds, completed } = props;
+  if (completed) {
+    // Render a completed state
+    return <Completionist />;
+  } else {
+    // Render a countdown
+    return (
+      <span>
+        {days}:{hours}:{minutes}:{seconds}
+      </span>
+    );
+  }
+};
 interface IProps {
   id: number;
   todoItem: any;
@@ -37,6 +62,14 @@ function TodoListItem({
   const [value, setValue] = React.useState(JSON.parse(todoItem.body));
   const [isDone, setIsDone] = React.useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = React.useState(false);
+  const divRef = React.useRef<HTMLDivElement>(null);
+  const countDownRef = React.useRef<any>(null);
+  const endOfYear = moment().add(1, 'minute').format('YYYY-MM-DD HH:mm:ss');
+
+  //   get miliseconds time at the end of the year
+  const endOfYearMiliseconds = moment(endOfYear).valueOf();
+  console.log(endOfYearMiliseconds);
+
   console.log('TodoListItem', todoItem, JSON.parse(todoItem.body));
 
   const handleDone = () => {
@@ -132,6 +165,25 @@ function TodoListItem({
   // const opacity = isDragging ? 0 : 1;
   drag(drop(ref));
 
+  const handleStartTimer = () => {
+    countDownRef.current && countDownRef.current.start();
+  };
+
+  const handleComplete = (data: any) => {
+    axios({
+      url: `${baseUrl}/api/pushnotifications/`,
+      method: 'POST',
+    });
+    notification.success({ message: 'Time is up!' });
+  };
+
+  const handlelTick = (data: any) => {
+    console.log(data, divRef.current, data.total / (60 * 1000));
+    if (divRef.current) {
+      divRef.current.style.width = `${(100 * data.total) / (60 * 1000)}%`;
+    }
+  };
+
   React.useEffect(() => {
     setPlateId(uuidv4());
   }, [todoItem]);
@@ -143,62 +195,98 @@ function TodoListItem({
       className={`TodoListItem flex `}
       style={{
         position: 'relative',
+        height: '100px',
       }}
     >
-      <Checkbox
-        defaultChecked={todoItem.is_done}
-        onClick={() => handleDone()}
-      ></Checkbox>
-      {todoItem.id}
-      <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
-      <div className="TodoListItem-toolbox">
-        <Tooltip placement="right" title="update">
-          <Button
-            icon={<CheckOutlined />}
-            style={{ zIndex: 1 }}
-            onClick={(e) => {
-              e.stopPropagation();
-
-              handleUpdate();
-            }}
-          />
-        </Tooltip>
-        <Tooltip placement="right" title="delete">
-          {isConfirmDelete ? (
-            <>
-              <Button
-                style={{ zIndex: 1 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  handleDelete();
-                }}
-              >
-                Confirm
-              </Button>
-              <Button
-                style={{ zIndex: 1 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  setIsConfirmDelete(false);
-                }}
-              >
-                Cancel
-              </Button>
-            </>
-          ) : (
+      <div
+        ref={divRef}
+        style={{
+          position: 'absolute',
+          background: 'red',
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+        }}
+      ></div>
+      <div
+        style={{
+          position: 'absolute',
+          background: 'transparent',
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+        }}
+      >
+        <Checkbox
+          defaultChecked={todoItem.is_done}
+          onClick={() => handleDone()}
+        ></Checkbox>
+        {todoItem.id}
+        <CustomPlate
+          id={String(plateId)}
+          value={value}
+          onChange={handleChange}
+        />
+        <div className="TodoListItem-toolbox">
+          <Tooltip placement="right" title="update">
             <Button
-              icon={<DeleteOutlined />}
+              icon={<CheckOutlined />}
               style={{ zIndex: 1 }}
               onClick={(e) => {
                 e.stopPropagation();
 
-                setIsConfirmDelete(true);
+                handleUpdate();
               }}
             />
-          )}
-        </Tooltip>
+          </Tooltip>
+          <Tooltip placement="right" title="delete">
+            {isConfirmDelete ? (
+              <>
+                <Button
+                  style={{ zIndex: 1 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    handleDelete();
+                  }}
+                >
+                  Confirm
+                </Button>
+                <Button
+                  style={{ zIndex: 1 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    setIsConfirmDelete(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button
+                icon={<DeleteOutlined />}
+                style={{ zIndex: 1 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  setIsConfirmDelete(true);
+                }}
+              />
+            )}
+          </Tooltip>
+          <Tooltip placement="right" title="set time">
+            <Button icon={<FieldTimeOutlined />} onClick={handleStartTimer} />
+          </Tooltip>
+        </div>
+        <Countdown
+          ref={countDownRef}
+          date={endOfYearMiliseconds}
+          renderer={renderer}
+          onTick={handlelTick}
+          onComplete={handleComplete}
+          autoStart={false}
+        />
       </div>
     </div>
   );
