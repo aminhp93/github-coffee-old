@@ -2,6 +2,7 @@ import { Button, Input } from 'antd';
 import { useState, useRef, useEffect } from 'react';
 import type { InputRef } from 'antd';
 import request from 'request';
+import ProblemItem from './ProblemItem';
 
 export default function ConnectDashboard() {
   const [listProblemSrc, setListProblemSrc] = useState<any>([]);
@@ -49,11 +50,11 @@ export default function ConnectDashboard() {
 
   return (
     <div>
-      <div>Code issue</div>
-      <div>Button to raise to connect</div>
-      <div>After connect problem still there but can't join?</div>
-      <Input ref={inputRef} />
-      <Button onClick={handleCreateProblem}>Use your own</Button>
+      <div className="flex">
+        <Input ref={inputRef} value={problemSrc} />
+        <Button onClick={handleCreateProblem}>Create problem</Button>
+      </div>
+
       <Button onClick={handleUseDefaultTemplate}>Use default template</Button>
       <iframe
         src={problemSrc}
@@ -81,40 +82,7 @@ export default function ConnectDashboard() {
       {showListOldProblems && (
         <>
           {listProblemSrc.map((item: any) => (
-            <div key={item.id}>
-              <div>
-                Problem - {item.id} - {item.created_at}
-              </div>
-
-              <iframe
-                // src="https://codesandbox.io/embed/github/aminhp93/problem-1-update-child-state-from-parent/tree/problem/?fontsize=14&hidenavigation=1&theme=dark"
-                src={item.problem_src}
-                style={{
-                  width: '100%',
-                  height: '300px',
-                  border: 0,
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                }}
-                title="problem-1-update-child-state-from-parent"
-                allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-                sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-              />
-              <div>Solution</div>
-              <iframe
-                src="https://codesandbox.io/embed/github/aminhp93/problem-1-update-child-state-from-parent/tree/solution/?fontsize=14&hidenavigation=1&theme=dark"
-                style={{
-                  width: '100%',
-                  height: '300px',
-                  border: 0,
-                  borderRadius: '4px',
-                  overflow: 'hidden',
-                }}
-                title="problem-1-update-child-state-from-parent"
-                allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
-                sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-              />
-            </div>
+            <ProblemItem problem={item} key={item.id} />
           ))}
         </>
       )}

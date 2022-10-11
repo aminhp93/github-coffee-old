@@ -20,38 +20,28 @@ const Todo = () => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleMarkDone = useCallback(
-    async (data: any) => {
-      console.log('handleMarkDone', filter);
-      try {
-        const dataRequest: {
-          is_done?: boolean;
-        } = {};
-        if (filter === 'all') {
-          //
-        } else if (filter === 'active') {
-          dataRequest.is_done = false;
-        } else if (filter === 'complete') {
-          dataRequest.is_done = true;
-        }
+  const handleMarkDone = useCallback(async (data: any) => {
+    console.log('handleMarkDone');
+    try {
+      const dataRequest: {
+        is_done?: boolean;
+      } = {};
 
-        await TodoService.updateTodo(data.id, {
-          ...data,
-          ...dataRequest,
-        });
-        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-        notification.success({
-          message: 'Marked done',
-        });
-      } catch (error: any) {
-        notification.error({
-          message: 'Error',
-          description: error.message,
-        });
-      }
-    },
-    [filter]
-  );
+      await TodoService.updateTodo(data.id, {
+        ...data,
+        ...dataRequest,
+      });
+      setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
+      notification.success({
+        message: 'Marked done',
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
+  }, []);
 
   const handleUpdate = useCallback(
     async (data: any) => {
@@ -102,6 +92,7 @@ const Todo = () => {
     const value = e.target.value;
     setFilter(value);
   };
+
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setListTodos((prevCards: ITodo[]) =>
       update(prevCards, {
@@ -198,7 +189,7 @@ const Todo = () => {
           </DndProvider>
         )}
       </div>
-      <div className="TodoList__footer">
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
         <Pagination
           total={total}
           simple

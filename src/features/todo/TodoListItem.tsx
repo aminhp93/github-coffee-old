@@ -1,9 +1,10 @@
 import {
   CheckOutlined,
   DeleteOutlined,
+  PauseOutlined,
   FieldTimeOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip, Checkbox, notification } from 'antd';
+import { Button, Tooltip, Checkbox, notification, TimePicker } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
 import * as React from 'react';
@@ -15,6 +16,7 @@ import Countdown from 'react-countdown';
 import moment from 'moment';
 import axios from 'axios';
 import config from 'config';
+const format = 'HH:mm';
 
 const baseUrl = config.apiUrl;
 const Completionist = () => <span>You are good to go!</span>;
@@ -27,7 +29,7 @@ const renderer = (props: any) => {
   } else {
     // Render a countdown
     return (
-      <span>
+      <span style={{ margin: '60px 40px 0 0' }}>
         {days}:{hours}:{minutes}:{seconds}
       </span>
     );
@@ -60,11 +62,16 @@ function TodoListItem({
 }: IProps) {
   const [plateId, setPlateId] = React.useState(null as any);
   const [value, setValue] = React.useState(JSON.parse(todoItem.body));
-  const [isDone, setIsDone] = React.useState(false);
+  const [isDone, setIsDone] = React.useState(todoItem.is_done);
   const [isConfirmDelete, setIsConfirmDelete] = React.useState(false);
   const divRef = React.useRef<HTMLDivElement>(null);
   const countDownRef = React.useRef<any>(null);
-  const endOfYear = moment().add(1, 'minute').format('YYYY-MM-DD HH:mm:ss');
+  const [timer, setTimer] = React.useState(moment('00:01', format));
+  const [status, setStatus] = React.useState('');
+
+  const endOfYear = moment()
+    .add(timer.minute(), 'minute')
+    .format('YYYY-MM-DD HH:mm:ss');
 
   //   get miliseconds time at the end of the year
   const endOfYearMiliseconds = moment(endOfYear).valueOf();
@@ -74,7 +81,7 @@ function TodoListItem({
 
   const handleDone = () => {
     setIsDone(!isDone);
-    onMarkDone && onMarkDone({ ...todoItem, is_done: true });
+    onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
   };
 
   const handleUpdate = () => {
@@ -166,7 +173,17 @@ function TodoListItem({
   drag(drop(ref));
 
   const handleStartTimer = () => {
+    setStatus('start');
     countDownRef.current && countDownRef.current.start();
+  };
+
+  const handleResetTimer = () => {
+    setStatus('');
+
+    countDownRef.current && countDownRef.current.stop();
+    if (divRef.current) {
+      divRef.current.style.width = `0%`;
+    }
   };
 
   const handleComplete = (data: any) => {
@@ -181,10 +198,15 @@ function TodoListItem({
   };
 
   const handlelTick = (data: any) => {
-    console.log(data, divRef.current, data.total / (60 * 1000));
     if (divRef.current) {
-      divRef.current.style.width = `${(100 * data.total) / (60 * 1000)}%`;
+      divRef.current.style.width = `${
+        (100 * data.total) / ((timer.hour() * 60 + timer.minute()) * 60 * 1000)
+      }%`;
     }
+  };
+
+  const handleChangeTimer = (data: any) => {
+    setTimer(data);
   };
 
   React.useEffect(() => {
@@ -209,6 +231,7 @@ function TodoListItem({
           width: '0%',
           height: '100%',
           zIndex: 0,
+          opacity: 0.5,
         }}
       ></div>
       <div
@@ -219,6 +242,7 @@ function TodoListItem({
           width: '100%',
           height: '100%',
           zIndex: 1,
+          alignItems: 'center',
         }}
       >
         <Checkbox
@@ -279,13 +303,27 @@ function TodoListItem({
               />
             )}
           </Tooltip>
-          <Tooltip placement="right" title="set time">
-            <Button icon={<FieldTimeOutlined />} onClick={handleStartTimer} />
-          </Tooltip>
+          {status === '' && (
+            <Tooltip placement="right" title="Start timer">
+              <TimePicker
+                defaultValue={moment('00:01', format)}
+                onChange={handleChangeTimer}
+                format={format}
+              />
+              <Button icon={<FieldTimeOutlined />} onClick={handleStartTimer} />
+            </Tooltip>
+          )}
+          {status === 'start' && (
+            <Tooltip placement="right" title="Reset time">
+              <Button icon={<PauseOutlined />} onClick={handleResetTimer} />
+            </Tooltip>
+          )}
         </div>
         <Countdown
           ref={countDownRef}
-          date={endOfYearMiliseconds}
+          date={moment()
+            .add(timer.hour() * 60 + timer.minute(), 'minute')
+            .valueOf()}
           renderer={renderer}
           onTick={handlelTick}
           onComplete={handleComplete}
