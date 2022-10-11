@@ -23,6 +23,7 @@ import StockTable from 'features/stock/StockTable';
 import StockTools from 'features/stock/StockTools';
 import Test from 'features/test';
 import Todo from 'features/todo';
+import Notice from 'features/notice';
 import * as React from 'react';
 import { DEFAULT_LAYOUT } from './utils';
 import { PlusOutlined } from '@ant-design/icons';
@@ -40,6 +41,7 @@ const COMPONENT_OBJ: { [index: string]: any } = {
   StockHistoryTrade: <StockHistoryTrade />,
   StockTools: <StockTools />,
   Test: <Test />,
+  Notice: <Notice />,
 };
 
 interface IProps {

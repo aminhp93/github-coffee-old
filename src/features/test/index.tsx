@@ -9,13 +9,21 @@ export default function Component() {
 
   const handleClick = () => {
     axios({
-      url: `${baseUrl}/api/pushnotification/`,
+      url: `${baseUrl}/api/pushnotifications/`,
+      method: 'POST',
+    });
+  };
+
+  const handleClickPayment = () => {
+    axios({
+      url: `${baseUrl}/api/payments/`,
       method: 'POST',
     });
   };
 
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
+      <Button onClick={handleClickPayment}>Click payment</Button>
       <Button onClick={handleClick}>Test</Button>
     </div>
   );

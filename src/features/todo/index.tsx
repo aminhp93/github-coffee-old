@@ -1,4 +1,4 @@
-import { Divider, Empty, notification, Radio } from 'antd';
+import { Divider, Empty, notification, Radio, Pagination } from 'antd';
 import type { RadioChangeEvent } from 'antd';
 
 import { useCallback, useState } from 'react';
@@ -15,39 +15,33 @@ import update from 'immutability-helper';
 const Todo = () => {
   const [listTodos, setListTodos] = useState<ITodo[]>([]);
   const [filter, setFilter] = useState<'all' | 'active' | 'complete'>('active');
+  const [next, setNext] = useState(null);
+  const [previous, setPrevious] = useState(null);
+  const [total, setTotal] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const handleMarkDone = useCallback(
-    async (data: any) => {
-      console.log('handleMarkDone', filter);
-      try {
-        const dataRequest: {
-          is_done?: boolean;
-        } = {};
-        if (filter === 'all') {
-          //
-        } else if (filter === 'active') {
-          dataRequest.is_done = false;
-        } else if (filter === 'complete') {
-          dataRequest.is_done = true;
-        }
+  const handleMarkDone = useCallback(async (data: any) => {
+    console.log('handleMarkDone');
+    try {
+      const dataRequest: {
+        is_done?: boolean;
+      } = {};
 
-        await TodoService.updateTodo(data.id, {
-          ...data,
-          ...dataRequest,
-        });
-        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-        notification.success({
-          message: 'Marked done',
-        });
-      } catch (error: any) {
-        notification.error({
-          message: 'Error',
-          description: error.message,
-        });
-      }
-    },
-    [filter]
-  );
+      await TodoService.updateTodo(data.id, {
+        ...data,
+        ...dataRequest,
+      });
+      setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
+      notification.success({
+        message: 'Marked done',
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
+  }, []);
 
   const handleUpdate = useCallback(
     async (data: any) => {
@@ -98,6 +92,7 @@ const Todo = () => {
     const value = e.target.value;
     setFilter(value);
   };
+
   const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
     setListTodos((prevCards: ITodo[]) =>
       update(prevCards, {
@@ -109,30 +104,8 @@ const Todo = () => {
     );
   }, []);
 
-  const getListTodos = async () => {
-    try {
-      const dataRequest: {
-        is_done?: boolean;
-      } = {};
-      if (filter === 'all') {
-        //
-      } else if (filter === 'active') {
-        dataRequest.is_done = false;
-      } else if (filter === 'complete') {
-        dataRequest.is_done = true;
-      }
-      const res = await TodoService.listTodo(dataRequest);
-      if (res?.data?.results) {
-        console.log('done call api');
-        setListTodos(res.data.results);
-      }
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
-  };
-
-  React.useEffect(() => {
-    (async () => {
+  const getListTodos = useCallback(
+    async (data?: any) => {
       try {
         const dataRequest: {
           is_done?: boolean;
@@ -144,54 +117,95 @@ const Todo = () => {
         } else if (filter === 'complete') {
           dataRequest.is_done = true;
         }
-        const res = await TodoService.listTodo(dataRequest);
+        let requestUrl = null;
+        if (data && data.next) {
+          requestUrl = data.next;
+        } else if (data && data.previous) {
+          requestUrl = data.previous;
+        }
+
+        const res = await TodoService.listTodo(dataRequest, requestUrl);
         if (res?.data?.results) {
           console.log('done call api');
           setListTodos(res.data.results);
+          setTotal(res.data.count);
+          setNext(res.data.next);
+          setPrevious(res.data.previous);
         }
       } catch (e) {
         notification.error({ message: 'error' });
       }
-    })();
-  }, [filter]);
+    },
+    [filter]
+  );
+
+  const handleChangePage = (page: number) => {
+    console.log(page);
+    setCurrentPage(page);
+    if (page > currentPage) {
+      getListTodos({ next });
+    } else if (page < currentPage) {
+      getListTodos({ previous });
+    }
+  };
+
+  React.useEffect(() => {
+    getListTodos();
+  }, [filter, getListTodos]);
 
   console.log(listTodos);
 
   return (
-    <div className="width-100 height-100">
+    <div
+      className="width-100 height-100 flex"
+      style={{ flexDirection: 'column' }}
+    >
       <TodoCreate onCreateSuccess={getListTodos} />
       <Divider />
-      {listTodos.length === 0 ? (
-        <Empty />
-      ) : (
-        <DndProvider backend={HTML5Backend}>
-          <div className="TodoList">
-            {listTodos.map((i: ITodo, index) => {
-              return (
-                <>
-                  <TodoListItem
-                    id={i.id}
-                    key={i.id}
-                    index={index}
-                    todoItem={i}
-                    onMarkDone={handleMarkDone}
-                    onDelete={handleDelete}
-                    onUpdate={handleUpdate}
-                    moveCard={moveCard}
-                  />
-                  <Divider />
-                </>
-              );
-            })}
-          </div>
-        </DndProvider>
-      )}
-
-      <Radio.Group value={filter} onChange={handleChange}>
-        <Radio.Button value="all">All</Radio.Button>
-        <Radio.Button value="active">Active</Radio.Button>
-        <Radio.Button value="complete">Complete</Radio.Button>
-      </Radio.Group>
+      <div className="flex-1">
+        {listTodos.length === 0 ? (
+          <Empty />
+        ) : (
+          <DndProvider backend={HTML5Backend}>
+            <div className="TodoList">
+              {listTodos.map((i: ITodo, index) => {
+                return (
+                  <>
+                    <TodoListItem
+                      id={i.id}
+                      key={i.id}
+                      index={index}
+                      todoItem={i}
+                      onMarkDone={handleMarkDone}
+                      onDelete={handleDelete}
+                      onUpdate={handleUpdate}
+                      moveCard={moveCard}
+                    />
+                    <Divider />
+                  </>
+                );
+              })}
+            </div>
+          </DndProvider>
+        )}
+      </div>
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
+        <Pagination
+          total={total}
+          simple
+          defaultPageSize={10}
+          current={currentPage}
+          showTotal={(total, range) =>
+            `${range[0]}-${range[1]} of ${total} items`
+          }
+          onChange={handleChangePage}
+        />
+        <Radio.Group value={filter} onChange={handleChange}>
+          <Radio.Button value="all">All</Radio.Button>
+          <Radio.Button value="active">Active</Radio.Button>
+          <Radio.Button value="complete">Complete</Radio.Button>
+        </Radio.Group>
+      </div>
     </div>
   );
 };
