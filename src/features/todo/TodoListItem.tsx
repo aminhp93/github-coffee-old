@@ -170,6 +170,9 @@ function TodoListItem({
   };
 
   const handleComplete = (data: any) => {
+    if (divRef.current) {
+      divRef.current.style.width = `0%`;
+    }
     axios({
       url: `${baseUrl}/api/pushnotifications/`,
       method: 'POST',
@@ -203,12 +206,13 @@ function TodoListItem({
         style={{
           position: 'absolute',
           background: 'red',
-          width: '100%',
+          width: '0%',
           height: '100%',
           zIndex: 0,
         }}
       ></div>
       <div
+        className="flex"
         style={{
           position: 'absolute',
           background: 'transparent',

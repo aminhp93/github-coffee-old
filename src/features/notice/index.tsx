@@ -1,6 +1,9 @@
 import Countdown from 'react-countdown';
 import moment from 'moment';
 import { useRef } from 'react';
+import { FieldTimeOutlined } from '@ant-design/icons';
+import { Button, Tooltip } from 'antd';
+import * as React from 'react';
 
 // Random component
 const Completionist = () => <span>You are good to go!</span>;
@@ -22,6 +25,8 @@ const renderer = (props: any) => {
 };
 
 export default function Notice() {
+  const countDownRef = React.useRef<any>(null);
+
   // get time at the end of the year
   const divRef = useRef<HTMLDivElement>(null);
   const endOfYear = moment().add(1, 'minute').format('YYYY-MM-DD HH:mm:ss');
@@ -41,6 +46,10 @@ export default function Notice() {
     }
   };
 
+  const handleStartTimer = () => {
+    countDownRef.current && countDownRef.current.start();
+  };
+
   return (
     <div style={{ fontSize: '30px', position: 'relative', height: '100%' }}>
       <div
@@ -48,7 +57,7 @@ export default function Notice() {
         style={{
           position: 'absolute',
           background: 'red',
-          width: '100%',
+          width: '0%',
           height: '100%',
           zIndex: 0,
         }}
@@ -63,11 +72,16 @@ export default function Notice() {
         }}
       >
         <Countdown
+          ref={countDownRef}
           date={endOfYearMiliseconds}
           renderer={renderer}
           onStart={handleStart}
           onTick={handlelTick}
+          autoStart={false}
         />
+        <Tooltip placement="right" title="set time">
+          <Button icon={<FieldTimeOutlined />} onClick={handleStartTimer} />
+        </Tooltip>
       </div>
     </div>
   );
