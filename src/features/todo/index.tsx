@@ -12,6 +12,8 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 
+const DEFAULT_PAGE_SIZE = 10;
+
 const Todo = () => {
   const [listTodos, setListTodos] = useState<ITodo[]>([]);
   const [filter, setFilter] = useState<'all' | 'active' | 'complete'>('active');
@@ -21,7 +23,6 @@ const Todo = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleMarkDone = useCallback(async (data: any) => {
-    console.log('handleMarkDone');
     try {
       const dataRequest: {
         is_done?: boolean;
@@ -43,50 +44,42 @@ const Todo = () => {
     }
   }, []);
 
-  const handleUpdate = useCallback(
-    async (data: any) => {
-      console.log('handleUpdate', filter);
-      try {
-        await TodoService.updateTodo(data.id, data);
-        setListTodos((old: ITodo[]) => {
-          const newList: ITodo[] = [...old];
-          const index = newList.findIndex((i: ITodo) => i.id === data.id);
-          if (index > 0) {
-            newList[index] = data;
-          }
-          return newList;
-        });
-        notification.success({
-          message: 'Update success',
-        });
-      } catch (error: any) {
-        notification.error({
-          message: 'Error',
-          description: error.message,
-        });
-      }
-    },
-    [filter]
-  );
+  const handleUpdate = useCallback(async (data: any) => {
+    try {
+      await TodoService.updateTodo(data.id, data);
+      setListTodos((old: ITodo[]) => {
+        const newList: ITodo[] = [...old];
+        const index = newList.findIndex((i: ITodo) => i.id === data.id);
+        if (index > 0) {
+          newList[index] = data;
+        }
+        return newList;
+      });
+      notification.success({
+        message: 'Update success',
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
+  }, []);
 
-  const handleDelete = useCallback(
-    async (data: any) => {
-      console.log('handleDelete', filter);
-      try {
-        await TodoService.deleteTodo(data.id);
-        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-        notification.success({
-          message: 'Delete success',
-        });
-      } catch (error: any) {
-        notification.error({
-          message: 'Error',
-          description: error.message,
-        });
-      }
-    },
-    [filter]
-  );
+  const handleDelete = useCallback(async (data: any) => {
+    try {
+      await TodoService.deleteTodo(data.id);
+      setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
+      notification.success({
+        message: 'Delete success',
+      });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
+  }, []);
 
   const handleChange = (e: RadioChangeEvent) => {
     const value = e.target.value;
@@ -140,7 +133,6 @@ const Todo = () => {
   );
 
   const handleChangePage = (page: number) => {
-    console.log(page);
     setCurrentPage(page);
     if (page > currentPage) {
       getListTodos({ next });
@@ -152,8 +144,6 @@ const Todo = () => {
   React.useEffect(() => {
     getListTodos();
   }, [filter, getListTodos]);
-
-  console.log(listTodos);
 
   return (
     <div
@@ -173,8 +163,9 @@ const Todo = () => {
                   <>
                     <TodoListItem
                       id={i.id}
+                      countPrevious={(currentPage - 1) * DEFAULT_PAGE_SIZE}
                       key={i.id}
-                      index={index}
+                      index={index + 1}
                       todoItem={i}
                       onMarkDone={handleMarkDone}
                       onDelete={handleDelete}
@@ -193,7 +184,7 @@ const Todo = () => {
         <Pagination
           total={total}
           simple
-          defaultPageSize={10}
+          defaultPageSize={DEFAULT_PAGE_SIZE}
           current={currentPage}
           showTotal={(total, range) =>
             `${range[0]}-${range[1]} of ${total} items`
