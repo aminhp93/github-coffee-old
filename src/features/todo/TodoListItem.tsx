@@ -36,6 +36,7 @@ const renderer = (props: any) => {
   }
 };
 interface IProps {
+  countPrevious: number;
   id: number;
   todoItem: any;
   index: number;
@@ -52,6 +53,7 @@ interface DragItem {
 }
 
 function TodoListItem({
+  countPrevious,
   todoItem,
   onMarkDone,
   onUpdate,
@@ -249,7 +251,7 @@ function TodoListItem({
           defaultChecked={todoItem.is_done}
           onClick={() => handleDone()}
         ></Checkbox>
-        {todoItem.id}
+        {index + countPrevious}
         <CustomPlate
           id={String(plateId)}
           value={value}

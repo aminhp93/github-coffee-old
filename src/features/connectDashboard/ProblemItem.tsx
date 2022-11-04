@@ -2,10 +2,13 @@ import * as React from 'react';
 
 interface IProblemItemProps {
   problem: any;
+  index: number;
 }
 
-export default function ProblemItem({ problem }: IProblemItemProps) {
-  const [showProblem, setShowProblem] = React.useState(true);
+export default function ProblemItem({ problem, index }: IProblemItemProps) {
+  const [showProblem, setShowProblem] = React.useState(
+    index === 0 ? true : false
+  );
   const [showSolution, setShowSolution] = React.useState(false);
 
   return (
@@ -16,11 +19,11 @@ export default function ProblemItem({ problem }: IProblemItemProps) {
       </div>
       {showProblem && (
         <iframe
-          // src="https://codesandbox.io/embed/github/aminhp93/problem-1-update-child-state-from-parent/tree/problem/?fontsize=14&hidenavigation=1&theme=dark"
-          src={problem.problem_src}
+          src="https://codesandbox.io/embed/github/aminhp93/problem-1-update-child-state-from-parent/tree/problem/?fontsize=14&hidenavigation=1&theme=dark"
+          // src={problem.problem_src}
           style={{
             width: '100%',
-            height: '300px',
+            height: '500px',
             border: 0,
             borderRadius: '4px',
             overflow: 'hidden',

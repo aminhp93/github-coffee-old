@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import copyToClipboard from './files/javascript/copyToClipboard.md';
-// import CSVToArray from './files/javascript/CSVToArray.md';
-import errorDatabase from './files/common/errorDatabase.md';
-import terminal from './files/common/terminal.md';
 
 import './index.less';
+
+const LIST_MARKDOWN_URL = [
+  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/aws-system-service.md',
+  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/common.md',
+  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/nginx.md',
+  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/postgres.md',
+  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/setup-new-ec2.md',
+];
 
 export default function Snippet() {
   console.log('Snippet');
@@ -29,7 +33,7 @@ export default function Snippet() {
 
   const fetchList = () => {
     const listPromises: any = [];
-    [terminal, errorDatabase, copyToClipboard].forEach((i: any) => {
+    LIST_MARKDOWN_URL.forEach((i: any) => {
       listPromises.push(fetch(i).then((res) => res.text()));
     });
     Promise.all(listPromises)

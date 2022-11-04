@@ -21,7 +21,7 @@
     "@udecode/plate-juice": "^16.8.0",
     "@udecode/plate-test-utils": "^13.4.0",
     "@udecode/plate-ui-excalidraw": "^16.8.0",
-    "antd": "^4.21.4",
+    "antd": "4.23.5",
     "axios": "^0.27.2",
     "craco-alias": "^3.0.1",
     "craco-less": "^2.0.0",
