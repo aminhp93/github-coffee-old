@@ -14,9 +14,6 @@
     "@mui/x-date-pickers": "^5.0.0-beta.4",
     "@octokit/rest": "^19.0.3",
     "@reduxjs/toolkit": "^1.8.1",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.0.1",
-    "@testing-library/user-event": "^14.1.1",
     "@udecode/plate": "^16.9.0",
     "@udecode/plate-juice": "^16.8.0",
     "@udecode/plate-test-utils": "^13.4.0",
@@ -98,6 +95,9 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.0.1",
+    "@testing-library/user-event": "^14.1.1",
     "@types/faker": "^5.5.3",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.25",
