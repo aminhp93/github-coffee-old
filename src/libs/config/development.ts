@@ -1,8 +1,6 @@
-// eslint-disable-next-line import/no-anonymous-default-export
-export default {
+const config = {
   env: 'development',
-  // apiUrl: 'http://localhost:8000',
-  apiUrl: 'http://35.87.122.254',
+  apiUrl: 'http://localhost:8000',
   tradingViewUseVnDirect: true,
   pusher: {
     app_id: '1435319',
@@ -20,3 +18,5 @@ export default {
     measurementId: 'G-JPBLGYGNZ1',
   },
 };
+
+export default config;
