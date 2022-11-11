@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { AppThunk } from 'app/store';
+import { AppThunk } from 'libs/app/store';
 
 import { AccountService } from 'services';
 

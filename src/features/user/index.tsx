@@ -1,6 +1,6 @@
 import { Button, notification } from 'antd';
-import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
 import { useEffect } from 'react';
 import { UserService } from 'services/user';
 import { selectUser, update } from './userSlice';

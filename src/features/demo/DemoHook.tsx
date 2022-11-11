@@ -1,6 +1,6 @@
-import { add, update, remove, fetchRandom, selectDemo } from './demoSlice';
 import { Button, Divider } from 'antd';
-import { useAppSelector, useAppDispatch } from 'app/hooks';
+import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
+import { add, fetchRandom, remove, selectDemo, update } from './demoSlice';
 
 function DemoHook() {
   const demo = useAppSelector(selectDemo);
