@@ -1,8 +1,8 @@
 import { Button, notification } from 'antd';
-import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
+import { UserService } from 'libs/services/user';
 import { useEffect } from 'react';
-import { UserService } from 'services/user';
 import { selectUser, update } from './userSlice';
 
 // TODO: Add SDKs for Firebase products that you want to use

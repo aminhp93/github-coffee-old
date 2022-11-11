@@ -4,7 +4,7 @@ import moment from 'moment';
 import { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 
-import { fetchOrdersHistory, postAuthToken } from 'reducers/account';
+import { fetchOrdersHistory, postAuthToken } from 'libs/reducers/account';
 
 interface TProps {
   onClose?: any;

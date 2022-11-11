@@ -1,14 +1,24 @@
-import { UserOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  HomeOutlined,
+  LeftOutlined,
+  LineChartOutlined,
+  OrderedListOutlined,
+  RightOutlined,
+  StockOutlined,
+  UserOutlined,
+  WechatOutlined,
+} from '@ant-design/icons';
 import { Button, notification } from 'antd';
-import config from 'config';
+import config from 'libs/config';
+import { UserService } from 'libs/services/user';
 import * as React from 'react';
 import { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
-import { UserService } from 'services/user';
 import 'styles/index.less';
-import { store } from './app/store';
+import { store } from './libs/app/store';
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CustomFlexLayout from 'components/CustomFlexLayout';
@@ -20,6 +30,7 @@ import Demo from 'features/demo/Demo';
 import LibraryUpdate from 'features/libraryUpdate';
 import Note from 'features/note';
 import NoteAdd from 'features/note/NoteAdd';
+import Notice from 'features/notice';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import Snippet from 'features/snippet';
@@ -28,23 +39,11 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import User from 'features/user';
 import Work from 'features/work';
-import Notice from 'features/notice';
 import { initializeApp } from 'firebase/app';
 
-import { useAppDispatch, useAppSelector } from 'app/hooks';
 import { selectUser, update } from 'features/user/userSlice';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
 import Notification from './components/firebaseNotifications/Notification';
-import {
-  HomeOutlined,
-  WechatOutlined,
-  CloseOutlined,
-  LineChartOutlined,
-  OrderedListOutlined,
-  StockOutlined,
-  RightOutlined,
-  LeftOutlined,
-} from '@ant-design/icons';
 
 notification.config({
   placement: 'bottomLeft',
@@ -235,25 +234,15 @@ function App() {
   };
 
   useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (data: any) => {
-      console.log('onAuthStateChanged1', data, JSON.stringify(data));
-      localStorage.removeItem('ACCESS_TOKEN');
-      localStorage.setItem('ACCESS_TOKEN', data.accessToken);
-      const headers = {
-        Authorization: `Bearer ${data.accessToken}`,
-      };
-      (async (headers?: any) => {
-        try {
-          const res = await UserService.getAuthUser(headers);
-          dispatch(update(res.data));
-        } catch (e) {
-          notification.error({ message: 'Get user failed' });
-        }
-      })(headers);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    (async () => {
+      try {
+        const res = await UserService.getAuthUser();
+        dispatch(update(res.data));
+      } catch (e) {
+        notification.error({ message: 'Get user failed' });
+      }
+    })();
+  }, [dispatch]);
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>

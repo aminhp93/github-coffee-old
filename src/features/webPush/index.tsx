@@ -1,5 +1,5 @@
 import { Button } from 'antd';
-import { urlBase64ToUint8Array } from 'utils';
+import { urlBase64ToUint8Array } from 'libs/utils';
 
 export interface IWebPushProps {}
 

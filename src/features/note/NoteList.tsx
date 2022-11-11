@@ -1,5 +1,5 @@
+import { INote } from 'libs/types';
 import { useCallback, useState } from 'react';
-import { INote } from 'types';
 import NoteListItem from './NoteListItem';
 
 export interface INoteListProps {

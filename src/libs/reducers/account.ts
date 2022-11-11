@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { AppThunk } from 'app/store';
+import { AppThunk } from 'libs/app/store';
 
-import { AccountService } from 'services';
+import { AccountService } from 'libs/services';
 
 const accountSlice = createSlice({
   name: 'account',

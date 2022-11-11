@@ -1,8 +1,8 @@
 import { Button, Form, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import { PostService } from 'libs/services';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PostService } from 'services';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
 

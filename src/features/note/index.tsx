@@ -1,10 +1,10 @@
-import NoteList from './NoteList';
 import { Button, notification } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useState, useCallback } from 'react';
-import { NoteService } from 'services';
 import NoteDetail from 'features/note/NoteDetail';
-import { INote } from 'types';
+import { NoteService } from 'libs/services';
+import { INote } from 'libs/types';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import NoteList from './NoteList';
 
 const Note = () => {
   let navigate = useNavigate();

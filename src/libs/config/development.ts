@@ -1,7 +1,6 @@
-// eslint-disable-next-line import/no-anonymous-default-export
-export default {
-  env: 'production',
-  apiUrl: 'https://api-2023.herokuapp.com',
+const config = {
+  env: 'development',
+  apiUrl: 'http://localhost:8000',
   tradingViewUseVnDirect: true,
   pusher: {
     app_id: '1435319',
@@ -19,3 +18,5 @@ export default {
     measurementId: 'G-JPBLGYGNZ1',
   },
 };
+
+export default config;

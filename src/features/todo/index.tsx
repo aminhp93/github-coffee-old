@@ -1,16 +1,16 @@
-import { Divider, Empty, notification, Radio, Pagination } from 'antd';
 import type { RadioChangeEvent } from 'antd';
+import { Divider, Empty, notification, Pagination, Radio } from 'antd';
 
-import { useCallback, useState } from 'react';
-import { TodoService } from 'services';
-import { ITodo } from 'types';
-import TodoCreate from './TodoCreate';
-import TodoListItem from './TodoListItem';
+import update from 'immutability-helper';
+import { TodoService } from 'libs/services';
+import { ITodo } from 'libs/types';
 import * as React from 'react';
-import './index.less';
+import { useCallback, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
+import './index.less';
+import TodoCreate from './TodoCreate';
+import TodoListItem from './TodoListItem';
 
 const DEFAULT_PAGE_SIZE = 10;
 

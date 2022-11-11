@@ -2,19 +2,18 @@ import { CheckCircleOutlined } from '@ant-design/icons';
 import Brightness1Icon from '@mui/icons-material/Brightness1';
 import { Divider } from '@mui/material';
 import Box from '@mui/material/Box';
-import { Button } from 'antd';
 import IconButton from '@mui/material/IconButton';
 import TextField from '@mui/material/TextField';
 import { makeStyles } from '@mui/styles';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Spin } from 'antd';
+import { Button, Spin } from 'antd';
 import Echarts from 'components/Echarts';
+import request, { CustomTradingViewUrls } from 'libs/request';
+import { StockService } from 'libs/services';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
 import * as React from 'react';
 import { ChangeEvent, useEffect, useState } from 'react';
-import request, { CustomTradingViewUrls } from 'request';
-import { StockService } from 'services';
 import {
   checkMarketOpen,
   DELAY_TIME,
@@ -25,12 +24,12 @@ import {
   TIME_FRAME,
 } from './utils';
 
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import { useInterval } from 'usehooks-ts';
-import { RightOutlined, LeftOutlined } from '@ant-design/icons';
 
 const useStyles = makeStyles({
   root: {

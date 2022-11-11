@@ -1,6 +1,6 @@
 import axios from 'axios';
-import config from 'config';
 import { getAuth, getIdToken } from 'firebase/auth';
+import config from 'libs/config';
 import qs from 'qs';
 
 const baseUrl = config.apiUrl;

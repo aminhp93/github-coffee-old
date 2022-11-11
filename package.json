@@ -59,6 +59,7 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
+    "dev": "GENERATE_SOURCEMAP=false craco start",
     "start": "GENERATE_SOURCEMAP=false craco start",
     "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
     "analyze": "webpack-bundle-analyzer build/bundle.json",

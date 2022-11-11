@@ -1,4 +1,4 @@
-import request, { GitHubUrls } from 'request';
+import request, { GitHubUrls } from 'libs/request';
 
 export const GitHubService = {
   getReposDetail() {

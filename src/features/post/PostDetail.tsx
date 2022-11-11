@@ -6,9 +6,9 @@ import {
 } from '@ant-design/icons';
 import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import { PostService } from 'libs/services';
+import { IPost } from 'libs/types';
 import { memo, useEffect, useState } from 'react';
-import { PostService } from 'services';
-import { IPost } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {

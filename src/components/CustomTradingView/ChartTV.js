@@ -1,11 +1,11 @@
+import axios from 'axios';
+import { CustomTradingViewUrls } from 'libs/request';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { v4 as uuidv4 } from 'uuid';
-import Datafeeds from './datafeeds';
-import axios from 'axios';
 import { connect } from 'react-redux';
+import { v4 as uuidv4 } from 'uuid';
 import chartTV_constants from './chartTV_constants';
-import { CustomTradingViewUrls } from 'request';
+import Datafeeds from './datafeeds';
 
 // import FormData from "form-data";
 

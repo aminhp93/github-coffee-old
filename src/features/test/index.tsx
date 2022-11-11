@@ -1,6 +1,6 @@
 import { Button } from 'antd';
 import axios from 'axios';
-import config from 'config';
+import config from 'libs/config';
 
 const baseUrl = config.apiUrl;
 

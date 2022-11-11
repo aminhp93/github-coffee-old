@@ -1,7 +1,7 @@
-import { Button, Input, Modal } from 'antd';
-import { useState, useRef, useEffect } from 'react';
 import type { InputRef } from 'antd';
-import request from 'request';
+import { Button, Input, Modal } from 'antd';
+import request from 'libs/request';
+import { useEffect, useRef, useState } from 'react';
 import ProblemItem from './ProblemItem';
 
 export default function ConnectDashboard() {

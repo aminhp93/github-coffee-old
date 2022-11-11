@@ -4,7 +4,7 @@ import { flatten, keyBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
-import { StockService } from 'services';
+import { StockService } from 'libs/services';
 
 export default function StockNews() {
   const [list, setList] = useState([]);

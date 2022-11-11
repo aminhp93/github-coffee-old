@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState, AppThunk } from 'app/store';
+import { AppThunk, RootState } from 'libs/app/store';
 import { shuffle } from 'lodash';
 
 const demoSlice = createSlice({

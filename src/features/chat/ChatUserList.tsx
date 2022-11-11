@@ -1,6 +1,6 @@
-import { v4 as uuidv4 } from 'uuid';
 import { Divider } from 'antd';
-import { IUser } from 'types';
+import { IUser } from 'libs/types';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
   users: IUser[];
