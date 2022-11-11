@@ -1,21 +1,21 @@
 import {
   CheckOutlined,
   DeleteOutlined,
-  PauseOutlined,
   FieldTimeOutlined,
+  PauseOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip, Checkbox, notification, TimePicker } from 'antd';
+import { Button, Checkbox, notification, TimePicker, Tooltip } from 'antd';
+import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
+import config from 'libs/config';
+import { ITodo } from 'libs/types';
+import moment from 'moment';
 import * as React from 'react';
+import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
-import { ITodo } from 'types';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
-import Countdown from 'react-countdown';
-import moment from 'moment';
-import axios from 'axios';
-import config from 'config';
 const format = 'HH:mm';
 
 const baseUrl = config.apiUrl;

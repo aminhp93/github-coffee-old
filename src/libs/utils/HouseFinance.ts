@@ -1,5 +1,5 @@
+import { IHouseFinance } from 'libs/types';
 import { sumBy, times } from 'lodash';
-import { IHouseFinance } from 'types';
 
 export const listDataHouseFinance: IHouseFinance[] = [
   {

@@ -1,4 +1,4 @@
-import request, { AccountUrls } from 'request';
+import request, { AccountUrls } from 'libs/request';
 
 export const AccountService = {
   postAuthToken(data: any) {

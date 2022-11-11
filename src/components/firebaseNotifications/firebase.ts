@@ -1,10 +1,10 @@
 // Firebase Cloud Messaging Configuration File.
 // Read more at https://firebase.google.com/docs/cloud-messaging/js/client && https://firebase.google.com/docs/cloud-messaging/js/receive
-import config from 'config';
+import config from 'libs/config';
 
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
-import request from 'request';
+import request from 'libs/request';
 
 const baseUrl = config.apiUrl;
 

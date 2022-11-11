@@ -1,8 +1,8 @@
 import { Button, Input, notification, Spin } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import { NoteService } from 'libs/services';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { NoteService } from 'services';
 import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {

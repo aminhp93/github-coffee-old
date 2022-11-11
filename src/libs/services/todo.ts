@@ -1,4 +1,4 @@
-import request, { TodoUrls } from 'request';
+import request, { TodoUrls } from 'libs/request';
 
 export const TodoService = {
   createTodo(data: any) {

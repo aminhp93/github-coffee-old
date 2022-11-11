@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
+import { StockService } from 'libs/services';
 import * as React from 'react';
-import { StockService } from 'services';
 
 import { useEffect } from 'react';
 

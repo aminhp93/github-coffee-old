@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
 import { Divider } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { IChat } from 'types';
-import { getParsedJson } from 'utils';
+import { IChat } from 'libs/types';
+import { getParsedJson } from 'libs/utils';
 
 interface IProps {
   chat: IChat;

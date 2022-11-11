@@ -1,4 +1,4 @@
-import request, { UserUrls } from 'request';
+import request, { UserUrls } from 'libs/request';
 
 export const UserService = {
   getAuthUser(headers?: any) {

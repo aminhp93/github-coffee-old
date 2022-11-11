@@ -1,8 +1,8 @@
 import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import { NoteService } from 'libs/services';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NoteService } from 'services';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function NoteAdd() {

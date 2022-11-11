@@ -1,4 +1,4 @@
-import request, { NoteUrls } from 'request';
+import request, { NoteUrls } from 'libs/request';
 
 export const NoteService = {
   createNote(data: any) {

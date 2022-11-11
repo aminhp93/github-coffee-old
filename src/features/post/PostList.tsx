@@ -1,5 +1,5 @@
+import { IPost } from 'libs/types';
 import { useCallback, useState } from 'react';
-import { IPost } from 'types';
 import './PostList.less';
 import PostListItem from './PostListItem';
 export interface IPostListProps {

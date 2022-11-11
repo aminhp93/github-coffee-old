@@ -1,10 +1,10 @@
 import { Box } from '@mui/material';
 import { Col, Divider } from 'antd';
-import config from 'config';
+import config from 'libs/config';
+import { ChatService } from 'libs/services/chat';
+import { IChat } from 'libs/types';
 import Pusher from 'pusher-js';
 import * as React from 'react';
-import { ChatService } from 'services/chat';
-import { IChat } from 'types';
 import ChatBox from './ChatBox';
 import ChatMessageListItem from './ChatMessageListItem';
 import ChatUserList from './ChatUserList';

@@ -10,13 +10,13 @@ import {
   WechatOutlined,
 } from '@ant-design/icons';
 import { Button, notification } from 'antd';
-import config from 'config';
+import config from 'libs/config';
+import { UserService } from 'libs/services/user';
 import * as React from 'react';
 import { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
-import { UserService } from 'services/user';
 import 'styles/index.less';
 import { store } from './libs/app/store';
 

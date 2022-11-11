@@ -1,4 +1,4 @@
-import request, { PostUrls } from 'request';
+import request, { PostUrls } from 'libs/request';
 
 export const PostService = {
   createPost(data: any) {

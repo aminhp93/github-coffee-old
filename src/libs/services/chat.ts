@@ -1,4 +1,4 @@
-import request, { ChatUrls } from 'request';
+import request, { ChatUrls } from 'libs/request';
 
 export const ChatService = {
   getChatList() {

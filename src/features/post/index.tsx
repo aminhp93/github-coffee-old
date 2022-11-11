@@ -1,9 +1,9 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
+import { PostService } from 'libs/services';
+import { IPost } from 'libs/types';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PostService } from 'services';
-import { IPost } from 'types';
 import './index.less';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
