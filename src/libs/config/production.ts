@@ -1,7 +1,7 @@
 const config = {
   env: 'production',
-  // apiUrl: 'https://api-2023.herokuapp.com',
-  apiUrl: 'http://35.87.122.254',
+  apiUrl: 'https://api-2023.herokuapp.com',
+  // apiUrl: 'http://35.87.122.254',
   tradingViewUseVnDirect: true,
   pusher: {
     app_id: '1435319',
