@@ -1,6 +1,4 @@
-import { getPlateActions } from '@udecode/plate';
-import { Button, Form, notification } from 'antd';
-import CustomPlate from 'components/CustomPlate';
+import { Button, Form, Input, notification } from 'antd';
 import './ChatBox.less';
 interface IProps {
   cb: any;
@@ -14,17 +12,17 @@ const ChatBox = ({ cb }: IProps) => {
       console.log('Success:', values);
       const { message } = values;
       const dataCreate = {
-        message: JSON.stringify(message),
+        message,
       };
       cb && cb(dataCreate);
-      console.log(getPlateActions);
-      getPlateActions('ChatBox123').resetEditor();
-      getPlateActions('ChatBox123').value([
-        {
-          children: [{ text: '' }],
-          type: 'p',
-        },
-      ]);
+      // console.log(getPlateActions);
+      // getPlateActions('ChatBox123').resetEditor();
+      // getPlateActions('ChatBox123').value([
+      //   {
+      //     children: [{ text: '' }],
+      //     type: 'p',
+      //   },
+      // ]);
       // form.resetFields();
     } catch (e) {
       notification.error({ message: 'Create failed' });
@@ -45,7 +43,8 @@ const ChatBox = ({ cb }: IProps) => {
       className="ChatBox"
     >
       <Form.Item name="message" style={{ flex: 1 }}>
-        <CustomPlate id={'ChatBox123'} hideToolBar />
+        {/* <CustomPlate id={'ChatBox123'} hideToolBar /> */}
+        <Input />
       </Form.Item>
       <Form.Item>
         <Button type="primary" htmlType="submit">

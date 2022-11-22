@@ -1,7 +1,5 @@
-import { Divider } from 'antd';
-import CustomPlate from 'components/CustomPlate';
+import { Divider, Input } from 'antd';
 import { IChat } from 'libs/types';
-import { getParsedJson } from 'libs/utils';
 
 interface IProps {
   chat: IChat;
@@ -18,12 +16,13 @@ const ChatMessageListItem = ({ chat }: IProps) => {
           ID: {chat.sender}
         </div>
         <div className="ChatMessageListItem-message-container flex-1">
-          <CustomPlate
+          {/* <CustomPlate
             id={`ChatMessageListItem-${chat.id}`}
             hideToolBar
             readOnly
             value={getParsedJson(chat.message)}
-          />
+          /> */}
+          <Input value={chat.message} />
         </div>
       </div>
       <Divider />
