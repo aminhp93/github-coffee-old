@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { Col, Divider } from 'antd';
 import config from 'libs/config';
 import { ChatService } from 'libs/services/chat';
@@ -130,7 +129,7 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
   }, []);
 
   return (
-    <Box className="Chat height-100">
+    <div className="Chat height-100">
       <Col xs={0} sm={0} md={hideOnlineUsers ? 0 : 4}>
         <ChatUserList users={Object.values(users)} />
       </Col>
@@ -140,22 +139,22 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
         md={hideOnlineUsers ? 24 : 20}
         style={{ height: '100%' }}
       >
-        <Box className="ChatListMessagesContainer height-100 flex">
-          <Box style={{ flex: 1, overflow: 'auto' }}>
-            <Box className="ChatMessageList">
+        <div className="ChatListMessagesContainer height-100 flex">
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <div className="ChatMessageList">
               {chats.map((chat: IChat) => {
                 return <ChatMessageListItem chat={chat} />;
               })}
-              <Box ref={bottomRef} />
-            </Box>
+              <div ref={bottomRef} />
+            </div>
             <Divider />
-          </Box>
-          <Box className="ChatBoxContainer">
+          </div>
+          <div className="ChatBoxContainer">
             <ChatBox cb={handleCb} />
-          </Box>
-        </Box>
+          </div>
+        </div>
       </Col>
-    </Box>
+    </div>
   );
 };
 

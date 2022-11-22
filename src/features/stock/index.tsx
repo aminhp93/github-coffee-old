@@ -1,6 +1,4 @@
 import { MoreOutlined } from '@ant-design/icons';
-import Box from '@mui/material/Box';
-import { makeStyles } from '@mui/styles';
 import { Dropdown, Menu, Modal } from 'antd';
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import { IJsonModel } from 'flexlayout-react';
@@ -9,15 +7,7 @@ import './index.less';
 import StockHistoryTrade from './StockHistoryTrade';
 import StockTools from './StockTools';
 
-const useStyles = makeStyles({
-  root: {
-    flexDirection: 'column',
-  },
-});
-
 const Stock = () => {
-  const classes = useStyles();
-
   const [modal, setModal] = useState('');
 
   const savedLayout = localStorage.getItem('flexLayoutModel_Stock');
@@ -84,18 +74,21 @@ const Stock = () => {
   );
 
   return (
-    <Box className={`${classes.root} Stock flex height-100`}>
-      <Box className="Stock-header flex" mx={2} my={1}>
-        <Box style={{ flex: 1 }}>Stock</Box>
-        <Box className="Stock-header-menu">
+    <div
+      className={` Stock flex height-100`}
+      style={{ flexDirection: 'column' }}
+    >
+      <div className="Stock-header flex" style={{ margin: '8px 16px' }}>
+        <div style={{ flex: 1 }}>Stock</div>
+        <div className="Stock-header-menu">
           <Dropdown overlay={menu} trigger={['click']}>
             <MoreOutlined className="font-size-30 color-black" />
           </Dropdown>
-        </Box>
-      </Box>
-      <Box className="flex" style={{ flex: 1, overflow: 'auto' }}>
+        </div>
+      </div>
+      <div className="flex" style={{ flex: 1, overflow: 'auto' }}>
         <CustomFlexLayout json={json} />
-      </Box>
+      </div>
 
       {modal && (
         <Modal
@@ -109,7 +102,7 @@ const Stock = () => {
           {modal === 'StockTools' && <StockTools />}
         </Modal>
       )}
-    </Box>
+    </div>
   );
 };
 

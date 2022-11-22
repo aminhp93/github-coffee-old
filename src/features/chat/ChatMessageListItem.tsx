@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { Divider } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { IChat } from 'libs/types';
@@ -11,22 +10,22 @@ interface IProps {
 const ChatMessageListItem = ({ chat }: IProps) => {
   return (
     <>
-      <Box className="flex">
-        <Box
+      <div className="flex">
+        <div
           className="ChatMessageListItem-avatar"
-          sx={{ width: '50px', background: 'red' }}
+          style={{ width: '50px', background: 'red' }}
         >
           ID: {chat.sender}
-        </Box>
-        <Box className="ChatMessageListItem-message-container flex-1">
+        </div>
+        <div className="ChatMessageListItem-message-container flex-1">
           <CustomPlate
             id={`ChatMessageListItem-${chat.id}`}
             hideToolBar
             readOnly
             value={getParsedJson(chat.message)}
           />
-        </Box>
-      </Box>
+        </div>
+      </div>
       <Divider />
     </>
   );

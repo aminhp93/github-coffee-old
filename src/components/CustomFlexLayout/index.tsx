@@ -1,3 +1,4 @@
+import { Dropdown, Menu } from 'antd';
 import {
   BorderNode,
   IJsonModel,
@@ -9,39 +10,32 @@ import {
 } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
-import { Dropdown, Menu } from 'antd';
 
+import { PlusOutlined } from '@ant-design/icons';
 import Chat from 'features/chat';
-import ConnectDashboard from 'features/connectDashboard';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
-import Stock from 'features/stock';
-import StockHistoryTrade from 'features/stock/StockHistoryTrade';
 import StockMarketOverview from 'features/stock/StockMarketOverview';
 import StockNews from 'features/stock/StockNews';
-import StockTable from 'features/stock/StockTable';
-import StockTools from 'features/stock/StockTools';
 import Test from 'features/test';
 import Todo from 'features/todo';
-import Notice from 'features/notice';
 import * as React from 'react';
 import { DEFAULT_LAYOUT } from './utils';
-import { PlusOutlined } from '@ant-design/icons';
 
 const COMPONENT_OBJ: { [index: string]: any } = {
-  Stock: <Stock />,
+  // Stock: <Stock />,
   Post: <Post />,
   StockMarketOverview: <StockMarketOverview />,
   StockNews: <StockNews />,
   Chat: <Chat hideOnlineUsers />,
   Todos: <Todo />,
-  StockTable: <StockTable />,
+  // StockTable: <StockTable />,
   Snippet: <Snippet />,
-  ConnectDashboard: <ConnectDashboard />,
-  StockHistoryTrade: <StockHistoryTrade />,
-  StockTools: <StockTools />,
+  // ConnectDashboard: <ConnectDashboard />,
+  // StockHistoryTrade: <StockHistoryTrade />,
+  // StockTools: <StockTools />,
   Test: <Test />,
-  Notice: <Notice />,
+  // Notice: <Notice />,
 };
 
 interface IProps {

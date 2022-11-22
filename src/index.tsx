@@ -20,7 +20,6 @@ import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import 'styles/index.less';
 import { store } from './libs/app/store';
 
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
 import CustomEcharts from 'components/Echarts';
@@ -28,8 +27,6 @@ import API from 'features/api/API';
 import Chat from 'features/chat';
 import Demo from 'features/demo/Demo';
 import LibraryUpdate from 'features/libraryUpdate';
-import Note from 'features/note';
-import NoteAdd from 'features/note/NoteAdd';
 import Notice from 'features/notice';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
@@ -54,36 +51,13 @@ initializeApp(config.firebase);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 
-const theme = createTheme({});
-
-const themeCompOverrides = createTheme(theme, {
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          // background: 'red',
-        },
-      },
-    },
-    MuiDatePicker: {
-      styleOverrides: {
-        root: {
-          backgroundColor: 'red',
-        },
-      },
-    },
-  },
-});
-
 root.render(
   <React.Fragment>
-    <ThemeProvider theme={themeCompOverrides}>
-      <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </Provider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Provider>
   </React.Fragment>
 );
 
@@ -276,8 +250,6 @@ function App() {
             <Route path="echarts" element={<CustomEcharts />} />
             <Route path="flexLayout" element={<CustomFlexLayout />} />
             <Route path="tradingView" element={<CustomTradingView />} />
-            <Route path="note/add/" element={<NoteAdd />} />
-            <Route path="note" element={<Note />} />
             <Route path="post/create/" element={<PostCreate />} />
             <Route path="post" element={<Post />} />
             <Route path="stock" element={<Stock />} />

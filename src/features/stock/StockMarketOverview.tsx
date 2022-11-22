@@ -1,19 +1,11 @@
-import { CheckCircleOutlined } from '@ant-design/icons';
-import Brightness1Icon from '@mui/icons-material/Brightness1';
-import { Divider } from '@mui/material';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
-import { makeStyles } from '@mui/styles';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Button, Spin } from 'antd';
+import { Button, Divider, Dropdown, Input, Menu, Spin, Table } from 'antd';
 import Echarts from 'components/Echarts';
 import request, { CustomTradingViewUrls } from 'libs/request';
 import { StockService } from 'libs/services';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
 import * as React from 'react';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   checkMarketOpen,
   DELAY_TIME,
@@ -24,25 +16,17 @@ import {
   TIME_FRAME,
 } from './utils';
 
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import {
+  CheckCircleOutlined,
+  LeftOutlined,
+  PlusOutlined,
+  RightOutlined,
+} from '@ant-design/icons';
 import { useInterval } from 'usehooks-ts';
 
-const useStyles = makeStyles({
-  root: {
-    background: 'white',
-  },
-  potentialBuyTable: {
-    margin: '0 16px',
-  },
-});
+const { TextArea } = Input;
 
 export default function StockMarketOverview() {
-  const classes = useStyles();
-
   const [data4, setData4] = useState([] as any);
   const [filtered, setFiltered] = useState(true);
   const [changePercentMin] = useState(1);
@@ -56,27 +40,23 @@ export default function StockMarketOverview() {
   const [visibleSidebar, setVisibleSidebar] = useState(true);
   const { start, end } = getStartAndEndTime();
 
-  const columnsMuiTable: GridColDef[] = [
+  const columns = [
     {
-      field: 'symbol',
-      width: 100,
-      headerName: 'Symbol',
+      key: 'symbol',
+      title: 'Symbol',
     },
     {
-      field: 'estimatedVolumeChange',
-      headerName: '% volume',
-      width: 100,
+      key: 'estimatedVolumeChange',
+      title: '% volume',
     },
     {
-      field: 'changePercent',
-      headerName: '% change',
-      width: 100,
+      key: 'changePercent',
+      title: '% change',
     },
 
     {
-      headerName: 'Estimated volume',
-      field: 'chart',
-      width: 500,
+      title: 'Estimated volume',
+      key: 'chart',
       renderCell: (data: any) => {
         const history = data.row.history;
         const listTime = (history?.t || []).map((i: any) => i * 1000);
@@ -282,7 +262,7 @@ export default function StockMarketOverview() {
     }
   };
 
-  const handleChangeWatchlist = (event: SelectChangeEvent) => {
+  const handleChangeWatchlist = (event: any) => {
     setCurrentWatchlist(event.target.value as string);
   };
 
@@ -343,23 +323,28 @@ export default function StockMarketOverview() {
 
   useInterval(fetchList, isPlaying ? delay : null);
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: any) => {
     setDelay(Number(event.target.value));
   };
 
   const renderPotentialBuyTable = () => {
+    const menu = (
+      <Menu onClick={(e) => handleChangeWatchlist(e)}>
+        {listWatchlist.map((i: any, index) => {
+          return <Menu.Item key={i.watchlistID}>{i.name}</Menu.Item>;
+        })}
+      </Menu>
+    );
+
     return (
-      <Box className={`${classes.potentialBuyTable} flex flex-1`}>
-        <Box className="flex-1" sx={{ position: 'relative' }}>
-          <DataGrid
-            rows={data4.map((i: any) => {
+      <div className={` flex flex-1`} style={{ margin: '0 16px' }}>
+        <div className="flex-1" style={{ position: 'relative' }}>
+          <Table
+            dataSource={data4.map((i: any) => {
               i.id = i.symbol;
               return i;
             })}
-            columns={columnsMuiTable}
-            pageSize={10}
-            rowHeight={120}
-            rowsPerPageOptions={[10]}
+            columns={columns}
           />
 
           <Button
@@ -371,42 +356,25 @@ export default function StockMarketOverview() {
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
           />
-        </Box>
+        </div>
 
         {visibleSidebar && (
-          <Box style={{ marginLeft: '20px' }}>
+          <div style={{ marginLeft: '20px' }}>
             <div>
-              <Box sx={{ minWidth: 120 }} mt={2}>
-                <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    Watchlist
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={currentWatchlist}
-                    label="Watchlist"
-                    onChange={handleChangeWatchlist}
-                  >
-                    {listWatchlist.map((i: any) => {
-                      return (
-                        <MenuItem value={i.name} key={i.watchlistID}>
-                          {i.name}
-                        </MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box>
+              <div style={{ minWidth: 120, marginTop: '16px' }}>
+                <Dropdown overlay={menu} trigger={['click']}>
+                  <PlusOutlined />
+                </Dropdown>
+              </div>
+              <div>
                 {loading ? 'Loading' : 'Done loading'}{' '}
                 {loading ? <Spin /> : <CheckCircleOutlined />}
-              </Box>
-              <Box>
-                <Box>Start {start.format(FULL_TIME_FORMAT)}</Box>
-                <Box>End {end.format(FULL_TIME_FORMAT)}</Box>
-                <Box>Timeframe {TIME_FRAME}</Box>
-              </Box>
+              </div>
+              <div>
+                <div>Start {start.format(FULL_TIME_FORMAT)}</div>
+                <div>End {end.format(FULL_TIME_FORMAT)}</div>
+                <div>Timeframe {TIME_FRAME}</div>
+              </div>
               <Divider />
               <Button onClick={handleFilter}>
                 Turn {filtered ? 'Off' : 'On'} Filtered
@@ -416,38 +384,30 @@ export default function StockMarketOverview() {
               <div>Volume Change: {estimatedVolumeChange}</div>
               <Divider />
 
-              <Box component="form" noValidate autoComplete="off">
+              <div>
                 <Button onClick={() => setPlaying(!isPlaying)}>
                   {isPlaying ? 'Stop Interval' : 'Start Interval'}
                 </Button>
-                <TextField
-                  sx={{ width: '80px', marginLeft: '8px' }}
-                  id="filled-basic"
-                  label="delay"
-                  variant="filled"
+                <TextArea
+                  style={{ width: '80px', marginLeft: '8px' }}
                   value={delay}
                   onChange={handleChange}
                 />
-              </Box>
-              <Box>
-                {checkMarketOpen() ? 'Market Open' : 'Market Close'}
-                <IconButton
-                  aria-label="brightness"
-                  color={checkMarketOpen() ? 'success' : 'default'}
-                >
-                  <Brightness1Icon />
-                </IconButton>
-              </Box>
+              </div>
+              <div>{checkMarketOpen() ? 'Market Open' : 'Market Close'}</div>
             </div>
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
     );
   };
 
   return (
-    <Box className={`${classes.root} width-100 flex height-100`}>
+    <div
+      className={` width-100 flex height-100`}
+      style={{ background: 'white' }}
+    >
       {renderPotentialBuyTable()}
-    </Box>
+    </div>
   );
 }
