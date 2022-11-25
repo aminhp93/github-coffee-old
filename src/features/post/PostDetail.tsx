@@ -1,8 +1,6 @@
 import {
   CheckCircleOutlined,
-  CheckOutlined,
-  CloseOutlined,
-  DeleteOutlined,
+  CheckOutlined, DeleteOutlined
 } from '@ant-design/icons';
 import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
@@ -118,8 +116,9 @@ const MemoizedPostDetail = memo(function PostDetail({
       ) : (
         <>
           <Button
-            type="primary"
+            
             // danger
+            className="btn-warning"
             loading={loading}
             onClick={handleUpdate}
             icon={<CheckOutlined />}
@@ -130,18 +129,7 @@ const MemoizedPostDetail = memo(function PostDetail({
               zIndex: 1,
             }}
           />
-          <Button
-            type="primary"
-            danger
-            loading={loading}
-            icon={<CloseOutlined />}
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              zIndex: 1,
-            }}
-          />
+         
         </>
       )}
 

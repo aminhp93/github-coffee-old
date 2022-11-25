@@ -1,5 +1,7 @@
-import { Divider, Input } from 'antd';
+import { Divider } from 'antd';
 import { IChat } from 'libs/types';
+import moment from 'moment';
+import './ChatMessageListItem.less';
 
 interface IProps {
   chat: IChat;
@@ -8,21 +10,15 @@ interface IProps {
 const ChatMessageListItem = ({ chat }: IProps) => {
   return (
     <>
-      <div className="flex">
-        <div
-          className="ChatMessageListItem-avatar"
-          style={{ width: '50px', background: 'red' }}
-        >
-          ID: {chat.sender}
-        </div>
-        <div className="ChatMessageListItem-message-container flex-1">
-          {/* <CustomPlate
-            id={`ChatMessageListItem-${chat.id}`}
-            hideToolBar
-            readOnly
-            value={getParsedJson(chat.message)}
-          /> */}
-          <Input value={chat.message} />
+      <div className="flex" style={{ margin: '8px 0' }}>
+        <div className="ChatMessageListItem-avatar">{chat.sender}</div>
+        <div className="flex-1">
+          <div className="ChatMessageListItem-message-container">
+            {chat.message}{' '}
+            <span className="ChatMessageListItem-message-time">
+              {moment(chat.created_at).format('HH:mm')}
+            </span>
+          </div>
         </div>
       </div>
       <Divider />

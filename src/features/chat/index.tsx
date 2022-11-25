@@ -149,7 +149,7 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
             </div>
             <Divider />
           </div>
-          <div className="ChatBoxContainer">
+          <div>
             <ChatBox cb={handleCb} />
           </div>
         </div>

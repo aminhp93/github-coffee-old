@@ -1,57 +1,28 @@
-import { Button, Form, Input, notification } from 'antd';
+import { Input } from 'antd';
+import React from 'react';
 import './ChatBox.less';
 interface IProps {
   cb: any;
 }
 
 const ChatBox = ({ cb }: IProps) => {
-  const [form] = Form.useForm();
+  const [message, setMessage] = React.useState('');
 
-  const onFinish = async (values: any) => {
-    try {
-      console.log('Success:', values);
-      const { message } = values;
-      const dataCreate = {
-        message,
-      };
-      cb && cb(dataCreate);
-      // console.log(getPlateActions);
-      // getPlateActions('ChatBox123').resetEditor();
-      // getPlateActions('ChatBox123').value([
-      //   {
-      //     children: [{ text: '' }],
-      //     type: 'p',
-      //   },
-      // ]);
-      // form.resetFields();
-    } catch (e) {
-      notification.error({ message: 'Create failed' });
-    }
+  const handlePressEnter = async () => {
+    cb && cb({ message });
+    setMessage('');
   };
 
-  const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+  const handleChange = (e: any) => {
+    setMessage(e.target.value);
   };
 
   return (
-    <Form
-      form={form}
-      name="basic"
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-      className="ChatBox"
-    >
-      <Form.Item name="message" style={{ flex: 1 }}>
-        {/* <CustomPlate id={'ChatBox123'} hideToolBar /> */}
-        <Input />
-      </Form.Item>
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Send
-        </Button>
-      </Form.Item>
-    </Form>
+    <Input
+      value={message}
+      onChange={handleChange}
+      onPressEnter={handlePressEnter}
+    />
   );
 };
 
