@@ -41,8 +41,10 @@ import {
   createTrailingBlockPlugin,
   createUnderlinePlugin,
   ELEMENT_CODE_BLOCK,
+  HeadingToolbar,
   MentionCombobox,
   Plate,
+  PlateEventProvider,
   PlateFloatingLink,
   StyledElement,
 } from '@udecode/plate';
@@ -57,7 +59,10 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import 'tippy.js/dist/tippy.css';
 import { CursorOverlayContainer } from './config/components/CursorOverlayContainer';
-import { MarkBallonToolbar } from './config/components/Toolbars';
+import {
+  MarkBallonToolbar,
+  ToolbarButtons,
+} from './config/components/Toolbars';
 import { withStyledDraggables } from './config/components/withStyledDraggables';
 import { CONFIG } from './config/config';
 import { MENTIONABLES } from './config/mentionables';
@@ -158,6 +163,12 @@ const CustomPlate = (props: IProps) => {
   return (
     <div className="CustomPlate height-100 width-100">
       <DndProvider backend={HTML5Backend}>
+        <PlateEventProvider>
+          <HeadingToolbar>
+            <ToolbarButtons />
+          </HeadingToolbar>
+        </PlateEventProvider>
+
         <div
           ref={containerRef}
           style={{
