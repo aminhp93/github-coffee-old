@@ -1,13 +1,12 @@
 import { Button } from 'antd';
 import axios from 'axios';
 import config from 'libs/config';
+import Example from 'features/example';
 
 const baseUrl = config.apiUrl;
 
-export default function Component() {
-  console.log('component');
-
-  const handleClick = () => {
+export default function Test() {
+  const handleClickPushNotication = () => {
     axios({
       url: `${baseUrl}/api/pushnotifications/`,
       method: 'POST',
@@ -42,9 +41,12 @@ export default function Component() {
 
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
-      <Button onClick={handleClickPayment}>Click payment</Button>
-      <Button onClick={handleClick}>Test</Button>
-      <Button onClick={handleClickTest}>Test datal halt</Button>
+      <Button onClick={handleClickPayment}>Test payment</Button>
+      <Button onClick={handleClickPushNotication}>
+        Test Push notification
+      </Button>
+      <Button onClick={handleClickTest}>Test data halt</Button>
+      <Example />
     </div>
   );
 }
