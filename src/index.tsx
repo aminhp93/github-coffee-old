@@ -6,7 +6,6 @@ import {
   OrderedListOutlined,
   RightOutlined,
   StockOutlined,
-  UserOutlined,
   WechatOutlined,
 } from '@ant-design/icons';
 import { Button, notification } from 'antd';
@@ -23,11 +22,7 @@ import { store } from './libs/app/store';
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import CustomTradingView from 'components/CustomTradingView/ChartTV';
 import CustomEcharts from 'components/Echarts';
-import API from 'features/api/API';
 import Chat from 'features/chat';
-import Demo from 'features/demo/Demo';
-import LibraryUpdate from 'features/libraryUpdate';
-import Notice from 'features/notice';
 import Post from 'features/post';
 import PostCreate from 'features/post/PostCreate';
 import Snippet from 'features/snippet';
@@ -71,19 +66,9 @@ const LIST_ROUTER = [
 
 const LIST_ROUTER_FOOTER = [
   {
-    linkTo: '/api',
-    label: 'API',
-    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-  },
-  {
     linkTo: '/chat',
     label: 'chat',
     icon: <WechatOutlined style={{ margin: '0 8px' }} />,
-  },
-  {
-    linkTo: '/demo',
-    label: 'demo',
-    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/echarts',
@@ -128,11 +113,6 @@ const LIST_ROUTER_FOOTER = [
   {
     linkTo: '/libraryUpdate',
     label: 'libraryUpdate',
-    icon: <CloseOutlined style={{ margin: '0 8px' }} />,
-  },
-  {
-    linkTo: '/notice',
-    label: 'notice',
     icon: <CloseOutlined style={{ margin: '0 8px' }} />,
   },
 ];
@@ -193,20 +173,6 @@ function App() {
     );
   };
 
-  const renderSideBarFooter2 = () => {
-    return (
-      <div>
-        <div className="App-sidebar-item" onClick={() => navigate('/user')}>
-          <UserOutlined style={{ margin: '0 8px' }} />
-          <span className="App-sidebar-label">
-            {config.env === 'production' ? '[PRO] ' : '[DEV] '}
-            {user?.username || 'No user'}
-          </span>
-        </div>
-      </div>
-    );
-  };
-
   useEffect(() => {
     (async () => {
       try {
@@ -218,11 +184,60 @@ function App() {
     })();
   }, [dispatch]);
 
+  const renderLoggedIn = () => {
+    return (
+      <Routes>
+        <Route path="chat" element={<Chat />} />
+        <Route path="echarts" element={<CustomEcharts />} />
+        <Route path="flexLayout" element={<CustomFlexLayout />} />
+        <Route path="tradingView" element={<CustomTradingView />} />
+        <Route path="post/create/" element={<PostCreate />} />
+        <Route path="post" element={<Post />} />
+        <Route path="stock" element={<Stock />} />
+        <Route path="taskManager" element={<TaskManager />} />
+        <Route path="test" element={<Test />} />
+        <Route path="work" element={<Work />} />
+        <Route path="snippet" element={<Snippet />} />
+        <Route
+          path="*"
+          element={
+            <main style={{ padding: '1rem' }}>
+              <p>There's nothing here!</p>
+            </main>
+          }
+        />
+        <Route path="/" element={<Work />} />
+      </Routes>
+    );
+  };
+
+  const renderNotLoginIn = () => {
+    return (
+      <Routes>
+        <Route path="stock" element={<Stock />} />
+        <Route path="user" element={<User />} />
+        <Route
+          path="*"
+          element={
+            <main style={{ padding: '1rem' }}>
+              <p>There's nothing here!</p>
+            </main>
+          }
+        />
+        <Route path="/" element={<div />} />
+      </Routes>
+    );
+  };
+
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
-        <div>
+      <div
+        className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}
+        style={{ overflow: 'visible' }}
+      >
+        <div style={{ position: 'relative' }}>
           <Button
+            style={{ position: 'absolute', right: '-16px', zIndex: 1 }}
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
           />
@@ -233,59 +248,16 @@ function App() {
             justifyContent: 'space-between',
             flexDirection: 'column',
             flex: 1,
+            paddingTop: '32px',
           }}
         >
           {renderSideBar()}
           {renderSideBarFooter()}
         </div>
-
-        {renderSideBarFooter2()}
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
-        {user && user.id ? (
-          <Routes>
-            <Route path="api" element={<API />} />
-            <Route path="chat" element={<Chat />} />
-            <Route path="demo" element={<Demo />} />
-            <Route path="echarts" element={<CustomEcharts />} />
-            <Route path="flexLayout" element={<CustomFlexLayout />} />
-            <Route path="tradingView" element={<CustomTradingView />} />
-            <Route path="post/create/" element={<PostCreate />} />
-            <Route path="post" element={<Post />} />
-            <Route path="stock" element={<Stock />} />
-            <Route path="taskManager" element={<TaskManager />} />
-            <Route path="test" element={<Test />} />
-            <Route path="user" element={<User />} />
-            <Route path="work" element={<Work />} />
-            <Route path="snippet" element={<Snippet />} />
-            <Route path="libraryUpdate" element={<LibraryUpdate />} />
-            <Route path="notice" element={<Notice />} />
-
-            <Route
-              path="*"
-              element={
-                <main style={{ padding: '1rem' }}>
-                  <p>There's nothing here!</p>
-                </main>
-              }
-            />
-            <Route path="/" element={<Work />} />
-          </Routes>
-        ) : (
-          <Routes>
-            <Route path="stock" element={<Stock />} />
-            <Route path="user" element={<User />} />
-            <Route
-              path="*"
-              element={
-                <main style={{ padding: '1rem' }}>
-                  <p>There's nothing here!</p>
-                </main>
-              }
-            />
-            <Route path="/" element={<div />} />
-          </Routes>
-        )}
+        <User />
+        {user && user.id ? renderLoggedIn() : renderNotLoginIn()}
       </div>
       <Notification />
     </div>
