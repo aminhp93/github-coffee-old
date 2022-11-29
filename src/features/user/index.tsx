@@ -6,23 +6,7 @@ import { useEffect } from 'react';
 import { selectUser, update } from './userSlice';
 import config from 'libs/config';
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
-// Initialize Firebase
-
-// console.log(app);
-// Initialize Firebase Auth
-
-// console.log('auth', auth);
-
-export interface IUserProps {}
-
-export default function User(props: IUserProps) {
-  console.log(41);
+export default function User() {
   const auth = getAuth();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
@@ -93,7 +77,7 @@ export default function User(props: IUserProps) {
       {config.env === 'production' ? '[PRO] ' : '[DEV] '}
       {user && user.id ? (
         <Dropdown overlay={menu} trigger={['click']}>
-          <div>{`${user.username}`}</div>
+          <div style={{ cursor: 'pointer' }}>{`${user.username}`}</div>
         </Dropdown>
       ) : (
         <Button onClick={handleLogin}>Login</Button>
