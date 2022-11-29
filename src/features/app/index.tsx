@@ -6,7 +6,6 @@ import {
   RightOutlined,
   StockOutlined,
   WechatOutlined,
-  LayoutOutlined,
   AimOutlined,
   DeleteOutlined,
   SnippetsOutlined,
@@ -14,7 +13,6 @@ import {
 import { Button } from 'antd';
 import * as React from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import CustomFlexLayout from 'components/CustomFlexLayout';
 import CustomEcharts from 'components/Echarts';
 import Chat from 'features/chat';
 import Post from 'features/post';
@@ -28,6 +26,7 @@ import Work from 'features/work';
 import { selectUser } from 'features/user/userSlice';
 import { useAppSelector } from 'libs/app/hooks';
 import Notification from 'components/firebaseNotifications/Notification';
+import './index.less';
 
 const LIST_TOP_SIDEBAR = [
   {
@@ -47,11 +46,6 @@ const LIST_NOT_LOGIN = [
     linkTo: '/echarts',
     label: 'echarts',
     icon: <LineChartOutlined style={{ margin: '0 8px' }} />,
-  },
-  {
-    linkTo: '/flexLayout',
-    label: 'flex layout',
-    icon: <LayoutOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/post',
@@ -137,7 +131,6 @@ const App = () => {
         <Route path="work" element={<Work />} />
         <Route path="chat" element={<Chat />} />
         <Route path="echarts" element={<CustomEcharts />} />
-        <Route path="flexLayout" element={<CustomFlexLayout />} />
         <Route path="post/create/" element={<PostCreate />} />
         <Route path="post" element={<Post />} />
         <Route path="taskManager" element={<TaskManager />} />

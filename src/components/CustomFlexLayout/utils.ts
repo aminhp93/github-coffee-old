@@ -1,4 +1,8 @@
 import { IJsonModel } from 'flexlayout-react';
+import { v4 as uuidv4 } from 'uuid';
+
+const rowId = uuidv4();
+const tabSetId = uuidv4();
 
 export const DEFAULT_LAYOUT: IJsonModel = {
   global: {
@@ -41,11 +45,11 @@ export const DEFAULT_LAYOUT: IJsonModel = {
   ],
   layout: {
     type: 'row',
-    id: '#bf8ddd18-4c40-4db2-9bb7-f66985943b44',
+    id: rowId,
     children: [
       {
         type: 'tabset',
-        id: '#4402c641-631c-40ba-b715-b49013cb75db',
+        id: tabSetId,
         weight: 12.5,
         children: [
           {

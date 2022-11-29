@@ -71,16 +71,6 @@ function TodoListItem({
   const [timer, setTimer] = React.useState(moment('00:01', format));
   const [status, setStatus] = React.useState('');
 
-  const endOfYear = moment()
-    .add(timer.minute(), 'minute')
-    .format('YYYY-MM-DD HH:mm:ss');
-
-  //   get miliseconds time at the end of the year
-  const endOfYearMiliseconds = moment(endOfYear).valueOf();
-  console.log(endOfYearMiliseconds);
-
-  console.log('TodoListItem', todoItem, JSON.parse(todoItem.body));
-
   const handleDone = () => {
     setIsDone(!isDone);
     onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
@@ -95,7 +85,6 @@ function TodoListItem({
   };
 
   const handleChange = (data: any) => {
-    console.log(data);
     setValue(data);
   };
 
@@ -255,6 +244,7 @@ function TodoListItem({
         <CustomPlate
           id={String(plateId)}
           value={value}
+          hideToolBar
           onChange={handleChange}
         />
         <div className="TodoListItem-toolbox">

@@ -26,9 +26,8 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
         a.created_at.localeCompare(b.created_at)
       );
       setChats(res.data);
-      console.log(res);
     } catch (e) {
-      console.log(e);
+      //
     }
   };
 
@@ -48,7 +47,6 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
       cluster: config.pusher.cluster,
       encrypted: true,
       authorizer: (channel: any) => {
-        console.log(48, channel);
         return {
           authorize: async (socketId: any, cb: any) => {
             try {
@@ -56,7 +54,6 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
                 channel.name,
                 socketId
               );
-              console.log('authSuccess', res);
               cb(false, res.data);
             } catch (e) {
               cb(true, e);

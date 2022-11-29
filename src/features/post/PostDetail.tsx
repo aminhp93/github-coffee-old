@@ -1,6 +1,7 @@
 import {
   CheckCircleOutlined,
-  CheckOutlined, DeleteOutlined
+  CheckOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { Button, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
@@ -53,7 +54,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   }, [slug]);
 
   const handleUpdate = async () => {
-    console.log('handleUpdate');
     if (!postTitle) return;
     try {
       const data = {
@@ -90,7 +90,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   };
 
   const handleChange = (e: any) => {
-    console.log(e);
     setPost(e);
     setIsUpdated(false);
   };
@@ -116,7 +115,6 @@ const MemoizedPostDetail = memo(function PostDetail({
       ) : (
         <>
           <Button
-            
             // danger
             className="btn-warning"
             loading={loading}
@@ -129,7 +127,6 @@ const MemoizedPostDetail = memo(function PostDetail({
               zIndex: 1,
             }}
           />
-         
         </>
       )}
 

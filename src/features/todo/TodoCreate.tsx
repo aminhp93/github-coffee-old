@@ -22,7 +22,6 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    console.log('handleUpdate');
     if (!value) return;
     try {
       const data = {
@@ -46,12 +45,14 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   };
 
   const handleChange = (data: any) => {
-    console.log(data);
     setValue(data);
   };
 
   return (
-    <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
+    <div
+      className="TodoCreate flex"
+      style={{ alignItems: 'center', minHeight: '150px' }}
+    >
       <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
       <Button
         loading={loading}

@@ -12,38 +12,17 @@ import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
 import { PlusOutlined } from '@ant-design/icons';
-import Chat from 'features/chat';
-import Post from 'features/post';
-import Snippet from 'features/snippet';
-import StockMarketOverview from 'features/stock/StockMarketOverview';
-import StockNews from 'features/stock/StockNews';
-import Test from 'features/test';
-import Todo from 'features/todo';
+
 import * as React from 'react';
 import { DEFAULT_LAYOUT } from './utils';
-
-const COMPONENT_OBJ: { [index: string]: any } = {
-  // Stock: <Stock />,
-  Post: <Post />,
-  StockMarketOverview: <StockMarketOverview />,
-  StockNews: <StockNews />,
-  Chat: <Chat hideOnlineUsers />,
-  Todos: <Todo />,
-  // StockTable: <StockTable />,
-  Snippet: <Snippet />,
-  // ConnectDashboard: <ConnectDashboard />,
-  // StockHistoryTrade: <StockHistoryTrade />,
-  // StockTools: <StockTools />,
-  Test: <Test />,
-  // Notice: <Notice />,
-};
 
 interface IProps {
   json?: IJsonModel;
   onModelChange?: any;
+  componentObj: any;
 }
 
-function FlexLayout({ json, onModelChange }: IProps) {
+function FlexLayout({ json, onModelChange, componentObj }: IProps) {
   const model = Model.fromJson(json || DEFAULT_LAYOUT);
   let layoutRef: React.RefObject<Layout> = React.createRef();
 
@@ -52,9 +31,8 @@ function FlexLayout({ json, onModelChange }: IProps) {
   };
 
   const factory = (node: TabNode) => {
-    console.log(node);
     const component: any = node.getComponent();
-    return COMPONENT_OBJ[component];
+    return componentObj[component];
   };
 
   const onRenderTabSet = (
@@ -63,10 +41,10 @@ function FlexLayout({ json, onModelChange }: IProps) {
   ) => {
     const menu = (
       <Menu onClick={(e) => handleClickMenu(e, node)}>
-        {Object.values(COMPONENT_OBJ).map((component, index) => {
+        {Object.values(componentObj).map((component, index) => {
           return (
-            <Menu.Item key={Object.keys(COMPONENT_OBJ)[index]}>
-              {Object.keys(COMPONENT_OBJ)[index]}
+            <Menu.Item key={Object.keys(componentObj)[index]}>
+              {Object.keys(componentObj)[index]}
             </Menu.Item>
           );
         })}
@@ -84,7 +62,6 @@ function FlexLayout({ json, onModelChange }: IProps) {
     node: TabSetNode | BorderNode,
     componentName?: string
   ) => {
-    console.log(componentName);
     layoutRef!.current!.addTabToTabSet(node.getId(), {
       component: componentName,
       name: componentName,

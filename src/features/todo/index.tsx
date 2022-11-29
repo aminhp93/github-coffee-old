@@ -119,7 +119,6 @@ const Todo = () => {
 
         const res = await TodoService.listTodo(dataRequest, requestUrl);
         if (res?.data?.results) {
-          console.log('done call api');
           setListTodos(res.data.results);
           setTotal(res.data.count);
           setNext(res.data.next);

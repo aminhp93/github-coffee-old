@@ -96,7 +96,6 @@ interface IProps {
 }
 
 const CustomPlate = (props: IProps) => {
-  console.log('customplate', props);
   const containerRef = useRef(null);
   const plugins = useMemo(
     () =>
@@ -163,11 +162,13 @@ const CustomPlate = (props: IProps) => {
   return (
     <div className="CustomPlate height-100 width-100">
       <DndProvider backend={HTML5Backend}>
-        <PlateEventProvider>
-          <HeadingToolbar>
-            <ToolbarButtons />
-          </HeadingToolbar>
-        </PlateEventProvider>
+        {!props.hideToolBar && (
+          <PlateEventProvider>
+            <HeadingToolbar>
+              <ToolbarButtons />
+            </HeadingToolbar>
+          </PlateEventProvider>
+        )}
 
         <div
           ref={containerRef}

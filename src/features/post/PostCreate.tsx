@@ -12,7 +12,6 @@ export default function PostCreate() {
 
   const onFinish = async (values: any) => {
     try {
-      console.log('Success:', values);
       const { title, description, body } = values;
 
       const dataCreate = {
@@ -21,7 +20,6 @@ export default function PostCreate() {
         description,
       };
       const res = await PostService.createPost(dataCreate);
-      console.log(res);
       if (res && res.data) {
         navigate('/post');
         notification.success({ message: 'Create success' });
@@ -35,10 +33,6 @@ export default function PostCreate() {
 
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
-  };
-
-  const handleChange = (data: any) => {
-    console.log(data);
   };
 
   return (
@@ -75,7 +69,7 @@ export default function PostCreate() {
           name="body"
           rules={[{ required: false, message: 'Please input your body!' }]}
         >
-          <CustomPlate id={String(plateId)} onChange={handleChange} />
+          <CustomPlate id={String(plateId)} />
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

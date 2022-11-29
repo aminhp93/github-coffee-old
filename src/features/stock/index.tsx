@@ -6,6 +6,13 @@ import { useState } from 'react';
 import './index.less';
 import StockHistoryTrade from './StockHistoryTrade';
 import StockTools from './StockTools';
+import StockMarketOverview from './StockMarketOverview';
+import StockNews from './StockNews';
+import StockTable from './StockTable';
+import { v4 as uuidv4 } from 'uuid';
+
+const rowId = uuidv4();
+const tabSetId = uuidv4();
 
 const Stock = () => {
   const [modal, setModal] = useState('');
@@ -22,11 +29,11 @@ const Stock = () => {
 
     layout: {
       type: 'row',
-      id: '#bf8ddd18-4c40-4db2-9bb7-f66985943b44',
+      id: rowId,
       children: [
         {
           type: 'tabset',
-          id: '#4402c641-631c-40ba-b715-b49013cb75db',
+          id: tabSetId,
           weight: 12.5,
           children: [
             {
@@ -87,7 +94,14 @@ const Stock = () => {
         </div>
       </div>
       <div className="flex" style={{ flex: 1, overflow: 'auto' }}>
-        <CustomFlexLayout json={json} />
+        <CustomFlexLayout
+          json={json}
+          componentObj={{
+            StockMarketOverview: <StockMarketOverview />,
+            StockNews: <StockNews />,
+            StockTable: <StockTable />,
+          }}
+        />
       </div>
 
       {modal && (

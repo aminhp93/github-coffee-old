@@ -12,7 +12,6 @@ const LIST_MARKDOWN_URL = [
 ];
 
 export default function Snippet() {
-  console.log('Snippet');
   const [text, setText] = useState('');
 
   const handleClick = async (event: any) => {
