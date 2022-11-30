@@ -72,15 +72,14 @@ const LIST_NOT_LOGIN = [
     label: 'snippet',
     icon: <SnippetsOutlined style={{ margin: '0 8px' }} />,
   },
-];
-
-const LIST_LOGGED_IN = [
   {
     linkTo: '/test',
     label: 'test',
     icon: <DeleteOutlined style={{ margin: '0 8px' }} />,
   },
 ];
+
+const LIST_LOGGED_IN: any = [];
 
 const App = () => {
   let navigate = useNavigate();
@@ -125,48 +124,6 @@ const App = () => {
     );
   };
 
-  const renderLoggedIn = () => {
-    return (
-      <Routes>
-        <Route path="work" element={<Work />} />
-        <Route path="chat" element={<Chat />} />
-        <Route path="echarts" element={<CustomEcharts />} />
-        <Route path="post/create/" element={<PostCreate />} />
-        <Route path="post" element={<Post />} />
-        <Route path="taskManager" element={<TaskManager />} />
-        <Route path="stock" element={<Stock />} />
-        <Route path="test" element={<Test />} />
-        <Route path="snippet" element={<Snippet />} />
-        <Route
-          path="*"
-          element={
-            <main style={{ padding: '1rem' }}>
-              <p>There's nothing here!</p>
-            </main>
-          }
-        />
-        <Route path="/" element={<Work />} />
-      </Routes>
-    );
-  };
-
-  const renderNotLoginIn = () => {
-    return (
-      <Routes>
-        <Route path="work" element={<Work />} />
-        <Route
-          path="*"
-          element={
-            <main style={{ padding: '1rem' }}>
-              <p>There's nothing here!</p>
-            </main>
-          }
-        />
-        <Route path="/" element={<div />} />
-      </Routes>
-    );
-  };
-
   return (
     <div style={{ display: 'flex', height: '100%' }}>
       <div
@@ -203,7 +160,26 @@ const App = () => {
       >
         <User />
         <div style={{ flex: 1 }}>
-          {user && user.id ? renderLoggedIn() : renderNotLoginIn()}
+          <Routes>
+            <Route path="work" element={<Work />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="echarts" element={<CustomEcharts />} />
+            <Route path="post/create/" element={<PostCreate />} />
+            <Route path="post" element={<Post />} />
+            <Route path="taskManager" element={<TaskManager />} />
+            <Route path="stock" element={<Stock />} />
+            <Route path="test" element={<Test />} />
+            <Route path="snippet" element={<Snippet />} />
+            <Route
+              path="*"
+              element={
+                <main style={{ padding: '1rem' }}>
+                  <p>There's nothing here!</p>
+                </main>
+              }
+            />
+            <Route path="/" element={<Work />} />
+          </Routes>
         </div>
       </div>
       <Notification />

@@ -62,6 +62,7 @@ const request = async (options: any) => {
       err.response.data.detail === 'Token expired'
     ) {
       const auth: any = getAuth();
+      console.log(65, auth);
       const accessToken = await getIdToken(auth.currentUser);
       console.log(accessToken);
 
