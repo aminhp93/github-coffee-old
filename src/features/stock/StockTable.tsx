@@ -2,7 +2,7 @@ import { StockService } from 'libs/services';
 import React, { useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
-import type { RadioChangeEvent } from 'antd';
+import { Divider, RadioChangeEvent, Checkbox } from 'antd';
 import {
   Form,
   Radio,
@@ -19,167 +19,43 @@ import type {
   ExpandableConfig,
   TableRowSelection,
 } from 'antd/es/table/interface';
-import axios from 'axios';
 import { DATE_FORMAT } from 'libs/utils';
 import moment from 'moment';
-
-// interface HistoricalQuote {
-//   adjRatio: number;
-//   buyCount: number;
-//   buyForeignQuantity: number;
-//   buyForeignValue: number;
-//   buyQuantity: number;
-//   currentForeignRoom: number;
-//   date: string;
-//   dealVolume: number;
-//   // key: string;
-//   priceAverage: number;
-//   priceBasic: number;
-//   priceClose: number;
-//   priceHigh: number;
-//   priceLow: number;
-//   priceOpen: number;
-//   propTradingNetDealValue: number;
-//   propTradingNetPTValue: number;
-//   propTradingNetValue: number;
-//   putthroughValue: number;
-//   putthroughVolume: number;
-//   sellCount: number;
-//   sellForeignQuantity: number;
-//   sellForeignValue: number;
-//   sellQuantity: number;
-//   // symbol: string;
-//   totalValue: number;
-//   totalVolume: number;
-// }
-
-const HistoricalQuoteKeys = [
-  'adjRatio',
-  'buyCount',
-  'buyForeignQuantity',
-  'buyForeignValue',
-  'buyQuantity',
-  'currentForeignRoom',
-  'date',
-  'dealVolume',
-  // 'key',
-  'priceAverage',
-  'priceBasic',
-  'priceClose',
-  'priceHigh',
-  'priceLow',
-  'priceOpen',
-  'propTradingNetDealValue',
-  'propTradingNetPTValue',
-  'propTradingNetValue',
-  'putthroughValue',
-  'putthroughVolume',
-  'sellCount',
-  'sellForeignQuantity',
-  'sellForeignValue',
-  'sellQuantity',
-  // 'symbol',
-  'totalValue',
-  'totalVolume',
-];
-
-// interface Fundamental {
-//   avgVolume3m: number;
-//   avgVolume10d: number;
-//   beta: number;
-//   companyType: number;
-//   dividend: number;
-//   dividendYield: number;
-//   eps: number;
-//   foreignOwnership: number;
-//   freeShares: number;
-//   high52Week: number;
-//   insiderOwnership: number;
-//   institutionOwnership: number;
-//   low52Week: number;
-//   marketCap: number;
-//   netProfit_TTM: number;
-//   pe: number;
-//   priceChange1y: number;
-//   sales_TTM: number;
-//   sharesOutstanding: number;
-//   // symbol: string;
-// }
-
-const FundamentalKeys = [
-  'avgVolume3m',
-  'avgVolume10d',
-  'beta',
-  'companyType',
-  'dividend',
-  'dividendYield',
-  'eps',
-  'foreignOwnership',
-  'freeShares',
-  'high52Week',
-  'insiderOwnership',
-  'institutionOwnership',
-  'low52Week',
-  'marketCap',
-  'netProfit_TTM',
-  'pe',
-  'priceChange1y',
-  'sales_TTM',
-  'sharesOutstanding',
-  // 'symbol',
-];
-
-// interface FinancialIndicators {
-//   'P/E': number;
-//   'P/S': number;
-//   'P/B': number;
-//   EPS: number;
-//   'Tỷ lệ lãi ròng (%)': number;
-//   'YOEA (%)': number;
-//   'NIM (%)': number;
-//   'COF (%)': number;
-//   'LAR (%)': number;
-//   'LDR (%)': number;
-//   'CLR (%)': number;
-//   'CTA (%)': number;
-//   'ELR (%)': number;
-//   'ROA (%)': number;
-//   'ROE (%)': number;
-//   'CIR (%)': number;
-//   'LLRL (%)': number;
-//   'LLRNPL (%)': number;
-//   'Tỷ lệ nợ xấu (%)': number;
-//   'PCL (%)': number;
-// }
-
-const FinancialIndicatorsKeys = [
-  'P/E',
-  'P/S',
-  'P/B',
-  'EPS',
-  'Tỷ lệ lãi ròng (%)',
-  'YOEA (%)',
-  'NIM (%)',
-  'COF (%)',
-  'LAR (%)',
-  'LDR (%)',
-  'CLR (%)',
-  'CTA (%)',
-  'ELR (%)',
-  'ROA (%)',
-  'ROE (%)',
-  'CIR (%)',
-  'LLRL (%)',
-  'LLRNPL (%)',
-  'Tỷ lệ nợ xấu (%)',
-  'PCL (%)',
-];
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import type { CheckboxValueType } from 'antd/es/checkbox/Group';
+import {
+  FundamentalKeys,
+  HistoricalQuoteKeys,
+  FinancialIndicatorsKeys,
+  getHistorialQuote,
+  getFinancialIndicator,
+  getFundamentals,
+} from './utils';
 
 const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
+  if (i === 'date') {
+    return {
+      title: i,
+      dataIndex: i,
+      key: i,
+      render: (text: string) => moment(text).format(DATE_FORMAT),
+    };
+  }
   return {
     title: i,
     dataIndex: i,
     key: i,
+    align: 'right',
+    sorter: (a: any, b: any) => a[i] - b[i],
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
   };
 });
 
@@ -188,14 +64,36 @@ const FundamentalColumns = FundamentalKeys.map((i) => {
     title: i,
     dataIndex: i,
     key: i,
+    sorter: (a: any, b: any) => a[i] - b[i],
+    align: 'right',
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
   };
 });
 
-const FinancialIndicatorsColumns = FinancialIndicatorsKeys.map((i) => {
+const FinancialIndicatorsColumns: any = FinancialIndicatorsKeys.map((i) => {
   return {
     title: i,
     dataIndex: i,
     key: i,
+    sorter: (a: any, b: any) => a[i] - b[i],
+    align: 'right',
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
   };
 });
 
@@ -241,6 +139,11 @@ const defaultExpandable = {
 const defaultTitle = () => 'Here is title';
 // const defaultFooter = () => 'Here is footer';
 
+const CheckboxGroup = Checkbox.Group;
+
+const plainOptions = ['HistoricalQuote', 'Fundamental', 'FinancialIndicators'];
+const defaultCheckedList = ['HistoricalQuote'];
+
 export default function StockTable() {
   const [listWatchlist, setListWatchlist] = React.useState([]);
   const [currentWatchlist, setCurrentWatchlist] =
@@ -250,7 +153,7 @@ export default function StockTable() {
 
   const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
 
-  const [bordered, setBordered] = useState(false);
+  const [bordered, setBordered] = useState(true);
   const [loading, setLoading] = useState(false);
   const [size, setSize] = useState<SizeType>('small');
   const [expandable, setExpandable] = useState<
@@ -268,7 +171,12 @@ export default function StockTable() {
   const [bottom, setBottom] = useState<TablePaginationPosition>('bottomRight');
   const [ellipsis, setEllipsis] = useState(false);
   const [yScroll, setYScroll] = useState(false);
-  const [xScroll, setXScroll] = useState<string | undefined>(undefined);
+  const [xScroll, setXScroll] = useState<string | undefined>('scroll');
+
+  const [checkedList, setCheckedList] =
+    useState<CheckboxValueType[]>(defaultCheckedList);
+  const [indeterminate, setIndeterminate] = useState(true);
+  const [checkAll, setCheckAll] = useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -395,23 +303,6 @@ export default function StockTable() {
     });
   };
 
-  const getFundamentals = async (symbol: string) => {
-    if (!symbol) return;
-
-    const res = await axios({
-      method: 'GET',
-      headers: {
-        Authorization:
-          'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-      },
-      url: `https://restv2.fireant.vn/symbols/${symbol}/fundamental`,
-    });
-    if (res.data) {
-      return { ...res.data, symbol, key: symbol };
-    }
-    return null;
-  };
-
   const handleGetFinancialIndicators = () => {
     setLoading(true);
     const listPromises: any = [];
@@ -426,33 +317,9 @@ export default function StockTable() {
         const a = { ...i, ...res.find((j: any) => j.symbol === i.symbol) };
         return a;
       });
-      console.log(newDataSource);
       setDataSource(newDataSource);
       notification.success({ message: 'success' });
     });
-  };
-
-  const getFinancialIndicator = async (symbol: string) => {
-    if (!symbol) return;
-
-    const res = await axios({
-      method: 'GET',
-      headers: {
-        Authorization:
-          'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-      },
-      url: `https://restv2.fireant.vn/symbols/${symbol}/financial-indicators`,
-    });
-    if (res.data) {
-      const newData: any = {};
-      res.data.map((i: any) => {
-        newData[i.name] = i.value;
-        return i;
-      });
-      console.log(newData);
-      return { ...newData, symbol, key: symbol };
-    }
-    return null;
   };
 
   const handleGetHistoricalQuotes = () => {
@@ -470,23 +337,28 @@ export default function StockTable() {
     });
   };
 
-  const getHistorialQuote = async (symbol: string) => {
-    if (!symbol) return;
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+  const onChange = (list: CheckboxValueType[]) => {
+    setCheckedList(list);
+    setIndeterminate(!!list.length && list.length < plainOptions.length);
+    setCheckAll(list.length === plainOptions.length);
+  };
 
-    const res = await axios({
-      method: 'GET',
-      headers: {
-        Authorization:
-          'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-      },
-      url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=0&limit=20`,
-    });
-    if (res.data) {
-      return { ...res.data[0], symbol, key: symbol };
+  const onCheckAllChange = (e: CheckboxChangeEvent) => {
+    setCheckedList(e.target.checked ? plainOptions : []);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+  };
+
+  const handleGetData = () => {
+    if (checkedList.includes('HistoricalQuote')) {
+      handleGetHistoricalQuotes();
     }
-    return null;
+    if (checkedList.includes('Fundamental')) {
+      handleGetFundamentals();
+    }
+    if (checkedList.includes('FinancialIndicators')) {
+      handleGetFinancialIndicators();
+    }
   };
 
   return (
@@ -576,21 +448,30 @@ export default function StockTable() {
               <Radio.Button value="none">None</Radio.Button>
             </Radio.Group>
           </Form.Item>
-
           <Form.Item label="Bordered">
             <Dropdown overlay={menu} trigger={['click']}>
               <div>{currentWatchlist?.name || 'Select watchlist'}</div>
             </Dropdown>
           </Form.Item>
         </Form>
-        <Button onClick={handleGetHistoricalQuotes} disabled={loading}>
-          Get Historical Quotes
-        </Button>
-        <Button onClick={handleGetFundamentals} disabled={loading}>
-          Get Fundamentals
-        </Button>
-        <Button onClick={handleGetFinancialIndicators} disabled={loading}>
-          Get Financials Indicators
+        <Divider />
+        <div>
+          <Checkbox
+            indeterminate={indeterminate}
+            onChange={onCheckAllChange}
+            checked={checkAll}
+          >
+            Check all
+          </Checkbox>
+          <Divider />
+          <CheckboxGroup
+            options={plainOptions}
+            value={checkedList}
+            onChange={onChange}
+          />
+        </div>
+        <Button disabled={loading} onClick={handleGetData}>
+          Get data
         </Button>
       </div>
       <div>
