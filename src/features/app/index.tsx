@@ -10,13 +10,12 @@ import {
   DeleteOutlined,
   SnippetsOutlined,
 } from '@ant-design/icons';
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 import * as React from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import CustomEcharts from 'components/Echarts';
 import Chat from 'features/chat';
 import Post from 'features/post';
-import PostCreate from 'features/post/PostCreate';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
@@ -86,27 +85,7 @@ const App = () => {
   const user = useAppSelector(selectUser);
   const [visibleSidebar, setVisibleSidebar] = React.useState(false);
 
-  const renderSideBar = () => {
-    return (
-      <div style={{ overflow: 'auto' }}>
-        {LIST_TOP_SIDEBAR.map((i: any) => {
-          return (
-            <div
-              className="App-sidebar-item"
-              onClick={() => navigate(i.linkTo)}
-            >
-              {i.icon}
-              <span className="App-sidebar-label">{i.label}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderSideBarFooter = () => {
-    const list =
-      user && user.id ? LIST_LOGGED_IN.concat(LIST_NOT_LOGIN) : LIST_NOT_LOGIN;
+  const renderSideBar = (list: any) => {
     return (
       <div style={{ overflow: 'auto' }}>
         {list.map((i: any) => {
@@ -115,7 +94,10 @@ const App = () => {
               className="App-sidebar-item"
               onClick={() => navigate(i.linkTo)}
             >
-              {i.icon}
+              <Tooltip title={i.label} placement="right">
+                {i.icon}
+              </Tooltip>
+
               <span className="App-sidebar-label">{i.label}</span>
             </div>
           );
@@ -126,13 +108,17 @@ const App = () => {
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <div
-        className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}
-        style={{ overflow: 'visible' }}
-      >
+      <div className={`App-sidebar ${visibleSidebar ? '' : 'hide'}`}>
         <div style={{ position: 'relative' }}>
           <Button
-            style={{ position: 'absolute', right: '-16px', zIndex: 1 }}
+            style={{
+              position: 'absolute',
+              right: '-12px',
+              zIndex: 1,
+              height: '24px',
+              width: '24px',
+              padding: 0,
+            }}
             icon={visibleSidebar ? <RightOutlined /> : <LeftOutlined />}
             onClick={() => setVisibleSidebar(!visibleSidebar)}
           />
@@ -143,11 +129,15 @@ const App = () => {
             justifyContent: 'space-between',
             flexDirection: 'column',
             flex: 1,
-            paddingTop: '32px',
+            paddingTop: '64px',
           }}
         >
-          {renderSideBar()}
-          {renderSideBarFooter()}
+          {renderSideBar(LIST_TOP_SIDEBAR)}
+          {renderSideBar(
+            user && user.id
+              ? LIST_LOGGED_IN.concat(LIST_NOT_LOGIN)
+              : LIST_NOT_LOGIN
+          )}
         </div>
       </div>
       <div
@@ -159,12 +149,12 @@ const App = () => {
         }}
       >
         <User />
-        <div style={{ flex: 1 }}>
+
+        <div style={{ flex: 1, borderTop: '1px solid #a8b3cf33' }}>
           <Routes>
             <Route path="work" element={<Work />} />
             <Route path="chat" element={<Chat />} />
             <Route path="echarts" element={<CustomEcharts />} />
-            <Route path="post/create/" element={<PostCreate />} />
             <Route path="post" element={<Post />} />
             <Route path="taskManager" element={<TaskManager />} />
             <Route path="stock" element={<Stock />} />

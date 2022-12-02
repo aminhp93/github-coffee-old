@@ -62,7 +62,7 @@ function FlexLayout({ json, onModelChange, componentObj }: IProps) {
     node: TabSetNode | BorderNode,
     componentName?: string
   ) => {
-    layoutRef!.current!.addTabToTabSet(node.getId(), {
+    layoutRef.current!.addTabToTabSet(node.getId(), {
       component: componentName,
       name: componentName,
       // enableClose: true,

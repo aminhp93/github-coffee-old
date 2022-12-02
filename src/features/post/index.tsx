@@ -3,15 +3,17 @@ import { Button, notification, Tooltip } from 'antd';
 import { PostService } from 'libs/services';
 import { IPost } from 'libs/types';
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './index.less';
+import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
 
+type ModeType = 'list' | 'create';
+
 const Post = () => {
-  let navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState({} as IPost);
   const [listPosts, setListPosts] = useState([]);
+  const [mode, setMode] = useState<ModeType>('list');
 
   const handleSelect = useCallback((data: any) => {
     setSelectedPost(data);
@@ -40,9 +42,31 @@ const Post = () => {
     setListPosts(mappedNewListPosts);
   };
 
+  const handleCreateSuccess = (data: any) => {
+    const newListPosts: any = [...listPosts];
+    newListPosts.unshift(data);
+    setListPosts(newListPosts);
+
+    setMode('list');
+  };
+
   useEffect(() => {
     getListPosts();
   }, []);
+
+  const renderCreate = () => (
+    <PostCreate
+      onClose={() => setMode('list')}
+      onCreateSuccess={handleCreateSuccess}
+    />
+  );
+
+  const renderList = () =>
+    selectedPost && selectedPost.id ? (
+      <PostDetail slug={selectedPost.slug} cbUpdate={handleCbUpdate} />
+    ) : (
+      <div className="width-100">No post selected</div>
+    );
 
   return (
     <div className="Post flex">
@@ -50,20 +74,14 @@ const Post = () => {
         <div className="PostCreateButton flex">
           <div>Post</div>
           <Tooltip title="Create post">
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() => navigate('/post/create')}
-            />
+            <Button icon={<PlusOutlined />} onClick={() => setMode('create')} />
           </Tooltip>
         </div>
         <PostList listPosts={listPosts} cb={handleSelect} />
       </div>
+
       <div className="PostDetailContainer flex flex-1 height-100">
-        {selectedPost && selectedPost.id ? (
-          <PostDetail slug={selectedPost.slug} cbUpdate={handleCbUpdate} />
-        ) : (
-          <div className="width-100">No post selected</div>
-        )}
+        {mode === 'create' ? renderCreate() : renderList()}
       </div>
     </div>
   );

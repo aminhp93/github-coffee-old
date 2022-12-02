@@ -2,12 +2,15 @@ import { Button, Form, Input, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { PostService } from 'libs/services';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
 
-export default function PostCreate() {
-  const navigate = useNavigate();
+interface Props {
+  onClose: () => void;
+  onCreateSuccess: (data: any) => void;
+}
+
+export default function PostCreate({ onClose, onCreateSuccess }: Props) {
   const [plateId] = useState(uuidv4());
 
   const onFinish = async (values: any) => {
@@ -20,12 +23,9 @@ export default function PostCreate() {
         description,
       };
       const res = await PostService.createPost(dataCreate);
-      if (res && res.data) {
-        navigate('/post');
-        notification.success({ message: 'Create success' });
-      } else {
-        notification.error({ message: 'Create failed' });
-      }
+      onCreateSuccess(res.data);
+
+      notification.success({ message: 'Create success' });
     } catch (e) {
       notification.error({ message: 'Create failed' });
     }
@@ -78,6 +78,7 @@ export default function PostCreate() {
           </Button>
         </Form.Item>
       </Form>
+      <Button onClick={onClose}>Back</Button>
     </div>
   );
 }

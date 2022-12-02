@@ -2,8 +2,10 @@ import { StockService } from 'libs/services';
 import React, { useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
-import { Divider, RadioChangeEvent, Checkbox } from 'antd';
 import {
+  Divider,
+  RadioChangeEvent,
+  Checkbox,
   Form,
   Radio,
   Switch,
@@ -13,6 +15,7 @@ import {
   Dropdown,
   Menu,
 } from 'antd';
+
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import type {
@@ -361,8 +364,19 @@ export default function StockTable() {
     }
   };
 
+  console.log(dataSource);
+
   return (
     <div>
+      <div>
+        <Table
+          {...tableProps}
+          pagination={{ position: [top as TablePaginationPosition, bottom] }}
+          columns={tableColumns}
+          dataSource={hasData ? dataSource : []}
+          scroll={scroll}
+        />
+      </div>
       <div>
         <Form
           layout="inline"
@@ -473,15 +487,6 @@ export default function StockTable() {
         <Button disabled={loading} onClick={handleGetData}>
           Get data
         </Button>
-      </div>
-      <div>
-        <Table
-          {...tableProps}
-          pagination={{ position: [top as TablePaginationPosition, bottom] }}
-          columns={tableColumns}
-          dataSource={hasData ? dataSource : []}
-          scroll={scroll}
-        />
       </div>
     </div>
   );

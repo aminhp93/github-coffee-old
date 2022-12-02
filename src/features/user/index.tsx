@@ -74,7 +74,9 @@ export default function User() {
         marginRight: '8px',
       }}
     >
-      {config.env === 'production' ? '[PRO] ' : '[DEV] '}
+      <div style={{ marginRight: '8px' }}>
+        {config.env === 'production' ? '[PRO] ' : '[DEV] '}
+      </div>
       {user && user.id ? (
         <Dropdown overlay={menu} trigger={['click']}>
           <div style={{ cursor: 'pointer' }}>{`${user.username}`}</div>
