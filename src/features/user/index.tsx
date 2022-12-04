@@ -51,8 +51,10 @@ export default function User() {
     (async (headers?: any) => {
       try {
         const res = await UserService.getAuthUser(headers);
+        console.log(54, res);
         dispatch(update(res.data));
       } catch (e) {
+        console.log(57, e);
         notification.error({ message: 'Get user failed' });
       }
     })();

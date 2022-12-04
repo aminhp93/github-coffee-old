@@ -36,10 +36,17 @@ function TodoCreate({ onCreateSuccess }: IProps) {
         setPlateId(uuidv4());
         setValue(DEFAULT_VALUE);
       } else {
-        notification.error({ message: 'Error create todo' });
+        if (res.response.data.error) {
+          notification.error({
+            message: JSON.stringify(res.response.data.error),
+          });
+        } else {
+          notification.error({ message: 'Error create todo' });
+        }
       }
     } catch (e) {
       setLoading(false);
+      console.log(46, e);
       notification.error({ message: 'Error create todo' });
     }
   };
@@ -49,11 +56,13 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   };
 
   return (
-    <div
-      className="TodoCreate flex"
-      style={{ alignItems: 'center', minHeight: '150px' }}
-    >
-      <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
+    <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
+      <CustomPlate
+        hideToolBar
+        id={String(plateId)}
+        value={value}
+        onChange={handleChange}
+      />
       <Button
         loading={loading}
         disabled={loading}

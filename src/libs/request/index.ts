@@ -54,16 +54,28 @@ const request = async (options: any) => {
     ...options,
   };
   const onSuccess = (res: any) => res;
+
   const onError: any = async (err: any) => {
     console.log(err);
-    if (!err.response || !err.response.data) return;
+    if (!err.response || !err.response.data) return err;
     if (
       err.response.data.detail &&
       err.response.data.detail === 'Token expired'
     ) {
-      const auth: any = getAuth();
-      console.log(65, auth);
-      const accessToken = await getIdToken(auth.currentUser);
+      // wait 2 second
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log(getAuth);
+      const auth: any = await getAuth();
+      console.log(69, auth, auth.currentUser);
+
+      if (auth.currentUser) {
+        const idToken = await getIdToken(auth.currentUser);
+        console.log(idToken);
+      }
+
+      if (!auth || !auth.currentUser) return;
+
+      const accessToken = await auth.currentUser.getIdToken();
       console.log(accessToken);
 
       localStorage.removeItem('ACCESS_TOKEN');
@@ -76,6 +88,7 @@ const request = async (options: any) => {
         headers,
       });
     }
+    return err;
   };
 
   return client(finalOptions).then(onSuccess).catch(onError);
