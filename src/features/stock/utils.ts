@@ -181,22 +181,22 @@ export const FinancialIndicatorsKeys = [
   'P/S',
   'P/B',
   'EPS',
-  'Tỷlệlãiròng(%)',
-  'YOEA(%)',
-  'NIM(%)',
-  'COF(%)',
-  'LAR(%)',
-  'LDR(%)',
-  'CLR(%)',
-  'CTA(%)',
-  'ELR(%)',
-  'ROA(%)',
-  'ROE(%)',
-  'CIR(%)',
-  'LLRL(%)',
-  'LLRNPL(%)',
-  'Tỷlệnợxấu(%)',
-  'PCL(%)',
+  'Tỷ lệ lãi ròng (%)',
+  'YOEA (%)',
+  'NIM (%)',
+  'COF (%)',
+  'LAR (%)',
+  'LDR (%)',
+  'CLR (%)',
+  'CTA (%)',
+  'ELR (%)',
+  'ROA (%)',
+  'ROE (%)',
+  'CIR (%)',
+  'LLRL (%)',
+  'LLRNPL (%)',
+  'Tỷ lệ nợ xấu (%)',
+  'PCL (%)',
 ];
 
 export const getHistorialQuote = async (symbol: string) => {
@@ -213,7 +213,18 @@ export const getHistorialQuote = async (symbol: string) => {
     url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=0&limit=20`,
   });
   if (res.data) {
-    return { ...res.data[0], symbol, key: symbol };
+    return {
+      ...res.data[0],
+      symbol,
+      key: symbol,
+      last_20_day_historical_quote: res.data,
+      min20Days_totalValue: Math.min(
+        ...res.data.map((item: any) => item.totalValue)
+      ),
+      max20Days_totalValue: Math.max(
+        ...res.data.map((item: any) => item.totalValue)
+      ),
+    };
   }
   return null;
 };

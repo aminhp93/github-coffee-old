@@ -9,12 +9,14 @@ import {
   AimOutlined,
   DeleteOutlined,
   SnippetsOutlined,
+  FolderOutlined,
 } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 import * as React from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import CustomEcharts from 'components/Echarts';
 import Chat from 'features/chat';
+import Example from 'features/example';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
@@ -70,6 +72,11 @@ const LIST_NOT_LOGIN = [
     linkTo: '/snippet',
     label: 'snippet',
     icon: <SnippetsOutlined style={{ margin: '0 8px' }} />,
+  },
+  {
+    linkTo: '/example',
+    label: 'example',
+    icon: <FolderOutlined style={{ margin: '0 8px' }} />,
   },
   {
     linkTo: '/test',
@@ -150,11 +157,18 @@ const App = () => {
       >
         <User />
 
-        <div style={{ flex: 1, borderTop: '1px solid #a8b3cf33' }}>
+        <div
+          style={{
+            flex: 1,
+            borderTop: '1px solid #a8b3cf33',
+            background: 'white',
+          }}
+        >
           <Routes>
             <Route path="work" element={<Work />} />
             <Route path="chat" element={<Chat />} />
             <Route path="echarts" element={<CustomEcharts />} />
+            <Route path="example" element={<Example />} />
             <Route path="post" element={<Post />} />
             <Route path="taskManager" element={<TaskManager />} />
             <Route path="stock" element={<Stock />} />

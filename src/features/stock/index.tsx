@@ -14,56 +14,50 @@ import { v4 as uuidv4 } from 'uuid';
 const rowId = uuidv4();
 const tabSetId = uuidv4();
 
+let defaultJson: IJsonModel = {
+  global: {
+    tabEnableFloat: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    borderMinSize: 100,
+  },
+
+  layout: {
+    type: 'row',
+    id: rowId,
+    children: [
+      {
+        type: 'tabset',
+        id: tabSetId,
+        weight: 12.5,
+        children: [
+          {
+            type: 'tab',
+            id: '#StockTable',
+            name: 'StockTable',
+            component: 'StockTable',
+          },
+          {
+            type: 'tab',
+            id: '#StockMarketOverview',
+            name: 'StockMarketOverview',
+            component: 'StockMarketOverview',
+          },
+          {
+            type: 'tab',
+            id: '#StockNews',
+            name: 'StockNews',
+            component: 'StockNews',
+          },
+        ],
+        active: true,
+      },
+    ],
+  },
+};
+
 const Stock = () => {
   const [modal, setModal] = useState('');
-
-  const savedLayout = localStorage.getItem('flexLayoutModel_Stock');
-
-  let json: IJsonModel = {
-    global: {
-      tabEnableFloat: true,
-      tabSetMinWidth: 100,
-      tabSetMinHeight: 100,
-      borderMinSize: 100,
-    },
-
-    layout: {
-      type: 'row',
-      id: rowId,
-      children: [
-        {
-          type: 'tabset',
-          id: tabSetId,
-          weight: 12.5,
-          children: [
-            {
-              type: 'tab',
-              id: '#StockTable',
-              name: 'StockTable',
-              component: 'StockTable',
-            },
-            {
-              type: 'tab',
-              id: '#StockMarketOverview',
-              name: 'StockMarketOverview',
-              component: 'StockMarketOverview',
-            },
-            {
-              type: 'tab',
-              id: '#StockNews',
-              name: 'StockNews',
-              component: 'StockNews',
-            },
-          ],
-          active: true,
-        },
-      ],
-    },
-  };
-
-  if (savedLayout) {
-    json = JSON.parse(savedLayout);
-  }
 
   const handleChangeMenu = (e: any) => {
     if (e.key === 'tools') {
@@ -95,7 +89,8 @@ const Stock = () => {
       </div>
       <div className="flex" style={{ flex: 1, overflow: 'auto' }}>
         <CustomFlexLayout
-          json={json}
+          layoutName="flexLayoutModel_Stock"
+          defaultJson={defaultJson}
           componentObj={{
             StockMarketOverview: <StockMarketOverview />,
             StockNews: <StockNews />,
