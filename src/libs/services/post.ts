@@ -14,23 +14,23 @@ export const PostService = {
       url: PostUrls.listPost,
     });
   },
-  detailPost(postSlug: string) {
+  detailPost(postId: number) {
     return request({
       method: 'GET',
-      url: PostUrls.detailPost(postSlug),
+      url: PostUrls.detailPost(postId),
     });
   },
-  updatePost(postSlug: string, data: any) {
+  updatePost(postId: number, data: any) {
     return request({
       method: 'PUT',
-      url: PostUrls.updatePost(postSlug),
+      url: PostUrls.updatePost(postId),
       data,
     });
   },
-  deletePost(postSlug: any) {
+  deletePost(postId: number) {
     return request({
       method: 'DELETE',
-      url: PostUrls.deletePost(postSlug),
+      url: PostUrls.deletePost(postId),
     });
   },
 };

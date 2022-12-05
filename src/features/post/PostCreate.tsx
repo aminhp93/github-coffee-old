@@ -5,6 +5,12 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
 
+const DEFAULT_VALUE = [
+  {
+    children: [{ text: '' }],
+    type: 'p',
+  },
+];
 interface Props {
   onClose: () => void;
   onCreateSuccess: (data: any) => void;
@@ -16,10 +22,10 @@ export default function PostCreate({ onClose, onCreateSuccess }: Props) {
   const onFinish = async (values: any) => {
     try {
       const { title, description, body } = values;
-
+      console.log(values, body);
       const dataCreate = {
         title,
-        body: JSON.stringify(body),
+        body: JSON.stringify(body || DEFAULT_VALUE),
         description,
       };
       const res = await PostService.createPost(dataCreate);

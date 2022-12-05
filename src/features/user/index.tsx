@@ -5,6 +5,7 @@ import { UserService } from 'libs/services/user';
 import { useEffect } from 'react';
 import { selectUser, update } from './userSlice';
 import config from 'libs/config';
+import FullscreenButton from 'components/FullscreenButton';
 
 export default function User() {
   const auth = getAuth();
@@ -76,6 +77,7 @@ export default function User() {
         marginRight: '8px',
       }}
     >
+      <FullscreenButton />
       <div style={{ marginRight: '8px' }}>
         {config.env === 'production' ? '[PRO] ' : '[DEV] '}
       </div>
