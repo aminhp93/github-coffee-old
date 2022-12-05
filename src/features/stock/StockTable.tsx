@@ -271,7 +271,11 @@ export default function StockTable() {
   const menu = (
     <Menu onClick={handleClickMenuWatchlist}>
       {listWatchlist.map((i: any) => {
-        return <Menu.Item key={i.watchlistID}>{i.name}</Menu.Item>;
+        return (
+          <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
+            {i.name}
+          </Menu.Item>
+        );
       })}
     </Menu>
   );

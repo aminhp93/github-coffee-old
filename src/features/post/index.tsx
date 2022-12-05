@@ -63,7 +63,7 @@ const Post = () => {
 
   const renderList = () =>
     selectedPost && selectedPost.id ? (
-      <PostDetail slug={selectedPost.slug} cbUpdate={handleCbUpdate} />
+      <PostDetail postId={selectedPost.id} cbUpdate={handleCbUpdate} />
     ) : (
       <div className="width-100">No post selected</div>
     );

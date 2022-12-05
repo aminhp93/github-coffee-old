@@ -125,9 +125,9 @@ export const NoteUrls = {
 export const PostUrls = {
   createPost: `${baseUrl}/api/posts/create/`,
   listPost: `${baseUrl}/api/posts/`,
-  detailPost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
-  updatePost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
-  deletePost: (postSlug: string) => `${baseUrl}/api/posts/${postSlug}/`,
+  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
+  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
+  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
 };
 
 export const TodoUrls = {

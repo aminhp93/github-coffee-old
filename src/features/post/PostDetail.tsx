@@ -1,6 +1,6 @@
 import {
   CheckCircleOutlined,
-  CheckOutlined,
+  WarningOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
 import { Button, Input, notification } from 'antd';
@@ -11,7 +11,7 @@ import { memo, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
-  slug: string;
+  postId: number;
   cbUpdate?: any;
 }
 
@@ -23,7 +23,7 @@ const DEFAULT_POST = [
 ];
 
 const MemoizedPostDetail = memo(function PostDetail({
-  slug,
+  postId,
   cbUpdate,
 }: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
@@ -38,7 +38,7 @@ const MemoizedPostDetail = memo(function PostDetail({
     (async () => {
       try {
         setLoading(true);
-        const res: any = await PostService.detailPost(slug);
+        const res: any = await PostService.detailPost(postId);
         setLoading(false);
 
         if (res.data) {
@@ -51,7 +51,7 @@ const MemoizedPostDetail = memo(function PostDetail({
         setLoading(false);
       }
     })();
-  }, [slug]);
+  }, [postId]);
 
   const handleUpdate = async () => {
     if (!postTitle) return;
@@ -61,7 +61,7 @@ const MemoizedPostDetail = memo(function PostDetail({
         body: JSON.stringify(post),
       };
       setLoading(true);
-      const res = await PostService.updatePost(slug, data);
+      const res = await PostService.updatePost(postId, data);
 
       setLoading(false);
       if (res && res.data) {
@@ -80,7 +80,7 @@ const MemoizedPostDetail = memo(function PostDetail({
 
   const handleDelete = async () => {
     try {
-      await PostService.deletePost(slug);
+      await PostService.deletePost(postId);
       notification.success({
         message: `Delete ${postTitle} successfully`,
       });
@@ -96,7 +96,7 @@ const MemoizedPostDetail = memo(function PostDetail({
 
   useEffect(() => {
     setIsUpdated(true);
-  }, [slug]);
+  }, [postId]);
 
   return (
     <div className="PostDetail width-100">
@@ -107,7 +107,7 @@ const MemoizedPostDetail = memo(function PostDetail({
           icon={<CheckCircleOutlined />}
           style={{
             position: 'absolute',
-            top: '20px',
+            bottom: '20px',
             right: '20px',
             zIndex: 1,
           }}
@@ -119,11 +119,11 @@ const MemoizedPostDetail = memo(function PostDetail({
             className="btn-warning"
             loading={loading}
             onClick={handleUpdate}
-            icon={<CheckOutlined />}
+            icon={<WarningOutlined />}
             style={{
               position: 'absolute',
-              top: '20px',
-              right: '60px',
+              bottom: '20px',
+              right: '20px',
               zIndex: 1,
             }}
           />
@@ -166,7 +166,7 @@ const MemoizedPostDetail = memo(function PostDetail({
           style={{
             position: 'absolute',
             bottom: '20px',
-            right: '20px',
+            left: '180px',
             zIndex: 1,
           }}
         ></Button>
