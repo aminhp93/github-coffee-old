@@ -1,27 +1,12 @@
-import { Button, notification } from 'antd';
+import { Button, notification, Dropdown, Menu } from 'antd';
 import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
 import { UserService } from 'libs/services/user';
 import { useEffect } from 'react';
 import { selectUser, update } from './userSlice';
+import config from 'libs/config';
 
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
-// Initialize Firebase
-
-// console.log(app);
-// Initialize Firebase Auth
-
-// console.log('auth', auth);
-
-export interface IUserProps {}
-
-export default function User(props: IUserProps) {
-  console.log(41);
+export default function User() {
   const auth = getAuth();
   const user = useAppSelector(selectUser);
   const dispatch = useAppDispatch();
@@ -63,31 +48,43 @@ export default function User(props: IUserProps) {
   };
 
   useEffect(() => {
-    console.log(83);
     (async (headers?: any) => {
       try {
         const res = await UserService.getAuthUser(headers);
+        console.log(54, res);
         dispatch(update(res.data));
       } catch (e) {
+        console.log(57, e);
         notification.error({ message: 'Get user failed' });
       }
     })();
   }, [dispatch]);
 
+  const menu = (
+    <Menu onClick={handleLogout}>
+      <Menu.Item>Logout</Menu.Item>
+    </Menu>
+  );
+
   return (
-    <div>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'end',
+        height: '32px',
+        alignItems: 'center',
+        marginRight: '8px',
+      }}
+    >
+      <div style={{ marginRight: '8px' }}>
+        {config.env === 'production' ? '[PRO] ' : '[DEV] '}
+      </div>
       {user && user.id ? (
-        <div className="amin-flex">
-          <div>{`${user.id} ${user.username} ${user.email}`}</div>
-          <Button onClick={handleLogout}>Logout</Button>
-        </div>
+        <Dropdown overlay={menu} trigger={['click']}>
+          <div style={{ cursor: 'pointer' }}>{`${user.username}`}</div>
+        </Dropdown>
       ) : (
-        <div className="amin-flex">
-          <div>No user</div>
-          <div>
-            <Button onClick={handleLogin}>Login</Button>
-          </div>
-        </div>
+        <Button onClick={handleLogin}>Login</Button>
       )}
     </div>
   );

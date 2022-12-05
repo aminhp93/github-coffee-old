@@ -1,8 +1,7 @@
-import { Box } from '@mui/material';
 import { Divider } from 'antd';
-import CustomPlate from 'components/CustomPlate';
 import { IChat } from 'libs/types';
-import { getParsedJson } from 'libs/utils';
+import moment from 'moment';
+import './ChatMessageListItem.less';
 
 interface IProps {
   chat: IChat;
@@ -11,22 +10,17 @@ interface IProps {
 const ChatMessageListItem = ({ chat }: IProps) => {
   return (
     <>
-      <Box className="flex">
-        <Box
-          className="ChatMessageListItem-avatar"
-          sx={{ width: '50px', background: 'red' }}
-        >
-          ID: {chat.sender}
-        </Box>
-        <Box className="ChatMessageListItem-message-container flex-1">
-          <CustomPlate
-            id={`ChatMessageListItem-${chat.id}`}
-            hideToolBar
-            readOnly
-            value={getParsedJson(chat.message)}
-          />
-        </Box>
-      </Box>
+      <div className="flex" style={{ margin: '8px 0' }}>
+        <div className="ChatMessageListItem-avatar">{chat.sender}</div>
+        <div className="flex-1">
+          <div className="ChatMessageListItem-message-container">
+            {chat.message}{' '}
+            <span className="ChatMessageListItem-message-time">
+              {moment(chat.created_at).format('HH:mm')}
+            </span>
+          </div>
+        </div>
+      </div>
       <Divider />
     </>
   );

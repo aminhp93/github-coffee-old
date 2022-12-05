@@ -1,33 +1,93 @@
 import CustomFlexLayout from 'components/CustomFlexLayout';
-import { Button } from 'antd';
+import Chat from 'features/chat';
+import Post from 'features/post';
+import Snippet from 'features/snippet';
+import StockMarketOverview from 'features/stock/StockMarketOverview';
+import StockNews from 'features/stock/StockNews';
+import Test from 'features/test';
+import Todo from 'features/todo';
+import { v4 as uuidv4 } from 'uuid';
+import { IJsonModel } from 'flexlayout-react';
+
+const rowId = uuidv4();
+const tabSetId = uuidv4();
+
+const defaultJson: IJsonModel = {
+  global: {
+    tabEnableFloat: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    borderMinSize: 100,
+  },
+  borders: [
+    {
+      type: 'border',
+      location: 'right',
+      children: [
+        {
+          type: 'tab',
+          id: '#Chat',
+          name: 'Chat',
+          component: 'Chat',
+        },
+        {
+          type: 'tab',
+          id: '#Todos',
+          name: 'Todos',
+          component: 'Todos',
+        },
+        {
+          type: 'tab',
+          id: '#Snippet',
+          name: 'Snippet',
+          component: 'Snippet',
+        },
+        {
+          type: 'tab',
+          id: '#Post',
+          name: 'Post',
+          component: 'Post',
+        },
+      ],
+    },
+  ],
+  layout: {
+    type: 'row',
+    id: rowId,
+    children: [
+      {
+        type: 'tabset',
+        id: tabSetId,
+        weight: 12.5,
+        children: [
+          {
+            type: 'tab',
+            id: '#StockMarketOverview',
+            name: 'StockMarketOverview',
+            component: 'StockMarketOverview',
+          },
+        ],
+        active: true,
+      },
+    ],
+  },
+};
 
 const Work: React.FunctionComponent = () => {
-  const savedLayout = localStorage.getItem('flexLayoutModel_Work');
-  let json;
-
-  if (savedLayout) {
-    json = JSON.parse(savedLayout);
-  }
-
-  const handleOnModelChange = (data: any) => {
-    localStorage.removeItem('flexLayoutModel_Work');
-    localStorage.setItem('flexLayoutModel_Work', JSON.stringify(data.toJson()));
-  };
-
-  const handleChangeLayout = () => {
-    localStorage.removeItem('flexLayoutModel_Work');
-    window.location.reload();
-  };
-
   return (
-    <div className="flex height-100" style={{ flexDirection: 'column' }}>
-      <div>
-        <Button onClick={() => handleChangeLayout()}>Reset layout</Button>
-      </div>
-      <div className="flex-1">
-        <CustomFlexLayout json={json} onModelChange={handleOnModelChange} />
-      </div>
-    </div>
+    <CustomFlexLayout
+      layoutName="flexLayoutModel_Work"
+      defaultJson={defaultJson}
+      componentObj={{
+        Post: <Post />,
+        StockMarketOverview: <StockMarketOverview />,
+        StockNews: <StockNews />,
+        Chat: <Chat hideOnlineUsers />,
+        Todos: <Todo />,
+        Snippet: <Snippet />,
+        Test: <Test />,
+      }}
+    />
   );
 };
 

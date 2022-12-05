@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { Col, Divider } from 'antd';
 import config from 'libs/config';
 import { ChatService } from 'libs/services/chat';
@@ -27,9 +26,8 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
         a.created_at.localeCompare(b.created_at)
       );
       setChats(res.data);
-      console.log(res);
     } catch (e) {
-      console.log(e);
+      //
     }
   };
 
@@ -49,7 +47,6 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
       cluster: config.pusher.cluster,
       encrypted: true,
       authorizer: (channel: any) => {
-        console.log(48, channel);
         return {
           authorize: async (socketId: any, cb: any) => {
             try {
@@ -57,7 +54,6 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
                 channel.name,
                 socketId
               );
-              console.log('authSuccess', res);
               cb(false, res.data);
             } catch (e) {
               cb(true, e);
@@ -130,7 +126,7 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
   }, []);
 
   return (
-    <Box className="Chat height-100">
+    <div className="Chat height-100">
       <Col xs={0} sm={0} md={hideOnlineUsers ? 0 : 4}>
         <ChatUserList users={Object.values(users)} />
       </Col>
@@ -140,22 +136,22 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
         md={hideOnlineUsers ? 24 : 20}
         style={{ height: '100%' }}
       >
-        <Box className="ChatListMessagesContainer height-100 flex">
-          <Box style={{ flex: 1, overflow: 'auto' }}>
-            <Box className="ChatMessageList">
+        <div className="ChatListMessagesContainer height-100 flex">
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            <div className="ChatMessageList">
               {chats.map((chat: IChat) => {
                 return <ChatMessageListItem chat={chat} />;
               })}
-              <Box ref={bottomRef} />
-            </Box>
+              <div ref={bottomRef} />
+            </div>
             <Divider />
-          </Box>
-          <Box className="ChatBoxContainer">
+          </div>
+          <div>
             <ChatBox cb={handleCb} />
-          </Box>
-        </Box>
+          </div>
+        </div>
       </Col>
-    </Box>
+    </div>
   );
 };
 

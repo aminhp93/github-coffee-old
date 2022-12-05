@@ -7,8 +7,6 @@ interface Props {
 }
 
 function EchartsLineChart({ option, handleHighlight }: Props) {
-  console.log('EchartsLineChart');
-
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,11 +14,6 @@ function EchartsLineChart({ option, handleHighlight }: Props) {
     let chart: ECharts | undefined;
     if (chartRef.current !== null) {
       chart = init(chartRef.current);
-      // chart &&
-      //   chart.on('highlight', function (params: any) {
-      //     console.log('highlight', params);
-      //     handleHighlight && handleHighlight(params);
-      //   });
     }
 
     // Add chart resize listener
@@ -41,7 +34,6 @@ function EchartsLineChart({ option, handleHighlight }: Props) {
       const chart = getInstanceByDom(chartRef.current);
       chart &&
         chart.on('highlight', function (params: any) {
-          console.log('highlight', params);
           handleHighlight && handleHighlight(params);
         });
     }

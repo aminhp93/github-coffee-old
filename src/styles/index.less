@@ -1,8 +1,9 @@
 @import '~antd/dist/antd.less';
-@import 'App';
 @import 'colors';
 
 @site-width: 1280px;
+
+@border-radius-base: 10px;
 
 #root {
   height: 100%;
@@ -79,4 +80,8 @@
   .ant-modal-content {
     height: 100%;
   }
+}
+
+.ant-btn.btn-warning {
+  background: @yellow;
 }

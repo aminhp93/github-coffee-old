@@ -2,6 +2,9 @@ import { CodeAlt } from '@styled-icons/boxicons-regular/CodeAlt';
 import { CodeBlock } from '@styled-icons/boxicons-regular/CodeBlock';
 import { Highlight } from '@styled-icons/boxicons-regular/Highlight';
 import { BorderAll } from '@styled-icons/material/BorderAll';
+import { BorderClear } from '@styled-icons/material/BorderClear';
+import { BorderRight } from '@styled-icons/material/BorderRight';
+import { BorderTop } from '@styled-icons/material/BorderTop';
 import { Check } from '@styled-icons/material/Check';
 import { FontDownload } from '@styled-icons/material/FontDownload';
 import { FormatAlignCenter } from '@styled-icons/material/FormatAlignCenter';
@@ -21,21 +24,41 @@ import { FormatUnderlined } from '@styled-icons/material/FormatUnderlined';
 import { Image } from '@styled-icons/material/Image';
 import { Keyboard } from '@styled-icons/material/Keyboard';
 import { Link } from '@styled-icons/material/Link';
+import { Looks3 } from '@styled-icons/material/Looks3';
+import { Looks4 } from '@styled-icons/material/Looks4';
+import { Looks5 } from '@styled-icons/material/Looks5';
+import { Looks6 } from '@styled-icons/material/Looks6';
+import { LooksOne } from '@styled-icons/material/LooksOne';
+import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
+import { TippyProps } from '@tippyjs/react';
+import { BorderBottom } from '@styled-icons/material/BorderBottom';
+import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import {
   AlignToolbarButton,
   BalloonToolbar,
   BlockToolbarButton,
   CodeBlockToolbarButton,
   ColorPickerToolbarDropdown,
+  deleteColumn,
+  deleteRow,
+  deleteTable,
   ELEMENT_BLOCKQUOTE,
   ELEMENT_CODE_BLOCK,
+  ELEMENT_H1,
+  ELEMENT_H2,
+  ELEMENT_H3,
+  ELEMENT_H4,
+  ELEMENT_H5,
+  ELEMENT_H6,
   ELEMENT_OL,
   ELEMENT_UL,
   getPluginType,
   ImageToolbarButton,
   indent,
   insertTable,
+  insertTableColumn,
+  insertTableRow,
   LinkToolbarButton,
   ListToolbarButton,
   MarkToolbarButton,
@@ -62,11 +85,11 @@ export const BasicElementToolbarButtons = () => {
 
   return (
     <>
-      {/* <BlockToolbarButton
+      <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H1)}
         icon={<LooksOne />}
-      /> */}
-      {/* <BlockToolbarButton
+      />
+      <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H2)}
         icon={<LooksTwo />}
       />
@@ -85,7 +108,7 @@ export const BasicElementToolbarButtons = () => {
       <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_H6)}
         icon={<Looks6 />}
-      /> */}
+      />
       <BlockToolbarButton
         type={getPluginType(editor, ELEMENT_BLOCKQUOTE)}
         icon={<FormatQuote />}
@@ -217,27 +240,27 @@ export const HighlightToolbarButton = () => {
 export const TableToolbarButtons = () => (
   <>
     <TableToolbarButton icon={<BorderAll />} transform={insertTable} />
-    {/* <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
-    <TableToolbarButton icon={<BorderBottom />} transform={addRow} />
+    <TableToolbarButton icon={<BorderClear />} transform={deleteTable} />
+    <TableToolbarButton icon={<BorderBottom />} transform={insertTableColumn} />
     <TableToolbarButton icon={<BorderTop />} transform={deleteRow} />
-    <TableToolbarButton icon={<BorderLeft />} transform={addColumn} />
-    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} /> */}
+    <TableToolbarButton icon={<BorderLeft />} transform={insertTableRow} />
+    <TableToolbarButton icon={<BorderRight />} transform={deleteColumn} />
   </>
 );
 
 export const MarkBallonToolbar = () => {
-  // const editor = useMyPlateEditorRef()!;
+  const editor = useMyPlateEditorRef()!;
 
   const arrow = false;
   const theme = 'dark';
-  // const tooltip: TippyProps = {
-  //   arrow: true,
-  //   delay: 0,
-  //   duration: [200, 0],
-  //   hideOnClick: false,
-  //   offset: [0, 17],
-  //   placement: 'top',
-  // };
+  const tooltip: TippyProps = {
+    arrow: true,
+    delay: 0,
+    duration: [200, 0],
+    hideOnClick: false,
+    offset: [0, 17],
+    placement: 'top',
+  };
 
   return (
     <BalloonToolbar
@@ -247,7 +270,7 @@ export const MarkBallonToolbar = () => {
       theme={theme}
       arrow={arrow}
     >
-      {/* <MarkToolbarButton
+      <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
@@ -261,8 +284,8 @@ export const MarkBallonToolbar = () => {
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
-      /> */}
-      <ToolbarButtons />
+      />
+      {/* <ToolbarButtons /> */}
     </BalloonToolbar>
   );
 };

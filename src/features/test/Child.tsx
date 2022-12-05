@@ -5,8 +5,6 @@ import { useState } from 'react';
 function Child({ random }: any) {
   const [count, setCount] = useState(random);
 
-  console.log('child', count, random);
-
   useEffect(() => {
     random && setCount(random);
   }, [random]);

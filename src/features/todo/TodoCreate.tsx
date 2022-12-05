@@ -22,7 +22,6 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    console.log('handleUpdate');
     if (!value) return;
     try {
       const data = {
@@ -37,22 +36,33 @@ function TodoCreate({ onCreateSuccess }: IProps) {
         setPlateId(uuidv4());
         setValue(DEFAULT_VALUE);
       } else {
-        notification.error({ message: 'Error create todo' });
+        if (res.response.data.error) {
+          notification.error({
+            message: JSON.stringify(res.response.data.error),
+          });
+        } else {
+          notification.error({ message: 'Error create todo' });
+        }
       }
     } catch (e) {
       setLoading(false);
+      console.log(46, e);
       notification.error({ message: 'Error create todo' });
     }
   };
 
   const handleChange = (data: any) => {
-    console.log(data);
     setValue(data);
   };
 
   return (
     <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
-      <CustomPlate id={String(plateId)} value={value} onChange={handleChange} />
+      <CustomPlate
+        hideToolBar
+        id={String(plateId)}
+        value={value}
+        onChange={handleChange}
+      />
       <Button
         loading={loading}
         disabled={loading}

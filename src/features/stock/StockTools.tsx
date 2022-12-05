@@ -11,9 +11,7 @@ import { chunk, minBy, orderBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
-interface IProps {}
-
-export default function StockTools(props: IProps) {
+export default function StockTools() {
   const [listWatchlists, setListWatchlists] = useState([]);
   const [loading, setLoading] = useState(false);
 

@@ -12,11 +12,10 @@ const LIST_MARKDOWN_URL = [
 ];
 
 export default function Snippet() {
-  console.log('Snippet');
   const [text, setText] = useState('');
 
   const handleClick = async (event: any) => {
-    const copyButtonLabel = 'Copy Code';
+    const copyButtonLabel = 'Copy';
 
     const button = event.srcElement;
     const pre = button.parentElement;
@@ -24,7 +23,7 @@ export default function Snippet() {
     let text = code.innerText;
 
     await navigator.clipboard.writeText(text);
-    button.innerText = 'Code Copied';
+    button.innerText = 'Copied';
 
     setTimeout(() => {
       button.innerText = copyButtonLabel;
@@ -47,7 +46,7 @@ export default function Snippet() {
 
   useEffect(() => {
     let blocks = document.querySelectorAll('pre');
-    const copyButtonLabel = 'Copy Code';
+    const copyButtonLabel = 'Copy';
     blocks.forEach((block) => {
       // only add a button if browser supports Clipboard API
       if (navigator.clipboard) {

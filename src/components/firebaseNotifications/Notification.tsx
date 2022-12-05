@@ -15,7 +15,6 @@ const Notification = () => {
 
   onMessageListener()
     .then((payload: any) => {
-      console.log(payload, 18);
       setNotification({
         title: payload?.notification?.title,
         body: payload?.notification?.body,

@@ -51,7 +51,6 @@ export default function ConnectDashboard() {
       method: 'GET',
     });
     setListProblemSrc(res.data.results);
-    console.log(res);
   };
 
   useEffect(() => {
