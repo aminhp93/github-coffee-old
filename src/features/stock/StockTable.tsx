@@ -15,6 +15,7 @@ import {
   Dropdown,
   Menu,
   Drawer,
+  InputNumber,
 } from 'antd';
 
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
@@ -35,6 +36,40 @@ import {
   getFinancialIndicator,
   getFundamentals,
 } from './utils';
+import axios from 'axios';
+
+const LIST_VN30 = [
+  'ACB',
+  'BID',
+  'BVH',
+  'CTG',
+  'FPT',
+  'GAS',
+  'GVR',
+  'HDB',
+  'HPG',
+  'KDH',
+  'MBB',
+  'MSN',
+  'MWG',
+  'NVL',
+  'PDR',
+  'PLX',
+  'POW',
+  'SAB',
+  'SSI',
+  'STB',
+  'TCB',
+  'TPB',
+  'VCB',
+  'VHM',
+  'VIB',
+  'VIC',
+  'VJC',
+  'VNM',
+  'VPB',
+  'VRE',
+];
 
 const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
   if (i === 'date') {
@@ -207,6 +242,9 @@ export default function StockTable() {
     useState<CheckboxValueType[]>(defaultCheckedList);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
+  const [min20Days_totalValue, setMin20Days_totalValue] = useState(5);
+  const [max20Days_totalValue, setMax20Days_totalValue] = useState(null);
+  const [excludeVN30, setExcludeVN30] = useState(true);
 
   React.useEffect(() => {
     (async () => {
@@ -295,7 +333,7 @@ export default function StockTable() {
     scroll.y = 240;
   }
   if (xScroll) {
-    scroll.x = '100vw';
+    scroll.x = '90vw';
   }
 
   const tableColumns: any = columns.map((item) => ({ ...item, ellipsis }));
@@ -414,7 +452,40 @@ export default function StockTable() {
     setOpenDrawer(false);
   };
 
+  const handleFilter = () => {
+    // filter dataSource with min of min20Days_totalValue is min20Days_totalValue
+    const newDataSource = dataSource.filter((i: any) => {
+      return (
+        i.min20Days_totalValue >= min20Days_totalValue * 1_000_000_000 &&
+        !LIST_VN30.includes(i.symbol)
+      );
+    });
+    setDataSource(newDataSource);
+  };
   console.log(dataSource);
+
+  const handleUpdateWatchlist = () => {
+    try {
+      axios({
+        method: 'PUT',
+        url: `https://restv2.fireant.vn/me/watchlists/2279542`,
+        headers: {
+          authorization:
+            'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
+        },
+        data: {
+          name: 'thanh_khoan_vua_2',
+          symbols: dataSource.map((i: any) => i.symbol),
+          userName: 'minhpn.org.ec1@gmail.com',
+          watchlistID: 2279542,
+        },
+      });
+
+      notification.success({ message: 'Update wl success' });
+    } catch (e) {
+      notification.error({ message: 'Update wl success' });
+    }
+  };
 
   return (
     <div>
@@ -442,6 +513,27 @@ export default function StockTable() {
             Get data
           </Button>
         </div>
+        <div className="flex">
+          <InputNumber
+            addonBefore="min20Days_totalValue"
+            value={min20Days_totalValue}
+            onChange={(value: any) => setMin20Days_totalValue(value)}
+          />
+          <InputNumber
+            addonBefore="max20Days_totalValue"
+            value={max20Days_totalValue}
+            onChange={(value: any) => setMax20Days_totalValue(value)}
+          />
+          <div>
+            Exclude VN30
+            <Switch
+              checked={excludeVN30}
+              onChange={() => setExcludeVN30(!excludeVN30)}
+            />
+          </div>
+        </div>
+        <Button onClick={handleFilter}>Filter</Button>
+        <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
 
         <Table
           {...tableProps}
@@ -451,9 +543,10 @@ export default function StockTable() {
           scroll={scroll}
         />
       </div>
+
       <Drawer
         title="Settings"
-        placement="right"
+        placement="bottom"
         onClose={onClose}
         open={openDrawer}
       >
@@ -465,120 +558,94 @@ export default function StockTable() {
             flexDirection: 'column',
           }}
         >
-          <div>
-            <Dropdown overlay={menu} trigger={['click']}>
-              <div>{currentWatchlist?.name || 'Select watchlist'}</div>
-            </Dropdown>
-            <Divider />
-            <div>
-              <Checkbox
-                indeterminate={indeterminate}
-                onChange={onCheckAllChange}
-                checked={checkAll}
-              >
-                Check all
-              </Checkbox>
-              <Divider />
-              <CheckboxGroup
-                options={plainOptions}
-                value={checkedList}
-                onChange={onChange}
+          <Form
+            layout="inline"
+            className="components-table-demo-control-bar"
+            style={{ marginBottom: 16 }}
+          >
+            <Form.Item label="Bordered">
+              <Switch checked={bordered} onChange={handleBorderChange} />
+            </Form.Item>
+            <Form.Item label="loading">
+              <Switch checked={loading} onChange={handleLoadingChange} />
+            </Form.Item>
+            <Form.Item label="Title">
+              <Switch checked={showTitle} onChange={handleTitleChange} />
+            </Form.Item>
+            <Form.Item label="Column Header">
+              <Switch checked={showHeader} onChange={handleHeaderChange} />
+            </Form.Item>
+            <Form.Item label="Footer">
+              <Switch checked={showfooter} onChange={handleFooterChange} />
+            </Form.Item>
+            <Form.Item label="Expandable">
+              <Switch checked={!!expandable} onChange={handleExpandChange} />
+            </Form.Item>
+            <Form.Item label="Checkbox">
+              <Switch
+                checked={!!rowSelection}
+                onChange={handleRowSelectionChange}
               />
-            </div>
-            <Button disabled={loading} onClick={handleGetData}>
-              Get data
-            </Button>
-          </div>
-          <div>
-            <Form
-              layout="inline"
-              className="components-table-demo-control-bar"
-              style={{ marginBottom: 16 }}
-            >
-              <Form.Item label="Bordered">
-                <Switch checked={bordered} onChange={handleBorderChange} />
-              </Form.Item>
-              <Form.Item label="loading">
-                <Switch checked={loading} onChange={handleLoadingChange} />
-              </Form.Item>
-              <Form.Item label="Title">
-                <Switch checked={showTitle} onChange={handleTitleChange} />
-              </Form.Item>
-              <Form.Item label="Column Header">
-                <Switch checked={showHeader} onChange={handleHeaderChange} />
-              </Form.Item>
-              <Form.Item label="Footer">
-                <Switch checked={showfooter} onChange={handleFooterChange} />
-              </Form.Item>
-              <Form.Item label="Expandable">
-                <Switch checked={!!expandable} onChange={handleExpandChange} />
-              </Form.Item>
-              <Form.Item label="Checkbox">
-                <Switch
-                  checked={!!rowSelection}
-                  onChange={handleRowSelectionChange}
-                />
-              </Form.Item>
-              <Form.Item label="Fixed Header">
-                <Switch checked={!!yScroll} onChange={handleYScrollChange} />
-              </Form.Item>
-              <Form.Item label="Has Data">
-                <Switch checked={!!hasData} onChange={handleDataChange} />
-              </Form.Item>
-              <Form.Item label="Ellipsis">
-                <Switch checked={!!ellipsis} onChange={handleEllipsisChange} />
-              </Form.Item>
-              <Form.Item label="Size">
-                <Radio.Group value={size} onChange={handleSizeChange}>
-                  <Radio.Button value="large">Large</Radio.Button>
-                  <Radio.Button value="middle">Middle</Radio.Button>
-                  <Radio.Button value="small">Small</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="Table Scroll">
-                <Radio.Group value={xScroll} onChange={handleXScrollChange}>
-                  <Radio.Button value={undefined}>Unset</Radio.Button>
-                  <Radio.Button value="scroll">Scroll</Radio.Button>
-                  <Radio.Button value="fixed">Fixed Columns</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="Table Layout">
-                <Radio.Group
-                  value={tableLayout}
-                  onChange={handleTableLayoutChange}
-                >
-                  <Radio.Button value={undefined}>Unset</Radio.Button>
-                  <Radio.Button value="fixed">Fixed</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="Pagination Top">
-                <Radio.Group
-                  value={top}
-                  onChange={(e) => {
-                    setTop(e.target.value);
-                  }}
-                >
-                  <Radio.Button value="topLeft">TopLeft</Radio.Button>
-                  <Radio.Button value="topCenter">TopCenter</Radio.Button>
-                  <Radio.Button value="topRight">TopRight</Radio.Button>
-                  <Radio.Button value="none">None</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-              <Form.Item label="Pagination Bottom">
-                <Radio.Group
-                  value={bottom}
-                  onChange={(e) => {
-                    setBottom(e.target.value);
-                  }}
-                >
-                  <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
-                  <Radio.Button value="bottomCenter">BottomCenter</Radio.Button>
-                  <Radio.Button value="bottomRight">BottomRight</Radio.Button>
-                  <Radio.Button value="none">None</Radio.Button>
-                </Radio.Group>
-              </Form.Item>
-            </Form>
-          </div>
+            </Form.Item>
+            <Form.Item label="Fixed Header">
+              <Switch checked={!!yScroll} onChange={handleYScrollChange} />
+            </Form.Item>
+            <Form.Item label="Has Data">
+              <Switch checked={!!hasData} onChange={handleDataChange} />
+            </Form.Item>
+            <Form.Item label="Ellipsis">
+              <Switch checked={!!ellipsis} onChange={handleEllipsisChange} />
+            </Form.Item>
+            <Form.Item label="Size">
+              <Radio.Group value={size} onChange={handleSizeChange}>
+                <Radio.Button value="large">Large</Radio.Button>
+                <Radio.Button value="middle">Middle</Radio.Button>
+                <Radio.Button value="small">Small</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item label="Table Scroll">
+              <Radio.Group value={xScroll} onChange={handleXScrollChange}>
+                <Radio.Button value={undefined}>Unset</Radio.Button>
+                <Radio.Button value="scroll">Scroll</Radio.Button>
+                <Radio.Button value="fixed">Fixed Columns</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item label="Table Layout">
+              <Radio.Group
+                value={tableLayout}
+                onChange={handleTableLayoutChange}
+              >
+                <Radio.Button value={undefined}>Unset</Radio.Button>
+                <Radio.Button value="fixed">Fixed</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item label="Pagination Top">
+              <Radio.Group
+                value={top}
+                onChange={(e) => {
+                  setTop(e.target.value);
+                }}
+              >
+                <Radio.Button value="topLeft">TopLeft</Radio.Button>
+                <Radio.Button value="topCenter">TopCenter</Radio.Button>
+                <Radio.Button value="topRight">TopRight</Radio.Button>
+                <Radio.Button value="none">None</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item label="Pagination Bottom">
+              <Radio.Group
+                value={bottom}
+                onChange={(e) => {
+                  setBottom(e.target.value);
+                }}
+              >
+                <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
+                <Radio.Button value="bottomCenter">BottomCenter</Radio.Button>
+                <Radio.Button value="bottomRight">BottomRight</Radio.Button>
+                <Radio.Button value="none">None</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
+          </Form>
         </div>
       </Drawer>
     </div>
