@@ -12,25 +12,21 @@ const DEFAULT_VALUE = [
   },
 ];
 interface Props {
-  onClose: () => void;
   onCreateSuccess: (data: any) => void;
 }
 
-export default function PostCreate({ onClose, onCreateSuccess }: Props) {
+export default function PostCreate({ onCreateSuccess }: Props) {
   const [plateId] = useState(uuidv4());
 
   const onFinish = async (values: any) => {
     try {
-      const { title, description, body } = values;
-      console.log(values, body);
+      const { title, body } = values;
       const dataCreate = {
         title,
         body: JSON.stringify(body || DEFAULT_VALUE),
-        description,
       };
       const res = await PostService.createPost(dataCreate);
       onCreateSuccess(res.data);
-
       notification.success({ message: 'Create success' });
     } catch (e) {
       notification.error({ message: 'Create failed' });
@@ -45,33 +41,19 @@ export default function PostCreate({ onClose, onCreateSuccess }: Props) {
     <div className="PostCreate">
       <Form
         name="basic"
-        labelCol={{ span: 4 }}
-        wrapperCol={{ span: 20 }}
+        wrapperCol={{ span: 24 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
         <Form.Item
-          label="Title"
           name="title"
           rules={[{ required: true, message: 'Please input your title!' }]}
         >
           <Input />
         </Form.Item>
-
         <Form.Item
-          label="Description"
-          name="description"
-          rules={[
-            { required: false, message: 'Please input your description!' },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-
-        <Form.Item
-          label="Body"
           name="body"
           rules={[{ required: false, message: 'Please input your body!' }]}
         >
@@ -84,7 +66,6 @@ export default function PostCreate({ onClose, onCreateSuccess }: Props) {
           </Button>
         </Form.Item>
       </Form>
-      <Button onClick={onClose}>Back</Button>
     </div>
   );
 }

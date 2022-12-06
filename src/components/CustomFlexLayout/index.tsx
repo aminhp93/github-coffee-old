@@ -1,6 +1,6 @@
 //  https://github.com/caplin/FlexLayout/blob/master/examples/demo/App.tsx
 
-import { Dropdown, Menu, Button, Select } from 'antd';
+import { Dropdown, Menu, Button, Select, Drawer } from 'antd';
 import {
   BorderNode,
   IJsonModel,
@@ -13,7 +13,7 @@ import {
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 
 import * as React from 'react';
 
@@ -29,6 +29,7 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
   // const [adding, setAdding] = React.useState(false);
   // const [fontSize, setFontSize] = React.useState('medium');
   // const [realtimeResize, setRealtimeResize] = React.useState(false);
+  const [openDrawer, setOpenDrawer] = React.useState(false);
 
   const savedLayout = localStorage.getItem(layoutName);
   let json = defaultJson;
@@ -94,7 +95,6 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
   };
 
   const handleSelectLayout = (value: string) => {
-    console.log(`selected ${value}`);
     loadLayout(value);
   };
 
@@ -116,53 +116,74 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
     // }
   };
 
+  const showDrawer = () => {
+    setOpenDrawer(true);
+  };
+
+  const onClose = () => {
+    setOpenDrawer(false);
+  };
+
   return (
     <div
       className="CustomFlexLayout flex height-100 width-100"
-      style={{ flexDirection: 'column' }}
+      style={{ flexDirection: 'column', position: 'relative' }}
     >
-      <div
-        className="flex"
-        style={{
-          height: '32px',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          marginRight: '16px',
-        }}
+      <Drawer
+        title="Settings"
+        placement="bottom"
+        onClose={onClose}
+        open={openDrawer}
       >
-        <Select
-          defaultValue="default"
-          style={{ width: 120 }}
-          onChange={handleSelectLayout}
-          options={[
-            {
-              value: 'default',
-              label: 'default',
-            },
-            {
-              value: 'newfeatures',
-              label: 'newfeatures',
-            },
-            {
-              value: 'simple',
-              label: 'simple',
-            },
-            {
-              value: 'sub',
-              label: 'sub',
-            },
-            {
-              value: 'complex',
-              label: 'complex',
-            },
-            {
-              value: 'headers',
-              label: 'headers',
-            },
-          ]}
-        />
-        <Button onClick={handleChangeLayout}>Reset layout</Button>
-      </div>
+        <div
+          className="flex"
+          style={{
+            height: '32px',
+            justifyContent: 'flex-end',
+            alignItems: 'center',
+            marginRight: '16px',
+          }}
+        >
+          <Select
+            defaultValue="default"
+            style={{ width: 120 }}
+            onChange={handleSelectLayout}
+            options={[
+              {
+                value: 'default',
+                label: 'default',
+              },
+              {
+                value: 'newfeatures',
+                label: 'newfeatures',
+              },
+              {
+                value: 'simple',
+                label: 'simple',
+              },
+              {
+                value: 'sub',
+                label: 'sub',
+              },
+              {
+                value: 'complex',
+                label: 'complex',
+              },
+              {
+                value: 'headers',
+                label: 'headers',
+              },
+            ]}
+          />
+          <Button onClick={handleChangeLayout}>Reset layout</Button>
+        </div>
+      </Drawer>
+      <Button
+        style={{ position: 'absolute', bottom: '2px', right: '2px', zIndex: 1 }}
+        icon={<SettingOutlined />}
+        onClick={() => showDrawer()}
+      />
+
       <div className="flex-1 relative">
         <Layout
           model={model}

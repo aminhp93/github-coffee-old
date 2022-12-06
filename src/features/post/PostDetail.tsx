@@ -3,12 +3,14 @@ import {
   WarningOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import { Button, Input, notification } from 'antd';
+import { Button, notification, Typography } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { PostService } from 'libs/services';
 import { IPost } from 'libs/types';
 import { memo, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+
+const { Paragraph } = Typography;
 
 interface IProps {
   postId: number;
@@ -171,7 +173,21 @@ const MemoizedPostDetail = memo(function PostDetail({
           }}
         ></Button>
       )}
-      <Input value={postTitle} onChange={(e) => setPostTitle(e.target.value)} />
+      <div style={{ margin: '8px 16px' }}>
+        <Paragraph
+          editable={{
+            // icon: <HighlightOutlined />,
+            tooltip: 'click to edit text',
+            onChange: (text: any) => {
+              console.log(text);
+              setPostTitle(text);
+            },
+            triggerType: ['text'],
+          }}
+        >
+          {postTitle}
+        </Paragraph>
+      </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <CustomPlate
           id={String(plateId)}
