@@ -6,7 +6,8 @@ import { Provider } from 'react-redux';
 import 'styles/index.less';
 import { store } from './libs/app/store';
 import { initializeApp } from 'firebase/app';
-import App from 'features/app';
+import Notification from 'components/firebaseNotifications/Notification';
+import Router from 'components/router';
 
 notification.config({
   placement: 'bottomLeft',
@@ -20,7 +21,10 @@ const root = ReactDOM.createRoot(document.getElementById('root') as any);
 root.render(
   <React.Fragment>
     <Provider store={store}>
-      <App />
+      <>
+        <Router />
+        <Notification />
+      </>
     </Provider>
   </React.Fragment>
 );

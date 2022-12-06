@@ -31,7 +31,7 @@ import { Looks6 } from '@styled-icons/material/Looks6';
 import { LooksOne } from '@styled-icons/material/LooksOne';
 import { LooksTwo } from '@styled-icons/material/LooksTwo';
 import { OndemandVideo } from '@styled-icons/material/OndemandVideo';
-import { TippyProps } from '@tippyjs/react';
+// import { TippyProps } from '@tippyjs/react';
 import { BorderBottom } from '@styled-icons/material/BorderBottom';
 import { BorderLeft } from '@styled-icons/material/BorderLeft';
 import {
@@ -249,18 +249,18 @@ export const TableToolbarButtons = () => (
 );
 
 export const MarkBallonToolbar = () => {
-  const editor = useMyPlateEditorRef()!;
+  // const editor = useMyPlateEditorRef()!;
 
   const arrow = false;
   const theme = 'dark';
-  const tooltip: TippyProps = {
-    arrow: true,
-    delay: 0,
-    duration: [200, 0],
-    hideOnClick: false,
-    offset: [0, 17],
-    placement: 'top',
-  };
+  // const tooltip: TippyProps = {
+  //   arrow: true,
+  //   delay: 0,
+  //   duration: [200, 0],
+  //   hideOnClick: false,
+  //   offset: [0, 17],
+  //   placement: 'top',
+  // };
 
   return (
     <BalloonToolbar
@@ -270,7 +270,7 @@ export const MarkBallonToolbar = () => {
       theme={theme}
       arrow={arrow}
     >
-      <MarkToolbarButton
+      {/* <MarkToolbarButton
         type={getPluginType(editor, MARK_BOLD)}
         icon={<FormatBold />}
         tooltip={{ content: 'Bold (⌘B)', ...tooltip }}
@@ -284,8 +284,16 @@ export const MarkBallonToolbar = () => {
         type={getPluginType(editor, MARK_UNDERLINE)}
         icon={<FormatUnderlined />}
         tooltip={{ content: 'Underline (⌘U)', ...tooltip }}
-      />
+      /> */}
       {/* <ToolbarButtons /> */}
+
+      <ListToolbarButtons />
+      <IndentToolbarButtons />
+      <BasicMarkToolbarButtons />
+      <LinkToolbarButton icon={<Link />} />
+      <ImageToolbarButton icon={<Image />} />
+      <MediaEmbedToolbarButton icon={<OndemandVideo />} />
+      <TableToolbarButtons />
     </BalloonToolbar>
   );
 };
@@ -293,9 +301,8 @@ export const MarkBallonToolbar = () => {
 export const ToolbarButtons = () => (
   <>
     <BasicElementToolbarButtons />
-    <ListToolbarButtons />
-    <IndentToolbarButtons />
-    <BasicMarkToolbarButtons />
+    <AlignToolbarButtons />
+
     <ColorPickerToolbarDropdown
       pluginKey={MARK_COLOR}
       icon={<FormatColorText />}
@@ -308,10 +315,5 @@ export const ToolbarButtons = () => (
       selectedIcon={<Check />}
       tooltip={{ content: 'Highlight color' }}
     />
-    <AlignToolbarButtons />
-    <LinkToolbarButton icon={<Link />} />
-    <ImageToolbarButton icon={<Image />} />
-    <MediaEmbedToolbarButton icon={<OndemandVideo />} />
-    <TableToolbarButtons />
   </>
 );

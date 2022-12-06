@@ -95,7 +95,6 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
   };
 
   const handleSelectLayout = (value: string) => {
-    console.log(`selected ${value}`);
     loadLayout(value);
   };
 

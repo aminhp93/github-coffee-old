@@ -35,19 +35,16 @@ function TodoCreate({ onCreateSuccess }: IProps) {
         onCreateSuccess && onCreateSuccess();
         setPlateId(uuidv4());
         setValue(DEFAULT_VALUE);
-      } else {
-        if (res.response.data.error) {
-          notification.error({
-            message: JSON.stringify(res.response.data.error),
-          });
-        } else {
-          notification.error({ message: 'Error create todo' });
-        }
       }
-    } catch (e) {
+    } catch (e: any) {
       setLoading(false);
-      console.log(46, e);
-      notification.error({ message: 'Error create todo' });
+      if (e.response.data.error) {
+        notification.error({
+          message: JSON.stringify(e.response.data.error),
+        });
+      } else {
+        notification.error({ message: 'Error create todo' });
+      }
     }
   };
 
