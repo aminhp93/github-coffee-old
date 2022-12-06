@@ -1,4 +1,4 @@
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
 import { PostService } from 'libs/services';
 import { IPost } from 'libs/types';
@@ -55,10 +55,7 @@ const Post = () => {
   }, []);
 
   const renderCreate = () => (
-    <PostCreate
-      onClose={() => setMode('list')}
-      onCreateSuccess={handleCreateSuccess}
-    />
+    <PostCreate onCreateSuccess={handleCreateSuccess} />
   );
 
   const renderList = () =>
@@ -73,9 +70,21 @@ const Post = () => {
       <div className="PostListContainer">
         <div className="PostCreateButton flex">
           <div>Post</div>
-          <Tooltip title="Create post">
-            <Button icon={<PlusOutlined />} onClick={() => setMode('create')} />
-          </Tooltip>
+          {mode === 'create' ? (
+            <Tooltip title="Back">
+              <Button
+                icon={<RollbackOutlined />}
+                onClick={() => setMode('list')}
+              />
+            </Tooltip>
+          ) : (
+            <Tooltip title="Create post">
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => setMode('create')}
+              />
+            </Tooltip>
+          )}
         </div>
         <PostList listPosts={listPosts} cb={handleSelect} />
       </div>

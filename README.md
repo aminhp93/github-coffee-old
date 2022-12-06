@@ -20,6 +20,10 @@ yarn start
 
 ## Note
 
+```sh
+--no-verify
+```
+
 ## Documentation
 
 - Update firebase

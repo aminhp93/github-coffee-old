@@ -57,7 +57,9 @@ const request = async (options: any) => {
 
   const onError: any = async (err: any) => {
     console.log(err);
-    if (!err.response || !err.response.data) return err;
+    if (!err.response || !err.response.data) {
+      throw err;
+    }
     if (
       err.response.data.detail &&
       err.response.data.detail === 'Token expired'
@@ -88,7 +90,7 @@ const request = async (options: any) => {
         headers,
       });
     }
-    return err;
+    throw err;
   };
 
   return client(finalOptions).then(onSuccess).catch(onError);

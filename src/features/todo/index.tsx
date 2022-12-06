@@ -22,27 +22,68 @@ const Todo = () => {
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const handleMarkDone = useCallback(async (data: any) => {
-    try {
-      const dataRequest: {
-        is_done?: boolean;
-      } = {};
+  const getListTodos = useCallback(
+    async (data?: any) => {
+      try {
+        const dataRequest: {
+          is_done?: boolean;
+        } = {};
+        if (filter === 'all') {
+          //
+        } else if (filter === 'active') {
+          dataRequest.is_done = false;
+        } else if (filter === 'complete') {
+          dataRequest.is_done = true;
+        }
+        let requestUrl = null;
+        if (data && data.next) {
+          requestUrl = data.next;
+        } else if (data && data.previous) {
+          requestUrl = data.previous;
+        }
 
-      await TodoService.updateTodo(data.id, {
-        ...data,
-        ...dataRequest,
-      });
-      setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-      notification.success({
-        message: 'Marked done',
-      });
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message,
-      });
-    }
-  }, []);
+        const res = await TodoService.listTodo(dataRequest, requestUrl);
+        if (res?.data?.results) {
+          setListTodos(res.data.results);
+          setTotal(res.data.count);
+          setNext(res.data.next);
+          setPrevious(res.data.previous);
+        }
+      } catch (e) {
+        notification.error({ message: 'error' });
+      }
+    },
+    [filter]
+  );
+
+  const handleMarkDone = useCallback(
+    async (data: any) => {
+      const oldListTodos = [...listTodos];
+      try {
+        const dataRequest: {
+          is_done?: boolean;
+        } = {};
+        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
+
+        await TodoService.updateTodo(data.id, {
+          ...data,
+          ...dataRequest,
+        });
+        notification.success({
+          message: 'Marked done',
+        });
+        getListTodos();
+      } catch (error: any) {
+        console.log(41, error, oldListTodos);
+        setListTodos(oldListTodos);
+        notification.error({
+          message: 'Error',
+          description: error.message,
+        });
+      }
+    },
+    [getListTodos, listTodos]
+  );
 
   const handleUpdate = useCallback(async (data: any) => {
     try {
@@ -96,40 +137,6 @@ const Todo = () => {
       })
     );
   }, []);
-
-  const getListTodos = useCallback(
-    async (data?: any) => {
-      try {
-        const dataRequest: {
-          is_done?: boolean;
-        } = {};
-        if (filter === 'all') {
-          //
-        } else if (filter === 'active') {
-          dataRequest.is_done = false;
-        } else if (filter === 'complete') {
-          dataRequest.is_done = true;
-        }
-        let requestUrl = null;
-        if (data && data.next) {
-          requestUrl = data.next;
-        } else if (data && data.previous) {
-          requestUrl = data.previous;
-        }
-
-        const res = await TodoService.listTodo(dataRequest, requestUrl);
-        if (res?.data?.results) {
-          setListTodos(res.data.results);
-          setTotal(res.data.count);
-          setNext(res.data.next);
-          setPrevious(res.data.previous);
-        }
-      } catch (e) {
-        notification.error({ message: 'error' });
-      }
-    },
-    [filter]
-  );
 
   const handleChangePage = (page: number) => {
     setCurrentPage(page);
