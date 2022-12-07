@@ -1,15 +1,8 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 import './index.less';
-
-const LIST_MARKDOWN_URL = [
-  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/aws-system-service.md',
-  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/common.md',
-  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/nginx.md',
-  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/postgres.md',
-  'https://raw.githubusercontent.com/aminhp93/terminal-command/master/setup-new-ec2.md',
-];
 
 export default function Snippet() {
   const [text, setText] = useState('');
@@ -30,7 +23,25 @@ export default function Snippet() {
     }, 1000);
   };
 
-  const fetchList = () => {
+  const fetchList = async () => {
+    const LIST_MARKDOWN_URL: string[] = [];
+    const res = await axios({
+      method: 'GET',
+      url: 'https://api.github.com/repos/aminhp93/terminal-command/git/trees/master?recursive=1',
+    });
+
+    if (res && res.data) {
+      res.data.tree.forEach((i: any) => {
+        if (i.path.includes('.md')) {
+          LIST_MARKDOWN_URL.push(
+            `https://raw.githubusercontent.com/aminhp93/terminal-command/master/${i.path}`
+          );
+        }
+      });
+    }
+
+    if (LIST_MARKDOWN_URL.length === 0) return;
+
     const listPromises: any = [];
     LIST_MARKDOWN_URL.forEach((i: any) => {
       listPromises.push(fetch(i).then((res) => res.text()));
@@ -61,6 +72,10 @@ export default function Snippet() {
 
   useEffect(() => {
     fetchList();
+  }, []);
+
+  useEffect(() => {
+    fetch('');
   }, []);
 
   return (
