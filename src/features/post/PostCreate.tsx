@@ -38,7 +38,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
   };
 
   return (
-    <div className="PostCreate">
+    <div className="PostCreate width-100">
       <Form
         name="basic"
         wrapperCol={{ span: 24 }}

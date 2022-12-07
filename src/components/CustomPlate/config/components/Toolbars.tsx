@@ -288,7 +288,7 @@ export const MarkBallonToolbar = () => {
       {/* <ToolbarButtons /> */}
 
       <ListToolbarButtons />
-      <IndentToolbarButtons />
+
       <BasicMarkToolbarButtons />
       <LinkToolbarButton icon={<Link />} />
       <ImageToolbarButton icon={<Image />} />
@@ -302,7 +302,7 @@ export const ToolbarButtons = () => (
   <>
     <BasicElementToolbarButtons />
     <AlignToolbarButtons />
-
+    <IndentToolbarButtons />
     <ColorPickerToolbarDropdown
       pluginKey={MARK_COLOR}
       icon={<FormatColorText />}

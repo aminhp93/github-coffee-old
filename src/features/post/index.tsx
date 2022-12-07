@@ -16,6 +16,7 @@ const Post = () => {
   const [mode, setMode] = useState<ModeType>('list');
 
   const handleSelect = useCallback((data: any) => {
+    setMode('list');
     setSelectedPost(data);
   }, []);
 
