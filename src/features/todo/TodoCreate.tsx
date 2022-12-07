@@ -1,16 +1,11 @@
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { TodoService } from 'libs/services';
 import * as React from 'react';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-
-const DEFAULT_VALUE = [
-  {
-    children: [{ text: '' }],
-    type: 'p',
-  },
-];
+import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 
 interface IProps {
   onCreateSuccess: () => void;
@@ -18,7 +13,7 @@ interface IProps {
 
 function TodoCreate({ onCreateSuccess }: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
-  const [value, setValue] = useState(DEFAULT_VALUE);
+  const [value, setValue] = useState(DEFAULT_PLATE_VALUE);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -34,7 +29,7 @@ function TodoCreate({ onCreateSuccess }: IProps) {
       if (res && res.data) {
         onCreateSuccess && onCreateSuccess();
         setPlateId(uuidv4());
-        setValue(DEFAULT_VALUE);
+        setValue(DEFAULT_PLATE_VALUE);
       }
     } catch (e: any) {
       setLoading(false);
@@ -54,20 +49,22 @@ function TodoCreate({ onCreateSuccess }: IProps) {
 
   return (
     <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
-      <CustomPlate
-        hideToolBar
-        id={String(plateId)}
-        value={value}
-        onChange={handleChange}
-      />
       <Button
         loading={loading}
         disabled={loading}
         type="primary"
         onClick={handleSubmit}
-      >
-        Add todo
-      </Button>
+        style={{ margin: '0 5px' }}
+        icon={<PlusOutlined />}
+      />
+      <div className="height-100 width-100" style={{ minHeight: '100px' }}>
+        <CustomPlate
+          hideToolBar
+          id={String(plateId)}
+          value={value}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 }

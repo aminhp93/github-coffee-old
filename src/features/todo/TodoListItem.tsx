@@ -1,21 +1,30 @@
 import {
-  CheckOutlined,
   DeleteOutlined,
   FieldTimeOutlined,
   PauseOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
-import { Button, Checkbox, notification, TimePicker, Tooltip } from 'antd';
+import {
+  Button,
+  Checkbox,
+  notification,
+  TimePicker,
+  Tooltip,
+  Popover,
+} from 'antd';
 import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
 import config from 'libs/config';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
+import { TodoService } from 'libs/services';
+
 const format = 'HH:mm';
 
 const baseUrl = config.apiUrl;
@@ -29,7 +38,14 @@ const renderer = (props: any) => {
   } else {
     // Render a countdown
     return (
-      <span style={{ margin: '60px 40px 0 0' }}>
+      <span
+        style={{
+          margin: '60px 40px 0 0',
+          position: 'absolute',
+          bottom: 0,
+          right: '20px',
+        }}
+      >
         {days}:{hours}:{minutes}:{seconds}
       </span>
     );
@@ -40,9 +56,9 @@ interface IProps {
   id: number;
   todoItem: any;
   index: number;
-  onMarkDone?: (data: ITodo) => void;
-  onDelete?: (data: ITodo) => void;
-  onUpdate?: (data: ITodo) => void;
+  onMarkDone?: (todo: ITodo) => void;
+  onDeleteSuccess?: (todoId: number) => void;
+  onUpdateSuccess?: (todo: ITodo) => void;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
 
@@ -56,8 +72,8 @@ function TodoListItem({
   countPrevious,
   todoItem,
   onMarkDone,
-  onUpdate,
-  onDelete,
+  onUpdateSuccess,
+  onDeleteSuccess,
   index,
   id,
   moveCard,
@@ -71,17 +87,50 @@ function TodoListItem({
   const [timer, setTimer] = React.useState(moment('00:01', format));
   const [status, setStatus] = React.useState('');
 
-  const handleDone = () => {
-    setIsDone(!isDone);
-    onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
+  const handleDone = async () => {
+    try {
+      const data = {
+        is_done: !isDone,
+      };
+      setIsDone(!isDone);
+      await TodoService.updateTodo(todoItem.id, data);
+      notification.success({
+        message: 'Marked done',
+      });
+      onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
-  const handleUpdate = () => {
-    onUpdate && onUpdate({ ...todoItem, value });
+  const handleUpdate = async () => {
+    try {
+      const data = {
+        body: JSON.stringify(value),
+      };
+      const res = await TodoService.updateTodo(todoItem.id, data);
+      onUpdateSuccess && onUpdateSuccess(res.data);
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
-  const handleDelete = () => {
-    onDelete && onDelete(todoItem);
+  const handleDelete = async () => {
+    try {
+      await TodoService.deleteTodo(todoItem.id);
+      onDeleteSuccess && onDeleteSuccess(todoItem.id);
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
   const handleChange = (data: any) => {
@@ -200,20 +249,99 @@ function TodoListItem({
     setTimer(data);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPlateId(uuidv4());
   }, [todoItem]);
 
+  useEffect(() => {
+    const timer = setTimeout(handleUpdate, 3000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  const renderPopover = () => {
+    return (
+      <Popover
+        placement="leftBottom"
+        trigger="hover"
+        content={
+          <div className="TodoListItem-toolbox">
+            <Tooltip placement="right" title="delete">
+              {isConfirmDelete ? (
+                <>
+                  <Button
+                    style={{ zIndex: 1 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      handleDelete();
+                    }}
+                  >
+                    Confirm
+                  </Button>
+                  <Button
+                    style={{ zIndex: 1, marginLeft: '8px' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                      setIsConfirmDelete(false);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  icon={<DeleteOutlined />}
+                  style={{ zIndex: 1 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    setIsConfirmDelete(true);
+                  }}
+                />
+              )}
+            </Tooltip>
+            {status === '' && (
+              <Tooltip placement="right" title="Start timer">
+                <div style={{ marginTop: '8px' }}>
+                  <TimePicker
+                    defaultValue={moment('00:01', format)}
+                    onChange={handleChangeTimer}
+                    format={format}
+                  />
+                  <Button
+                    style={{ marginLeft: '8px' }}
+                    icon={<FieldTimeOutlined />}
+                    onClick={handleStartTimer}
+                  />
+                </div>
+              </Tooltip>
+            )}
+            {status === 'start' && (
+              <Tooltip placement="right" title="Reset time">
+                <Button
+                  style={{ marginTop: '8px' }}
+                  icon={<PauseOutlined />}
+                  onClick={handleResetTimer}
+                />
+              </Tooltip>
+            )}
+          </div>
+        }
+      >
+        <Button
+          icon={<SettingOutlined />}
+          style={{ position: 'absolute', bottom: '2px', right: '2px' }}
+        />
+      </Popover>
+    );
+  };
+
+  if (isDone) return null;
+
   return (
-    <div
-      ref={ref}
-      data-handler-id={handlerId}
-      className={`TodoListItem flex `}
-      style={{
-        position: 'relative',
-        height: '100px',
-      }}
-    >
+    <div ref={ref} data-handler-id={handlerId} className={`TodoListItem flex `}>
       <div
         ref={divRef}
         style={{
@@ -224,99 +352,37 @@ function TodoListItem({
           zIndex: 0,
           opacity: 0.5,
         }}
-      ></div>
+      />
       <div
-        className="flex"
+        className="flex height-100 width-100"
         style={{
-          position: 'absolute',
           background: 'transparent',
-          width: '100%',
-          height: '100%',
           zIndex: 1,
           alignItems: 'center',
+          minHeight: '100px',
+          maxHeight: '300px',
         }}
       >
         <Checkbox
           defaultChecked={todoItem.is_done}
           onClick={() => handleDone()}
-        ></Checkbox>
-        {index + countPrevious}
+        />
+
         <CustomPlate
           id={String(plateId)}
           value={value}
           hideToolBar
           onChange={handleChange}
         />
-        <div className="TodoListItem-toolbox">
-          <Tooltip placement="right" title="update">
-            <Button
-              icon={<CheckOutlined />}
-              style={{ zIndex: 1 }}
-              onClick={(e) => {
-                e.stopPropagation();
 
-                handleUpdate();
-              }}
-            />
-          </Tooltip>
-          <Tooltip placement="right" title="delete">
-            {isConfirmDelete ? (
-              <>
-                <Button
-                  style={{ zIndex: 1 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
+        {renderPopover()}
 
-                    handleDelete();
-                  }}
-                >
-                  Confirm
-                </Button>
-                <Button
-                  style={{ zIndex: 1 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-
-                    setIsConfirmDelete(false);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <Button
-                icon={<DeleteOutlined />}
-                style={{ zIndex: 1 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  setIsConfirmDelete(true);
-                }}
-              />
-            )}
-          </Tooltip>
-          {status === '' && (
-            <Tooltip placement="right" title="Start timer">
-              <TimePicker
-                defaultValue={moment('00:01', format)}
-                onChange={handleChangeTimer}
-                format={format}
-              />
-              <Button icon={<FieldTimeOutlined />} onClick={handleStartTimer} />
-            </Tooltip>
-          )}
-          {status === 'start' && (
-            <Tooltip placement="right" title="Reset time">
-              <Button icon={<PauseOutlined />} onClick={handleResetTimer} />
-            </Tooltip>
-          )}
-        </div>
         <Countdown
           ref={countDownRef}
           date={moment()
             .add(timer.hour() * 60 + timer.minute(), 'minute')
             .valueOf()}
-          renderer={renderer}
+          renderer={status === 'start' ? renderer : () => null}
           onTick={handlelTick}
           onComplete={handleComplete}
           autoStart={false}

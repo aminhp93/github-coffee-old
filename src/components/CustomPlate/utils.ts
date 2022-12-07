@@ -51,3 +51,10 @@ export const cbUploadImage = async (data: any) => {
   });
   return res.data.image.display_url;
 };
+
+export const DEFAULT_PLATE_VALUE = [
+  {
+    children: [{ text: '' }],
+    type: 'p',
+  },
+];

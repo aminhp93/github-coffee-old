@@ -22,7 +22,7 @@ import {
   PlusOutlined,
   RightOutlined,
 } from '@ant-design/icons';
-import { useInterval } from 'usehooks-ts';
+import { useInterval } from 'libs/hooks';
 
 const { TextArea } = Input;
 

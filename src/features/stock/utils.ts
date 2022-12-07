@@ -7,7 +7,10 @@ export const DATE_FORMAT = 'YYYY-MM-DD';
 export const TIME_FORMAT = 'HH:mm';
 export const FULL_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
 export const TIME_FRAME = '1';
-export const DELAY_TIME = 1000 * 60;
+export const DELAY_TIME = 1_000 * 60;
+export const MIN_TOTAL_VOLUME = 100_000;
+export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
+export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -197,6 +200,39 @@ export const FinancialIndicatorsKeys = [
   'LLRNPL (%)',
   'Tỷ lệ nợ xấu (%)',
   'PCL (%)',
+];
+
+export const LIST_VN30 = [
+  'ACB',
+  'BID',
+  'BVH',
+  'CTG',
+  'FPT',
+  'GAS',
+  'GVR',
+  'HDB',
+  'HPG',
+  'KDH',
+  'MBB',
+  'MSN',
+  'MWG',
+  'NVL',
+  'PDR',
+  'PLX',
+  'POW',
+  'SAB',
+  'SSI',
+  'STB',
+  'TCB',
+  'TPB',
+  'VCB',
+  'VHM',
+  'VIB',
+  'VIC',
+  'VJC',
+  'VNM',
+  'VPB',
+  'VRE',
 ];
 
 export const getHistorialQuote = async (symbol: string) => {
