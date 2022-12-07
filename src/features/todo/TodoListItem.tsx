@@ -11,11 +11,13 @@ import type { Identifier, XYCoord } from 'dnd-core';
 import config from 'libs/config';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
-import * as React from 'react';
+import React, { useEffect } from 'react';
 import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
+import { TodoService } from 'libs/services';
+
 const format = 'HH:mm';
 
 const baseUrl = config.apiUrl;
@@ -40,9 +42,9 @@ interface IProps {
   id: number;
   todoItem: any;
   index: number;
-  onMarkDone?: (data: ITodo) => void;
-  onDelete?: (data: ITodo) => void;
-  onUpdate?: (data: ITodo) => void;
+  onMarkDone?: (todo: ITodo) => void;
+  onDeleteSuccess?: (todoId: number) => void;
+  onUpdateSuccess?: (todo: ITodo) => void;
   moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
 
@@ -56,8 +58,8 @@ function TodoListItem({
   countPrevious,
   todoItem,
   onMarkDone,
-  onUpdate,
-  onDelete,
+  onUpdateSuccess,
+  onDeleteSuccess,
   index,
   id,
   moveCard,
@@ -71,17 +73,50 @@ function TodoListItem({
   const [timer, setTimer] = React.useState(moment('00:01', format));
   const [status, setStatus] = React.useState('');
 
-  const handleDone = () => {
-    setIsDone(!isDone);
-    onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
+  const handleDone = async () => {
+    try {
+      const data = {
+        is_done: !isDone,
+      };
+      setIsDone(!isDone);
+      await TodoService.updateTodo(todoItem.id, data);
+      notification.success({
+        message: 'Marked done',
+      });
+      onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
-  const handleUpdate = () => {
-    onUpdate && onUpdate({ ...todoItem, value });
+  const handleUpdate = async () => {
+    try {
+      const data = {
+        body: JSON.stringify(value),
+      };
+      const res = await TodoService.updateTodo(todoItem.id, data);
+      onUpdateSuccess && onUpdateSuccess(res.data);
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
-  const handleDelete = () => {
-    onDelete && onDelete(todoItem);
+  const handleDelete = async () => {
+    try {
+      await TodoService.deleteTodo(todoItem.id);
+      onDeleteSuccess && onDeleteSuccess(todoItem.id);
+    } catch (error: any) {
+      notification.error({
+        message: 'Error',
+        description: error.message,
+      });
+    }
   };
 
   const handleChange = (data: any) => {
@@ -200,9 +235,17 @@ function TodoListItem({
     setTimer(data);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPlateId(uuidv4());
   }, [todoItem]);
+
+  useEffect(() => {
+    const timer = setTimeout(handleUpdate, 3000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  if (isDone) return null;
 
   return (
     <div
@@ -240,7 +283,7 @@ function TodoListItem({
           defaultChecked={todoItem.is_done}
           onClick={() => handleDone()}
         ></Checkbox>
-        {index + countPrevious}
+
         <CustomPlate
           id={String(plateId)}
           value={value}

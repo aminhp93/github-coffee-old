@@ -31,16 +31,21 @@ const Post = () => {
     }
   };
 
-  const handleCbUpdate = (data: any) => {
-    setSelectedPost(data);
+  const handleUpdateSuccess = (updatedPost: IPost) => {
     const newListPosts = [...listPosts];
     const mappedNewListPosts: any = newListPosts.map((i: any) => {
-      if (i.id === data.id) {
-        return data;
+      if (i.id === updatedPost.id) {
+        return updatedPost;
       }
       return i;
     });
     setListPosts(mappedNewListPosts);
+    setSelectedPost(updatedPost);
+  };
+
+  const handleDeleteSuccess = (postId: any) => {
+    setListPosts((old) => old.filter((i: IPost) => i.id !== postId));
+    setSelectedPost({} as IPost);
   };
 
   const handleCreateSuccess = (data: any) => {
@@ -61,7 +66,11 @@ const Post = () => {
 
   const renderList = () =>
     selectedPost && selectedPost.id ? (
-      <PostDetail postId={selectedPost.id} cbUpdate={handleCbUpdate} />
+      <PostDetail
+        postId={selectedPost.id}
+        onUpdateSuccess={handleUpdateSuccess}
+        onDeleteSuccess={handleDeleteSuccess}
+      />
     ) : (
       <div className="width-100">No post selected</div>
     );

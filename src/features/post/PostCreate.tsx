@@ -4,13 +4,8 @@ import { PostService } from 'libs/services';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
+import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 
-const DEFAULT_VALUE = [
-  {
-    children: [{ text: '' }],
-    type: 'p',
-  },
-];
 interface Props {
   onCreateSuccess: (data: any) => void;
 }
@@ -23,7 +18,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
       const { title, body } = values;
       const dataCreate = {
         title,
-        body: JSON.stringify(body || DEFAULT_VALUE),
+        body: JSON.stringify(body || DEFAULT_PLATE_VALUE),
       };
       const res = await PostService.createPost(dataCreate);
       onCreateSuccess(res.data);

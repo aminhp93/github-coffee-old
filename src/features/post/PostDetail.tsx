@@ -9,27 +9,23 @@ import { PostService } from 'libs/services';
 import { IPost } from 'libs/types';
 import { memo, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 
 const { Paragraph } = Typography;
 
 interface IProps {
   postId: number;
-  cbUpdate?: any;
+  onUpdateSuccess?: any;
+  onDeleteSuccess?: any;
 }
-
-const DEFAULT_POST = [
-  {
-    children: [{ text: '' }],
-    type: 'p',
-  },
-];
 
 const MemoizedPostDetail = memo(function PostDetail({
   postId,
-  cbUpdate,
+  onUpdateSuccess,
+  onDeleteSuccess,
 }: IProps) {
   const [plateId, setPlateId] = useState(uuidv4());
-  const [post, setPost] = useState(DEFAULT_POST);
+  const [post, setPost] = useState(DEFAULT_PLATE_VALUE);
   const [postTitle, setPostTitle] = useState('');
   const [, setPostObj] = useState({} as IPost);
   const [loading, setLoading] = useState(false);
@@ -56,6 +52,7 @@ const MemoizedPostDetail = memo(function PostDetail({
   }, [postId]);
 
   const handleUpdate = async () => {
+    console.log('handleUpdate', postId);
     if (!postTitle) return;
     try {
       const data = {
@@ -66,13 +63,8 @@ const MemoizedPostDetail = memo(function PostDetail({
       const res = await PostService.updatePost(postId, data);
 
       setLoading(false);
-      if (res && res.data) {
-        setIsUpdated(true);
-        cbUpdate && cbUpdate(res.data);
-      } else {
-        setIsUpdated(false);
-        notification.error({ message: 'Error Update Post' });
-      }
+      setIsUpdated(true);
+      onUpdateSuccess && onUpdateSuccess(res.data);
     } catch (e) {
       setIsUpdated(false);
       setLoading(false);
@@ -83,6 +75,7 @@ const MemoizedPostDetail = memo(function PostDetail({
   const handleDelete = async () => {
     try {
       await PostService.deletePost(postId);
+      onDeleteSuccess && onDeleteSuccess(postId);
       notification.success({
         message: `Delete ${postTitle} successfully`,
       });
@@ -99,6 +92,12 @@ const MemoizedPostDetail = memo(function PostDetail({
   useEffect(() => {
     setIsUpdated(true);
   }, [postId]);
+
+  useEffect(() => {
+    const timer = setTimeout(handleUpdate, 3000);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [post]);
 
   return (
     <div className="PostDetail width-100">
@@ -179,7 +178,6 @@ const MemoizedPostDetail = memo(function PostDetail({
             // icon: <HighlightOutlined />,
             tooltip: 'click to edit text',
             onChange: (text: any) => {
-              console.log(text);
               setPostTitle(text);
             },
             triggerType: ['text'],

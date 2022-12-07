@@ -24,7 +24,7 @@ import type {
   ExpandableConfig,
   TableRowSelection,
 } from 'antd/es/table/interface';
-import { DATE_FORMAT } from 'libs/utils';
+import { DATE_FORMAT } from './utils';
 import moment from 'moment';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
@@ -35,41 +35,9 @@ import {
   getHistorialQuote,
   getFinancialIndicator,
   getFundamentals,
+  LIST_VN30,
 } from './utils';
 import axios from 'axios';
-
-const LIST_VN30 = [
-  'ACB',
-  'BID',
-  'BVH',
-  'CTG',
-  'FPT',
-  'GAS',
-  'GVR',
-  'HDB',
-  'HPG',
-  'KDH',
-  'MBB',
-  'MSN',
-  'MWG',
-  'NVL',
-  'PDR',
-  'PLX',
-  'POW',
-  'SAB',
-  'SSI',
-  'STB',
-  'TCB',
-  'TPB',
-  'VCB',
-  'VHM',
-  'VIB',
-  'VIC',
-  'VJC',
-  'VNM',
-  'VPB',
-  'VRE',
-];
 
 const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
   if (i === 'date') {

@@ -1,6 +1,6 @@
 import production from './production';
 import development from './development';
-let config = production;
+let config = development;
 
 if (process.env.NODE_ENV === 'production') {
   config = production;

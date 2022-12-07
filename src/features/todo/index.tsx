@@ -56,71 +56,20 @@ const Todo = () => {
     [filter]
   );
 
-  const handleMarkDone = useCallback(
-    async (data: any) => {
-      const oldListTodos = [...listTodos];
-      try {
-        const dataRequest: {
-          is_done?: boolean;
-        } = {};
-        setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-
-        await TodoService.updateTodo(data.id, {
-          ...data,
-          ...dataRequest,
-        });
-        notification.success({
-          message: 'Marked done',
-        });
-        getListTodos();
-      } catch (error: any) {
-        console.log(41, error, oldListTodos);
-        setListTodos(oldListTodos);
-        notification.error({
-          message: 'Error',
-          description: error.message,
-        });
+  const handleUpdateSuccess = (todo: ITodo) => {
+    setListTodos((old: ITodo[]) => {
+      const newList: ITodo[] = [...old];
+      const index = newList.findIndex((i: ITodo) => i.id === todo.id);
+      if (index > 0) {
+        newList[index] = todo;
       }
-    },
-    [getListTodos, listTodos]
-  );
+      return newList;
+    });
+  };
 
-  const handleUpdate = useCallback(async (data: any) => {
-    try {
-      await TodoService.updateTodo(data.id, data);
-      setListTodos((old: ITodo[]) => {
-        const newList: ITodo[] = [...old];
-        const index = newList.findIndex((i: ITodo) => i.id === data.id);
-        if (index > 0) {
-          newList[index] = data;
-        }
-        return newList;
-      });
-      notification.success({
-        message: 'Update success',
-      });
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message,
-      });
-    }
-  }, []);
-
-  const handleDelete = useCallback(async (data: any) => {
-    try {
-      await TodoService.deleteTodo(data.id);
-      setListTodos((old) => old.filter((i: ITodo) => i.id !== data.id));
-      notification.success({
-        message: 'Delete success',
-      });
-    } catch (error: any) {
-      notification.error({
-        message: 'Error',
-        description: error.message,
-      });
-    }
-  }, []);
+  const handleDeleteSuccess = (todoId: number) => {
+    setListTodos((old) => old.filter((i: ITodo) => i.id !== todoId));
+  };
 
   const handleChange = (e: RadioChangeEvent) => {
     const value = e.target.value;
@@ -173,9 +122,9 @@ const Todo = () => {
                       key={i.id}
                       index={index + 1}
                       todoItem={i}
-                      onMarkDone={handleMarkDone}
-                      onDelete={handleDelete}
-                      onUpdate={handleUpdate}
+                      onMarkDone={handleUpdateSuccess}
+                      onDeleteSuccess={handleDeleteSuccess}
+                      onUpdateSuccess={handleUpdateSuccess}
                       moveCard={moveCard}
                     />
                     <Divider />
