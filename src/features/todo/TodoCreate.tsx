@@ -1,3 +1,4 @@
+import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { TodoService } from 'libs/services';
@@ -48,20 +49,22 @@ function TodoCreate({ onCreateSuccess }: IProps) {
 
   return (
     <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
-      <CustomPlate
-        hideToolBar
-        id={String(plateId)}
-        value={value}
-        onChange={handleChange}
-      />
       <Button
         loading={loading}
         disabled={loading}
         type="primary"
         onClick={handleSubmit}
-      >
-        Add todo
-      </Button>
+        style={{ margin: '0 5px' }}
+        icon={<PlusOutlined />}
+      />
+      <div className="height-100 width-100" style={{ minHeight: '100px' }}>
+        <CustomPlate
+          hideToolBar
+          id={String(plateId)}
+          value={value}
+          onChange={handleChange}
+        />
+      </div>
     </div>
   );
 }
