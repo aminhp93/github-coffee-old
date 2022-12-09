@@ -1,5 +1,5 @@
 import { StockService } from 'libs/services';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
 import {
@@ -17,99 +17,31 @@ import {
   Drawer,
   InputNumber,
 } from 'antd';
-
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import type { ColumnsType, TableProps } from 'antd/es/table';
 import type {
   ExpandableConfig,
   TableRowSelection,
 } from 'antd/es/table/interface';
-import { DATE_FORMAT } from './utils';
-import moment from 'moment';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import {
-  FundamentalKeys,
-  HistoricalQuoteKeys,
-  FinancialIndicatorsKeys,
   getHistorialQuote,
   getFinancialIndicator,
   getFundamentals,
+  updateWatchlist,
   LIST_VN30,
+  FinancialIndicatorsColumns,
+  FundamentalColumns,
+  HistoricalQuoteColumns,
+  UNIT_BILLION,
 } from './utils';
-import axios from 'axios';
 import {
   CheckCircleOutlined,
   SettingOutlined,
   FilterOutlined,
 } from '@ant-design/icons';
-
-const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
-  if (i === 'date') {
-    return {
-      title: 'dateeeeeeeee',
-      dataIndex: i,
-      key: i,
-      // width: 300,
-      render: (text: string) => moment(text).format(DATE_FORMAT),
-    };
-  }
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    align: 'right',
-    sorter: (a: any, b: any) => a[i] - b[i],
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
-
-const FundamentalColumns = FundamentalKeys.map((i) => {
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    align: 'right',
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
-
-const FinancialIndicatorsColumns: any = FinancialIndicatorsKeys.map((i) => {
-  return {
-    // remove all whitespace
-    title: i.replace(/\s/g, ''),
-    dataIndex: i,
-    key: i,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    align: 'right',
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
+import './StockTable.less';
 
 const MyIndicatorsColumns: any = [
   {
@@ -117,32 +49,67 @@ const MyIndicatorsColumns: any = [
     sorter: (a: any, b: any) => a.marketCap - b.marketCap,
     align: 'right',
     render: (data: any) => {
-      // divide by 1 billion
       return Number(
-        Number(data.marketCap / 1_000_000_000).toFixed(0)
+        Number(data.marketCap / UNIT_BILLION).toFixed(0)
       ).toLocaleString();
     },
   },
   {
-    title: '_min20Days_totalValue (ty)',
-    sorter: (a: any, b: any) => a.min20Days_totalValue - b.min20Days_totalValue,
+    title: '_totalValue_last20_min (ty)',
+    sorter: (a: any, b: any) =>
+      a.totalValue_last20_min - b.totalValue_last20_min,
     align: 'right',
     render: (data: any) => {
-      // divide by 1 billion
       return Number(
-        Number(data.min20Days_totalValue / 1_000_000_000).toFixed(0)
+        Number(data.totalValue_last20_min / UNIT_BILLION).toFixed(0)
       ).toLocaleString();
     },
   },
   {
-    title: '_max20Days_totalValue (ty)',
-    sorter: (a: any, b: any) => a.max20Days_totalValue - b.max20Days_totalValue,
+    title: '_totalValue_last20_max (ty)',
+    sorter: (a: any, b: any) =>
+      a.totalValue_last20_max - b.totalValue_last20_max,
     align: 'right',
     render: (data: any) => {
-      // divide by 1 billion
       return Number(
-        Number(data.max20Days_totalValue / 1_000_000_000).toFixed(0)
+        Number(data.totalValue_last20_max / UNIT_BILLION).toFixed(0)
       ).toLocaleString();
+    },
+  },
+  {
+    title: '_changeVolume_last5 (%)',
+    sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
+    align: 'right',
+    render: (data: any) => {
+      const value = Number(
+        Number((data.changeVolume_last5 * 100) / 1).toFixed(2)
+      ).toLocaleString();
+      const className = data.changeVolume_last5 > 0 ? 'green' : 'red';
+      return <span className={className}>{value}</span>;
+    },
+  },
+  {
+    title: '_changeVolume_last20 (%)',
+    sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
+    align: 'right',
+    render: (data: any) => {
+      const value = Number(
+        Number((data.changeVolume_last20 * 100) / 1).toFixed(2)
+      ).toLocaleString();
+      const className = data.changeVolume_last20 > 0 ? 'green' : 'red';
+      return <span className={className}>{value}</span>;
+    },
+  },
+  {
+    title: '_changePrice (%)',
+    sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+    align: 'right',
+    render: (data: any) => {
+      const value = Number(
+        Number((data.changePrice * 100) / 1).toFixed(2)
+      ).toLocaleString();
+      const className = data.changePrice > 0 ? 'green' : 'red';
+      return <span className={className}>{value}</span>;
     },
   },
 ];
@@ -216,17 +183,20 @@ export default function StockTable() {
     useState<CheckboxValueType[]>(defaultCheckedList);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-  const [min20Days_totalValue, setMin20Days_totalValue] = useState<number>(0);
+  const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(0);
+  const [totalValue_last20_max, setTotalValue_last20_max] =
+    useState<number>(99999);
+  const [changeVolume_last5_min, setChangeVolume_last5_min] =
+    useState<number>(0);
+  const [changeVolume_last5_max, setChangeVolume_last5_max] =
+    useState<number>(99999);
+  const [changeVolume_last20_min, setChangeVolume_last20_min] =
+    useState<number>(0);
+  const [changeVolume_last20_max, setChangeVolume_last20_max] =
+    useState<number>(99999);
+  const [changePrice_min, setChangePrice_min] = useState<number>(0);
+  const [changePrice_max, setChangePrice_max] = useState<number>(99999);
   const [excludeVN30, setExcludeVN30] = useState(false);
-
-  React.useEffect(() => {
-    (async () => {
-      const res = await StockService.getWatchlist();
-      if (res && res.data) {
-        setListWatchlist(res.data);
-      }
-    })();
-  }, []);
 
   const handleClickMenuWatchlist = (e: any) => {
     setCurrentWatchlist(listWatchlistObj[e.key]);
@@ -240,18 +210,6 @@ export default function StockTable() {
     );
     setDataSource(mapData);
   };
-
-  const menu = (
-    <Menu onClick={handleClickMenuWatchlist}>
-      {listWatchlist.map((i: any) => {
-        return (
-          <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
-            {i.name}
-          </Menu.Item>
-        );
-      })}
-    </Menu>
-  );
 
   const handleBorderChange = (enable: boolean) => {
     setBordered(enable);
@@ -305,6 +263,71 @@ export default function StockTable() {
     setHasData(newHasData);
   };
 
+  const handleUpdateWatchlist = async () => {
+    try {
+      const watchlistObj = {
+        watchlistID: 2279542,
+        name: 'thanh_khoan_vua_2',
+        userName: 'minhpn.org.ec1@gmail.com',
+      };
+
+      const updateData = {
+        ...watchlistObj,
+        symbols: dataSource.map((i: any) => i.symbol),
+      };
+
+      await updateWatchlist(watchlistObj, updateData);
+      notification.success({ message: 'Update wl success' });
+    } catch (e) {
+      notification.error({ message: 'Update wl success' });
+    }
+  };
+
+  const onChange = (list: CheckboxValueType[]) => {
+    setCheckedList(list);
+    setIndeterminate(!!list.length && list.length < plainOptions.length);
+    setCheckAll(list.length === plainOptions.length);
+  };
+
+  const onCheckAllChange = (e: CheckboxChangeEvent) => {
+    setCheckedList(e.target.checked ? plainOptions : []);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+  };
+
+  const handleGetData = () => {
+    const listPromises: any = [];
+
+    dataSource.forEach((j: any) => {
+      listPromises.push(getHistorialQuote(j.symbol));
+      listPromises.push(getFundamentals(j.symbol));
+      listPromises.push(getFinancialIndicator(j.symbol));
+    });
+
+    setLoading(true);
+    Promise.all(listPromises).then((res: any) => {
+      setLoading(false);
+      let newDataSource: any = [...dataSource];
+      newDataSource = newDataSource.map((i: any) => {
+        const filterRes = res.filter((j: any) => j.symbol === i.symbol);
+        let newItem = { ...i };
+        if (filterRes.length > 0) {
+          filterRes.forEach((j: any) => {
+            newItem = { ...newItem, ...j };
+          });
+        }
+        return newItem;
+      });
+      setDataSource(newDataSource);
+      notification.success({ message: 'success' });
+    });
+  };
+
+  const handleClearFilter = () => {
+    setTotalValue_last20_min(0);
+    setExcludeVN30(false);
+  };
+
   const scroll: { x?: number | string; y?: number | string } = {};
   if (yScroll) {
     scroll.y = 240;
@@ -323,7 +346,7 @@ export default function StockTable() {
     bordered,
     loading,
     size,
-    expandable,
+    // expandable,
     title: showTitle ? defaultTitle : undefined,
     showHeader,
     footer: showfooter
@@ -348,18 +371,17 @@ export default function StockTable() {
           );
         }
       : undefined,
-    rowSelection,
+    // rowSelection,
     scroll,
     tableLayout,
   };
 
-  const onChange = (list: CheckboxValueType[]) => {
-    setCheckedList(list);
-    setIndeterminate(!!list.length && list.length < plainOptions.length);
-    setCheckAll(list.length === plainOptions.length);
-  };
+  useEffect(() => {
+    handleGetData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWatchlist]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const columns: any = [
       {
         title: 'Symbol',
@@ -397,88 +419,55 @@ export default function StockTable() {
     setColumns(columns);
   }, [checkedList]);
 
-  const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedList(e.target.checked ? plainOptions : []);
-    setIndeterminate(false);
-    setCheckAll(e.target.checked);
-  };
-
-  const handleGetData = () => {
-    console.log(408);
-    const listPromises: any = [];
-
-    dataSource.forEach((j: any) => {
-      listPromises.push(getHistorialQuote(j.symbol));
-      listPromises.push(getFundamentals(j.symbol));
-      listPromises.push(getFinancialIndicator(j.symbol));
-    });
-
-    setLoading(true);
-    Promise.all(listPromises).then((res: any) => {
-      setLoading(false);
-      let newDataSource: any = [...dataSource];
-      newDataSource = newDataSource.map((i: any) => {
-        const filterRes = res.filter((j: any) => j.symbol === i.symbol);
-        let newItem = { ...i };
-        if (filterRes.length > 0) {
-          filterRes.forEach((j: any) => {
-            newItem = { ...newItem, ...j };
-          });
-        }
-        return newItem;
-      });
-      setDataSource(newDataSource);
-      notification.success({ message: 'success' });
-    });
-  };
-
-  // const handleFilter = () => {
-  //   // filter dataSource with min of min20Days_totalValue is min20Days_totalValue
-  //   const newDataSource = dataSource.filter((i: any) => {
-  //     return (
-  //       i.min20Days_totalValue >= min20Days_totalValue * 1_000_000_000 &&
-  //       !LIST_VN30.includes(i.symbol)
-  //     );
-  //   });
-  //   setDataSource(newDataSource);
-
-  // };
-
-  const handleClearFilter = () => {
-    setMin20Days_totalValue(0);
-    setExcludeVN30(false);
-  };
-  console.log(dataSource);
-
-  const handleUpdateWatchlist = () => {
-    try {
-      axios({
-        method: 'PUT',
-        url: `https://restv2.fireant.vn/me/watchlists/2279542`,
-        headers: {
-          authorization:
-            'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
-        },
-        data: {
-          name: 'thanh_khoan_vua_2',
-          symbols: dataSource.map((i: any) => i.symbol),
-          userName: 'minhpn.org.ec1@gmail.com',
-          watchlistID: 2279542,
-        },
-      });
-
-      notification.success({ message: 'Update wl success' });
-    } catch (e) {
-      notification.error({ message: 'Update wl success' });
-    }
-  };
-
   useEffect(() => {
-    handleGetData();
-  }, [currentWatchlist]);
+    (async () => {
+      const res = await StockService.getWatchlist();
+      if (res && res.data) {
+        setListWatchlist(res.data);
+      }
+    })();
+  }, []);
+
+  const menu = (
+    <Menu onClick={handleClickMenuWatchlist}>
+      {listWatchlist.map((i: any) => {
+        return (
+          <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
+            {i.name}
+          </Menu.Item>
+        );
+      })}
+    </Menu>
+  );
+
+  console.log(
+    dataSource,
+    totalValue_last20_min,
+    totalValue_last20_max,
+    changeVolume_last5_min,
+    changeVolume_last5_max,
+    changeVolume_last20_min,
+    changeVolume_last20_max,
+    changePrice_min,
+    changePrice_max
+  );
+
+  const filteredData = dataSource.filter((i: any) => {
+    return (
+      i.totalValue_last20_min >= totalValue_last20_min * UNIT_BILLION &&
+      i.totalValue_last20_max <= totalValue_last20_max * UNIT_BILLION &&
+      i.changeVolume_last5 >= changeVolume_last5_min &&
+      i.changeVolume_last5 <= changeVolume_last5_max &&
+      i.changeVolume_last20 >= changeVolume_last20_min &&
+      i.changeVolume_last20 <= changeVolume_last20_max &&
+      i.changePrice >= changePrice_min &&
+      i.changePrice <= changePrice_max &&
+      !LIST_VN30.includes(i.symbol)
+    );
+  });
 
   return (
-    <div>
+    <div className="StockTable">
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div className="flex">
@@ -514,21 +503,10 @@ export default function StockTable() {
           {...tableProps}
           pagination={{ position: [top as TablePaginationPosition, bottom] }}
           columns={columns}
-          dataSource={
-            hasData
-              ? dataSource.filter((i: any) => {
-                  return (
-                    i.min20Days_totalValue >=
-                      min20Days_totalValue * 1_000_000_000 &&
-                    !LIST_VN30.includes(i.symbol)
-                  );
-                })
-              : []
-          }
+          dataSource={hasData ? filteredData : []}
           scroll={scroll}
         />
       </div>
-
       <Drawer
         title="Settings"
         placement="bottom"
@@ -649,9 +627,47 @@ export default function StockTable() {
           >
             <div>
               <InputNumber
-                addonBefore="min20Days_totalValue"
-                value={min20Days_totalValue}
-                onChange={(value: any) => setMin20Days_totalValue(value)}
+                addonBefore="totalValue_last20_min"
+                value={totalValue_last20_min}
+                onChange={(value: any) => setTotalValue_last20_min(value)}
+              />
+              <InputNumber
+                addonBefore="totalValue_last20_max"
+                value={totalValue_last20_max}
+                onChange={(value: any) => setTotalValue_last20_max(value)}
+              />
+              <br />
+              <InputNumber
+                addonBefore="changeVolume_last5_min"
+                value={changeVolume_last5_min}
+                onChange={(value: any) => setChangeVolume_last5_min(value)}
+              />
+              <InputNumber
+                addonBefore="changeVolume_last5_max"
+                value={changeVolume_last5_max}
+                onChange={(value: any) => setChangeVolume_last5_max(value)}
+              />
+              <br />
+              <InputNumber
+                addonBefore="changeVolume_last20_min"
+                value={changeVolume_last20_min}
+                onChange={(value: any) => setChangeVolume_last20_min(value)}
+              />
+              <InputNumber
+                addonBefore="changeVolume_last20_max"
+                value={changeVolume_last20_max}
+                onChange={(value: any) => setChangeVolume_last20_max(value)}
+              />
+              <br />
+              <InputNumber
+                addonBefore="changePrice_min"
+                value={changePrice_min}
+                onChange={(value: any) => setChangePrice_min(value)}
+              />
+              <InputNumber
+                addonBefore="changePrice_max"
+                value={changePrice_max}
+                onChange={(value: any) => setChangePrice_max(value)}
               />
               <div style={{ marginTop: '8px' }}>
                 Exclude VN30
@@ -665,7 +681,6 @@ export default function StockTable() {
             <Button onClick={handleClearFilter}>Clear filter</Button>
           </div>
           <div>
-            {/* <Button onClick={handleFilter}>Filter</Button> */}
             <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
           </div>
         </div>
