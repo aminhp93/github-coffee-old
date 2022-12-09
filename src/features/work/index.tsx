@@ -2,7 +2,7 @@ import CustomFlexLayout from 'components/CustomFlexLayout';
 import Chat from 'features/chat';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
-import StockMarketOverview from 'features/stock/StockMarketOverview';
+import StockTable from 'features/stock/StockTable';
 import StockNews from 'features/stock/StockNews';
 import Test from 'features/test';
 import Todo from 'features/todo';
@@ -62,9 +62,9 @@ const defaultJson: IJsonModel = {
         children: [
           {
             type: 'tab',
-            id: '#StockMarketOverview',
-            name: 'StockMarketOverview',
-            component: 'StockMarketOverview',
+            id: '#StockTable',
+            name: 'StockTable',
+            component: 'StockTable',
           },
         ],
         active: true,
@@ -80,12 +80,12 @@ const Work: React.FunctionComponent = () => {
       defaultJson={defaultJson}
       componentObj={{
         Post: <Post />,
-        StockMarketOverview: <StockMarketOverview />,
         StockNews: <StockNews />,
         Chat: <Chat hideOnlineUsers />,
         Todos: <Todo />,
         Snippet: <Snippet />,
         Test: <Test />,
+        StockTable: <StockTable />,
       }}
     />
   );

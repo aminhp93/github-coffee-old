@@ -12,6 +12,62 @@ export const MIN_TOTAL_VOLUME = 100_000;
 export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
 export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
 
+export const FinancialIndicatorsKeys = [
+  'P/E',
+  'P/S',
+  'P/B',
+  'EPS',
+  'Tỷ lệ lãi ròng (%)',
+  'YOEA (%)',
+  'NIM (%)',
+  'COF (%)',
+  'LAR (%)',
+  'LDR (%)',
+  'CLR (%)',
+  'CTA (%)',
+  'ELR (%)',
+  'ROA (%)',
+  'ROE (%)',
+  'CIR (%)',
+  'LLRL (%)',
+  'LLRNPL (%)',
+  'Tỷ lệ nợ xấu (%)',
+  'PCL (%)',
+];
+
+export const LIST_VN30 = [
+  'ACB',
+  'BID',
+  'BVH',
+  'CTG',
+  'FPT',
+  'GAS',
+  'GVR',
+  'HDB',
+  'HPG',
+  'KDH',
+  'MBB',
+  'MSN',
+  'MWG',
+  'NVL',
+  'PDR',
+  'PLX',
+  'POW',
+  'SAB',
+  'SSI',
+  'STB',
+  'TCB',
+  'TPB',
+  'VCB',
+  'VHM',
+  'VIB',
+  'VIC',
+  'VJC',
+  'VNM',
+  'VPB',
+  'VRE',
+];
+
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
   const hour = currentTime.format('H');
@@ -179,61 +235,74 @@ export const FundamentalKeys = [
 //   'PCL (%)': number;
 // }
 
-export const FinancialIndicatorsKeys = [
-  'P/E',
-  'P/S',
-  'P/B',
-  'EPS',
-  'Tỷ lệ lãi ròng (%)',
-  'YOEA (%)',
-  'NIM (%)',
-  'COF (%)',
-  'LAR (%)',
-  'LDR (%)',
-  'CLR (%)',
-  'CTA (%)',
-  'ELR (%)',
-  'ROA (%)',
-  'ROE (%)',
-  'CIR (%)',
-  'LLRL (%)',
-  'LLRNPL (%)',
-  'Tỷ lệ nợ xấu (%)',
-  'PCL (%)',
-];
+export const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
+  if (i === 'date') {
+    return {
+      title: 'dateeeeeeeee',
+      dataIndex: i,
+      key: i,
+      // width: 300,
+      render: (text: string) => moment(text).format(DATE_FORMAT),
+    };
+  }
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    align: 'right',
+    sorter: (a: any, b: any) => a[i] - b[i],
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
 
-export const LIST_VN30 = [
-  'ACB',
-  'BID',
-  'BVH',
-  'CTG',
-  'FPT',
-  'GAS',
-  'GVR',
-  'HDB',
-  'HPG',
-  'KDH',
-  'MBB',
-  'MSN',
-  'MWG',
-  'NVL',
-  'PDR',
-  'PLX',
-  'POW',
-  'SAB',
-  'SSI',
-  'STB',
-  'TCB',
-  'TPB',
-  'VCB',
-  'VHM',
-  'VIB',
-  'VIC',
-  'VJC',
-  'VNM',
-  'VPB',
-  'VRE',
-];
+export const FundamentalColumns = FundamentalKeys.map((i) => {
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    sorter: (a: any, b: any) => a[i] - b[i],
+    align: 'right',
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
+
+export const FinancialIndicatorsColumns: any = FinancialIndicatorsKeys.map(
+  (i) => {
+    return {
+      // remove all whitespace
+      title: i.replace(/\s/g, ''),
+      dataIndex: i,
+      key: i,
+      sorter: (a: any, b: any) => a[i] - b[i],
+      align: 'right',
+      render: (data: any) => {
+        if (typeof data === 'number') {
+          if (data > 1_000) {
+            return Number(data.toFixed(0)).toLocaleString();
+          }
+          return Number(data.toFixed(1)).toLocaleString();
+        }
+        return data;
+      },
+    };
+  }
+);
 
 export const getHistorialQuote = async (symbol: string) => {
   if (!symbol) return;
@@ -249,17 +318,44 @@ export const getHistorialQuote = async (symbol: string) => {
     url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=0&limit=20`,
   });
   if (res.data) {
+    const last_data = res.data[0];
+    const last_2_data = res.data[1];
+    const last_20_day_historical_quote = res.data;
+    const totalValue_last20_min = Math.min(
+      ...res.data.map((item: any) => item.totalValue)
+    );
+    const totalValue_last20_max = Math.max(
+      ...res.data.map((item: any) => item.totalValue)
+    );
+
+    const averageVolume_last5 =
+      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.dealVolume, 0) / 5;
+
+    const changeVolume_last5 =
+      (res.data[0].dealVolume - averageVolume_last5) / averageVolume_last5;
+
+    const averageVolume_last20 =
+      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.dealVolume, 0) /
+      20;
+
+    const changeVolume_last20 =
+      (res.data[0].dealVolume - averageVolume_last20) / averageVolume_last20;
+
+    const changePrice =
+      (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
+
     return {
-      ...res.data[0],
+      ...last_data,
       symbol,
       key: symbol,
-      last_20_day_historical_quote: res.data,
-      min20Days_totalValue: Math.min(
-        ...res.data.map((item: any) => item.totalValue)
-      ),
-      max20Days_totalValue: Math.max(
-        ...res.data.map((item: any) => item.totalValue)
-      ),
+      last_20_day_historical_quote,
+      totalValue_last20_min,
+      totalValue_last20_max,
+      averageVolume_last5,
+      changeVolume_last5,
+      averageVolume_last20,
+      changeVolume_last20,
+      changePrice,
     };
   }
   return null;
@@ -302,4 +398,16 @@ export const getFundamentals = async (symbol: string) => {
     return { ...res.data, symbol, key: symbol };
   }
   return null;
+};
+
+export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
+  return axios({
+    method: 'PUT',
+    url: `https://restv2.fireant.vn/me/watchlists/${watchlistObj.watchlistID}`,
+    headers: {
+      authorization:
+        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
+    },
+    data: updateData,
+  });
 };

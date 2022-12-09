@@ -2,6 +2,8 @@
 
 Github Coffee is a platform and interactive tool that makes it easy to work with daily task and get only informative news.
 
+[https://github-coffee.vercel.app/](https://github-coffee.vercel.app/)
+
 ## Installation
 
 Install package
