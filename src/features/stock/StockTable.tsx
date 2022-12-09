@@ -1,5 +1,5 @@
 import { StockService } from 'libs/services';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
 import {
@@ -38,6 +38,11 @@ import {
   LIST_VN30,
 } from './utils';
 import axios from 'axios';
+import {
+  CheckCircleOutlined,
+  SettingOutlined,
+  FilterOutlined,
+} from '@ant-design/icons';
 
 const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
   if (i === 'date') {
@@ -172,10 +177,11 @@ const plainOptions = [
   'FinancialIndicators',
   'MyIndicators',
 ];
-const defaultCheckedList: any = [];
+const defaultCheckedList: any = ['HistoricalQuote', 'MyIndicators'];
 
 export default function StockTable() {
-  const [openDrawer, setOpenDrawer] = useState(false);
+  const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
+  const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
 
   const [listWatchlist, setListWatchlist] = React.useState([]);
   const [currentWatchlist, setCurrentWatchlist] =
@@ -210,9 +216,8 @@ export default function StockTable() {
     useState<CheckboxValueType[]>(defaultCheckedList);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-  const [min20Days_totalValue, setMin20Days_totalValue] = useState(5);
-  const [max20Days_totalValue, setMax20Days_totalValue] = useState(null);
-  const [excludeVN30, setExcludeVN30] = useState(true);
+  const [min20Days_totalValue, setMin20Days_totalValue] = useState<number>(0);
+  const [excludeVN30, setExcludeVN30] = useState(false);
 
   React.useEffect(() => {
     (async () => {
@@ -326,9 +331,19 @@ export default function StockTable() {
           return (
             <div className="flex" style={{ justifyContent: 'space-between' }}>
               <div>{String(dataSource.length)}</div>
-              <Button type="primary" onClick={showDrawer}>
-                Settings
-              </Button>
+              <div>
+                <Button
+                  type="primary"
+                  icon={<SettingOutlined />}
+                  onClick={() => setOpenDrawerSettings(true)}
+                />
+                <Button
+                  type="primary"
+                  icon={<FilterOutlined />}
+                  style={{ marginLeft: 8 }}
+                  onClick={() => setOpenDrawerFilter(true)}
+                />
+              </div>
             </div>
           );
         }
@@ -389,6 +404,7 @@ export default function StockTable() {
   };
 
   const handleGetData = () => {
+    console.log(408);
     const listPromises: any = [];
 
     dataSource.forEach((j: any) => {
@@ -416,23 +432,21 @@ export default function StockTable() {
     });
   };
 
-  const showDrawer = () => {
-    setOpenDrawer(true);
-  };
+  // const handleFilter = () => {
+  //   // filter dataSource with min of min20Days_totalValue is min20Days_totalValue
+  //   const newDataSource = dataSource.filter((i: any) => {
+  //     return (
+  //       i.min20Days_totalValue >= min20Days_totalValue * 1_000_000_000 &&
+  //       !LIST_VN30.includes(i.symbol)
+  //     );
+  //   });
+  //   setDataSource(newDataSource);
 
-  const onClose = () => {
-    setOpenDrawer(false);
-  };
+  // };
 
-  const handleFilter = () => {
-    // filter dataSource with min of min20Days_totalValue is min20Days_totalValue
-    const newDataSource = dataSource.filter((i: any) => {
-      return (
-        i.min20Days_totalValue >= min20Days_totalValue * 1_000_000_000 &&
-        !LIST_VN30.includes(i.symbol)
-      );
-    });
-    setDataSource(newDataSource);
+  const handleClearFilter = () => {
+    setMin20Days_totalValue(0);
+    setExcludeVN30(false);
   };
   console.log(dataSource);
 
@@ -459,13 +473,26 @@ export default function StockTable() {
     }
   };
 
+  useEffect(() => {
+    handleGetData();
+  }, [currentWatchlist]);
+
   return (
     <div>
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Dropdown overlay={menu} trigger={['click']}>
-            <div>{currentWatchlist?.name || 'Select watchlist'}</div>
-          </Dropdown>
+          <div className="flex">
+            <Dropdown overlay={menu} trigger={['hover']}>
+              <Button style={{ marginRight: '8px' }}>
+                {currentWatchlist?.name || 'Select watchlist'}
+              </Button>
+            </Dropdown>
+            <Button
+              icon={<CheckCircleOutlined />}
+              disabled={loading}
+              onClick={handleGetData}
+            />
+          </div>
           <div>
             <Checkbox
               indeterminate={indeterminate}
@@ -481,37 +508,23 @@ export default function StockTable() {
               onChange={onChange}
             />
           </div>
-          <Button disabled={loading} onClick={handleGetData}>
-            Get data
-          </Button>
         </div>
-        <div className="flex">
-          <InputNumber
-            addonBefore="min20Days_totalValue"
-            value={min20Days_totalValue}
-            onChange={(value: any) => setMin20Days_totalValue(value)}
-          />
-          <InputNumber
-            addonBefore="max20Days_totalValue"
-            value={max20Days_totalValue}
-            onChange={(value: any) => setMax20Days_totalValue(value)}
-          />
-          <div>
-            Exclude VN30
-            <Switch
-              checked={excludeVN30}
-              onChange={() => setExcludeVN30(!excludeVN30)}
-            />
-          </div>
-        </div>
-        <Button onClick={handleFilter}>Filter</Button>
-        <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
 
         <Table
           {...tableProps}
           pagination={{ position: [top as TablePaginationPosition, bottom] }}
           columns={columns}
-          dataSource={hasData ? dataSource : []}
+          dataSource={
+            hasData
+              ? dataSource.filter((i: any) => {
+                  return (
+                    i.min20Days_totalValue >=
+                      min20Days_totalValue * 1_000_000_000 &&
+                    !LIST_VN30.includes(i.symbol)
+                  );
+                })
+              : []
+          }
           scroll={scroll}
         />
       </div>
@@ -519,8 +532,8 @@ export default function StockTable() {
       <Drawer
         title="Settings"
         placement="bottom"
-        onClose={onClose}
-        open={openDrawer}
+        onClose={() => setOpenDrawerSettings(false)}
+        open={openDrawerSettings}
       >
         <div
           className="height-100"
@@ -618,6 +631,43 @@ export default function StockTable() {
               </Radio.Group>
             </Form.Item>
           </Form>
+        </div>
+      </Drawer>
+      <Drawer
+        title="Filter"
+        placement="bottom"
+        onClose={() => setOpenDrawerFilter(false)}
+        open={openDrawerFilter}
+      >
+        <div
+          className="flex height-100"
+          style={{ justifyContent: 'space-between' }}
+        >
+          <div
+            className="flex"
+            style={{ justifyContent: 'space-between', flexDirection: 'column' }}
+          >
+            <div>
+              <InputNumber
+                addonBefore="min20Days_totalValue"
+                value={min20Days_totalValue}
+                onChange={(value: any) => setMin20Days_totalValue(value)}
+              />
+              <div style={{ marginTop: '8px' }}>
+                Exclude VN30
+                <Switch
+                  checked={excludeVN30}
+                  onChange={() => setExcludeVN30(!excludeVN30)}
+                />
+              </div>
+            </div>
+
+            <Button onClick={handleClearFilter}>Clear filter</Button>
+          </div>
+          <div>
+            {/* <Button onClick={handleFilter}>Filter</Button> */}
+            <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
+          </div>
         </div>
       </Drawer>
     </div>
