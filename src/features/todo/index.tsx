@@ -26,14 +26,14 @@ const Todo = () => {
     async (data?: any) => {
       try {
         const dataRequest: {
-          is_done?: boolean;
+          isDone?: boolean;
         } = {};
         if (filter === 'all') {
           //
         } else if (filter === 'active') {
-          dataRequest.is_done = false;
+          dataRequest.isDone = false;
         } else if (filter === 'complete') {
-          dataRequest.is_done = true;
+          dataRequest.isDone = true;
         }
         let requestUrl = null;
         if (data && data.next) {

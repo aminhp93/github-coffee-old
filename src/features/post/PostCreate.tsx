@@ -1,17 +1,23 @@
-import { Button, Form, Input, notification } from 'antd';
+import { Button, Form, Input, notification, Select } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { PostService } from 'libs/services';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
+import axios from 'axios';
 
 interface Props {
   onCreateSuccess: (data: any) => void;
 }
 
+interface ITag {
+  name: string;
+}
+
 export default function PostCreate({ onCreateSuccess }: Props) {
   const [plateId] = useState(uuidv4());
+  const [tags, setTags] = useState([]);
 
   const onFinish = async (values: any) => {
     try {
@@ -19,6 +25,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
       const dataCreate = {
         title,
         body: JSON.stringify(body || DEFAULT_PLATE_VALUE),
+        tags,
       };
       const res = await PostService.createPost(dataCreate);
       onCreateSuccess(res.data);
@@ -31,6 +38,31 @@ export default function PostCreate({ onCreateSuccess }: Props) {
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
   };
+
+  const handleChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
+  const getListTags = async () => {
+    const res = await axios({
+      method: 'GET',
+      url: 'http://localhost:8000/api/tags/',
+    });
+
+    if (res && res.data) {
+      const newTags = res.data.map((i: ITag) => {
+        return {
+          label: i.name,
+          value: i.name,
+        };
+      });
+      setTags(newTags);
+    }
+  };
+
+  useEffect(() => {
+    getListTags();
+  }, []);
 
   return (
     <div className="PostCreate width-100">
@@ -47,6 +79,13 @@ export default function PostCreate({ onCreateSuccess }: Props) {
           rules={[{ required: true, message: 'Please input your title!' }]}
         >
           <Input />
+          <Select
+            mode="tags"
+            style={{ width: '100%' }}
+            placeholder="Tags Mode"
+            onChange={handleChange}
+            options={tags}
+          />
         </Form.Item>
         <Form.Item
           name="body"

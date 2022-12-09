@@ -1,7 +1,6 @@
 import { Button } from 'antd';
 import axios from 'axios';
 import config from 'libs/config';
-import Example from 'features/example';
 
 const baseUrl = config.apiUrl;
 
@@ -10,6 +9,10 @@ export default function Test() {
     axios({
       url: `${baseUrl}/api/pushnotifications/`,
       method: 'POST',
+      data: {
+        title: 'Test',
+        body: 'finish',
+      },
     });
   };
 
@@ -26,7 +29,6 @@ export default function Test() {
       <Button onClick={handleClickPushNotication}>
         Test Push notification
       </Button>
-      <Example />
     </div>
   );
 }
