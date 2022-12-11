@@ -11,6 +11,8 @@ export const DELAY_TIME = 1_000 * 60;
 export const MIN_TOTAL_VOLUME = 100_000;
 export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
 export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
+export const MIN_CHANGE = -1000;
+export const MAX_CHANGE = 1000;
 
 export const FinancialIndicatorsKeys = [
   'P/E',

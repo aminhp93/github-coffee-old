@@ -178,3 +178,7 @@ export const CustomTradingViewUrls = {
 export const RedirectUrls = {
   get: `${baseUrl}/api/redirects/`,
 };
+
+export const PushNotificationUrls = {
+  create: `${baseUrl}/api/pushnotifications/`,
+};

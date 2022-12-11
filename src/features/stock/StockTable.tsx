@@ -35,6 +35,8 @@ import {
   FundamentalColumns,
   HistoricalQuoteColumns,
   UNIT_BILLION,
+  MIN_CHANGE,
+  MAX_CHANGE,
 } from './utils';
 import {
   CheckCircleOutlined,
@@ -187,15 +189,15 @@ export default function StockTable() {
   const [totalValue_last20_max, setTotalValue_last20_max] =
     useState<number>(99999);
   const [changeVolume_last5_min, setChangeVolume_last5_min] =
-    useState<number>(0);
+    useState<number>(MIN_CHANGE);
   const [changeVolume_last5_max, setChangeVolume_last5_max] =
-    useState<number>(99999);
+    useState<number>(MAX_CHANGE);
   const [changeVolume_last20_min, setChangeVolume_last20_min] =
-    useState<number>(0);
+    useState<number>(MIN_CHANGE);
   const [changeVolume_last20_max, setChangeVolume_last20_max] =
-    useState<number>(99999);
-  const [changePrice_min, setChangePrice_min] = useState<number>(0);
-  const [changePrice_max, setChangePrice_max] = useState<number>(99999);
+    useState<number>(MAX_CHANGE);
+  const [changePrice_min, setChangePrice_min] = useState<number>(MIN_CHANGE);
+  const [changePrice_max, setChangePrice_max] = useState<number>(MAX_CHANGE);
   const [excludeVN30, setExcludeVN30] = useState(false);
 
   const handleClickMenuWatchlist = (e: any) => {
@@ -353,7 +355,7 @@ export default function StockTable() {
       ? () => {
           return (
             <div className="flex" style={{ justifyContent: 'space-between' }}>
-              <div>{String(dataSource.length)}</div>
+              <div>{String(filteredData.length)}</div>
               <div>
                 <Button
                   type="primary"
@@ -453,17 +455,43 @@ export default function StockTable() {
   );
 
   const filteredData = dataSource.filter((i: any) => {
-    return (
-      i.totalValue_last20_min >= totalValue_last20_min * UNIT_BILLION &&
-      i.totalValue_last20_max <= totalValue_last20_max * UNIT_BILLION &&
-      i.changeVolume_last5 >= changeVolume_last5_min &&
-      i.changeVolume_last5 <= changeVolume_last5_max &&
-      i.changeVolume_last20 >= changeVolume_last20_min &&
-      i.changeVolume_last20 <= changeVolume_last20_max &&
-      i.changePrice >= changePrice_min &&
-      i.changePrice <= changePrice_max &&
-      !LIST_VN30.includes(i.symbol)
-    );
+    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
+      return false;
+    }
+
+    if (i.changePrice * 100 < changePrice_min) {
+      return false;
+    }
+
+    if (i.changePrice * 100 > changePrice_max) {
+      return false;
+    }
+
+    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
+      return false;
+    }
+
+    return true;
   });
 
   return (

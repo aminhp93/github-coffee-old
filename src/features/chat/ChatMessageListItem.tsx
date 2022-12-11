@@ -16,7 +16,7 @@ const ChatMessageListItem = ({ chat }: IProps) => {
           <div className="ChatMessageListItem-message-container">
             {chat.message}{' '}
             <span className="ChatMessageListItem-message-time">
-              {moment(chat.created_at).format('HH:mm')}
+              {moment(chat.createdAt).format('HH:mm')}
             </span>
           </div>
         </div>

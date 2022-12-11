@@ -12,10 +12,8 @@ import {
   Tooltip,
   Popover,
 } from 'antd';
-import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
-import config from 'libs/config';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
 import React, { useEffect } from 'react';
@@ -23,11 +21,10 @@ import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
-import { TodoService } from 'libs/services';
+import { TodoService, PushNotificationService } from 'libs/services';
 
 const format = 'HH:mm';
 
-const baseUrl = config.apiUrl;
 const Completionist = () => <span>You are good to go!</span>;
 
 const renderer = (props: any) => {
@@ -54,7 +51,7 @@ const renderer = (props: any) => {
 interface IProps {
   countPrevious: number;
   id: number;
-  todoItem: any;
+  todoItem: ITodo;
   index: number;
   onMarkDone?: (todo: ITodo) => void;
   onDeleteSuccess?: (todoId: number) => void;
@@ -80,7 +77,7 @@ function TodoListItem({
 }: IProps) {
   const [plateId, setPlateId] = React.useState(null as any);
   const [value, setValue] = React.useState(JSON.parse(todoItem.body));
-  const [isDone, setIsDone] = React.useState(todoItem.is_done);
+  const [isDone, setIsDone] = React.useState(todoItem.isDone);
   const [isConfirmDelete, setIsConfirmDelete] = React.useState(false);
   const divRef = React.useRef<HTMLDivElement>(null);
   const countDownRef = React.useRef<any>(null);
@@ -90,14 +87,14 @@ function TodoListItem({
   const handleDone = async () => {
     try {
       const data = {
-        is_done: !isDone,
+        isDone: !isDone,
       };
       setIsDone(!isDone);
       await TodoService.updateTodo(todoItem.id, data);
       notification.success({
         message: 'Marked done',
       });
-      onMarkDone && onMarkDone({ ...todoItem, is_done: !isDone });
+      onMarkDone && onMarkDone({ ...todoItem, isDone: !isDone });
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -226,15 +223,17 @@ function TodoListItem({
     }
   };
 
-  const handleComplete = (data: any) => {
+  const handleComplete = () => {
     if (divRef.current) {
       divRef.current.style.width = `0%`;
     }
-    axios({
-      url: `${baseUrl}/api/pushnotifications/`,
-      method: 'POST',
+
+    PushNotificationService.createPushNotification({
+      title: 'Time for your task is up!',
+      body: `Time for task ${todoItem.id} is up!`,
     });
-    notification.success({ message: 'Time is up!' });
+
+    notification.success({ message: 'Time for your task is up!' });
   };
 
   const handlelTick = (data: any) => {
@@ -364,7 +363,7 @@ function TodoListItem({
         }}
       >
         <Checkbox
-          defaultChecked={todoItem.is_done}
+          defaultChecked={todoItem.isDone}
           onClick={() => handleDone()}
         />
 
