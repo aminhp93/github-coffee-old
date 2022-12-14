@@ -139,7 +139,6 @@ export const getStartAndEndTime = () => {
 // }
 
 export const HistoricalQuoteKeys = [
-  'adjRatio',
   'buyCount',
   'buyForeignQuantity',
   'buyForeignValue',
@@ -154,9 +153,7 @@ export const HistoricalQuoteKeys = [
   'priceHigh',
   'priceLow',
   'priceOpen',
-  'propTradingNetDealValue',
-  'propTradingNetPTValue',
-  'propTradingNetValue',
+
   'putthroughValue',
   'putthroughVolume',
   'sellCount',
@@ -237,13 +234,38 @@ export const FundamentalKeys = [
 //   'PCL (%)': number;
 // }
 
+export const NoDataKeys = [
+  'adjRatio', // HistoricalQuote
+  'propTradingNetDealValue', // HistoricalQuote
+  'propTradingNetPTValue', // HistoricalQuote
+  'propTradingNetValue', // HistoricalQuote
+];
+
+export const NoDataColumns = NoDataKeys.map((i) => {
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    align: 'right',
+    sorter: (a: any, b: any) => a[i] - b[i],
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
+
 export const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
   if (i === 'date') {
     return {
       title: 'dateeeeeeeee',
       dataIndex: i,
       key: i,
-      // width: 300,
       render: (text: string) => moment(text).format(DATE_FORMAT),
     };
   }
@@ -252,6 +274,7 @@ export const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
     dataIndex: i,
     key: i,
     align: 'right',
+    width: 200,
     sorter: (a: any, b: any) => a[i] - b[i],
     render: (data: any) => {
       if (typeof data === 'number') {
@@ -346,6 +369,68 @@ export const getHistorialQuote = async (symbol: string) => {
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
 
+    let count_5_day_within_base = {
+      count: 0,
+      valid: false,
+    };
+    // count the number of dasy which percent price is within the min and max from the base today
+
+    // base --> calculate from last_2_day
+    const base = last_2_data.priceClose;
+    const min_base = base - base * 0.07; // 7% up from last_2_day
+    const max_base = base + base * 0.07; // 7% up from last_2_day
+
+    const last_5_data = res.data.slice(1, 6);
+
+    last_5_data.forEach((item: any) => {
+      if (item.priceClose >= min_base && item.priceClose <= max_base) {
+        count_5_day_within_base.count += 1;
+      }
+      if (count_5_day_within_base.count === 5) {
+        count_5_day_within_base.valid = true;
+      }
+    });
+
+    const strong_sell: any = [];
+    const strong_buy: any = [];
+
+    const last_10_data = res.data.slice(1, 11);
+    const averageVolume_last10 =
+      last_10_data.reduce((a: any, b: any) => a + b.dealVolume, 0) / 10;
+
+    last_10_data.forEach((i: any, index: number) => {
+      if (index === 0) return;
+      const last_price = last_10_data[index - 1].priceClose;
+      let isSell = false;
+      let isBuy = false;
+      // Check if it is the sell or buy
+      // Normal case is priceClose > priceOpen --> buy
+      if (i.priceClose > last_price * 1.03) {
+        isBuy = true;
+      }
+      if (i.priceClose < last_price * 0.97) {
+        isSell = true;
+      }
+
+      let strong_volume = false;
+      // Check if volume is strong
+      if (i.dealVolume > averageVolume_last10) {
+        strong_volume = true;
+      }
+
+      if (strong_volume && isBuy) {
+        strong_buy.push(i);
+      }
+      if (strong_volume && isSell) {
+        strong_sell.push(i);
+      }
+    });
+
+    const last_10_day_summary: any = {
+      strong_buy,
+      strong_sell,
+    };
+
     return {
       ...last_data,
       symbol,
@@ -358,6 +443,8 @@ export const getHistorialQuote = async (symbol: string) => {
       averageVolume_last20,
       changeVolume_last20,
       changePrice,
+      count_5_day_within_base,
+      last_10_day_summary,
     };
   }
   return null;
