@@ -34,6 +34,7 @@ import {
   FinancialIndicatorsColumns,
   FundamentalColumns,
   HistoricalQuoteColumns,
+  NoDataColumns,
   UNIT_BILLION,
   MIN_CHANGE,
   MAX_CHANGE,
@@ -42,12 +43,13 @@ import {
   CheckCircleOutlined,
   SettingOutlined,
   FilterOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import './StockTable.less';
 
 const MyIndicatorsColumns: any = [
   {
-    title: '_marketCap (ty)',
+    title: '_marketCap(ty)',
     sorter: (a: any, b: any) => a.marketCap - b.marketCap,
     align: 'right',
     render: (data: any) => {
@@ -57,7 +59,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_totalValue_last20_min (ty)',
+    title: '_totalValue_last20_min(ty)',
     sorter: (a: any, b: any) =>
       a.totalValue_last20_min - b.totalValue_last20_min,
     align: 'right',
@@ -68,7 +70,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_totalValue_last20_max (ty)',
+    title: '_totalValue_last20_max(ty)',
     sorter: (a: any, b: any) =>
       a.totalValue_last20_max - b.totalValue_last20_max,
     align: 'right',
@@ -79,7 +81,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_changeVolume_last5 (%)',
+    title: '_changeVolume_last5(%)',
     sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
     align: 'right',
     render: (data: any) => {
@@ -91,7 +93,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_changeVolume_last20 (%)',
+    title: '_changeVolume_last20(%)',
     sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
     align: 'right',
     render: (data: any) => {
@@ -103,7 +105,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_changePrice (%)',
+    title: '_changePrice(%)',
     sorter: (a: any, b: any) => a.changePrice - b.changePrice,
     align: 'right',
     render: (data: any) => {
@@ -112,6 +114,35 @@ const MyIndicatorsColumns: any = [
       ).toLocaleString();
       const className = data.changePrice > 0 ? 'green' : 'red';
       return <span className={className}>{value}</span>;
+    },
+  },
+  {
+    title: '_count_5_day_within_base',
+    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+    // align: 'right',
+    render: (data: any) => {
+      const valid =
+        data.count_5_day_within_base && data.count_5_day_within_base.valid;
+      const count =
+        (data.count_5_day_within_base && data.count_5_day_within_base.count) ||
+        0;
+      return (
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ marginRight: '10px' }}>{count}</span>
+          {valid ? (
+            <CheckCircleOutlined style={{ color: 'green', fontSize: '18px' }} />
+          ) : (
+            <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
+          )}
+        </div>
+      );
     },
   },
 ];
@@ -145,6 +176,7 @@ const plainOptions = [
   'Fundamental',
   'FinancialIndicators',
   'MyIndicators',
+  'NoData',
 ];
 const defaultCheckedList: any = ['HistoricalQuote', 'MyIndicators'];
 
@@ -199,6 +231,8 @@ export default function StockTable() {
   const [changePrice_min, setChangePrice_min] = useState<number>(MIN_CHANGE);
   const [changePrice_max, setChangePrice_max] = useState<number>(MAX_CHANGE);
   const [excludeVN30, setExcludeVN30] = useState(false);
+  const [validCount_5_day_within_base, setValidCount_5_day_within_base] =
+    useState(false);
 
   const handleClickMenuWatchlist = (e: any) => {
     setCurrentWatchlist(listWatchlistObj[e.key]);
@@ -389,6 +423,7 @@ export default function StockTable() {
         title: 'Symbol',
         dataIndex: 'symbol',
         key: 'symbol',
+        sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
       },
     ];
     if (checkedList.includes('HistoricalQuote')) {
@@ -416,6 +451,13 @@ export default function StockTable() {
       columns.push({
         title: 'MyIndicators',
         children: MyIndicatorsColumns,
+      });
+    }
+
+    if (checkedList.includes('NoData')) {
+      columns.push({
+        title: 'NoData',
+        children: NoDataColumns,
       });
     }
     setColumns(columns);
@@ -488,6 +530,14 @@ export default function StockTable() {
     }
 
     if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
+      return false;
+    }
+
+    if (
+      validCount_5_day_within_base &&
+      i.count_5_day_within_base &&
+      !i.count_5_day_within_base.valid
+    ) {
       return false;
     }
 
@@ -642,6 +692,7 @@ export default function StockTable() {
       <Drawer
         title="Filter"
         placement="bottom"
+        className="StockTableFilterDrawer"
         onClose={() => setOpenDrawerFilter(false)}
         open={openDrawerFilter}
       >
@@ -654,54 +705,76 @@ export default function StockTable() {
             style={{ justifyContent: 'space-between', flexDirection: 'column' }}
           >
             <div>
-              <InputNumber
-                addonBefore="totalValue_last20_min"
-                value={totalValue_last20_min}
-                onChange={(value: any) => setTotalValue_last20_min(value)}
-              />
-              <InputNumber
-                addonBefore="totalValue_last20_max"
-                value={totalValue_last20_max}
-                onChange={(value: any) => setTotalValue_last20_max(value)}
-              />
-              <br />
-              <InputNumber
-                addonBefore="changeVolume_last5_min"
-                value={changeVolume_last5_min}
-                onChange={(value: any) => setChangeVolume_last5_min(value)}
-              />
-              <InputNumber
-                addonBefore="changeVolume_last5_max"
-                value={changeVolume_last5_max}
-                onChange={(value: any) => setChangeVolume_last5_max(value)}
-              />
-              <br />
-              <InputNumber
-                addonBefore="changeVolume_last20_min"
-                value={changeVolume_last20_min}
-                onChange={(value: any) => setChangeVolume_last20_min(value)}
-              />
-              <InputNumber
-                addonBefore="changeVolume_last20_max"
-                value={changeVolume_last20_max}
-                onChange={(value: any) => setChangeVolume_last20_max(value)}
-              />
-              <br />
-              <InputNumber
-                addonBefore="changePrice_min"
-                value={changePrice_min}
-                onChange={(value: any) => setChangePrice_min(value)}
-              />
-              <InputNumber
-                addonBefore="changePrice_max"
-                value={changePrice_max}
-                onChange={(value: any) => setChangePrice_max(value)}
-              />
+              <div className="flex">
+                <InputNumber
+                  addonBefore="totalValue_last20_min"
+                  value={totalValue_last20_min}
+                  onChange={(value: any) => setTotalValue_last20_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="totalValue_last20_max"
+                  value={totalValue_last20_max}
+                  onChange={(value: any) => setTotalValue_last20_max(value)}
+                />
+              </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="changeVolume_last5_min"
+                  value={changeVolume_last5_min}
+                  onChange={(value: any) => setChangeVolume_last5_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="changeVolume_last5_max"
+                  value={changeVolume_last5_max}
+                  onChange={(value: any) => setChangeVolume_last5_max(value)}
+                />
+              </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="changeVolume_last20_min"
+                  value={changeVolume_last20_min}
+                  onChange={(value: any) => setChangeVolume_last20_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="changeVolume_last20_max"
+                  value={changeVolume_last20_max}
+                  onChange={(value: any) => setChangeVolume_last20_max(value)}
+                />
+              </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="changePrice_min"
+                  value={changePrice_min}
+                  onChange={(value: any) => setChangePrice_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="changePrice_max"
+                  value={changePrice_max}
+                  onChange={(value: any) => setChangePrice_max(value)}
+                />
+              </div>
               <div style={{ marginTop: '8px' }}>
-                Exclude VN30
                 <Switch
+                  checkedChildren="Exclude VN30"
+                  unCheckedChildren="Exclude VN30"
                   checked={excludeVN30}
                   onChange={() => setExcludeVN30(!excludeVN30)}
+                />
+              </div>
+              <div style={{ marginTop: '8px' }}>
+                <Switch
+                  checkedChildren="validCount_5_day_within_base"
+                  unCheckedChildren="validCount_5_day_within_base"
+                  checked={validCount_5_day_within_base}
+                  onChange={() =>
+                    setValidCount_5_day_within_base(
+                      !validCount_5_day_within_base
+                    )
+                  }
                 />
               </div>
             </div>
