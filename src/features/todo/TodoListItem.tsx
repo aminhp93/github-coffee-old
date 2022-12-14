@@ -16,12 +16,13 @@ import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
 import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
 import { TodoService, PushNotificationService } from 'libs/services';
+import { useDebounce } from 'libs/hooks';
 
 const format = 'HH:mm';
 
@@ -75,14 +76,16 @@ function TodoListItem({
   id,
   moveCard,
 }: IProps) {
-  const [plateId, setPlateId] = React.useState(null as any);
-  const [value, setValue] = React.useState(JSON.parse(todoItem.body));
-  const [isDone, setIsDone] = React.useState(todoItem.isDone);
-  const [isConfirmDelete, setIsConfirmDelete] = React.useState(false);
-  const divRef = React.useRef<HTMLDivElement>(null);
-  const countDownRef = React.useRef<any>(null);
-  const [timer, setTimer] = React.useState(moment('00:01', format));
-  const [status, setStatus] = React.useState('');
+  const [plateId, setPlateId] = useState(null as any);
+  const [value, setValue] = useState(JSON.parse(todoItem.body));
+  const [isDone, setIsDone] = useState(todoItem.isDone);
+  const [isConfirmDelete, setIsConfirmDelete] = useState(false);
+  const divRef = useRef<HTMLDivElement>(null);
+  const countDownRef = useRef<any>(null);
+  const [timer, setTimer] = useState(moment('00:01', format));
+  const [status, setStatus] = useState('');
+  const preventUpdate = useRef(false);
+  const debouncedValue = useDebounce<string>(JSON.stringify(value), 500);
 
   const handleDone = async () => {
     try {
@@ -131,10 +134,11 @@ function TodoListItem({
   };
 
   const handleChange = (data: any) => {
+    preventUpdate.current = false;
     setValue(data);
   };
 
-  const ref = React.useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [{ handlerId }, drop] = useDrop<
     DragItem,
     void,
@@ -253,10 +257,10 @@ function TodoListItem({
   }, [todoItem]);
 
   useEffect(() => {
-    const timer = setTimeout(handleUpdate, 3000);
-    return () => clearTimeout(timer);
+    if (preventUpdate.current) return;
+    handleUpdate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [debouncedValue]);
 
   const renderPopover = () => {
     return (
@@ -391,6 +395,6 @@ function TodoListItem({
   );
 }
 
-const MemoizedTodoListItem = React.memo(TodoListItem);
+const MemoizedTodoListItem = memo(TodoListItem);
 
 export default MemoizedTodoListItem;

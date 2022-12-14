@@ -23,12 +23,28 @@ export default function Test() {
     });
   };
 
+  const handleStartJob = () => {
+    axios({
+      url: `${baseUrl}/api/test/start-job/`,
+      method: 'GET',
+    });
+  };
+
+  const handleCancelJob = () => {
+    axios({
+      url: `${baseUrl}/api/test/cancel-job/`,
+      method: 'GET',
+    });
+  };
+
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
       <Button onClick={handleClickPayment}>Test payment</Button>
       <Button onClick={handleClickPushNotication}>
         Test Push notification
       </Button>
+      <Button onClick={handleStartJob}>Start job</Button>
+      <Button onClick={handleCancelJob}>Cancel job</Button>
     </div>
   );
 }

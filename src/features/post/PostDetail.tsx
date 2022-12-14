@@ -6,10 +6,10 @@ import {
 import { Button, notification, Typography } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { PostService } from 'libs/services';
-import { IPost } from 'libs/types';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
+import { useDebounce } from 'libs/hooks';
 
 const { Paragraph } = Typography;
 
@@ -27,24 +27,22 @@ const MemoizedPostDetail = memo(function PostDetail({
   const [plateId, setPlateId] = useState(uuidv4());
   const [post, setPost] = useState(DEFAULT_PLATE_VALUE);
   const [postTitle, setPostTitle] = useState('');
-  const [, setPostObj] = useState({} as IPost);
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isUpdated, setIsUpdated] = useState<boolean>(true);
+  const debouncedPost = useDebounce<string>(JSON.stringify(post), 500);
+  const preventUpdate = useRef(false);
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         const res: any = await PostService.detailPost(postId);
+        preventUpdate.current = true;
         setLoading(false);
-
-        if (res.data) {
-          setPost(JSON.parse(res.data.body));
-          setPostTitle(res.data.title);
-          setPostObj(res.data);
-          setPlateId(uuidv4());
-        }
+        setPost(JSON.parse(res.data.body));
+        setPostTitle(res.data.title);
+        setPlateId(uuidv4());
       } catch (e) {
         setLoading(false);
       }
@@ -52,7 +50,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   }, [postId]);
 
   const handleUpdate = async () => {
-    console.log('handleUpdate', postId);
     if (!postTitle) return;
     try {
       const data = {
@@ -85,6 +82,7 @@ const MemoizedPostDetail = memo(function PostDetail({
   };
 
   const handleChange = (e: any) => {
+    preventUpdate.current = false;
     setPost(e);
     setIsUpdated(false);
   };
@@ -94,10 +92,10 @@ const MemoizedPostDetail = memo(function PostDetail({
   }, [postId]);
 
   useEffect(() => {
-    const timer = setTimeout(handleUpdate, 3000);
-    return () => clearTimeout(timer);
+    if (preventUpdate.current) return;
+    handleUpdate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [post]);
+  }, [debouncedPost]);
 
   return (
     <div className="PostDetail width-100">

@@ -15,7 +15,6 @@ export default function Example(props: IExampleProps) {
   const [tab, setTab] = React.useState('crud-using-swr');
 
   const handleChangeTab = (key: string) => {
-    console.log(key);
     setTab(key);
   };
 
