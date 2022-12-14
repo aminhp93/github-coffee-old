@@ -16,6 +16,7 @@ import {
   Menu,
   Drawer,
   InputNumber,
+  Tooltip,
 } from 'antd';
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import type { ColumnsType, TableProps } from 'antd/es/table';
@@ -46,6 +47,7 @@ import {
   CloseCircleOutlined,
 } from '@ant-design/icons';
 import './StockTable.less';
+import moment from 'moment';
 
 const MyIndicatorsColumns: any = [
   {
@@ -142,6 +144,46 @@ const MyIndicatorsColumns: any = [
             <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
           )}
         </div>
+      );
+    },
+  },
+  {
+    title: '_last_10_day_summary',
+    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+    align: 'center',
+    render: (data: any) => {
+      const strong_buy =
+        (data.last_10_day_summary && data.last_10_day_summary.strong_buy) || [];
+      const strong_sell =
+        (data.last_10_day_summary && data.last_10_day_summary.strong_sell) ||
+        [];
+      return (
+        <Tooltip
+          title={
+            <div style={{ display: 'flex' }}>
+              <div style={{ color: 'green', width: '100px' }}>
+                {strong_buy.map((i: any) => {
+                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
+                })}
+              </div>
+              <div style={{ color: 'red', width: '100px' }}>
+                {strong_sell.map((i: any) => {
+                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
+                })}
+              </div>
+            </div>
+          }
+        >
+          <div style={{ marginRight: '10px' }}>
+            <span style={{ color: 'green', marginRight: '4px' }}>
+              {strong_buy.length}
+            </span>
+            |
+            <span style={{ color: 'red', marginLeft: '4px' }}>
+              {strong_sell.length}
+            </span>
+          </div>
+        </Tooltip>
       );
     },
   },

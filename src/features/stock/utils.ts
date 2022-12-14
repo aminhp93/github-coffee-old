@@ -391,6 +391,46 @@ export const getHistorialQuote = async (symbol: string) => {
       }
     });
 
+    const strong_sell: any = [];
+    const strong_buy: any = [];
+
+    const last_10_data = res.data.slice(1, 11);
+    const averageVolume_last10 =
+      last_10_data.reduce((a: any, b: any) => a + b.dealVolume, 0) / 10;
+
+    last_10_data.forEach((i: any, index: number) => {
+      if (index === 0) return;
+      const last_price = last_10_data[index - 1].priceClose;
+      let isSell = false;
+      let isBuy = false;
+      // Check if it is the sell or buy
+      // Normal case is priceClose > priceOpen --> buy
+      if (i.priceClose > last_price * 1.03) {
+        isBuy = true;
+      }
+      if (i.priceClose < last_price * 0.97) {
+        isSell = true;
+      }
+
+      let strong_volume = false;
+      // Check if volume is strong
+      if (i.dealVolume > averageVolume_last10) {
+        strong_volume = true;
+      }
+
+      if (strong_volume && isBuy) {
+        strong_buy.push(i);
+      }
+      if (strong_volume && isSell) {
+        strong_sell.push(i);
+      }
+    });
+
+    const last_10_day_summary: any = {
+      strong_buy,
+      strong_sell,
+    };
+
     return {
       ...last_data,
       symbol,
@@ -404,6 +444,7 @@ export const getHistorialQuote = async (symbol: string) => {
       changeVolume_last20,
       changePrice,
       count_5_day_within_base,
+      last_10_day_summary,
     };
   }
   return null;
