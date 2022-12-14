@@ -269,7 +269,7 @@ export default function StockTable() {
     try {
       const watchlistObj = {
         watchlistID: 2279542,
-        name: 'thanh_khoan_vua_2',
+        name: 'daily_test_watchlist',
         userName: 'minhpn.org.ec1@gmail.com',
       };
 

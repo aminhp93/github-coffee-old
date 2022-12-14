@@ -135,7 +135,6 @@ export default function StockMarketOverview() {
             },
           ],
         };
-        console.log(option);
         return (
           <div style={{ overflow: 'auto', width: '100%' }}>
             <Echarts option={option} />
