@@ -62,6 +62,16 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
+    title: '_totalValue(ty)',
+    sorter: (a: any, b: any) => a.totalValue - b.totalValue,
+    align: 'right',
+    render: (data: any) => {
+      return Number(
+        Number(data.totalValue / UNIT_BILLION).toFixed(0)
+      ).toLocaleString();
+    },
+  },
+  {
     title: '_totalValue_last20_min(ty)',
     sorter: (a: any, b: any) =>
       a.totalValue_last20_min - b.totalValue_last20_min,
@@ -192,17 +202,19 @@ const MyIndicatorsColumns: any = [
 
 const InDayReviewColumns = [
   {
-    title: '_transaction_100_million',
-    // sorter: (a: any, b: any) => a.marketCap - b.marketCap,
+    title: '_transaction_upto_1_bil',
+    sorter: (a: any, b: any) =>
+      a.transaction_upto_1_bil &&
+      b.transaction_upto_1_bil &&
+      a.transaction_upto_1_bil.length - b.transaction_upto_1_bil.length,
     align: 'right',
     render: (data: any) => {
-      const transaction_100_million = data.transaction_100_million || [];
-      const count_transaction = data.count_transaction || 1;
+      const transaction_upto_1_bil = data.transaction_upto_1_bil || [];
       return (
         <Tooltip
           title={
             <div>
-              {transaction_100_million.map((i: any) => {
+              {transaction_upto_1_bil.map((i: any) => {
                 return (
                   <div>
                     {moment(Number(i.TradingDate.slice(6, 19))).format(
@@ -218,26 +230,25 @@ const InDayReviewColumns = [
             </div>
           }
         >
-          <div>
-            {' '}
-            {`${transaction_100_million.length} / ${count_transaction}`}
-          </div>
+          <div>{transaction_upto_1_bil.length}</div>
         </Tooltip>
       );
     },
   },
   {
-    title: '_transaction_1_billion',
-    // sorter: (a: any, b: any) => a.marketCap - b.marketCap,
+    title: '_transaction_above_1_bil',
+    sorter: (a: any, b: any) =>
+      a.transaction_above_1_bil &&
+      b.transaction_above_1_bil &&
+      a.transaction_above_1_bil.length - b.transaction_above_1_bil.length,
     align: 'right',
     render: (data: any) => {
-      const transaction_1_billion = data.transaction_1_billion || [];
-      const count_transaction = data.count_transaction || 1;
+      const transaction_above_1_bil = data.transaction_above_1_bil || [];
       return (
         <Tooltip
           title={
             <div>
-              {transaction_1_billion.map((i: any) => {
+              {transaction_above_1_bil.map((i: any) => {
                 return (
                   <div>
                     {moment(Number(i.TradingDate.slice(6, 19))).format(
@@ -253,7 +264,7 @@ const InDayReviewColumns = [
             </div>
           }
         >
-          <div> {`${transaction_1_billion.length} / ${count_transaction}`}</div>
+          <div> {transaction_above_1_bil.length}</div>
         </Tooltip>
       );
     },
@@ -342,6 +353,10 @@ export default function StockTable() {
     useState<number>(MIN_CHANGE);
   const [changeVolume_last20_max, setChangeVolume_last20_max] =
     useState<number>(MAX_CHANGE);
+  const [transaction_above_1_bil_min, setTransaction_upto_1_bil_min] =
+    useState<number>(0);
+  const [transaction_above_1_bil_max, setTransaction_upto_1_bil_max] =
+    useState<number>(99999);
   const [changePrice_min, setChangePrice_min] = useState<number>(MIN_CHANGE);
   const [changePrice_max, setChangePrice_max] = useState<number>(MAX_CHANGE);
   const [excludeVN30, setExcludeVN30] = useState(false);
@@ -664,6 +679,20 @@ export default function StockTable() {
       return false;
     }
 
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length < transaction_above_1_bil_min
+    ) {
+      return false;
+    }
+
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length > transaction_above_1_bil_max
+    ) {
+      return false;
+    }
+
     return true;
   });
 
@@ -878,6 +907,23 @@ export default function StockTable() {
                   addonBefore="changePrice_max"
                   value={changePrice_max}
                   onChange={(value: any) => setChangePrice_max(value)}
+                />
+              </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="transaction_above_1_bil_min"
+                  value={transaction_above_1_bil_min}
+                  onChange={(value: any) =>
+                    setTransaction_upto_1_bil_min(value)
+                  }
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="transaction_above_1_bil_max"
+                  value={transaction_above_1_bil_max}
+                  onChange={(value: any) =>
+                    setTransaction_upto_1_bil_max(value)
+                  }
                 />
               </div>
               <div style={{ marginTop: '8px' }}>

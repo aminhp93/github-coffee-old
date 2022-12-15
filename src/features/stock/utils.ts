@@ -526,22 +526,20 @@ export const getDailyTransaction = async (symbol: string) => {
     },
   });
   if (res.data) {
-    const transaction_1_billion: any = [];
-    const transaction_100_million: any = [];
+    const transaction_upto_1_bil: any = [];
+    const transaction_above_1_bil: any = [];
 
     res.data.forEach((item: any) => {
       if (item.Vol * item.Price > UNIT_BILLION) {
-        transaction_1_billion.push(item);
-      }
-      if (item.Vol * item.Price * 10 > UNIT_BILLION) {
-        transaction_100_million.push(item);
+        transaction_above_1_bil.push(item);
+      } else {
+        transaction_upto_1_bil.push(item);
       }
     });
 
     return {
-      count_transaction: res.data.length,
-      transaction_1_billion,
-      transaction_100_million,
+      transaction_above_1_bil,
+      transaction_upto_1_bil,
       symbol,
       key: symbol,
     };
