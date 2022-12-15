@@ -30,6 +30,7 @@ import {
   getHistorialQuote,
   getFinancialIndicator,
   getFundamentals,
+  getDailyTransaction,
   updateWatchlist,
   LIST_VN30,
   FinancialIndicatorsColumns,
@@ -71,17 +72,17 @@ const MyIndicatorsColumns: any = [
       ).toLocaleString();
     },
   },
-  {
-    title: '_totalValue_last20_max(ty)',
-    sorter: (a: any, b: any) =>
-      a.totalValue_last20_max - b.totalValue_last20_max,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.totalValue_last20_max / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
+  // {
+  //   title: '_totalValue_last20_max(ty)',
+  //   sorter: (a: any, b: any) =>
+  //     a.totalValue_last20_max - b.totalValue_last20_max,
+  //   align: 'right',
+  //   render: (data: any) => {
+  //     return Number(
+  //       Number(data.totalValue_last20_max / UNIT_BILLION).toFixed(0)
+  //     ).toLocaleString();
+  //   },
+  // },
   {
     title: '_changeVolume_last5(%)',
     sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
@@ -94,18 +95,18 @@ const MyIndicatorsColumns: any = [
       return <span className={className}>{value}</span>;
     },
   },
-  {
-    title: '_changeVolume_last20(%)',
-    sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changeVolume_last20 * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changeVolume_last20 > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
+  // {
+  //   title: '_changeVolume_last20(%)',
+  //   sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
+  //   align: 'right',
+  //   render: (data: any) => {
+  //     const value = Number(
+  //       Number((data.changeVolume_last20 * 100) / 1).toFixed(2)
+  //     ).toLocaleString();
+  //     const className = data.changeVolume_last20 > 0 ? 'green' : 'red';
+  //     return <span className={className}>{value}</span>;
+  //   },
+  // },
   {
     title: '_changePrice(%)',
     sorter: (a: any, b: any) => a.changePrice - b.changePrice,
@@ -189,6 +190,76 @@ const MyIndicatorsColumns: any = [
   },
 ];
 
+const InDayReviewColumns = [
+  {
+    title: '_transaction_100_million',
+    // sorter: (a: any, b: any) => a.marketCap - b.marketCap,
+    align: 'right',
+    render: (data: any) => {
+      const transaction_100_million = data.transaction_100_million || [];
+      const count_transaction = data.count_transaction || 1;
+      return (
+        <Tooltip
+          title={
+            <div>
+              {transaction_100_million.map((i: any) => {
+                return (
+                  <div>
+                    {moment(Number(i.TradingDate.slice(6, 19))).format(
+                      'HH:mm:ss'
+                    )}{' '}
+                    -{' '}
+                    {Number(
+                      ((i.Vol * i.Price * 10) / UNIT_BILLION).toFixed(1)
+                    ).toLocaleString()}
+                  </div>
+                );
+              })}
+            </div>
+          }
+        >
+          <div>
+            {' '}
+            {`${transaction_100_million.length} / ${count_transaction}`}
+          </div>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    title: '_transaction_1_billion',
+    // sorter: (a: any, b: any) => a.marketCap - b.marketCap,
+    align: 'right',
+    render: (data: any) => {
+      const transaction_1_billion = data.transaction_1_billion || [];
+      const count_transaction = data.count_transaction || 1;
+      return (
+        <Tooltip
+          title={
+            <div>
+              {transaction_1_billion.map((i: any) => {
+                return (
+                  <div>
+                    {moment(Number(i.TradingDate.slice(6, 19))).format(
+                      'HH:mm:ss'
+                    )}{' '}
+                    -{' '}
+                    {Number(
+                      ((i.Vol * i.Price) / UNIT_BILLION).toFixed(1)
+                    ).toLocaleString()}
+                  </div>
+                );
+              })}
+            </div>
+          }
+        >
+          <div> {`${transaction_1_billion.length} / ${count_transaction}`}</div>
+        </Tooltip>
+      );
+    },
+  },
+];
+
 interface DataType {
   key: number;
   name: string;
@@ -218,6 +289,7 @@ const plainOptions = [
   'Fundamental',
   'FinancialIndicators',
   'MyIndicators',
+  'InDayReview',
   'NoData',
 ];
 const defaultCheckedList: any = ['HistoricalQuote', 'MyIndicators'];
@@ -380,6 +452,7 @@ export default function StockTable() {
       listPromises.push(getHistorialQuote(j.symbol));
       listPromises.push(getFundamentals(j.symbol));
       listPromises.push(getFinancialIndicator(j.symbol));
+      listPromises.push(getDailyTransaction(j.symbol));
     });
 
     setLoading(true);
@@ -502,6 +575,14 @@ export default function StockTable() {
         children: NoDataColumns,
       });
     }
+
+    if (checkedList.includes('InDayReview')) {
+      columns.push({
+        title: 'InDayReview',
+        children: InDayReviewColumns,
+      });
+    }
+
     setColumns(columns);
   }, [checkedList]);
 
