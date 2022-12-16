@@ -433,6 +433,17 @@ export const getHistorialQuote = async (symbol: string) => {
 
     const test_in_day_review = 123;
 
+    const start_time = moment().set('hour', 9).set('minute', 0);
+    const default_end_time = moment().set('hour', 14).set('minute', 45);
+    const default_diff_time = default_end_time.diff(start_time, 'minute');
+
+    const end_time = moment();
+    const diff_time = end_time.diff(start_time, 'minute');
+    const estimated_vol =
+      (last_data.dealVolume * default_diff_time) / diff_time;
+    const estimated_vol_change =
+      (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
+
     return {
       ...last_data,
       symbol,
@@ -448,6 +459,8 @@ export const getHistorialQuote = async (symbol: string) => {
       count_5_day_within_base,
       last_10_day_summary,
       test_in_day_review,
+      estimated_vol,
+      estimated_vol_change,
     };
   }
   return null;

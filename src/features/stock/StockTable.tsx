@@ -88,17 +88,17 @@ const MyIndicatorsColumns: any = [
       ).toLocaleString();
     },
   },
-  {
-    title: '_totalValue_last20_min(ty)',
-    sorter: (a: any, b: any) =>
-      a.totalValue_last20_min - b.totalValue_last20_min,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.totalValue_last20_min / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
+  // {
+  //   title: '_totalValue_last20_min(ty)',
+  //   sorter: (a: any, b: any) =>
+  //     a.totalValue_last20_min - b.totalValue_last20_min,
+  //   align: 'right',
+  //   render: (data: any) => {
+  //     return Number(
+  //       Number(data.totalValue_last20_min / UNIT_BILLION).toFixed(0)
+  //     ).toLocaleString();
+  //   },
+  // },
   // {
   //   title: '_totalValue_last20_max(ty)',
   //   sorter: (a: any, b: any) =>
@@ -147,7 +147,7 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_count_5_day_within_base',
+    title: '_5_day_base',
     // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
     // align: 'right',
     render: (data: any) => {
@@ -215,11 +215,24 @@ const MyIndicatorsColumns: any = [
       );
     },
   },
+  {
+    title: '_est_vol_change(%)',
+    sorter: (a: any, b: any) => a.estimated_vol_change - b.estimated_vol_change,
+    align: 'right',
+    render: (data: any) => {
+      const estimated_vol_change = data.estimated_vol_change || 0;
+      const className = estimated_vol_change > 0 ? 'green' : '';
+
+      return (
+        <span className={className}>{estimated_vol_change.toFixed(2)}</span>
+      );
+    },
+  },
 ];
 
 const InDayReviewColumns = [
   {
-    title: '_transaction_upto_1_bil',
+    title: '_trans_upto_1_bil',
     sorter: (a: any, b: any) =>
       a.transaction_upto_1_bil &&
       b.transaction_upto_1_bil &&
@@ -250,7 +263,7 @@ const InDayReviewColumns = [
     },
   },
   {
-    title: '_transaction_above_1_bil',
+    title: '_trans_above_1_bil',
     sorter: (a: any, b: any) =>
       a.transaction_above_1_bil &&
       b.transaction_above_1_bil &&
@@ -314,7 +327,7 @@ const plainOptions = [
   'InDayReview',
   'NoData',
 ];
-const defaultCheckedList: any = ['HistoricalQuote', 'MyIndicators'];
+const defaultCheckedList: any = ['MyIndicators', 'InDayReview'];
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
