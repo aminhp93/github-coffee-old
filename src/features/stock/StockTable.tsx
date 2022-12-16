@@ -32,7 +32,6 @@ import {
   getFundamentals,
   getDailyTransaction,
   updateWatchlist,
-  LIST_VN30,
   FinancialIndicatorsColumns,
   FundamentalColumns,
   HistoricalQuoteColumns,
@@ -40,6 +39,8 @@ import {
   UNIT_BILLION,
   MIN_CHANGE,
   MAX_CHANGE,
+  DELAY_TIME,
+  getFilterData,
 } from './utils';
 import {
   CheckCircleOutlined,
@@ -49,6 +50,22 @@ import {
 } from '@ant-design/icons';
 import './StockTable.less';
 import moment from 'moment';
+import { useInterval } from 'libs/hooks';
+
+const DEFAULT_FILTER = {
+  totalValue_last20_min: 0,
+  totalValue_last20_max: 99999,
+  changeVolume_last5_min: MIN_CHANGE,
+  changeVolume_last5_max: MAX_CHANGE,
+  changeVolume_last20_min: MIN_CHANGE,
+  changeVolume_last20_max: MAX_CHANGE,
+  transaction_above_1_bil_min: 0,
+  transaction_above_1_bil_max: 99999,
+  changePrice_min: MIN_CHANGE,
+  changePrice_max: MAX_CHANGE,
+  excludeVN30: false,
+  validCount_5_day_within_base: false,
+};
 
 const MyIndicatorsColumns: any = [
   {
@@ -217,12 +234,9 @@ const InDayReviewColumns = [
               {transaction_upto_1_bil.map((i: any) => {
                 return (
                   <div>
-                    {moment(Number(i.TradingDate.slice(6, 19))).format(
-                      'HH:mm:ss'
-                    )}{' '}
-                    -{' '}
+                    {moment(i.Date).format('HH:mm:ss')} -{' '}
                     {Number(
-                      ((i.Vol * i.Price * 10) / UNIT_BILLION).toFixed(1)
+                      ((i.Volume * i.Price * 10) / UNIT_BILLION).toFixed(1)
                     ).toLocaleString()}
                   </div>
                 );
@@ -251,12 +265,9 @@ const InDayReviewColumns = [
               {transaction_above_1_bil.map((i: any) => {
                 return (
                   <div>
-                    {moment(Number(i.TradingDate.slice(6, 19))).format(
-                      'HH:mm:ss'
-                    )}{' '}
-                    -{' '}
+                    {moment(i.Date).format('HH:mm:ss')} -{' '}
                     {Number(
-                      ((i.Vol * i.Price) / UNIT_BILLION).toFixed(1)
+                      ((i.Volume * i.Price) / UNIT_BILLION).toFixed(1)
                     ).toLocaleString()}
                   </div>
                 );
@@ -342,26 +353,61 @@ export default function StockTable() {
     useState<CheckboxValueType[]>(defaultCheckedList);
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-  const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(0);
-  const [totalValue_last20_max, setTotalValue_last20_max] =
-    useState<number>(99999);
-  const [changeVolume_last5_min, setChangeVolume_last5_min] =
-    useState<number>(MIN_CHANGE);
-  const [changeVolume_last5_max, setChangeVolume_last5_max] =
-    useState<number>(MAX_CHANGE);
+  const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
+    DEFAULT_FILTER.totalValue_last20_min
+  );
+  const [totalValue_last20_max, setTotalValue_last20_max] = useState<number>(
+    DEFAULT_FILTER.totalValue_last20_max
+  );
+  const [changeVolume_last5_min, setChangeVolume_last5_min] = useState<number>(
+    DEFAULT_FILTER.changeVolume_last5_min
+  );
+  const [changeVolume_last5_max, setChangeVolume_last5_max] = useState<number>(
+    DEFAULT_FILTER.changeVolume_last5_max
+  );
   const [changeVolume_last20_min, setChangeVolume_last20_min] =
-    useState<number>(MIN_CHANGE);
+    useState<number>(DEFAULT_FILTER.changeVolume_last20_min);
   const [changeVolume_last20_max, setChangeVolume_last20_max] =
-    useState<number>(MAX_CHANGE);
-  const [transaction_above_1_bil_min, setTransaction_upto_1_bil_min] =
-    useState<number>(0);
-  const [transaction_above_1_bil_max, setTransaction_upto_1_bil_max] =
-    useState<number>(99999);
-  const [changePrice_min, setChangePrice_min] = useState<number>(MIN_CHANGE);
-  const [changePrice_max, setChangePrice_max] = useState<number>(MAX_CHANGE);
-  const [excludeVN30, setExcludeVN30] = useState(false);
+    useState<number>(DEFAULT_FILTER.changeVolume_last20_max);
+  const [transaction_above_1_bil_min, setTransaction_above_1_bil_min] =
+    useState<number>(DEFAULT_FILTER.transaction_above_1_bil_min);
+  const [transaction_above_1_bil_max, setTransaction_above_1_bil_max] =
+    useState<number>(DEFAULT_FILTER.transaction_above_1_bil_max);
+  const [changePrice_min, setChangePrice_min] = useState<number>(
+    DEFAULT_FILTER.changePrice_min
+  );
+  const [changePrice_max, setChangePrice_max] = useState<number>(
+    DEFAULT_FILTER.changePrice_max
+  );
+  const [excludeVN30, setExcludeVN30] = useState(DEFAULT_FILTER.excludeVN30);
   const [validCount_5_day_within_base, setValidCount_5_day_within_base] =
-    useState(false);
+    useState(DEFAULT_FILTER.validCount_5_day_within_base);
+  const [isPlaying, setPlaying] = useState<boolean>(false);
+  const [delay, setDelay] = useState<number>(DELAY_TIME);
+
+  useInterval(
+    async () => {
+      const res = await handleGetData();
+      const filteredRes = getFilterData(res, {
+        totalValue_last20_min,
+        totalValue_last20_max,
+        changeVolume_last5_min,
+        changeVolume_last5_max,
+        changeVolume_last20_min,
+        changeVolume_last20_max,
+        changePrice_min,
+        changePrice_max,
+        excludeVN30,
+        validCount_5_day_within_base,
+        transaction_above_1_bil_min,
+        transaction_above_1_bil_max,
+      });
+      const symbols = filteredRes.map((item: any) => item.symbol);
+
+      handleUpdateWatchlist(symbols);
+    },
+    isPlaying ? delay : null
+  );
 
   const handleClickMenuWatchlist = (e: any) => {
     setCurrentWatchlist(listWatchlistObj[e.key]);
@@ -428,7 +474,7 @@ export default function StockTable() {
     setHasData(newHasData);
   };
 
-  const handleUpdateWatchlist = async () => {
+  const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
       const watchlistObj = {
         watchlistID: 2279542,
@@ -438,7 +484,7 @@ export default function StockTable() {
 
       const updateData = {
         ...watchlistObj,
-        symbols: dataSource.map((i: any) => i.symbol),
+        symbols: symbols ? symbols : filteredData.map((i: any) => i.symbol),
       };
 
       await updateWatchlist(watchlistObj, updateData);
@@ -471,7 +517,7 @@ export default function StockTable() {
     });
 
     setLoading(true);
-    Promise.all(listPromises).then((res: any) => {
+    return Promise.all(listPromises).then((res: any) => {
       setLoading(false);
       let newDataSource: any = [...dataSource];
       newDataSource = newDataSource.map((i: any) => {
@@ -486,12 +532,31 @@ export default function StockTable() {
       });
       setDataSource(newDataSource);
       notification.success({ message: 'success' });
+      return newDataSource;
     });
   };
 
   const handleClearFilter = () => {
-    setTotalValue_last20_min(0);
-    setExcludeVN30(false);
+    setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
+    setTotalValue_last20_max(DEFAULT_FILTER.totalValue_last20_max);
+    setChangeVolume_last5_min(DEFAULT_FILTER.changeVolume_last5_min);
+    setChangeVolume_last5_max(DEFAULT_FILTER.changeVolume_last5_max);
+    setChangeVolume_last20_min(DEFAULT_FILTER.changeVolume_last20_min);
+    setChangeVolume_last20_max(DEFAULT_FILTER.changeVolume_last20_max);
+    setTransaction_above_1_bil_min(DEFAULT_FILTER.transaction_above_1_bil_min);
+    setTransaction_above_1_bil_max(DEFAULT_FILTER.transaction_above_1_bil_max);
+    setChangePrice_min(DEFAULT_FILTER.changePrice_min);
+    setChangePrice_max(DEFAULT_FILTER.changePrice_max);
+    setExcludeVN30(DEFAULT_FILTER.excludeVN30);
+    setValidCount_5_day_within_base(
+      DEFAULT_FILTER.validCount_5_day_within_base
+    );
+  };
+
+  const handleSetFilter = () => {
+    setChangePrice_min(2);
+    setExcludeVN30(true);
+    setValidCount_5_day_within_base(true);
   };
 
   const scroll: { x?: number | string; y?: number | string } = {};
@@ -634,66 +699,19 @@ export default function StockTable() {
     changePrice_max
   );
 
-  const filteredData = dataSource.filter((i: any) => {
-    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
-      return false;
-    }
-
-    if (i.changePrice * 100 < changePrice_min) {
-      return false;
-    }
-
-    if (i.changePrice * 100 > changePrice_max) {
-      return false;
-    }
-
-    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
-      return false;
-    }
-
-    if (
-      validCount_5_day_within_base &&
-      i.count_5_day_within_base &&
-      !i.count_5_day_within_base.valid
-    ) {
-      return false;
-    }
-
-    if (
-      i.transaction_above_1_bil &&
-      i.transaction_above_1_bil.length < transaction_above_1_bil_min
-    ) {
-      return false;
-    }
-
-    if (
-      i.transaction_above_1_bil &&
-      i.transaction_above_1_bil.length > transaction_above_1_bil_max
-    ) {
-      return false;
-    }
-
-    return true;
+  const filteredData = getFilterData(dataSource, {
+    totalValue_last20_min,
+    totalValue_last20_max,
+    changeVolume_last5_min,
+    changeVolume_last5_max,
+    changeVolume_last20_min,
+    changeVolume_last20_max,
+    changePrice_min,
+    changePrice_max,
+    excludeVN30,
+    validCount_5_day_within_base,
+    transaction_above_1_bil_min,
+    transaction_above_1_bil_max,
   });
 
   return (
@@ -711,6 +729,18 @@ export default function StockTable() {
               disabled={loading}
               onClick={handleGetData}
             />
+            <div style={{ marginLeft: '8px' }}>
+              <Button onClick={() => setPlaying(!isPlaying)}>
+                {isPlaying ? 'Stop Interval' : 'Start Interval'}
+              </Button>
+
+              <InputNumber
+                style={{ marginLeft: '8px' }}
+                disabled={isPlaying}
+                value={delay}
+                onChange={(value: any) => setDelay(value)}
+              />
+            </div>
           </div>
           <div>
             <Checkbox
@@ -731,7 +761,11 @@ export default function StockTable() {
 
         <Table
           {...tableProps}
-          pagination={{ position: [top as TablePaginationPosition, bottom] }}
+          pagination={{
+            position: [top as TablePaginationPosition, bottom],
+            pageSizeOptions: ['10', '20', '30'],
+            showSizeChanger: true,
+          }}
           columns={columns}
           dataSource={hasData ? filteredData : []}
           scroll={scroll}
@@ -914,7 +948,7 @@ export default function StockTable() {
                   addonBefore="transaction_above_1_bil_min"
                   value={transaction_above_1_bil_min}
                   onChange={(value: any) =>
-                    setTransaction_upto_1_bil_min(value)
+                    setTransaction_above_1_bil_min(value)
                   }
                 />
                 <InputNumber
@@ -922,7 +956,7 @@ export default function StockTable() {
                   addonBefore="transaction_above_1_bil_max"
                   value={transaction_above_1_bil_max}
                   onChange={(value: any) =>
-                    setTransaction_upto_1_bil_max(value)
+                    setTransaction_above_1_bil_max(value)
                   }
                 />
               </div>
@@ -947,11 +981,21 @@ export default function StockTable() {
                 />
               </div>
             </div>
+          </div>
+          <div
+            className="flex"
+            style={{ justifyContent: 'space-between', flexDirection: 'column' }}
+          >
+            <Button onClick={handleSetFilter}>Formula 1</Button>
 
-            <Button onClick={handleClearFilter}>Clear filter</Button>
+            <Button danger onClick={handleClearFilter}>
+              Clear filter
+            </Button>
           </div>
           <div>
-            <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
+            <Button onClick={() => handleUpdateWatchlist()}>
+              Update watchlist
+            </Button>
           </div>
         </div>
       </Drawer>

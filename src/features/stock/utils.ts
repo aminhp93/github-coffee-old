@@ -1,6 +1,5 @@
 import moment from 'moment';
 import axios from 'axios';
-import request, { RedirectUrls } from 'libs/request';
 
 export const UNIT_BILLION = 1_000_000_000;
 export const NUMBER_UNIT_REDUCED = 1000;
@@ -495,45 +494,31 @@ export const getFundamentals = async (symbol: string) => {
 
 export const getDailyTransaction = async (symbol: string) => {
   if (!symbol) return;
-
-  const res = await request({
-    url: RedirectUrls.get,
+  //svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=C4G
+  const res = await axios({
     method: 'GET',
-    params: {
-      url: 'https://finance.vietstock.vn/data/getstockdealdetail',
-      method: 'POST',
-      payload: `code=${symbol}&seq=0&__RequestVerificationToken=XdOhxweLi810dUPhpPF2zb0jwdxW8HlHFuKN9O8LlqFVSui70Sb78wOe54bhUP_dOsAdnrRQgnzsBkPfVOFVTQusVI18BAFw09rCZ3iG0CE1`,
-      headers: JSON.stringify({
-        Accept: '*/*',
-        'Accept-Language': 'vi-VN,vi;q=0.9,fr;q=0.8,en-US;q=0.7,en;q=0.6',
-        Connection: 'keep-alive',
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        Cookie:
-          'language=vi-VN; ASP.NET_SessionId=xta2iw1vhl0qbrbyamrpqvtv; __RequestVerificationToken=t0aDnrKvz5kX5GA5v0V2mYDzJirplLNceZOteJcZXmbaXqnMDiy4etBeH9YMLp104c6QyvyT56sKFmHBggDYgH_XIMNiZhAL2-7y8Bw8wwA1; Theme=Light; _ga=GA1.2.1021059025.1671084404; _gid=GA1.2.1200488645.1671084404; AnonymousNotification=; isShowLogin=true; __gpi=UID=00000b90f5824195:T=1671084404:RT=1671084404:S=ALNI_MaWkdNZ3pH1FQ7Cmk42tkowDVsE2w; cto_bundle=Nr67d18lMkJxaDYwUndaamFDJTJCJTJGV2QyWmpRQzZSMUJRZ0YzRm5OYjM1VGxZcGRBTVB0UmZGOSUyRldEN2hvQ0NacjFyTEIza3RvZGpxS0dBTUhac2JHSVlUTkZNUUZYQ2IxQ08wTSUyQjI5ejZENlBFQzVSY2pLdWgyV3RMcUdkJTJGJTJGcXJaS3FNRUh0SVJjeGpPaGpKayUyQjk4SHolMkJqdUlrelhXckE0OUgwanQzZE9KbllTc3dWcGxDUkRBSExxM0VzSEluYXNLM0dwRHE1V0E3RzQ1JTJCNHVDb0VMJTJCTlE5TEZBdyUzRCUzRA; _cc_id=b87127fb46a8e636479e6e4c2e5c6d; panoramaId_expiry=1671689207685; panoramaId=6b3d63f0724174ef8c9491d014404945a702ca10edc47a292d273af4be34fcab; dable_uid=77199305.1659932618305; __gads=ID=d90ce89761abbb3b-22d2357cebd800af:T=1671084404:S=ALNI_MZIydSYhANWpzuE4F7FcTGttsC0pg; finance_viewedstock=VND,VPB,; _dd_s=logs=1&id=86039806-fe62-449b-953c-ea6526337da0&created=1671084403344&expire=1671087059960; _gat_gtag_UA_1460625_2=1; _gat_UA-1460625-2=1',
-        Origin: 'https://finance.vietstock.vn',
-        Referer: 'https://finance.vietstock.vn/vpb/thong-ke-giao-dich.htm',
-        'Sec-Fetch-Dest': 'empty',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'same-origin',
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
-        'X-Requested-With': 'XMLHttpRequest',
-        'sec-ch-ua':
-          '"Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"macOS"',
-      }),
-    },
+    //  headers: {
+    //    Authorization:
+    //      'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
+    //  },
+    url: `https://svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=${symbol}`,
   });
+
   if (res.data) {
     const transaction_upto_1_bil: any = [];
     const transaction_above_1_bil: any = [];
 
     res.data.forEach((item: any) => {
-      if (item.Vol * item.Price > UNIT_BILLION) {
-        transaction_above_1_bil.push(item);
+      const newItem = { ...item };
+      // remove properties ID, Symbol, TotalVolume
+      delete newItem.ID;
+      delete newItem.Symbol;
+      delete newItem.TotalVolume;
+
+      if (newItem.Volume * newItem.Price > UNIT_BILLION) {
+        transaction_above_1_bil.push(newItem);
       } else {
-        transaction_upto_1_bil.push(item);
+        transaction_upto_1_bil.push(newItem);
       }
     });
 
@@ -557,4 +542,85 @@ export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
     },
     data: updateData,
   });
+};
+
+export const getFilterData = (
+  data: any,
+  {
+    totalValue_last20_min,
+    totalValue_last20_max,
+    changeVolume_last5_min,
+    changeVolume_last5_max,
+    changeVolume_last20_min,
+    changeVolume_last20_max,
+    changePrice_min,
+    changePrice_max,
+    excludeVN30,
+    validCount_5_day_within_base,
+    transaction_above_1_bil_min,
+    transaction_above_1_bil_max,
+  }: any
+) => {
+  const filteredData = data.filter((i: any) => {
+    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
+      return false;
+    }
+
+    if (i.changePrice * 100 < changePrice_min) {
+      return false;
+    }
+
+    if (i.changePrice * 100 > changePrice_max) {
+      return false;
+    }
+
+    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
+      return false;
+    }
+
+    if (
+      validCount_5_day_within_base &&
+      i.count_5_day_within_base &&
+      !i.count_5_day_within_base.valid
+    ) {
+      return false;
+    }
+
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length < transaction_above_1_bil_min
+    ) {
+      return false;
+    }
+
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length > transaction_above_1_bil_max
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+  return filteredData;
 };
