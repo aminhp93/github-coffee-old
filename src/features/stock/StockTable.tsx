@@ -110,18 +110,18 @@ const MyIndicatorsColumns: any = [
   //     ).toLocaleString();
   //   },
   // },
-  {
-    title: '_changeVolume_last5(%)',
-    sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changeVolume_last5 * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changeVolume_last5 > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
+  // {
+  //   title: '_changeVolume_last5(%)',
+  //   sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
+  //   align: 'right',
+  //   render: (data: any) => {
+  //     const value = Number(
+  //       Number((data.changeVolume_last5 * 100) / 1).toFixed(2)
+  //     ).toLocaleString();
+  //     const className = data.changeVolume_last5 > 0 ? 'green' : 'red';
+  //     return <span className={className}>{value}</span>;
+  //   },
+  // },
   // {
   //   title: '_changeVolume_last20(%)',
   //   sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
@@ -176,7 +176,51 @@ const MyIndicatorsColumns: any = [
     },
   },
   {
-    title: '_last_10_day_summary',
+    title: '_10_day_base',
+    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+    // align: 'right',
+    render: (data: any) => {
+      const valid =
+        data.count_10_day_within_base && data.count_10_day_within_base.valid;
+      const count =
+        (data.count_10_day_within_base &&
+          data.count_10_day_within_base.count) ||
+        0;
+      return (
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ marginRight: '10px' }}>{count}</span>
+          {valid ? (
+            <CheckCircleOutlined style={{ color: 'green', fontSize: '18px' }} />
+          ) : (
+            <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
+          )}
+        </div>
+      );
+    },
+  },
+  {
+    title: () => {
+      return (
+        <Tooltip
+          title={
+            <div>
+              <div>{`priceClose > last_price * 1.03 --> isBuy`}</div>
+              <div>{`priceClose < last_price * 0.97 --> isSell`}</div>
+              <div>{`dealVolume > dealVolume`}</div>
+            </div>
+          }
+        >
+          _last_10_day_summary
+        </Tooltip>
+      );
+    },
     // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
     align: 'center',
     render: (data: any) => {
@@ -291,6 +335,14 @@ const InDayReviewColumns = [
           <div> {transaction_above_1_bil.length}</div>
         </Tooltip>
       );
+    },
+  },
+  {
+    title: '_buy_sell_vol',
+    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
+    render: (data: any) => {
+      const value = data.buy_sell_vol?.value || 0;
+      return <div className={value > 1 ? 'green' : 'red'}>{value}</div>;
     },
   },
 ];

@@ -391,24 +391,71 @@ export const getHistorialQuote = async (symbol: string) => {
       }
     });
 
+    let count_10_day_within_base = {
+      count: 0,
+      valid: false,
+    };
+    // count the number of dasy which percent price is within the min and max from the base today
+
+    const last_10_data = res.data.slice(1, 11);
+
+    last_10_data.forEach((item: any) => {
+      if (item.priceClose >= min_base && item.priceClose <= max_base) {
+        count_10_day_within_base.count += 1;
+      }
+      if (count_10_day_within_base.count === 10) {
+        count_10_day_within_base.valid = true;
+      }
+    });
+
     const strong_sell: any = [];
     const strong_buy: any = [];
 
-    const last_10_data = res.data.slice(1, 11);
     const averageVolume_last10 =
       last_10_data.reduce((a: any, b: any) => a + b.dealVolume, 0) / 10;
 
     last_10_data.forEach((i: any, index: number) => {
-      if (index === 0) return;
-      const last_price = last_10_data[index - 1].priceClose;
+      if (index === 9) return;
+
+      const last_price = last_10_data[index + 1].priceClose;
       let isSell = false;
       let isBuy = false;
+
+      i.last_price = last_price;
       // Check if it is the sell or buy
       // Normal case is priceClose > priceOpen --> buy
-      if (i.priceClose > last_price * 1.03) {
+
+      // Special case: hammer candle
+      const upperHammer = Number(
+        (
+          (100 *
+            (i.priceHigh - i.priceClose > last_price
+              ? i.priceClose
+              : last_price)) /
+          last_price
+        ).toFixed(1)
+      );
+
+      const lowerHammer = Number(
+        (
+          (100 *
+            (i.priceClose < last_price
+              ? i.priceClose
+              : last_price - i.priceLow)) /
+          last_price
+        ).toFixed(1)
+      );
+
+      if (
+        i.priceClose > last_price * 1.03 ||
+        (lowerHammer > 3 && upperHammer < 1)
+      ) {
         isBuy = true;
       }
-      if (i.priceClose < last_price * 0.97) {
+      if (
+        i.priceClose < last_price * 0.97 ||
+        (upperHammer > 3 && lowerHammer < 1)
+      ) {
         isSell = true;
       }
 
@@ -423,6 +470,9 @@ export const getHistorialQuote = async (symbol: string) => {
       }
       if (strong_volume && isSell) {
         strong_sell.push(i);
+      }
+      if (i.symbol === 'GEX') {
+        console.log(i.date, upperHammer, lowerHammer);
       }
     });
 
@@ -457,6 +507,7 @@ export const getHistorialQuote = async (symbol: string) => {
       changeVolume_last20,
       changePrice,
       count_5_day_within_base,
+      count_10_day_within_base,
       last_10_day_summary,
       test_in_day_review,
       estimated_vol,
@@ -520,6 +571,8 @@ export const getDailyTransaction = async (symbol: string) => {
   if (res.data) {
     const transaction_upto_1_bil: any = [];
     const transaction_above_1_bil: any = [];
+    let total_buy_vol = 0;
+    let total_sell_vol = 0;
 
     res.data.forEach((item: any) => {
       const newItem = { ...item };
@@ -533,11 +586,25 @@ export const getDailyTransaction = async (symbol: string) => {
       } else {
         transaction_upto_1_bil.push(newItem);
       }
+
+      if (newItem.Side === 'B') {
+        total_buy_vol += newItem.Volume;
+      }
+      if (newItem.Side === 'S') {
+        total_sell_vol += newItem.Volume;
+      }
     });
+
+    const buy_sell_vol = {
+      total_buy_vol,
+      total_sell_vol,
+      value: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+    };
 
     return {
       transaction_above_1_bil,
       transaction_upto_1_bil,
+      buy_sell_vol,
       symbol,
       key: symbol,
     };
