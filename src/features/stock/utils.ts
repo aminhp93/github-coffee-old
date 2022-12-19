@@ -1,74 +1,14 @@
 import moment from 'moment';
 import axios from 'axios';
-
-export const UNIT_BILLION = 1_000_000_000;
-export const NUMBER_UNIT_REDUCED = 1000;
-export const DATE_FORMAT = 'YYYY-MM-DD';
-export const TIME_FORMAT = 'HH:mm';
-export const FULL_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
-export const TIME_FRAME = '1';
-export const DELAY_TIME = 1_000 * 60;
-export const MIN_TOTAL_VOLUME = 100_000;
-export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
-export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
-export const MIN_CHANGE = -1000;
-export const MAX_CHANGE = 1000;
-
-export const FinancialIndicatorsKeys = [
-  'P/E',
-  'P/S',
-  'P/B',
-  'EPS',
-  'Tỷ lệ lãi ròng (%)',
-  'YOEA (%)',
-  'NIM (%)',
-  'COF (%)',
-  'LAR (%)',
-  'LDR (%)',
-  'CLR (%)',
-  'CTA (%)',
-  'ELR (%)',
-  'ROA (%)',
-  'ROE (%)',
-  'CIR (%)',
-  'LLRL (%)',
-  'LLRNPL (%)',
-  'Tỷ lệ nợ xấu (%)',
-  'PCL (%)',
-];
-
-export const LIST_VN30 = [
-  'ACB',
-  'BID',
-  'BVH',
-  'CTG',
-  'FPT',
-  'GAS',
-  'GVR',
-  'HDB',
-  'HPG',
-  'KDH',
-  'MBB',
-  'MSN',
-  'MWG',
-  'NVL',
-  'PDR',
-  'PLX',
-  'POW',
-  'SAB',
-  'SSI',
-  'STB',
-  'TCB',
-  'TPB',
-  'VCB',
-  'VHM',
-  'VIB',
-  'VIC',
-  'VJC',
-  'VNM',
-  'VPB',
-  'VRE',
-];
+import {
+  NoDataKeys,
+  HistoricalQuoteKeys,
+  DATE_FORMAT,
+  FundamentalKeys,
+  FinancialIndicatorsKeys,
+  LIST_VN30,
+  UNIT_BILLION,
+} from './constants';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -107,139 +47,6 @@ export const getStartAndEndTime = () => {
   });
   return { start, end };
 };
-
-// interface HistoricalQuote {
-//   adjRatio: number;
-//   buyCount: number;
-//   buyForeignQuantity: number;
-//   buyForeignValue: number;
-//   buyQuantity: number;
-//   currentForeignRoom: number;
-//   date: string;
-//   dealVolume: number;
-//   // key: string;
-//   priceAverage: number;
-//   priceBasic: number;
-//   priceClose: number;
-//   priceHigh: number;
-//   priceLow: number;
-//   priceOpen: number;
-//   propTradingNetDealValue: number;
-//   propTradingNetPTValue: number;
-//   propTradingNetValue: number;
-//   putthroughValue: number;
-//   putthroughVolume: number;
-//   sellCount: number;
-//   sellForeignQuantity: number;
-//   sellForeignValue: number;
-//   sellQuantity: number;
-//   // symbol: string;
-//   totalValue: number;
-//   totalVolume: number;
-// }
-
-export const HistoricalQuoteKeys = [
-  'buyCount',
-  'buyForeignQuantity',
-  'buyForeignValue',
-  'buyQuantity',
-  'currentForeignRoom',
-  'date',
-  'dealVolume',
-  // 'key',
-  'priceAverage',
-  'priceBasic',
-  'priceClose',
-  'priceHigh',
-  'priceLow',
-  'priceOpen',
-
-  'putthroughValue',
-  'putthroughVolume',
-  'sellCount',
-  'sellForeignQuantity',
-  'sellForeignValue',
-  'sellQuantity',
-  // 'symbol',
-  'totalValue',
-  'totalVolume',
-];
-
-// interface Fundamental {
-//   avgVolume3m: number;
-//   avgVolume10d: number;
-//   beta: number;
-//   companyType: number;
-//   dividend: number;
-//   dividendYield: number;
-//   eps: number;
-//   foreignOwnership: number;
-//   freeShares: number;
-//   high52Week: number;
-//   insiderOwnership: number;
-//   institutionOwnership: number;
-//   low52Week: number;
-//   marketCap: number;
-//   netProfit_TTM: number;
-//   pe: number;
-//   priceChange1y: number;
-//   sales_TTM: number;
-//   sharesOutstanding: number;
-//   // symbol: string;
-// }
-
-export const FundamentalKeys = [
-  'avgVolume3m',
-  'avgVolume10d',
-  'beta',
-  'companyType',
-  'dividend',
-  'dividendYield',
-  'eps',
-  'foreignOwnership',
-  'freeShares',
-  'high52Week',
-  'insiderOwnership',
-  'institutionOwnership',
-  'low52Week',
-  'marketCap',
-  'netProfit_TTM',
-  'pe',
-  'priceChange1y',
-  'sales_TTM',
-  'sharesOutstanding',
-  // 'symbol',
-];
-
-// interface FinancialIndicators {
-//   'P/E': number;
-//   'P/S': number;
-//   'P/B': number;
-//   EPS: number;
-//   'Tỷ lệ lãi ròng (%)': number;
-//   'YOEA (%)': number;
-//   'NIM (%)': number;
-//   'COF (%)': number;
-//   'LAR (%)': number;
-//   'LDR (%)': number;
-//   'CLR (%)': number;
-//   'CTA (%)': number;
-//   'ELR (%)': number;
-//   'ROA (%)': number;
-//   'ROE (%)': number;
-//   'CIR (%)': number;
-//   'LLRL (%)': number;
-//   'LLRNPL (%)': number;
-//   'Tỷ lệ nợ xấu (%)': number;
-//   'PCL (%)': number;
-// }
-
-export const NoDataKeys = [
-  'adjRatio', // HistoricalQuote
-  'propTradingNetDealValue', // HistoricalQuote
-  'propTradingNetPTValue', // HistoricalQuote
-  'propTradingNetValue', // HistoricalQuote
-];
 
 export const NoDataColumns = NoDataKeys.map((i) => {
   return {
@@ -429,9 +236,8 @@ export const getHistorialQuote = async (symbol: string) => {
       const upperHammer = Number(
         (
           (100 *
-            (i.priceHigh - i.priceClose > last_price
-              ? i.priceClose
-              : last_price)) /
+            (i.priceHigh -
+              (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
           last_price
         ).toFixed(1)
       );
@@ -439,9 +245,8 @@ export const getHistorialQuote = async (symbol: string) => {
       const lowerHammer = Number(
         (
           (100 *
-            (i.priceClose < last_price
-              ? i.priceClose
-              : last_price - i.priceLow)) /
+            ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
+              i.priceLow)) /
           last_price
         ).toFixed(1)
       );
@@ -472,7 +277,16 @@ export const getHistorialQuote = async (symbol: string) => {
         strong_sell.push(i);
       }
       if (i.symbol === 'GEX') {
-        console.log(i.date, upperHammer, lowerHammer);
+        console.log({
+          date: i.date,
+          upperHammer,
+          lowerHammer,
+          priceHigh: i.priceHigh,
+          priceLow: i.priceLow,
+          last_price,
+          priceClose: i.priceClose,
+          priceOpen: i.priceOpen,
+        });
       }
     });
 
@@ -573,6 +387,8 @@ export const getDailyTransaction = async (symbol: string) => {
     const transaction_above_1_bil: any = [];
     let total_buy_vol = 0;
     let total_sell_vol = 0;
+    let buy_count = 0;
+    let sell_count = 0;
 
     res.data.forEach((item: any) => {
       const newItem = { ...item };
@@ -589,16 +405,21 @@ export const getDailyTransaction = async (symbol: string) => {
 
       if (newItem.Side === 'B') {
         total_buy_vol += newItem.Volume;
+        buy_count += 1;
       }
       if (newItem.Side === 'S') {
         total_sell_vol += newItem.Volume;
+        sell_count += 1;
       }
     });
 
     const buy_sell_vol = {
       total_buy_vol,
       total_sell_vol,
-      value: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+      buy_count,
+      sell_count,
+      buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
+      buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
     };
 
     return {

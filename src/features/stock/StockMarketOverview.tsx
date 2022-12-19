@@ -8,13 +8,15 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import {
   checkMarketOpen,
+ getStartAndEndTime
+} from './utils';
+import {
   DELAY_TIME,
   FULL_TIME_FORMAT,
-  getStartAndEndTime,
   NUMBER_UNIT_REDUCED,
   TIME_FORMAT,
   TIME_FRAME,
-} from './utils';
+} from './constants';
 
 import {
   CheckCircleOutlined,

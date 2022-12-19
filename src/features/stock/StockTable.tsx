@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
 import {
-  Divider,
   RadioChangeEvent,
   Checkbox,
   Form,
@@ -20,10 +19,6 @@ import {
 } from 'antd';
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import type {
-  ExpandableConfig,
-  TableRowSelection,
-} from 'antd/es/table/interface';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import {
@@ -36,21 +31,25 @@ import {
   FundamentalColumns,
   HistoricalQuoteColumns,
   NoDataColumns,
+  getFilterData,
+} from './utils';
+import {
   UNIT_BILLION,
   MIN_CHANGE,
   MAX_CHANGE,
   DELAY_TIME,
-  getFilterData,
-} from './utils';
+  TYPE_INDICATOR_OPTIONS,
+  DEFAULT_TYPE_INDICATOR_OPTIONS,
+} from './constants';
 import {
   CheckCircleOutlined,
   SettingOutlined,
   FilterOutlined,
-  CloseCircleOutlined,
 } from '@ant-design/icons';
 import './StockTable.less';
 import moment from 'moment';
 import { useInterval } from 'libs/hooks';
+import BuySellSignalsColumns from './BuySellSignalsColumns';
 
 const DEFAULT_FILTER = {
   totalValue_last20_min: 0,
@@ -67,216 +66,9 @@ const DEFAULT_FILTER = {
   validCount_5_day_within_base: false,
 };
 
-const MyIndicatorsColumns: any = [
-  {
-    title: '_marketCap(ty)',
-    sorter: (a: any, b: any) => a.marketCap - b.marketCap,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.marketCap / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
-  {
-    title: '_totalValue(ty)',
-    sorter: (a: any, b: any) => a.totalValue - b.totalValue,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.totalValue / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
-  // {
-  //   title: '_totalValue_last20_min(ty)',
-  //   sorter: (a: any, b: any) =>
-  //     a.totalValue_last20_min - b.totalValue_last20_min,
-  //   align: 'right',
-  //   render: (data: any) => {
-  //     return Number(
-  //       Number(data.totalValue_last20_min / UNIT_BILLION).toFixed(0)
-  //     ).toLocaleString();
-  //   },
-  // },
-  // {
-  //   title: '_totalValue_last20_max(ty)',
-  //   sorter: (a: any, b: any) =>
-  //     a.totalValue_last20_max - b.totalValue_last20_max,
-  //   align: 'right',
-  //   render: (data: any) => {
-  //     return Number(
-  //       Number(data.totalValue_last20_max / UNIT_BILLION).toFixed(0)
-  //     ).toLocaleString();
-  //   },
-  // },
-  // {
-  //   title: '_changeVolume_last5(%)',
-  //   sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
-  //   align: 'right',
-  //   render: (data: any) => {
-  //     const value = Number(
-  //       Number((data.changeVolume_last5 * 100) / 1).toFixed(2)
-  //     ).toLocaleString();
-  //     const className = data.changeVolume_last5 > 0 ? 'green' : 'red';
-  //     return <span className={className}>{value}</span>;
-  //   },
-  // },
-  // {
-  //   title: '_changeVolume_last20(%)',
-  //   sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
-  //   align: 'right',
-  //   render: (data: any) => {
-  //     const value = Number(
-  //       Number((data.changeVolume_last20 * 100) / 1).toFixed(2)
-  //     ).toLocaleString();
-  //     const className = data.changeVolume_last20 > 0 ? 'green' : 'red';
-  //     return <span className={className}>{value}</span>;
-  //   },
-  // },
-  {
-    title: '_changePrice(%)',
-    sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changePrice * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changePrice > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
-  {
-    title: '_5_day_base',
-    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    // align: 'right',
-    render: (data: any) => {
-      const valid =
-        data.count_5_day_within_base && data.count_5_day_within_base.valid;
-      const count =
-        (data.count_5_day_within_base && data.count_5_day_within_base.count) ||
-        0;
-      return (
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ marginRight: '10px' }}>{count}</span>
-          {valid ? (
-            <CheckCircleOutlined style={{ color: 'green', fontSize: '18px' }} />
-          ) : (
-            <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    title: '_10_day_base',
-    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    // align: 'right',
-    render: (data: any) => {
-      const valid =
-        data.count_10_day_within_base && data.count_10_day_within_base.valid;
-      const count =
-        (data.count_10_day_within_base &&
-          data.count_10_day_within_base.count) ||
-        0;
-      return (
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ marginRight: '10px' }}>{count}</span>
-          {valid ? (
-            <CheckCircleOutlined style={{ color: 'green', fontSize: '18px' }} />
-          ) : (
-            <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
-          )}
-        </div>
-      );
-    },
-  },
-  {
-    title: () => {
-      return (
-        <Tooltip
-          title={
-            <div>
-              <div>{`priceClose > last_price * 1.03 --> isBuy`}</div>
-              <div>{`priceClose < last_price * 0.97 --> isSell`}</div>
-              <div>{`dealVolume > dealVolume`}</div>
-            </div>
-          }
-        >
-          _last_10_day_summary
-        </Tooltip>
-      );
-    },
-    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    align: 'center',
-    render: (data: any) => {
-      const strong_buy =
-        (data.last_10_day_summary && data.last_10_day_summary.strong_buy) || [];
-      const strong_sell =
-        (data.last_10_day_summary && data.last_10_day_summary.strong_sell) ||
-        [];
-      return (
-        <Tooltip
-          title={
-            <div style={{ display: 'flex' }}>
-              <div style={{ color: 'green', width: '100px' }}>
-                {strong_buy.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
-                })}
-              </div>
-              <div style={{ color: 'red', width: '100px' }}>
-                {strong_sell.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
-                })}
-              </div>
-            </div>
-          }
-        >
-          <div style={{ marginRight: '10px' }}>
-            <span style={{ color: 'green', marginRight: '4px' }}>
-              {strong_buy.length}
-            </span>
-            |
-            <span style={{ color: 'red', marginLeft: '4px' }}>
-              {strong_sell.length}
-            </span>
-          </div>
-        </Tooltip>
-      );
-    },
-  },
-  {
-    title: '_est_vol_change(%)',
-    sorter: (a: any, b: any) => a.estimated_vol_change - b.estimated_vol_change,
-    align: 'right',
-    render: (data: any) => {
-      const estimated_vol_change = data.estimated_vol_change || 0;
-      const className = estimated_vol_change > 0 ? 'green' : '';
-
-      return (
-        <span className={className}>{estimated_vol_change.toFixed(2)}</span>
-      );
-    },
-  },
-];
-
 const InDayReviewColumns = [
   {
-    title: '_trans_upto_1_bil',
+    title: 'trans_<_1_ty',
     sorter: (a: any, b: any) =>
       a.transaction_upto_1_bil &&
       b.transaction_upto_1_bil &&
@@ -307,7 +99,7 @@ const InDayReviewColumns = [
     },
   },
   {
-    title: '_trans_above_1_bil',
+    title: 'trans_>_1_ty',
     sorter: (a: any, b: any) =>
       a.transaction_above_1_bil &&
       b.transaction_above_1_bil &&
@@ -338,11 +130,37 @@ const InDayReviewColumns = [
     },
   },
   {
-    title: '_buy_sell_vol',
+    title: 'buy_sell_count',
+    align: 'right',
     // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
     render: (data: any) => {
-      const value = data.buy_sell_vol?.value || 0;
-      return <div className={value > 1 ? 'green' : 'red'}>{value}</div>;
+      const buy_sell_count_ratio = data.buy_sell_vol?.buy_sell_count_ratio || 0;
+      const buy_count = data.buy_sell_vol?.buy_count || 0;
+      const sell_count = data.buy_sell_vol?.sell_count || 0;
+      return (
+        <Tooltip title={`${buy_count} / ${sell_count}`}>
+          <div className={buy_sell_count_ratio > 1 ? 'green' : 'red'}>
+            {buy_sell_count_ratio}
+          </div>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    title: 'buy_sell_vol',
+    align: 'right',
+    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
+    render: (data: any) => {
+      const buy_sell_total_ratio = data.buy_sell_vol?.buy_sell_total_ratio || 0;
+      const total_buy_vol = data.buy_sell_vol?.total_buy_vol || 0;
+      const total_sell_vol = data.buy_sell_vol?.total_sell_vol || 0;
+      return (
+        <Tooltip title={`${total_buy_vol} / ${total_sell_vol}`}>
+          <div className={buy_sell_total_ratio > 1 ? 'green' : 'red'}>
+            {buy_sell_total_ratio}
+          </div>
+        </Tooltip>
+      );
     },
   },
 ];
@@ -355,31 +173,7 @@ interface DataType {
   description: string;
 }
 
-type TablePaginationPosition =
-  | 'topLeft'
-  | 'topCenter'
-  | 'topRight'
-  | 'bottomLeft'
-  | 'bottomCenter'
-  | 'bottomRight';
-
-const defaultExpandable = {
-  expandedRowRender: (record: DataType) => <p>{record.description}</p>,
-};
-const defaultTitle = () => 'Here is title';
-// const defaultFooter = () => 'Here is footer';
-
 const CheckboxGroup = Checkbox.Group;
-
-const plainOptions = [
-  'HistoricalQuote',
-  'Fundamental',
-  'FinancialIndicators',
-  'MyIndicators',
-  'InDayReview',
-  'NoData',
-];
-const defaultCheckedList: any = ['MyIndicators', 'InDayReview'];
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -396,26 +190,18 @@ export default function StockTable() {
   const [bordered, setBordered] = useState(true);
   const [loading, setLoading] = useState(false);
   const [size, setSize] = useState<SizeType>('small');
-  const [expandable, setExpandable] = useState<
-    ExpandableConfig<DataType> | undefined
-  >(defaultExpandable);
-  const [showTitle, setShowTitle] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showfooter, setShowFooter] = useState(true);
-  const [rowSelection, setRowSelection] = useState<
-    TableRowSelection<DataType> | undefined
-  >({});
   const [hasData, setHasData] = useState(true);
   const [tableLayout, setTableLayout] = useState(undefined);
-  const [top, setTop] = useState<TablePaginationPosition | 'none'>('none');
-  const [bottom, setBottom] = useState<TablePaginationPosition>('bottomRight');
   const [ellipsis, setEllipsis] = useState(false);
   const [yScroll, setYScroll] = useState(false);
   const [xScroll, setXScroll] = useState<string | undefined>('scroll');
   const [columns, setColumns] = useState<ColumnsType<DataType>>([]);
 
-  const [checkedList, setCheckedList] =
-    useState<CheckboxValueType[]>(defaultCheckedList);
+  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
+    DEFAULT_TYPE_INDICATOR_OPTIONS
+  );
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
   const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
@@ -503,16 +289,8 @@ export default function StockTable() {
     setTableLayout(e.target.value);
   };
 
-  const handleExpandChange = (enable: boolean) => {
-    setExpandable(enable ? defaultExpandable : undefined);
-  };
-
   const handleEllipsisChange = (enable: boolean) => {
     setEllipsis(enable);
-  };
-
-  const handleTitleChange = (enable: boolean) => {
-    setShowTitle(enable);
   };
 
   const handleHeaderChange = (enable: boolean) => {
@@ -521,10 +299,6 @@ export default function StockTable() {
 
   const handleFooterChange = (enable: boolean) => {
     setShowFooter(enable);
-  };
-
-  const handleRowSelectionChange = (enable: boolean) => {
-    setRowSelection(enable ? {} : undefined);
   };
 
   const handleYScrollChange = (enable: boolean) => {
@@ -561,12 +335,14 @@ export default function StockTable() {
 
   const onChange = (list: CheckboxValueType[]) => {
     setCheckedList(list);
-    setIndeterminate(!!list.length && list.length < plainOptions.length);
-    setCheckAll(list.length === plainOptions.length);
+    setIndeterminate(
+      !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
+    );
+    setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
   };
 
   const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedList(e.target.checked ? plainOptions : []);
+    setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
   };
@@ -582,23 +358,28 @@ export default function StockTable() {
     });
 
     setLoading(true);
-    return Promise.all(listPromises).then((res: any) => {
-      setLoading(false);
-      let newDataSource: any = [...dataSource];
-      newDataSource = newDataSource.map((i: any) => {
-        const filterRes = res.filter((j: any) => j.symbol === i.symbol);
-        let newItem = { ...i };
-        if (filterRes.length > 0) {
-          filterRes.forEach((j: any) => {
-            newItem = { ...newItem, ...j };
-          });
-        }
-        return newItem;
+    return Promise.all(listPromises)
+      .then((res: any) => {
+        setLoading(false);
+        let newDataSource: any = [...dataSource];
+        newDataSource = newDataSource.map((i: any) => {
+          const filterRes = res.filter((j: any) => j.symbol === i.symbol);
+          let newItem = { ...i };
+          if (filterRes.length > 0) {
+            filterRes.forEach((j: any) => {
+              newItem = { ...newItem, ...j };
+            });
+          }
+          return newItem;
+        });
+        setDataSource(newDataSource);
+        notification.success({ message: 'success' });
+        return newDataSource;
+      })
+      .catch((e) => {
+        setLoading(false);
+        notification.error({ message: 'error' });
       });
-      setDataSource(newDataSource);
-      notification.success({ message: 'success' });
-      return newDataSource;
-    });
   };
 
   const handleClearFilter = () => {
@@ -642,8 +423,12 @@ export default function StockTable() {
     bordered,
     loading,
     size,
-    // expandable,
-    title: showTitle ? defaultTitle : undefined,
+    showSorterTooltip: false,
+    pagination: {
+      position: ['bottomRight'],
+      pageSizeOptions: ['10', '20', '30'],
+      showSizeChanger: true,
+    },
     showHeader,
     footer: showfooter
       ? () => {
@@ -667,7 +452,6 @@ export default function StockTable() {
           );
         }
       : undefined,
-    // rowSelection,
     scroll,
     tableLayout,
   };
@@ -707,10 +491,10 @@ export default function StockTable() {
       });
     }
 
-    if (checkedList.includes('MyIndicators')) {
+    if (checkedList.includes('BuySellSignals')) {
       columns.push({
-        title: 'MyIndicators',
-        children: MyIndicatorsColumns,
+        title: 'BuySellSignals',
+        children: BuySellSignalsColumns,
       });
     }
 
@@ -813,11 +597,11 @@ export default function StockTable() {
               onChange={onCheckAllChange}
               checked={checkAll}
             >
-              Check all
+              All
             </Checkbox>
-            <Divider />
+
             <CheckboxGroup
-              options={plainOptions}
+              options={TYPE_INDICATOR_OPTIONS}
               value={checkedList}
               onChange={onChange}
             />
@@ -826,11 +610,6 @@ export default function StockTable() {
 
         <Table
           {...tableProps}
-          pagination={{
-            position: [top as TablePaginationPosition, bottom],
-            pageSizeOptions: ['10', '20', '30'],
-            showSizeChanger: true,
-          }}
           columns={columns}
           dataSource={hasData ? filteredData : []}
           scroll={scroll}
@@ -861,23 +640,11 @@ export default function StockTable() {
             <Form.Item label="loading">
               <Switch checked={loading} onChange={handleLoadingChange} />
             </Form.Item>
-            <Form.Item label="Title">
-              <Switch checked={showTitle} onChange={handleTitleChange} />
-            </Form.Item>
             <Form.Item label="Column Header">
               <Switch checked={showHeader} onChange={handleHeaderChange} />
             </Form.Item>
             <Form.Item label="Footer">
               <Switch checked={showfooter} onChange={handleFooterChange} />
-            </Form.Item>
-            <Form.Item label="Expandable">
-              <Switch checked={!!expandable} onChange={handleExpandChange} />
-            </Form.Item>
-            <Form.Item label="Checkbox">
-              <Switch
-                checked={!!rowSelection}
-                onChange={handleRowSelectionChange}
-              />
             </Form.Item>
             <Form.Item label="Fixed Header">
               <Switch checked={!!yScroll} onChange={handleYScrollChange} />
@@ -909,32 +676,6 @@ export default function StockTable() {
               >
                 <Radio.Button value={undefined}>Unset</Radio.Button>
                 <Radio.Button value="fixed">Fixed</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="Pagination Top">
-              <Radio.Group
-                value={top}
-                onChange={(e) => {
-                  setTop(e.target.value);
-                }}
-              >
-                <Radio.Button value="topLeft">TopLeft</Radio.Button>
-                <Radio.Button value="topCenter">TopCenter</Radio.Button>
-                <Radio.Button value="topRight">TopRight</Radio.Button>
-                <Radio.Button value="none">None</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="Pagination Bottom">
-              <Radio.Group
-                value={bottom}
-                onChange={(e) => {
-                  setBottom(e.target.value);
-                }}
-              >
-                <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
-                <Radio.Button value="bottomCenter">BottomCenter</Radio.Button>
-                <Radio.Button value="bottomRight">BottomRight</Radio.Button>
-                <Radio.Button value="none">None</Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Form>
