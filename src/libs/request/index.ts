@@ -69,8 +69,9 @@ const request = async (options: any) => {
       const auth: any = await getAuth();
 
       if (!auth || !auth.currentUser) return;
-
+      console.log('auth', auth);
       const accessToken = await auth.currentUser.getIdToken();
+      console.log('accessToken', accessToken);
 
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.setItem('ACCESS_TOKEN', accessToken);

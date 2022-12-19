@@ -1,74 +1,14 @@
 import moment from 'moment';
 import axios from 'axios';
-
-export const UNIT_BILLION = 1_000_000_000;
-export const NUMBER_UNIT_REDUCED = 1000;
-export const DATE_FORMAT = 'YYYY-MM-DD';
-export const TIME_FORMAT = 'HH:mm';
-export const FULL_TIME_FORMAT = 'YYYY-MM-DD HH:mm';
-export const TIME_FRAME = '1';
-export const DELAY_TIME = 1_000 * 60;
-export const MIN_TOTAL_VOLUME = 100_000;
-export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
-export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
-export const MIN_CHANGE = -1000;
-export const MAX_CHANGE = 1000;
-
-export const FinancialIndicatorsKeys = [
-  'P/E',
-  'P/S',
-  'P/B',
-  'EPS',
-  'Tỷ lệ lãi ròng (%)',
-  'YOEA (%)',
-  'NIM (%)',
-  'COF (%)',
-  'LAR (%)',
-  'LDR (%)',
-  'CLR (%)',
-  'CTA (%)',
-  'ELR (%)',
-  'ROA (%)',
-  'ROE (%)',
-  'CIR (%)',
-  'LLRL (%)',
-  'LLRNPL (%)',
-  'Tỷ lệ nợ xấu (%)',
-  'PCL (%)',
-];
-
-export const LIST_VN30 = [
-  'ACB',
-  'BID',
-  'BVH',
-  'CTG',
-  'FPT',
-  'GAS',
-  'GVR',
-  'HDB',
-  'HPG',
-  'KDH',
-  'MBB',
-  'MSN',
-  'MWG',
-  'NVL',
-  'PDR',
-  'PLX',
-  'POW',
-  'SAB',
-  'SSI',
-  'STB',
-  'TCB',
-  'TPB',
-  'VCB',
-  'VHM',
-  'VIB',
-  'VIC',
-  'VJC',
-  'VNM',
-  'VPB',
-  'VRE',
-];
+import {
+  NoDataKeys,
+  HistoricalQuoteKeys,
+  DATE_FORMAT,
+  FundamentalKeys,
+  FinancialIndicatorsKeys,
+  LIST_VN30,
+  UNIT_BILLION,
+} from './constants';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -107,139 +47,6 @@ export const getStartAndEndTime = () => {
   });
   return { start, end };
 };
-
-// interface HistoricalQuote {
-//   adjRatio: number;
-//   buyCount: number;
-//   buyForeignQuantity: number;
-//   buyForeignValue: number;
-//   buyQuantity: number;
-//   currentForeignRoom: number;
-//   date: string;
-//   dealVolume: number;
-//   // key: string;
-//   priceAverage: number;
-//   priceBasic: number;
-//   priceClose: number;
-//   priceHigh: number;
-//   priceLow: number;
-//   priceOpen: number;
-//   propTradingNetDealValue: number;
-//   propTradingNetPTValue: number;
-//   propTradingNetValue: number;
-//   putthroughValue: number;
-//   putthroughVolume: number;
-//   sellCount: number;
-//   sellForeignQuantity: number;
-//   sellForeignValue: number;
-//   sellQuantity: number;
-//   // symbol: string;
-//   totalValue: number;
-//   totalVolume: number;
-// }
-
-export const HistoricalQuoteKeys = [
-  'buyCount',
-  'buyForeignQuantity',
-  'buyForeignValue',
-  'buyQuantity',
-  'currentForeignRoom',
-  'date',
-  'dealVolume',
-  // 'key',
-  'priceAverage',
-  'priceBasic',
-  'priceClose',
-  'priceHigh',
-  'priceLow',
-  'priceOpen',
-
-  'putthroughValue',
-  'putthroughVolume',
-  'sellCount',
-  'sellForeignQuantity',
-  'sellForeignValue',
-  'sellQuantity',
-  // 'symbol',
-  'totalValue',
-  'totalVolume',
-];
-
-// interface Fundamental {
-//   avgVolume3m: number;
-//   avgVolume10d: number;
-//   beta: number;
-//   companyType: number;
-//   dividend: number;
-//   dividendYield: number;
-//   eps: number;
-//   foreignOwnership: number;
-//   freeShares: number;
-//   high52Week: number;
-//   insiderOwnership: number;
-//   institutionOwnership: number;
-//   low52Week: number;
-//   marketCap: number;
-//   netProfit_TTM: number;
-//   pe: number;
-//   priceChange1y: number;
-//   sales_TTM: number;
-//   sharesOutstanding: number;
-//   // symbol: string;
-// }
-
-export const FundamentalKeys = [
-  'avgVolume3m',
-  'avgVolume10d',
-  'beta',
-  'companyType',
-  'dividend',
-  'dividendYield',
-  'eps',
-  'foreignOwnership',
-  'freeShares',
-  'high52Week',
-  'insiderOwnership',
-  'institutionOwnership',
-  'low52Week',
-  'marketCap',
-  'netProfit_TTM',
-  'pe',
-  'priceChange1y',
-  'sales_TTM',
-  'sharesOutstanding',
-  // 'symbol',
-];
-
-// interface FinancialIndicators {
-//   'P/E': number;
-//   'P/S': number;
-//   'P/B': number;
-//   EPS: number;
-//   'Tỷ lệ lãi ròng (%)': number;
-//   'YOEA (%)': number;
-//   'NIM (%)': number;
-//   'COF (%)': number;
-//   'LAR (%)': number;
-//   'LDR (%)': number;
-//   'CLR (%)': number;
-//   'CTA (%)': number;
-//   'ELR (%)': number;
-//   'ROA (%)': number;
-//   'ROE (%)': number;
-//   'CIR (%)': number;
-//   'LLRL (%)': number;
-//   'LLRNPL (%)': number;
-//   'Tỷ lệ nợ xấu (%)': number;
-//   'PCL (%)': number;
-// }
-
-export const NoDataKeys = [
-  'adjRatio', // HistoricalQuote
-  'propTradingNetDealValue', // HistoricalQuote
-  'propTradingNetPTValue', // HistoricalQuote
-  'propTradingNetValue', // HistoricalQuote
-];
 
 export const NoDataColumns = NoDataKeys.map((i) => {
   return {
@@ -354,17 +161,17 @@ export const getHistorialQuote = async (symbol: string) => {
     );
 
     const averageVolume_last5 =
-      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.dealVolume, 0) / 5;
+      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.totalVolume, 0) / 5;
 
     const changeVolume_last5 =
-      (res.data[0].dealVolume - averageVolume_last5) / averageVolume_last5;
+      (res.data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
 
     const averageVolume_last20 =
-      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.dealVolume, 0) /
+      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.totalVolume, 0) /
       20;
 
     const changeVolume_last20 =
-      (res.data[0].dealVolume - averageVolume_last20) / averageVolume_last20;
+      (res.data[0].totalVolume - averageVolume_last20) / averageVolume_last20;
 
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
@@ -391,30 +198,75 @@ export const getHistorialQuote = async (symbol: string) => {
       }
     });
 
+    let count_10_day_within_base = {
+      count: 0,
+      valid: false,
+    };
+    // count the number of dasy which percent price is within the min and max from the base today
+
+    const last_10_data = res.data.slice(1, 11);
+
+    last_10_data.forEach((item: any) => {
+      if (item.priceClose >= min_base && item.priceClose <= max_base) {
+        count_10_day_within_base.count += 1;
+      }
+      if (count_10_day_within_base.count === 10) {
+        count_10_day_within_base.valid = true;
+      }
+    });
+
     const strong_sell: any = [];
     const strong_buy: any = [];
 
-    const last_10_data = res.data.slice(1, 11);
     const averageVolume_last10 =
-      last_10_data.reduce((a: any, b: any) => a + b.dealVolume, 0) / 10;
+      last_10_data.reduce((a: any, b: any) => a + b.totalVolume, 0) / 10;
 
     last_10_data.forEach((i: any, index: number) => {
-      if (index === 0) return;
-      const last_price = last_10_data[index - 1].priceClose;
+      if (index === 9) return;
+
+      const last_price = last_10_data[index + 1].priceClose;
       let isSell = false;
       let isBuy = false;
+
+      i.last_price = last_price;
       // Check if it is the sell or buy
       // Normal case is priceClose > priceOpen --> buy
-      if (i.priceClose > last_price * 1.03) {
+
+      // Special case: hammer candle
+      const upperHammer = Number(
+        (
+          (100 *
+            (i.priceHigh -
+              (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
+          last_price
+        ).toFixed(1)
+      );
+
+      const lowerHammer = Number(
+        (
+          (100 *
+            ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
+              i.priceLow)) /
+          last_price
+        ).toFixed(1)
+      );
+
+      if (
+        i.priceClose > last_price * 1.03 ||
+        (lowerHammer > 3 && upperHammer < 1)
+      ) {
         isBuy = true;
       }
-      if (i.priceClose < last_price * 0.97) {
+      if (
+        i.priceClose < last_price * 0.97 ||
+        (upperHammer > 3 && lowerHammer < 1)
+      ) {
         isSell = true;
       }
 
       let strong_volume = false;
       // Check if volume is strong
-      if (i.dealVolume > averageVolume_last10) {
+      if (i.totalVolume > averageVolume_last10) {
         strong_volume = true;
       }
 
@@ -424,12 +276,48 @@ export const getHistorialQuote = async (symbol: string) => {
       if (strong_volume && isSell) {
         strong_sell.push(i);
       }
+      if (i.symbol === 'GEX') {
+        console.log({
+          date: i.date,
+          upperHammer,
+          lowerHammer,
+          priceHigh: i.priceHigh,
+          priceLow: i.priceLow,
+          last_price,
+          priceClose: i.priceClose,
+          priceOpen: i.priceOpen,
+        });
+      }
     });
 
     const last_10_day_summary: any = {
       strong_buy,
       strong_sell,
     };
+
+    const test_in_day_review = 123;
+
+    const start_time = moment().set('hour', 9).set('minute', 0);
+    const default_end_time = moment().set('hour', 14).set('minute', 45);
+    const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
+
+    const end_time = moment();
+    let diff_time = 0;
+    if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
+      diff_time = end_time.diff(start_time, 'minute');
+    } else if (end_time.isAfter(moment('13:00', 'HH:mm'))) {
+      diff_time = end_time.diff(start_time, 'minute') - 90;
+    } else {
+      diff_time =
+        end_time.diff(start_time, 'minute') -
+        end_time.diff(moment('11:30', 'HH:mm'), 'minute');
+    }
+    const estimated_vol =
+      (last_data.dealVolume * default_diff_time) / diff_time;
+    const estimated_vol_change =
+      (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
+
+    const extra_vol = (100 * last_data.putthroughVolume) / last_data.dealVolume;
 
     return {
       ...last_data,
@@ -444,7 +332,12 @@ export const getHistorialQuote = async (symbol: string) => {
       changeVolume_last20,
       changePrice,
       count_5_day_within_base,
+      count_10_day_within_base,
       last_10_day_summary,
+      test_in_day_review,
+      estimated_vol,
+      estimated_vol_change,
+      extra_vol,
     };
   }
   return null;
@@ -489,6 +382,120 @@ export const getFundamentals = async (symbol: string) => {
   return null;
 };
 
+export const getDailyTransaction = async (symbol: string) => {
+  if (!symbol) return;
+  //svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=C4G
+  const res = await axios({
+    method: 'GET',
+    //  headers: {
+    //    Authorization:
+    //      'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
+    //  },
+    url: `https://svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=${symbol}`,
+  });
+
+  if (res.data) {
+    const transaction_upto_1_bil: any = [];
+    const transaction_above_1_bil: any = [];
+    let total_buy_vol = 0;
+    let total_sell_vol = 0;
+    let buy_count = 0;
+    let sell_count = 0;
+
+    const buy_summary = {
+      key: 'buy',
+      _filter_1: 0,
+      _filter_2: 0,
+      _filter_3: 0,
+      _filter_4: 0,
+      _filter_5: 0,
+    };
+
+    const sell_summary = {
+      key: 'sell',
+      _filter_1: 0,
+      _filter_2: 0,
+      _filter_3: 0,
+      _filter_4: 0,
+      _filter_5: 0,
+    };
+
+    res.data.forEach((item: any) => {
+      const newItem = { ...item };
+      // remove properties ID, Symbol, TotalVolume
+      delete newItem.ID;
+      delete newItem.Symbol;
+      delete newItem.TotalVolume;
+
+      if (newItem.Volume * newItem.Price > UNIT_BILLION) {
+        transaction_above_1_bil.push(newItem);
+      } else {
+        transaction_upto_1_bil.push(newItem);
+      }
+
+      if (newItem.Side === 'B') {
+        total_buy_vol += newItem.Volume;
+        buy_count += 1;
+      }
+      if (newItem.Side === 'S') {
+        total_sell_vol += newItem.Volume;
+        sell_count += 1;
+      }
+
+      const total = (newItem.Volume * newItem.Price) / UNIT_BILLION;
+
+      if (newItem.Side === 'B') {
+        if (total < 0.1) {
+          buy_summary._filter_1 += 1;
+        } else if (0.1 <= total && total < 0.5) {
+          buy_summary._filter_2 += 1;
+        } else if (0.5 <= total && total < 1) {
+          buy_summary._filter_3 += 1;
+        } else if (1 <= total && total < 2) {
+          buy_summary._filter_4 += 1;
+        } else {
+          buy_summary._filter_5 += 1;
+        }
+      }
+
+      if (newItem.Side === 'S') {
+        if (total < 0.1) {
+          sell_summary._filter_1 += 1;
+        } else if (0.1 <= total && total < 0.5) {
+          sell_summary._filter_2 += 1;
+        } else if (0.5 <= total && total < 1) {
+          sell_summary._filter_3 += 1;
+        } else if (1 <= total && total < 2) {
+          sell_summary._filter_4 += 1;
+        } else {
+          sell_summary._filter_5 += 1;
+        }
+      }
+    });
+
+    const transaction_summary = [buy_summary, sell_summary];
+
+    const buy_sell_vol = {
+      total_buy_vol,
+      total_sell_vol,
+      buy_count,
+      sell_count,
+      buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
+      buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+    };
+
+    return {
+      transaction_summary,
+      transaction_above_1_bil,
+      transaction_upto_1_bil,
+      buy_sell_vol,
+      symbol,
+      key: symbol,
+    };
+  }
+  return null;
+};
+
 export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
   return axios({
     method: 'PUT',
@@ -499,4 +506,95 @@ export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
     },
     data: updateData,
   });
+};
+
+export const getFilterData = (
+  data: any,
+  {
+    totalValue_last20_min,
+    totalValue_last20_max,
+    changeVolume_last5_min,
+    changeVolume_last5_max,
+    changeVolume_last20_min,
+    changeVolume_last20_max,
+    changePrice_min,
+    changePrice_max,
+    excludeVN30,
+    validCount_5_day_within_base,
+    transaction_above_1_bil_min,
+    transaction_above_1_bil_max,
+    estimated_vol_change_min,
+    estimated_vol_change_max,
+  }: any
+) => {
+  const filteredData = data.filter((i: any) => {
+    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
+      return false;
+    }
+
+    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
+      return false;
+    }
+
+    if (i.changePrice * 100 < changePrice_min) {
+      return false;
+    }
+
+    if (i.changePrice * 100 > changePrice_max) {
+      return false;
+    }
+
+    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
+      return false;
+    }
+
+    if (
+      validCount_5_day_within_base &&
+      i.count_5_day_within_base &&
+      !i.count_5_day_within_base.valid
+    ) {
+      return false;
+    }
+
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length < transaction_above_1_bil_min
+    ) {
+      return false;
+    }
+
+    if (
+      i.transaction_above_1_bil &&
+      i.transaction_above_1_bil.length > transaction_above_1_bil_max
+    ) {
+      return false;
+    }
+
+    if (i.estimated_vol_change < estimated_vol_change_min) {
+      return false;
+    }
+
+    if (i.estimated_vol_change > estimated_vol_change_max) {
+      return false;
+    }
+
+    return true;
+  });
+  return filteredData;
 };

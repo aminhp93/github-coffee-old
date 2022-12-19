@@ -6,7 +6,7 @@ import {
   MIN_MEDIUM_TOTOL_VALUE,
   MIN_TOTAL_VALUE,
   MIN_TOTAL_VOLUME,
-} from './utils';
+} from './constants';
 import { chunk, minBy, orderBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';

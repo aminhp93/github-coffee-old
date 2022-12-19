@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { keyBy } from 'lodash';
 import { Watchlist } from 'libs/types';
 import {
-  Divider,
   RadioChangeEvent,
   Checkbox,
   Form,
@@ -20,169 +19,158 @@ import {
 } from 'antd';
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import type {
-  ExpandableConfig,
-  TableRowSelection,
-} from 'antd/es/table/interface';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import {
   getHistorialQuote,
   getFinancialIndicator,
   getFundamentals,
+  getDailyTransaction,
   updateWatchlist,
-  LIST_VN30,
   FinancialIndicatorsColumns,
   FundamentalColumns,
   HistoricalQuoteColumns,
   NoDataColumns,
-  UNIT_BILLION,
+  getFilterData,
+} from './utils';
+import {
   MIN_CHANGE,
   MAX_CHANGE,
-} from './utils';
+  DELAY_TIME,
+  TYPE_INDICATOR_OPTIONS,
+  DEFAULT_TYPE_INDICATOR_OPTIONS,
+  BUY_SELL_SIGNNAL_KEYS,
+} from './constants';
 import {
   CheckCircleOutlined,
   SettingOutlined,
   FilterOutlined,
-  CloseCircleOutlined,
 } from '@ant-design/icons';
 import './StockTable.less';
-import moment from 'moment';
+import { useInterval } from 'libs/hooks';
+import BuySellSignalsColumns from './BuySellSignalsColumns';
 
-const MyIndicatorsColumns: any = [
+const DEFAULT_FILTER = {
+  totalValue_last20_min: 0,
+  totalValue_last20_max: 99999,
+  changeVolume_last5_min: MIN_CHANGE,
+  changeVolume_last5_max: MAX_CHANGE,
+  changeVolume_last20_min: MIN_CHANGE,
+  changeVolume_last20_max: MAX_CHANGE,
+  transaction_above_1_bil_min: 0,
+  transaction_above_1_bil_max: 99999,
+  changePrice_min: MIN_CHANGE,
+  changePrice_max: MAX_CHANGE,
+  excludeVN30: false,
+  validCount_5_day_within_base: false,
+  estimated_vol_change_min: MIN_CHANGE,
+  estimated_vol_change_max: MAX_CHANGE,
+};
+
+const InDayReviewColumns = [
   {
-    title: '_marketCap(ty)',
-    sorter: (a: any, b: any) => a.marketCap - b.marketCap,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.marketCap / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
-  {
-    title: '_totalValue_last20_min(ty)',
-    sorter: (a: any, b: any) =>
-      a.totalValue_last20_min - b.totalValue_last20_min,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.totalValue_last20_min / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
-  {
-    title: '_totalValue_last20_max(ty)',
-    sorter: (a: any, b: any) =>
-      a.totalValue_last20_max - b.totalValue_last20_max,
-    align: 'right',
-    render: (data: any) => {
-      return Number(
-        Number(data.totalValue_last20_max / UNIT_BILLION).toFixed(0)
-      ).toLocaleString();
-    },
-  },
-  {
-    title: '_changeVolume_last5(%)',
-    sorter: (a: any, b: any) => a.changeVolume_last5 - b.changeVolume_last5,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changeVolume_last5 * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changeVolume_last5 > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
-  {
-    title: '_changeVolume_last20(%)',
-    sorter: (a: any, b: any) => a.changeVolume_last20 - b.changeVolume_last20,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changeVolume_last20 * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changeVolume_last20 > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
-  {
-    title: '_changePrice(%)',
-    sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    align: 'right',
-    render: (data: any) => {
-      const value = Number(
-        Number((data.changePrice * 100) / 1).toFixed(2)
-      ).toLocaleString();
-      const className = data.changePrice > 0 ? 'green' : 'red';
-      return <span className={className}>{value}</span>;
-    },
-  },
-  {
-    title: '_count_5_day_within_base',
-    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+    title: 'trans_>_1_ty',
+    // sorter: (a: any, b: any) =>
+    //   a.transaction_above_1_bil &&
+    //   b.transaction_above_1_bil &&
+    //   a.transaction_above_1_bil.length - b.transaction_above_1_bil.length,
     // align: 'right',
     render: (data: any) => {
-      const valid =
-        data.count_5_day_within_base && data.count_5_day_within_base.valid;
-      const count =
-        (data.count_5_day_within_base && data.count_5_day_within_base.count) ||
-        0;
+      const transaction_summary = data.transaction_summary || [];
+
+      const columns = [
+        {
+          title: '_filter_1',
+          dataIndex: '_filter_1',
+          key: '_filter_1',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_2',
+          dataIndex: '_filter_2',
+          key: '_filter_2',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_3',
+          dataIndex: '_filter_3',
+          key: '_filter_3',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_4',
+          dataIndex: '_filter_4',
+          key: '_filter_4',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_5',
+          dataIndex: '_filter_5',
+          key: '_filter_5',
+          align: 'right' as 'right',
+          width: 100,
+        },
+      ];
+
       return (
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ marginRight: '10px' }}>{count}</span>
-          {valid ? (
-            <CheckCircleOutlined style={{ color: 'green', fontSize: '18px' }} />
-          ) : (
-            <CloseCircleOutlined style={{ color: 'red', fontSize: '18px' }} />
-          )}
-        </div>
+        <Table
+          dataSource={transaction_summary}
+          columns={columns}
+          size={'small'}
+          pagination={false}
+          showHeader={false}
+          bordered
+        />
       );
     },
   },
   {
-    title: '_last_10_day_summary',
-    // sorter: (a: any, b: any) => a.changePrice - b.changePrice,
-    align: 'center',
+    title: 'buy_sell_count',
+    align: 'right',
+    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
     render: (data: any) => {
-      const strong_buy =
-        (data.last_10_day_summary && data.last_10_day_summary.strong_buy) || [];
-      const strong_sell =
-        (data.last_10_day_summary && data.last_10_day_summary.strong_sell) ||
-        [];
+      const buy_sell_count_ratio = data.buy_sell_vol?.buy_sell_count_ratio || 0;
+      const buy_count = data.buy_sell_vol?.buy_count || 0;
+      const sell_count = data.buy_sell_vol?.sell_count || 0;
+
+      let className = 'blur';
+      if (buy_sell_count_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_count__buy) {
+        className = 'green';
+      } else if (
+        BUY_SELL_SIGNNAL_KEYS.buy_sell_count__sell >= buy_sell_count_ratio
+      ) {
+        className = 'red';
+      }
       return (
-        <Tooltip
-          title={
-            <div style={{ display: 'flex' }}>
-              <div style={{ color: 'green', width: '100px' }}>
-                {strong_buy.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
-                })}
-              </div>
-              <div style={{ color: 'red', width: '100px' }}>
-                {strong_sell.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
-                })}
-              </div>
-            </div>
-          }
-        >
-          <div style={{ marginRight: '10px' }}>
-            <span style={{ color: 'green', marginRight: '4px' }}>
-              {strong_buy.length}
-            </span>
-            |
-            <span style={{ color: 'red', marginLeft: '4px' }}>
-              {strong_sell.length}
-            </span>
-          </div>
+        <Tooltip title={`${buy_count} / ${sell_count}`}>
+          <div className={className}>{buy_sell_count_ratio}</div>
+        </Tooltip>
+      );
+    },
+  },
+  {
+    title: 'buy_sell_vol',
+    align: 'right',
+    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
+    render: (data: any) => {
+      const buy_sell_total_ratio = data.buy_sell_vol?.buy_sell_total_ratio || 0;
+      const total_buy_vol = data.buy_sell_vol?.total_buy_vol || 0;
+      const total_sell_vol = data.buy_sell_vol?.total_sell_vol || 0;
+      let className = 'blur';
+      if (buy_sell_total_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__buy) {
+        className = 'green';
+      } else if (
+        BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__sell >= buy_sell_total_ratio
+      ) {
+        className = 'red';
+      }
+      return (
+        <Tooltip title={`${total_buy_vol} / ${total_sell_vol}`}>
+          <div className={className}>{buy_sell_total_ratio}</div>
         </Tooltip>
       );
     },
@@ -197,30 +185,7 @@ interface DataType {
   description: string;
 }
 
-type TablePaginationPosition =
-  | 'topLeft'
-  | 'topCenter'
-  | 'topRight'
-  | 'bottomLeft'
-  | 'bottomCenter'
-  | 'bottomRight';
-
-const defaultExpandable = {
-  expandedRowRender: (record: DataType) => <p>{record.description}</p>,
-};
-const defaultTitle = () => 'Here is title';
-// const defaultFooter = () => 'Here is footer';
-
 const CheckboxGroup = Checkbox.Group;
-
-const plainOptions = [
-  'HistoricalQuote',
-  'Fundamental',
-  'FinancialIndicators',
-  'MyIndicators',
-  'NoData',
-];
-const defaultCheckedList: any = ['HistoricalQuote', 'MyIndicators'];
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -237,44 +202,79 @@ export default function StockTable() {
   const [bordered, setBordered] = useState(true);
   const [loading, setLoading] = useState(false);
   const [size, setSize] = useState<SizeType>('small');
-  const [expandable, setExpandable] = useState<
-    ExpandableConfig<DataType> | undefined
-  >(defaultExpandable);
-  const [showTitle, setShowTitle] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [showfooter, setShowFooter] = useState(true);
-  const [rowSelection, setRowSelection] = useState<
-    TableRowSelection<DataType> | undefined
-  >({});
   const [hasData, setHasData] = useState(true);
   const [tableLayout, setTableLayout] = useState(undefined);
-  const [top, setTop] = useState<TablePaginationPosition | 'none'>('none');
-  const [bottom, setBottom] = useState<TablePaginationPosition>('bottomRight');
   const [ellipsis, setEllipsis] = useState(false);
   const [yScroll, setYScroll] = useState(false);
   const [xScroll, setXScroll] = useState<string | undefined>('scroll');
   const [columns, setColumns] = useState<ColumnsType<DataType>>([]);
 
-  const [checkedList, setCheckedList] =
-    useState<CheckboxValueType[]>(defaultCheckedList);
+  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
+    DEFAULT_TYPE_INDICATOR_OPTIONS
+  );
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-  const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(0);
-  const [totalValue_last20_max, setTotalValue_last20_max] =
-    useState<number>(99999);
-  const [changeVolume_last5_min, setChangeVolume_last5_min] =
-    useState<number>(MIN_CHANGE);
-  const [changeVolume_last5_max, setChangeVolume_last5_max] =
-    useState<number>(MAX_CHANGE);
+  const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
+    DEFAULT_FILTER.totalValue_last20_min
+  );
+  const [totalValue_last20_max, setTotalValue_last20_max] = useState<number>(
+    DEFAULT_FILTER.totalValue_last20_max
+  );
+  const [changeVolume_last5_min, setChangeVolume_last5_min] = useState<number>(
+    DEFAULT_FILTER.changeVolume_last5_min
+  );
+  const [changeVolume_last5_max, setChangeVolume_last5_max] = useState<number>(
+    DEFAULT_FILTER.changeVolume_last5_max
+  );
   const [changeVolume_last20_min, setChangeVolume_last20_min] =
-    useState<number>(MIN_CHANGE);
+    useState<number>(DEFAULT_FILTER.changeVolume_last20_min);
   const [changeVolume_last20_max, setChangeVolume_last20_max] =
-    useState<number>(MAX_CHANGE);
-  const [changePrice_min, setChangePrice_min] = useState<number>(MIN_CHANGE);
-  const [changePrice_max, setChangePrice_max] = useState<number>(MAX_CHANGE);
-  const [excludeVN30, setExcludeVN30] = useState(false);
+    useState<number>(DEFAULT_FILTER.changeVolume_last20_max);
+  const [transaction_above_1_bil_min, setTransaction_above_1_bil_min] =
+    useState<number>(DEFAULT_FILTER.transaction_above_1_bil_min);
+  const [transaction_above_1_bil_max, setTransaction_above_1_bil_max] =
+    useState<number>(DEFAULT_FILTER.transaction_above_1_bil_max);
+  const [changePrice_min, setChangePrice_min] = useState<number>(
+    DEFAULT_FILTER.changePrice_min
+  );
+  const [changePrice_max, setChangePrice_max] = useState<number>(
+    DEFAULT_FILTER.changePrice_max
+  );
+  const [excludeVN30, setExcludeVN30] = useState(DEFAULT_FILTER.excludeVN30);
   const [validCount_5_day_within_base, setValidCount_5_day_within_base] =
-    useState(false);
+    useState(DEFAULT_FILTER.validCount_5_day_within_base);
+  const [estimated_vol_change_min, setEstimated_vol_change_min] =
+    useState<number>(DEFAULT_FILTER.estimated_vol_change_min);
+  const [estimated_vol_change_max, setEstimated_vol_change_max] =
+    useState<number>(DEFAULT_FILTER.estimated_vol_change_max);
+  const [isPlaying, setPlaying] = useState<boolean>(false);
+  const [delay, setDelay] = useState<number>(DELAY_TIME);
+
+  useInterval(
+    async () => {
+      const res = await handleGetData();
+      const filteredRes = getFilterData(res, {
+        totalValue_last20_min,
+        totalValue_last20_max,
+        changeVolume_last5_min,
+        changeVolume_last5_max,
+        changeVolume_last20_min,
+        changeVolume_last20_max,
+        changePrice_min,
+        changePrice_max,
+        excludeVN30,
+        validCount_5_day_within_base,
+        transaction_above_1_bil_min,
+        transaction_above_1_bil_max,
+      });
+      const symbols = filteredRes.map((item: any) => item.symbol);
+
+      handleUpdateWatchlist(symbols);
+    },
+    isPlaying ? delay : null
+  );
 
   const handleClickMenuWatchlist = (e: any) => {
     setCurrentWatchlist(listWatchlistObj[e.key]);
@@ -305,16 +305,8 @@ export default function StockTable() {
     setTableLayout(e.target.value);
   };
 
-  const handleExpandChange = (enable: boolean) => {
-    setExpandable(enable ? defaultExpandable : undefined);
-  };
-
   const handleEllipsisChange = (enable: boolean) => {
     setEllipsis(enable);
-  };
-
-  const handleTitleChange = (enable: boolean) => {
-    setShowTitle(enable);
   };
 
   const handleHeaderChange = (enable: boolean) => {
@@ -323,10 +315,6 @@ export default function StockTable() {
 
   const handleFooterChange = (enable: boolean) => {
     setShowFooter(enable);
-  };
-
-  const handleRowSelectionChange = (enable: boolean) => {
-    setRowSelection(enable ? {} : undefined);
   };
 
   const handleYScrollChange = (enable: boolean) => {
@@ -341,7 +329,7 @@ export default function StockTable() {
     setHasData(newHasData);
   };
 
-  const handleUpdateWatchlist = async () => {
+  const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
       const watchlistObj = {
         watchlistID: 2279542,
@@ -351,7 +339,7 @@ export default function StockTable() {
 
       const updateData = {
         ...watchlistObj,
-        symbols: dataSource.map((i: any) => i.symbol),
+        symbols: symbols ? symbols : filteredData.map((i: any) => i.symbol),
       };
 
       await updateWatchlist(watchlistObj, updateData);
@@ -363,12 +351,14 @@ export default function StockTable() {
 
   const onChange = (list: CheckboxValueType[]) => {
     setCheckedList(list);
-    setIndeterminate(!!list.length && list.length < plainOptions.length);
-    setCheckAll(list.length === plainOptions.length);
+    setIndeterminate(
+      !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
+    );
+    setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
   };
 
   const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedList(e.target.checked ? plainOptions : []);
+    setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
   };
@@ -380,30 +370,60 @@ export default function StockTable() {
       listPromises.push(getHistorialQuote(j.symbol));
       listPromises.push(getFundamentals(j.symbol));
       listPromises.push(getFinancialIndicator(j.symbol));
+      listPromises.push(getDailyTransaction(j.symbol));
     });
 
     setLoading(true);
-    Promise.all(listPromises).then((res: any) => {
-      setLoading(false);
-      let newDataSource: any = [...dataSource];
-      newDataSource = newDataSource.map((i: any) => {
-        const filterRes = res.filter((j: any) => j.symbol === i.symbol);
-        let newItem = { ...i };
-        if (filterRes.length > 0) {
-          filterRes.forEach((j: any) => {
-            newItem = { ...newItem, ...j };
-          });
-        }
-        return newItem;
+    return Promise.all(listPromises)
+      .then((res: any) => {
+        setLoading(false);
+        let newDataSource: any = [...dataSource];
+        newDataSource = newDataSource.map((i: any) => {
+          const filterRes = res.filter((j: any) => j.symbol === i.symbol);
+          let newItem = { ...i };
+          if (filterRes.length > 0) {
+            filterRes.forEach((j: any) => {
+              newItem = { ...newItem, ...j };
+            });
+          }
+          return newItem;
+        });
+        setDataSource(newDataSource);
+        notification.success({ message: 'success' });
+        return newDataSource;
+      })
+      .catch((e) => {
+        setLoading(false);
+        notification.error({ message: 'error' });
       });
-      setDataSource(newDataSource);
-      notification.success({ message: 'success' });
-    });
   };
 
   const handleClearFilter = () => {
-    setTotalValue_last20_min(0);
-    setExcludeVN30(false);
+    setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
+    setTotalValue_last20_max(DEFAULT_FILTER.totalValue_last20_max);
+    setChangeVolume_last5_min(DEFAULT_FILTER.changeVolume_last5_min);
+    setChangeVolume_last5_max(DEFAULT_FILTER.changeVolume_last5_max);
+    setChangeVolume_last20_min(DEFAULT_FILTER.changeVolume_last20_min);
+    setChangeVolume_last20_max(DEFAULT_FILTER.changeVolume_last20_max);
+    setTransaction_above_1_bil_min(DEFAULT_FILTER.transaction_above_1_bil_min);
+    setTransaction_above_1_bil_max(DEFAULT_FILTER.transaction_above_1_bil_max);
+    setChangePrice_min(DEFAULT_FILTER.changePrice_min);
+    setChangePrice_max(DEFAULT_FILTER.changePrice_max);
+    setExcludeVN30(DEFAULT_FILTER.excludeVN30);
+    setValidCount_5_day_within_base(
+      DEFAULT_FILTER.validCount_5_day_within_base
+    );
+    setEstimated_vol_change_min(DEFAULT_FILTER.estimated_vol_change_min);
+    setEstimated_vol_change_max(DEFAULT_FILTER.estimated_vol_change_max);
+  };
+
+  const handleSetFilter = () => {
+    setChangePrice_min(2);
+    setChangePrice_max(6);
+    setEstimated_vol_change_min(20);
+    setExcludeVN30(true);
+
+    // setValidCount_5_day_within_base(true);
   };
 
   const scroll: { x?: number | string; y?: number | string } = {};
@@ -424,8 +444,12 @@ export default function StockTable() {
     bordered,
     loading,
     size,
-    // expandable,
-    title: showTitle ? defaultTitle : undefined,
+    showSorterTooltip: false,
+    pagination: {
+      position: ['bottomRight'],
+      pageSizeOptions: ['10', '20', '30'],
+      showSizeChanger: true,
+    },
     showHeader,
     footer: showfooter
       ? () => {
@@ -449,7 +473,6 @@ export default function StockTable() {
           );
         }
       : undefined,
-    // rowSelection,
     scroll,
     tableLayout,
   };
@@ -489,10 +512,10 @@ export default function StockTable() {
       });
     }
 
-    if (checkedList.includes('MyIndicators')) {
+    if (checkedList.includes('BuySellSignals')) {
       columns.push({
-        title: 'MyIndicators',
-        children: MyIndicatorsColumns,
+        title: 'BuySellSignals',
+        children: BuySellSignalsColumns,
       });
     }
 
@@ -502,6 +525,14 @@ export default function StockTable() {
         children: NoDataColumns,
       });
     }
+
+    if (checkedList.includes('InDayReview')) {
+      columns.push({
+        title: 'InDayReview',
+        children: InDayReviewColumns,
+      });
+    }
+
     setColumns(columns);
   }, [checkedList]);
 
@@ -538,52 +569,21 @@ export default function StockTable() {
     changePrice_max
   );
 
-  const filteredData = dataSource.filter((i: any) => {
-    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
-      return false;
-    }
-
-    if (i.changePrice * 100 < changePrice_min) {
-      return false;
-    }
-
-    if (i.changePrice * 100 > changePrice_max) {
-      return false;
-    }
-
-    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
-      return false;
-    }
-
-    if (
-      validCount_5_day_within_base &&
-      i.count_5_day_within_base &&
-      !i.count_5_day_within_base.valid
-    ) {
-      return false;
-    }
-
-    return true;
+  const filteredData = getFilterData(dataSource, {
+    totalValue_last20_min,
+    totalValue_last20_max,
+    changeVolume_last5_min,
+    changeVolume_last5_max,
+    changeVolume_last20_min,
+    changeVolume_last20_max,
+    changePrice_min,
+    changePrice_max,
+    excludeVN30,
+    validCount_5_day_within_base,
+    transaction_above_1_bil_min,
+    transaction_above_1_bil_max,
+    estimated_vol_change_min,
+    estimated_vol_change_max,
   });
 
   return (
@@ -601,6 +601,18 @@ export default function StockTable() {
               disabled={loading}
               onClick={handleGetData}
             />
+            <div style={{ marginLeft: '8px' }}>
+              <Button onClick={() => setPlaying(!isPlaying)}>
+                {isPlaying ? 'Stop Interval' : 'Start Interval'}
+              </Button>
+
+              <InputNumber
+                style={{ marginLeft: '8px' }}
+                disabled={isPlaying}
+                value={delay}
+                onChange={(value: any) => setDelay(value)}
+              />
+            </div>
           </div>
           <div>
             <Checkbox
@@ -608,11 +620,11 @@ export default function StockTable() {
               onChange={onCheckAllChange}
               checked={checkAll}
             >
-              Check all
+              All
             </Checkbox>
-            <Divider />
+
             <CheckboxGroup
-              options={plainOptions}
+              options={TYPE_INDICATOR_OPTIONS}
               value={checkedList}
               onChange={onChange}
             />
@@ -621,7 +633,6 @@ export default function StockTable() {
 
         <Table
           {...tableProps}
-          pagination={{ position: [top as TablePaginationPosition, bottom] }}
           columns={columns}
           dataSource={hasData ? filteredData : []}
           scroll={scroll}
@@ -652,23 +663,11 @@ export default function StockTable() {
             <Form.Item label="loading">
               <Switch checked={loading} onChange={handleLoadingChange} />
             </Form.Item>
-            <Form.Item label="Title">
-              <Switch checked={showTitle} onChange={handleTitleChange} />
-            </Form.Item>
             <Form.Item label="Column Header">
               <Switch checked={showHeader} onChange={handleHeaderChange} />
             </Form.Item>
             <Form.Item label="Footer">
               <Switch checked={showfooter} onChange={handleFooterChange} />
-            </Form.Item>
-            <Form.Item label="Expandable">
-              <Switch checked={!!expandable} onChange={handleExpandChange} />
-            </Form.Item>
-            <Form.Item label="Checkbox">
-              <Switch
-                checked={!!rowSelection}
-                onChange={handleRowSelectionChange}
-              />
             </Form.Item>
             <Form.Item label="Fixed Header">
               <Switch checked={!!yScroll} onChange={handleYScrollChange} />
@@ -700,32 +699,6 @@ export default function StockTable() {
               >
                 <Radio.Button value={undefined}>Unset</Radio.Button>
                 <Radio.Button value="fixed">Fixed</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="Pagination Top">
-              <Radio.Group
-                value={top}
-                onChange={(e) => {
-                  setTop(e.target.value);
-                }}
-              >
-                <Radio.Button value="topLeft">TopLeft</Radio.Button>
-                <Radio.Button value="topCenter">TopCenter</Radio.Button>
-                <Radio.Button value="topRight">TopRight</Radio.Button>
-                <Radio.Button value="none">None</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="Pagination Bottom">
-              <Radio.Group
-                value={bottom}
-                onChange={(e) => {
-                  setBottom(e.target.value);
-                }}
-              >
-                <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
-                <Radio.Button value="bottomCenter">BottomCenter</Radio.Button>
-                <Radio.Button value="bottomRight">BottomRight</Radio.Button>
-                <Radio.Button value="none">None</Radio.Button>
               </Radio.Group>
             </Form.Item>
           </Form>
@@ -799,6 +772,37 @@ export default function StockTable() {
                   onChange={(value: any) => setChangePrice_max(value)}
                 />
               </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="transaction_above_1_bil_min"
+                  value={transaction_above_1_bil_min}
+                  onChange={(value: any) =>
+                    setTransaction_above_1_bil_min(value)
+                  }
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="transaction_above_1_bil_max"
+                  value={transaction_above_1_bil_max}
+                  onChange={(value: any) =>
+                    setTransaction_above_1_bil_max(value)
+                  }
+                />
+              </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="estimated_vol_change_min"
+                  value={estimated_vol_change_min}
+                  onChange={(value: any) => setEstimated_vol_change_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="estimated_vol_change_max"
+                  value={estimated_vol_change_max}
+                  onChange={(value: any) => setEstimated_vol_change_max(value)}
+                />
+              </div>
+
               <div style={{ marginTop: '8px' }}>
                 <Switch
                   checkedChildren="Exclude VN30"
@@ -820,11 +824,21 @@ export default function StockTable() {
                 />
               </div>
             </div>
+          </div>
+          <div
+            className="flex"
+            style={{ justifyContent: 'space-between', flexDirection: 'column' }}
+          >
+            <Button onClick={handleSetFilter}>Formula 1</Button>
 
-            <Button onClick={handleClearFilter}>Clear filter</Button>
+            <Button danger onClick={handleClearFilter}>
+              Clear filter
+            </Button>
           </div>
           <div>
-            <Button onClick={handleUpdateWatchlist}>Update watchlist</Button>
+            <Button onClick={() => handleUpdateWatchlist()}>
+              Update watchlist
+            </Button>
           </div>
         </div>
       </Drawer>
