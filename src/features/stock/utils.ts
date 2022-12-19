@@ -161,17 +161,17 @@ export const getHistorialQuote = async (symbol: string) => {
     );
 
     const averageVolume_last5 =
-      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.dealVolume, 0) / 5;
+      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.totalVolume, 0) / 5;
 
     const changeVolume_last5 =
-      (res.data[0].dealVolume - averageVolume_last5) / averageVolume_last5;
+      (res.data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
 
     const averageVolume_last20 =
-      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.dealVolume, 0) /
+      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.totalVolume, 0) /
       20;
 
     const changeVolume_last20 =
-      (res.data[0].dealVolume - averageVolume_last20) / averageVolume_last20;
+      (res.data[0].totalVolume - averageVolume_last20) / averageVolume_last20;
 
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
@@ -219,7 +219,7 @@ export const getHistorialQuote = async (symbol: string) => {
     const strong_buy: any = [];
 
     const averageVolume_last10 =
-      last_10_data.reduce((a: any, b: any) => a + b.dealVolume, 0) / 10;
+      last_10_data.reduce((a: any, b: any) => a + b.totalVolume, 0) / 10;
 
     last_10_data.forEach((i: any, index: number) => {
       if (index === 9) return;
@@ -266,7 +266,7 @@ export const getHistorialQuote = async (symbol: string) => {
 
       let strong_volume = false;
       // Check if volume is strong
-      if (i.dealVolume > averageVolume_last10) {
+      if (i.totalVolume > averageVolume_last10) {
         strong_volume = true;
       }
 
@@ -299,14 +299,25 @@ export const getHistorialQuote = async (symbol: string) => {
 
     const start_time = moment().set('hour', 9).set('minute', 0);
     const default_end_time = moment().set('hour', 14).set('minute', 45);
-    const default_diff_time = default_end_time.diff(start_time, 'minute');
+    const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
 
     const end_time = moment();
-    const diff_time = end_time.diff(start_time, 'minute');
+    let diff_time = 0;
+    if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
+      diff_time = end_time.diff(start_time, 'minute');
+    } else if (end_time.isAfter(moment('13:00', 'HH:mm'))) {
+      diff_time = end_time.diff(start_time, 'minute') - 90;
+    } else {
+      diff_time =
+        end_time.diff(start_time, 'minute') -
+        end_time.diff(moment('11:30', 'HH:mm'), 'minute');
+    }
     const estimated_vol =
       (last_data.dealVolume * default_diff_time) / diff_time;
     const estimated_vol_change =
       (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
+
+    const extra_vol = (100 * last_data.putthroughVolume) / last_data.dealVolume;
 
     return {
       ...last_data,
@@ -326,6 +337,7 @@ export const getHistorialQuote = async (symbol: string) => {
       test_in_day_review,
       estimated_vol,
       estimated_vol_change,
+      extra_vol,
     };
   }
   return null;
@@ -460,6 +472,8 @@ export const getFilterData = (
     validCount_5_day_within_base,
     transaction_above_1_bil_min,
     transaction_above_1_bil_max,
+    estimated_vol_change_min,
+    estimated_vol_change_max,
   }: any
 ) => {
   const filteredData = data.filter((i: any) => {
@@ -518,6 +532,14 @@ export const getFilterData = (
       i.transaction_above_1_bil &&
       i.transaction_above_1_bil.length > transaction_above_1_bil_max
     ) {
+      return false;
+    }
+
+    if (i.estimated_vol_change < estimated_vol_change_min) {
+      return false;
+    }
+
+    if (i.estimated_vol_change > estimated_vol_change_max) {
       return false;
     }
 

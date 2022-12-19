@@ -256,6 +256,32 @@ const BuySellSignalsColumns: any = [
       );
     },
   },
+  {
+    title: () => {
+      return (
+        <Tooltip
+          title={
+            <div>
+              <div>{`Estimated volume in day compared to last 5`}</div>
+              <div>
+                <CloseCircleOutlined style={{ color: 'red' }} />{' '}
+                {`Value < ${BUY_SELL_SIGNNAL_KEYS.count_10_day_sell}`}
+              </div>
+            </div>
+          }
+        >
+          {`_extra_vol(%)`}
+        </Tooltip>
+      );
+    },
+    sorter: (a: any, b: any) => a.extra_vol - b.extra_vol,
+    align: 'right',
+    render: (data: any) => {
+      const extra_vol = data.extra_vol || 0;
+
+      return <span className={''}>{extra_vol.toFixed(0)}</span>;
+    },
+  },
 ];
 
 export default BuySellSignalsColumns;

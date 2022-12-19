@@ -64,6 +64,8 @@ const DEFAULT_FILTER = {
   changePrice_max: MAX_CHANGE,
   excludeVN30: false,
   validCount_5_day_within_base: false,
+  estimated_vol_change_min: MIN_CHANGE,
+  estimated_vol_change_max: MAX_CHANGE,
 };
 
 const InDayReviewColumns = [
@@ -233,6 +235,10 @@ export default function StockTable() {
   const [excludeVN30, setExcludeVN30] = useState(DEFAULT_FILTER.excludeVN30);
   const [validCount_5_day_within_base, setValidCount_5_day_within_base] =
     useState(DEFAULT_FILTER.validCount_5_day_within_base);
+  const [estimated_vol_change_min, setEstimated_vol_change_min] =
+    useState<number>(DEFAULT_FILTER.estimated_vol_change_min);
+  const [estimated_vol_change_max, setEstimated_vol_change_max] =
+    useState<number>(DEFAULT_FILTER.estimated_vol_change_max);
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
 
@@ -397,12 +403,17 @@ export default function StockTable() {
     setValidCount_5_day_within_base(
       DEFAULT_FILTER.validCount_5_day_within_base
     );
+    setEstimated_vol_change_min(DEFAULT_FILTER.estimated_vol_change_min);
+    setEstimated_vol_change_max(DEFAULT_FILTER.estimated_vol_change_max);
   };
 
   const handleSetFilter = () => {
     setChangePrice_min(2);
+    setChangePrice_max(6);
+    setEstimated_vol_change_min(20);
     setExcludeVN30(true);
-    setValidCount_5_day_within_base(true);
+
+    // setValidCount_5_day_within_base(true);
   };
 
   const scroll: { x?: number | string; y?: number | string } = {};
@@ -561,6 +572,8 @@ export default function StockTable() {
     validCount_5_day_within_base,
     transaction_above_1_bil_min,
     transaction_above_1_bil_max,
+    estimated_vol_change_min,
+    estimated_vol_change_max,
   });
 
   return (
@@ -766,6 +779,20 @@ export default function StockTable() {
                   }
                 />
               </div>
+              <div className="flex" style={{ marginTop: '10px' }}>
+                <InputNumber
+                  addonBefore="estimated_vol_change_min"
+                  value={estimated_vol_change_min}
+                  onChange={(value: any) => setEstimated_vol_change_min(value)}
+                />
+                <InputNumber
+                  style={{ marginLeft: '10px' }}
+                  addonBefore="estimated_vol_change_max"
+                  value={estimated_vol_change_max}
+                  onChange={(value: any) => setEstimated_vol_change_max(value)}
+                />
+              </div>
+
               <div style={{ marginTop: '8px' }}>
                 <Switch
                   checkedChildren="Exclude VN30"

@@ -74,7 +74,7 @@ export const HistoricalQuoteKeys = [
   'buyQuantity',
   'currentForeignRoom',
   'date',
-  'dealVolume',
+  'totalVolume',
   // 'key',
   'priceAverage',
   'priceBasic',

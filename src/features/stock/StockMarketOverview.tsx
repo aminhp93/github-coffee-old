@@ -6,10 +6,7 @@ import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import {
-  checkMarketOpen,
- getStartAndEndTime
-} from './utils';
+import { checkMarketOpen, getStartAndEndTime } from './utils';
 import {
   DELAY_TIME,
   FULL_TIME_FORMAT,
@@ -168,16 +165,16 @@ export default function StockMarketOverview() {
               100;
             const todayItem = listItem[0];
             // listItem.splice(0, 1)
-            const averageVolume15Days = meanBy(listItem, 'dealVolume');
+            const averageVolume15Days = meanBy(listItem, 'totalVolume');
 
             const estimatedVolumeChange =
-              (todayItem.dealVolume / averageVolume15Days) * 100;
+              (todayItem.totalVolume / averageVolume15Days) * 100;
             return {
               symbol: todayItem.symbol,
               changePercent: Number(changePercent.toFixed(1)),
               estimatedVolumeChange: Number(estimatedVolumeChange.toFixed(0)),
               todayVolume: Number(
-                (todayItem.dealVolume / NUMBER_UNIT_REDUCED).toFixed(2)
+                (todayItem.totalVolume / NUMBER_UNIT_REDUCED).toFixed(2)
               ),
               averageVolume15Days: Number(
                 (averageVolume15Days / NUMBER_UNIT_REDUCED).toFixed(0)
