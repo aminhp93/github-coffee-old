@@ -402,6 +402,24 @@ export const getDailyTransaction = async (symbol: string) => {
     let buy_count = 0;
     let sell_count = 0;
 
+    const buy_summary = {
+      key: 'buy',
+      _filter_1: 0,
+      _filter_2: 0,
+      _filter_3: 0,
+      _filter_4: 0,
+      _filter_5: 0,
+    };
+
+    const sell_summary = {
+      key: 'sell',
+      _filter_1: 0,
+      _filter_2: 0,
+      _filter_3: 0,
+      _filter_4: 0,
+      _filter_5: 0,
+    };
+
     res.data.forEach((item: any) => {
       const newItem = { ...item };
       // remove properties ID, Symbol, TotalVolume
@@ -423,7 +441,39 @@ export const getDailyTransaction = async (symbol: string) => {
         total_sell_vol += newItem.Volume;
         sell_count += 1;
       }
+
+      const total = (newItem.Volume * newItem.Price) / UNIT_BILLION;
+
+      if (newItem.Side === 'B') {
+        if (total < 0.1) {
+          buy_summary._filter_1 += 1;
+        } else if (0.1 <= total && total < 0.5) {
+          buy_summary._filter_2 += 1;
+        } else if (0.5 <= total && total < 1) {
+          buy_summary._filter_3 += 1;
+        } else if (1 <= total && total < 2) {
+          buy_summary._filter_4 += 1;
+        } else {
+          buy_summary._filter_5 += 1;
+        }
+      }
+
+      if (newItem.Side === 'S') {
+        if (total < 0.1) {
+          sell_summary._filter_1 += 1;
+        } else if (0.1 <= total && total < 0.5) {
+          sell_summary._filter_2 += 1;
+        } else if (0.5 <= total && total < 1) {
+          sell_summary._filter_3 += 1;
+        } else if (1 <= total && total < 2) {
+          sell_summary._filter_4 += 1;
+        } else {
+          sell_summary._filter_5 += 1;
+        }
+      }
     });
+
+    const transaction_summary = [buy_summary, sell_summary];
 
     const buy_sell_vol = {
       total_buy_vol,
@@ -435,6 +485,7 @@ export const getDailyTransaction = async (symbol: string) => {
     };
 
     return {
+      transaction_summary,
       transaction_above_1_bil,
       transaction_upto_1_bil,
       buy_sell_vol,

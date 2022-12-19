@@ -34,12 +34,12 @@ import {
   getFilterData,
 } from './utils';
 import {
-  UNIT_BILLION,
   MIN_CHANGE,
   MAX_CHANGE,
   DELAY_TIME,
   TYPE_INDICATOR_OPTIONS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
+  BUY_SELL_SIGNNAL_KEYS,
 } from './constants';
 import {
   CheckCircleOutlined,
@@ -47,7 +47,6 @@ import {
   FilterOutlined,
 } from '@ant-design/icons';
 import './StockTable.less';
-import moment from 'moment';
 import { useInterval } from 'libs/hooks';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
 
@@ -70,64 +69,62 @@ const DEFAULT_FILTER = {
 
 const InDayReviewColumns = [
   {
-    title: 'trans_<_1_ty',
-    sorter: (a: any, b: any) =>
-      a.transaction_upto_1_bil &&
-      b.transaction_upto_1_bil &&
-      a.transaction_upto_1_bil.length - b.transaction_upto_1_bil.length,
-    align: 'right',
-    render: (data: any) => {
-      const transaction_upto_1_bil = data.transaction_upto_1_bil || [];
-      return (
-        <Tooltip
-          title={
-            <div>
-              {transaction_upto_1_bil.map((i: any) => {
-                return (
-                  <div>
-                    {moment(i.Date).format('HH:mm:ss')} -{' '}
-                    {Number(
-                      ((i.Volume * i.Price * 10) / UNIT_BILLION).toFixed(1)
-                    ).toLocaleString()}
-                  </div>
-                );
-              })}
-            </div>
-          }
-        >
-          <div>{transaction_upto_1_bil.length}</div>
-        </Tooltip>
-      );
-    },
-  },
-  {
     title: 'trans_>_1_ty',
-    sorter: (a: any, b: any) =>
-      a.transaction_above_1_bil &&
-      b.transaction_above_1_bil &&
-      a.transaction_above_1_bil.length - b.transaction_above_1_bil.length,
-    align: 'right',
+    // sorter: (a: any, b: any) =>
+    //   a.transaction_above_1_bil &&
+    //   b.transaction_above_1_bil &&
+    //   a.transaction_above_1_bil.length - b.transaction_above_1_bil.length,
+    // align: 'right',
     render: (data: any) => {
-      const transaction_above_1_bil = data.transaction_above_1_bil || [];
+      const transaction_summary = data.transaction_summary || [];
+
+      const columns = [
+        {
+          title: '_filter_1',
+          dataIndex: '_filter_1',
+          key: '_filter_1',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_2',
+          dataIndex: '_filter_2',
+          key: '_filter_2',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_3',
+          dataIndex: '_filter_3',
+          key: '_filter_3',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_4',
+          dataIndex: '_filter_4',
+          key: '_filter_4',
+          align: 'right' as 'right',
+          width: 100,
+        },
+        {
+          title: '_filter_5',
+          dataIndex: '_filter_5',
+          key: '_filter_5',
+          align: 'right' as 'right',
+          width: 100,
+        },
+      ];
+
       return (
-        <Tooltip
-          title={
-            <div>
-              {transaction_above_1_bil.map((i: any) => {
-                return (
-                  <div>
-                    {moment(i.Date).format('HH:mm:ss')} -{' '}
-                    {Number(
-                      ((i.Volume * i.Price) / UNIT_BILLION).toFixed(1)
-                    ).toLocaleString()}
-                  </div>
-                );
-              })}
-            </div>
-          }
-        >
-          <div> {transaction_above_1_bil.length}</div>
-        </Tooltip>
+        <Table
+          dataSource={transaction_summary}
+          columns={columns}
+          size={'small'}
+          pagination={false}
+          showHeader={false}
+          bordered
+        />
       );
     },
   },
@@ -139,11 +136,18 @@ const InDayReviewColumns = [
       const buy_sell_count_ratio = data.buy_sell_vol?.buy_sell_count_ratio || 0;
       const buy_count = data.buy_sell_vol?.buy_count || 0;
       const sell_count = data.buy_sell_vol?.sell_count || 0;
+
+      let className = 'blur';
+      if (buy_sell_count_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_count__buy) {
+        className = 'green';
+      } else if (
+        BUY_SELL_SIGNNAL_KEYS.buy_sell_count__sell >= buy_sell_count_ratio
+      ) {
+        className = 'red';
+      }
       return (
         <Tooltip title={`${buy_count} / ${sell_count}`}>
-          <div className={buy_sell_count_ratio > 1 ? 'green' : 'red'}>
-            {buy_sell_count_ratio}
-          </div>
+          <div className={className}>{buy_sell_count_ratio}</div>
         </Tooltip>
       );
     },
@@ -156,11 +160,17 @@ const InDayReviewColumns = [
       const buy_sell_total_ratio = data.buy_sell_vol?.buy_sell_total_ratio || 0;
       const total_buy_vol = data.buy_sell_vol?.total_buy_vol || 0;
       const total_sell_vol = data.buy_sell_vol?.total_sell_vol || 0;
+      let className = 'blur';
+      if (buy_sell_total_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__buy) {
+        className = 'green';
+      } else if (
+        BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__sell >= buy_sell_total_ratio
+      ) {
+        className = 'red';
+      }
       return (
         <Tooltip title={`${total_buy_vol} / ${total_sell_vol}`}>
-          <div className={buy_sell_total_ratio > 1 ? 'green' : 'red'}>
-            {buy_sell_total_ratio}
-          </div>
+          <div className={className}>{buy_sell_total_ratio}</div>
         </Tooltip>
       );
     },

@@ -143,4 +143,8 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   count_10_day_buy: 3,
   count_10_day_sell: 3,
   estimated_vol_change: 20,
+  buy_sell_count__buy: 1.3,
+  buy_sell_count__sell: 0.7,
+  buy_sell_vol__buy: 1.3,
+  buy_sell_vol__sell: 0.7,
 };
