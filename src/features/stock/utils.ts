@@ -175,28 +175,32 @@ export const getHistorialQuote = async (symbol: string) => {
 
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
-
-    let count_5_day_within_base = {
-      count: 0,
-      valid: false,
-    };
+    const count_5_day_within_base = calculateBase(res.data.slice(1, 6));
+    // let count_5_day_within_base: any = {
+    //   count: 0,
+    //   list: [],
+    //   valid: false,
+    // };
     // count the number of dasy which percent price is within the min and max from the base today
 
     // base --> calculate from last_2_day
     const base = last_2_data.priceClose;
-    const min_base = base - base * 0.07; // 7% up from last_2_day
-    const max_base = base + base * 0.07; // 7% up from last_2_day
+    let min_base = base - base * 0.07; // 7% up from last_2_day
+    let max_base = base + base * 0.07; // 7% up from last_2_day
 
-    const last_5_data = res.data.slice(1, 6);
+    // const last_5_data = res.data.slice(1, 6);
 
-    last_5_data.forEach((item: any) => {
-      if (item.priceClose >= min_base && item.priceClose <= max_base) {
-        count_5_day_within_base.count += 1;
-      }
-      if (count_5_day_within_base.count === 5) {
-        count_5_day_within_base.valid = true;
-      }
-    });
+    // last_5_data.forEach((item: any) => {
+    //   if (item.priceClose >= min_base && item.priceClose <= max_base) {
+    //     count_5_day_within_base.count += 1;
+    //     count_5_day_within_base.list.push(item);
+    //   } else {
+    //     return;
+    //   }
+    //   if (count_5_day_within_base.count === 5) {
+    //     count_5_day_within_base.valid = true;
+    //   }
+    // });
 
     let count_10_day_within_base = {
       count: 0,
@@ -511,6 +515,7 @@ export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
 export const getFilterData = (
   data: any,
   {
+    currentWatchlist,
     totalValue_last20_min,
     totalValue_last20_max,
     changeVolume_last5_min,
@@ -528,6 +533,14 @@ export const getFilterData = (
   }: any
 ) => {
   const filteredData = data.filter((i: any) => {
+    if (
+      currentWatchlist &&
+      currentWatchlist.symbols &&
+      !currentWatchlist.symbols.includes(i.symbol)
+    ) {
+      return false;
+    }
+
     if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
       return false;
     }
@@ -597,4 +610,29 @@ export const getFilterData = (
     return true;
   });
   return filteredData;
+};
+
+const calculateBase = (data: any) => {
+  if (!data || data.length === 0) return null;
+  let list_base: any = [];
+  let base = data[0].priceClose;
+  let base_min = base - base * 0.07;
+  let base_max = base + base * 0.07;
+
+  data.forEach((i: any) => {
+    if (i.priceClose >= base_min && i.priceClose <= base_max) {
+      list_base.push(i);
+    } else {
+      if (list_base.length < 5) {
+        list_base = [];
+      }
+      base = i.priceClose;
+      base_min = base - base * 0.07;
+      base_max = base + base * 0.07;
+    }
+  });
+
+  return {
+    list_base,
+  };
 };

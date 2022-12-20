@@ -133,11 +133,12 @@ export const TYPE_INDICATOR_OPTIONS = [
   'NoData',
 ];
 
-export const DEFAULT_TYPE_INDICATOR_OPTIONS = ['BuySellSignals', 'InDayReview'];
+export const DEFAULT_TYPE_INDICATOR_OPTIONS = ['BuySellSignals'];
 
 export const BUY_SELL_SIGNNAL_KEYS = {
   totalValue_last20_min: 1,
-  changePrice: 2,
+  changePrice_buy: 2,
+  changePrice_sell: -2,
   count_5_day_within_base: 5,
   count_10_day_within_base: 10,
   count_10_day_buy: 3,

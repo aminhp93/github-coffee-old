@@ -1,54 +1,57 @@
-import { StockService } from 'libs/services';
-import React, { useEffect, useState } from 'react';
-import { keyBy } from 'lodash';
-import { Watchlist } from 'libs/types';
-import {
-  RadioChangeEvent,
-  Checkbox,
-  Form,
-  Radio,
-  Switch,
-  Table,
-  Button,
-  notification,
-  Dropdown,
-  Menu,
-  Drawer,
-  InputNumber,
-  Tooltip,
-} from 'antd';
-import type { SizeType } from 'antd/es/config-provider/SizeContext';
-import type { ColumnsType, TableProps } from 'antd/es/table';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import type { CheckboxValueType } from 'antd/es/checkbox/Group';
-import {
-  getHistorialQuote,
-  getFinancialIndicator,
-  getFundamentals,
-  getDailyTransaction,
-  updateWatchlist,
-  FinancialIndicatorsColumns,
-  FundamentalColumns,
-  HistoricalQuoteColumns,
-  NoDataColumns,
-  getFilterData,
-} from './utils';
-import {
-  MIN_CHANGE,
-  MAX_CHANGE,
-  DELAY_TIME,
-  TYPE_INDICATOR_OPTIONS,
-  DEFAULT_TYPE_INDICATOR_OPTIONS,
-  BUY_SELL_SIGNNAL_KEYS,
-} from './constants';
 import {
   CheckCircleOutlined,
-  SettingOutlined,
   FilterOutlined,
+  SettingOutlined,
+  ArrowUpOutlined,
+  ArrowDownOutlined,
 } from '@ant-design/icons';
-import './StockTable.less';
+import {
+  Button,
+  Checkbox,
+  Drawer,
+  Dropdown,
+  Form,
+  InputNumber,
+  Menu,
+  notification,
+  Radio,
+  RadioChangeEvent,
+  Switch,
+  Table,
+  Statistic,
+  Popover,
+} from 'antd';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import type { CheckboxValueType } from 'antd/es/checkbox/Group';
+import type { SizeType } from 'antd/es/config-provider/SizeContext';
+import type { ColumnsType, TableProps } from 'antd/es/table';
 import { useInterval } from 'libs/hooks';
+import { StockService } from 'libs/services';
+import { Watchlist } from 'libs/types';
+import { keyBy } from 'lodash';
+import React, { useEffect, useState, useMemo } from 'react';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
+import {
+  DEFAULT_TYPE_INDICATOR_OPTIONS,
+  DELAY_TIME,
+  MAX_CHANGE,
+  MIN_CHANGE,
+  TYPE_INDICATOR_OPTIONS,
+} from './constants';
+import InDayReviewColumns from './InDayReviewColumns';
+import './StockTable.less';
+import {
+  FinancialIndicatorsColumns,
+  FundamentalColumns,
+  // getDailyTransaction,
+  getFilterData,
+  getFinancialIndicator,
+  getFundamentals,
+  getHistorialQuote,
+  HistoricalQuoteColumns,
+  NoDataColumns,
+  updateWatchlist,
+} from './utils';
 
 const DEFAULT_FILTER = {
   totalValue_last20_min: 0,
@@ -66,116 +69,6 @@ const DEFAULT_FILTER = {
   estimated_vol_change_min: MIN_CHANGE,
   estimated_vol_change_max: MAX_CHANGE,
 };
-
-const InDayReviewColumns = [
-  {
-    title: 'trans_>_1_ty',
-    // sorter: (a: any, b: any) =>
-    //   a.transaction_above_1_bil &&
-    //   b.transaction_above_1_bil &&
-    //   a.transaction_above_1_bil.length - b.transaction_above_1_bil.length,
-    // align: 'right',
-    render: (data: any) => {
-      const transaction_summary = data.transaction_summary || [];
-
-      const columns = [
-        {
-          title: '_filter_1',
-          dataIndex: '_filter_1',
-          key: '_filter_1',
-          align: 'right' as 'right',
-          width: 100,
-        },
-        {
-          title: '_filter_2',
-          dataIndex: '_filter_2',
-          key: '_filter_2',
-          align: 'right' as 'right',
-          width: 100,
-        },
-        {
-          title: '_filter_3',
-          dataIndex: '_filter_3',
-          key: '_filter_3',
-          align: 'right' as 'right',
-          width: 100,
-        },
-        {
-          title: '_filter_4',
-          dataIndex: '_filter_4',
-          key: '_filter_4',
-          align: 'right' as 'right',
-          width: 100,
-        },
-        {
-          title: '_filter_5',
-          dataIndex: '_filter_5',
-          key: '_filter_5',
-          align: 'right' as 'right',
-          width: 100,
-        },
-      ];
-
-      return (
-        <Table
-          dataSource={transaction_summary}
-          columns={columns}
-          size={'small'}
-          pagination={false}
-          showHeader={false}
-          bordered
-        />
-      );
-    },
-  },
-  {
-    title: 'buy_sell_count',
-    align: 'right',
-    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
-    render: (data: any) => {
-      const buy_sell_count_ratio = data.buy_sell_vol?.buy_sell_count_ratio || 0;
-      const buy_count = data.buy_sell_vol?.buy_count || 0;
-      const sell_count = data.buy_sell_vol?.sell_count || 0;
-
-      let className = 'blur';
-      if (buy_sell_count_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_count__buy) {
-        className = 'green';
-      } else if (
-        BUY_SELL_SIGNNAL_KEYS.buy_sell_count__sell >= buy_sell_count_ratio
-      ) {
-        className = 'red';
-      }
-      return (
-        <Tooltip title={`${buy_count} / ${sell_count}`}>
-          <div className={className}>{buy_sell_count_ratio}</div>
-        </Tooltip>
-      );
-    },
-  },
-  {
-    title: 'buy_sell_vol',
-    align: 'right',
-    // sorter: (a: any, b: any) => a.buy_sell_vol - b.buy_sell_vol,
-    render: (data: any) => {
-      const buy_sell_total_ratio = data.buy_sell_vol?.buy_sell_total_ratio || 0;
-      const total_buy_vol = data.buy_sell_vol?.total_buy_vol || 0;
-      const total_sell_vol = data.buy_sell_vol?.total_sell_vol || 0;
-      let className = 'blur';
-      if (buy_sell_total_ratio >= BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__buy) {
-        className = 'green';
-      } else if (
-        BUY_SELL_SIGNNAL_KEYS.buy_sell_vol__sell >= buy_sell_total_ratio
-      ) {
-        className = 'red';
-      }
-      return (
-        <Tooltip title={`${total_buy_vol} / ${total_sell_vol}`}>
-          <div className={className}>{buy_sell_total_ratio}</div>
-        </Tooltip>
-      );
-    },
-  },
-];
 
 interface DataType {
   key: number;
@@ -365,22 +258,27 @@ export default function StockTable() {
 
   const handleGetData = () => {
     const listPromises: any = [];
+    const thanh_khoan_vua_wl: any =
+      listWatchlistObj && listWatchlistObj[737544];
+    console.log(listWatchlistObj);
 
-    dataSource.forEach((j: any) => {
-      listPromises.push(getHistorialQuote(j.symbol));
-      listPromises.push(getFundamentals(j.symbol));
-      listPromises.push(getFinancialIndicator(j.symbol));
-      listPromises.push(getDailyTransaction(j.symbol));
+    if (!thanh_khoan_vua_wl) return;
+
+    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
+      listPromises.push(getHistorialQuote(j));
+      listPromises.push(getFundamentals(j));
+      listPromises.push(getFinancialIndicator(j));
+      // listPromises.push(getDailyTransaction(j));
     });
 
     setLoading(true);
     return Promise.all(listPromises)
       .then((res: any) => {
+        console.log(res);
         setLoading(false);
-        let newDataSource: any = [...dataSource];
-        newDataSource = newDataSource.map((i: any) => {
-          const filterRes = res.filter((j: any) => j.symbol === i.symbol);
-          let newItem = { ...i };
+        const newDataSource: any = thanh_khoan_vua_wl?.symbols.map((i: any) => {
+          const filterRes = res.filter((j: any) => j.symbol === i);
+          let newItem = { key: i, symbol: i };
           if (filterRes.length > 0) {
             filterRes.forEach((j: any) => {
               newItem = { ...newItem, ...j };
@@ -388,6 +286,7 @@ export default function StockTable() {
           }
           return newItem;
         });
+
         setDataSource(newDataSource);
         notification.success({ message: 'success' });
         return newDataSource;
@@ -477,6 +376,45 @@ export default function StockTable() {
     tableLayout,
   };
 
+  const filteredData = useMemo(
+    () =>
+      getFilterData(dataSource, {
+        currentWatchlist,
+        totalValue_last20_min,
+        totalValue_last20_max,
+        changeVolume_last5_min,
+        changeVolume_last5_max,
+        changeVolume_last20_min,
+        changeVolume_last20_max,
+        changePrice_min,
+        changePrice_max,
+        excludeVN30,
+        validCount_5_day_within_base,
+        transaction_above_1_bil_min,
+        transaction_above_1_bil_max,
+        estimated_vol_change_min,
+        estimated_vol_change_max,
+      }),
+    [
+      dataSource,
+      currentWatchlist,
+      totalValue_last20_min,
+      totalValue_last20_max,
+      changeVolume_last5_min,
+      changeVolume_last5_max,
+      changeVolume_last20_min,
+      changeVolume_last20_max,
+      changePrice_min,
+      changePrice_max,
+      excludeVN30,
+      validCount_5_day_within_base,
+      transaction_above_1_bil_min,
+      transaction_above_1_bil_max,
+      estimated_vol_change_min,
+      estimated_vol_change_max,
+    ]
+  );
+
   useEffect(() => {
     handleGetData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -515,7 +453,7 @@ export default function StockTable() {
     if (checkedList.includes('BuySellSignals')) {
       columns.push({
         title: 'BuySellSignals',
-        children: BuySellSignalsColumns,
+        children: BuySellSignalsColumns(filteredData),
       });
     }
 
@@ -534,7 +472,7 @@ export default function StockTable() {
     }
 
     setColumns(columns);
-  }, [checkedList]);
+  }, [checkedList, filteredData]);
 
   useEffect(() => {
     (async () => {
@@ -569,67 +507,88 @@ export default function StockTable() {
     changePrice_max
   );
 
-  const filteredData = getFilterData(dataSource, {
-    totalValue_last20_min,
-    totalValue_last20_max,
-    changeVolume_last5_min,
-    changeVolume_last5_max,
-    changeVolume_last20_min,
-    changeVolume_last20_max,
-    changePrice_min,
-    changePrice_max,
-    excludeVN30,
-    validCount_5_day_within_base,
-    transaction_above_1_bil_min,
-    transaction_above_1_bil_max,
-    estimated_vol_change_min,
-    estimated_vol_change_max,
-  });
+  const renderHeader = () => {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className="flex">
+          <Dropdown overlay={menu} trigger={['hover']}>
+            <Button style={{ marginRight: '8px' }}>
+              {currentWatchlist?.name || 'Select watchlist'}
+            </Button>
+          </Dropdown>
+          <Button
+            icon={<CheckCircleOutlined />}
+            disabled={loading}
+            onClick={handleGetData}
+          />
+          <div style={{ marginLeft: '8px' }}>
+            <Button onClick={() => setPlaying(!isPlaying)}>
+              {isPlaying ? 'Stop Interval' : 'Start Interval'}
+            </Button>
+
+            <InputNumber
+              style={{ marginLeft: '8px' }}
+              disabled={isPlaying}
+              value={delay}
+              onChange={(value: any) => setDelay(value)}
+            />
+          </div>
+        </div>
+        <div className={'flex'}>
+          <Statistic
+            title="Sell < -2%"
+            value={_filter_1.length}
+            valueStyle={{ color: 'red' }}
+            prefix={<ArrowDownOutlined />}
+          />
+          <Statistic
+            title="Normal"
+            value={_filter_2.length}
+            style={{ margin: '0 10px' }}
+          />
+          <Statistic
+            title="Buy > 2%"
+            value={_filter_3.length}
+            valueStyle={{ color: 'green' }}
+            prefix={<ArrowUpOutlined />}
+          />
+        </div>
+        <Popover
+          placement="leftTop"
+          content={
+            <div>
+              <Checkbox
+                indeterminate={indeterminate}
+                onChange={onCheckAllChange}
+                checked={checkAll}
+              >
+                All
+              </Checkbox>
+
+              <CheckboxGroup
+                options={TYPE_INDICATOR_OPTIONS}
+                value={checkedList}
+                onChange={onChange}
+              />
+            </div>
+          }
+        >
+          <Button type="primary">Hover me</Button>
+        </Popover>
+      </div>
+    );
+  };
+
+  const _filter_1 = dataSource.filter((i: any) => i.changePrice < -0.02);
+  const _filter_2 = dataSource.filter(
+    (i: any) => i.changePrice >= -0.02 && i.changePrice <= 0.02
+  );
+  const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
 
   return (
     <div className="StockTable">
       <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div className="flex">
-            <Dropdown overlay={menu} trigger={['hover']}>
-              <Button style={{ marginRight: '8px' }}>
-                {currentWatchlist?.name || 'Select watchlist'}
-              </Button>
-            </Dropdown>
-            <Button
-              icon={<CheckCircleOutlined />}
-              disabled={loading}
-              onClick={handleGetData}
-            />
-            <div style={{ marginLeft: '8px' }}>
-              <Button onClick={() => setPlaying(!isPlaying)}>
-                {isPlaying ? 'Stop Interval' : 'Start Interval'}
-              </Button>
-
-              <InputNumber
-                style={{ marginLeft: '8px' }}
-                disabled={isPlaying}
-                value={delay}
-                onChange={(value: any) => setDelay(value)}
-              />
-            </div>
-          </div>
-          <div>
-            <Checkbox
-              indeterminate={indeterminate}
-              onChange={onCheckAllChange}
-              checked={checkAll}
-            >
-              All
-            </Checkbox>
-
-            <CheckboxGroup
-              options={TYPE_INDICATOR_OPTIONS}
-              value={checkedList}
-              onChange={onChange}
-            />
-          </div>
-        </div>
+        {renderHeader()}
 
         <Table
           {...tableProps}
@@ -830,7 +789,6 @@ export default function StockTable() {
             style={{ justifyContent: 'space-between', flexDirection: 'column' }}
           >
             <Button onClick={handleSetFilter}>Formula 1</Button>
-
             <Button danger onClick={handleClearFilter}>
               Clear filter
             </Button>
