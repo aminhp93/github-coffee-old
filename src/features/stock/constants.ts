@@ -149,3 +149,15 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   buy_sell_vol__buy: 1.3,
   buy_sell_vol__sell: 0.7,
 };
+
+export const DEFAULT_FILTER = {
+  totalValue_last20_min: 1,
+  changePrice_min: -20,
+  changePrice_max: 20,
+  have_base_in_5_day: false,
+  have_base_in_10_day: false,
+  count_10_day_buy_min: 3,
+  count_10_day_sell_min: 3,
+  estimated_vol_change_min: MIN_CHANGE,
+  have_extra_vol: false,
+};

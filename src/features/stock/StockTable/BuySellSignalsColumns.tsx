@@ -1,7 +1,6 @@
 import { Tooltip } from 'antd';
-import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from './constants';
+import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import './StockTable.less';
 import moment from 'moment';
 
 const BuySellSignalsColumns = (filteredData: any) => {

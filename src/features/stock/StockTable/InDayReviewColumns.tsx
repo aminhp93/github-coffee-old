@@ -1,6 +1,5 @@
 import { Table, Tooltip } from 'antd';
-import { BUY_SELL_SIGNNAL_KEYS } from './constants';
-import './StockTable.less';
+import { BUY_SELL_SIGNNAL_KEYS } from '../constants';
 
 const InDayReviewColumns = [
   {

@@ -1,15 +1,14 @@
-import moment from 'moment';
 import axios from 'axios';
+import { max, min } from 'lodash';
+import moment from 'moment';
 import {
-  NoDataKeys,
-  HistoricalQuoteKeys,
   DATE_FORMAT,
-  FundamentalKeys,
   FinancialIndicatorsKeys,
-  LIST_VN30,
+  FundamentalKeys,
+  HistoricalQuoteKeys,
+  NoDataKeys,
   UNIT_BILLION,
 } from './constants';
-import { min, max } from 'lodash';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -176,50 +175,11 @@ export const getHistorialQuote = async (symbol: string) => {
 
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
+
     const count_5_day_within_base = calculateBase(res.data.slice(1, 6));
     const count_10_day_within_base = calculateBase(res.data.slice(1, 11));
-    // let count_5_day_within_base: any = {
-    //   count: 0,
-    //   list: [],
-    //   valid: false,
-    // };
-    // count the number of dasy which percent price is within the min and max from the base today
-
-    // base --> calculate from last_2_day
-    // const base = last_2_data.priceClose;
-    // let min_base = base - base * 0.07; // 7% up from last_2_day
-    // let max_base = base + base * 0.07; // 7% up from last_2_day
-
-    // const last_5_data = res.data.slice(1, 6);
-
-    // last_5_data.forEach((item: any) => {
-    //   if (item.priceClose >= min_base && item.priceClose <= max_base) {
-    //     count_5_day_within_base.count += 1;
-    //     count_5_day_within_base.list.push(item);
-    //   } else {
-    //     return;
-    //   }
-    //   if (count_5_day_within_base.count === 5) {
-    //     count_5_day_within_base.valid = true;
-    //   }
-    // });
-
-    // let count_10_day_within_base = {
-    //   count: 0,
-    //   valid: false,
-    // };
-    // // count the number of dasy which percent price is within the min and max from the base today
 
     const last_10_data = res.data.slice(1, 11);
-
-    // last_10_data.forEach((item: any) => {
-    //   if (item.priceClose >= min_base && item.priceClose <= max_base) {
-    //     count_10_day_within_base.count += 1;
-    //   }
-    //   if (count_10_day_within_base.count === 10) {
-    //     count_10_day_within_base.valid = true;
-    //   }
-    // });
 
     const strong_sell: any = [];
     const strong_buy: any = [];
@@ -519,19 +479,8 @@ export const getFilterData = (
   {
     currentWatchlist,
     totalValue_last20_min,
-    totalValue_last20_max,
-    changeVolume_last5_min,
-    changeVolume_last5_max,
-    changeVolume_last20_min,
-    changeVolume_last20_max,
     changePrice_min,
     changePrice_max,
-    excludeVN30,
-    validCount_5_day_within_base,
-    transaction_above_1_bil_min,
-    transaction_above_1_bil_max,
-    estimated_vol_change_min,
-    estimated_vol_change_max,
   }: any
 ) => {
   const filteredData = data.filter((i: any) => {
@@ -547,65 +496,11 @@ export const getFilterData = (
       return false;
     }
 
-    if (i.totalValue_last20_max > totalValue_last20_max * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 < changeVolume_last5_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last5 * 100 > changeVolume_last5_max) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 < changeVolume_last20_min) {
-      return false;
-    }
-
-    if (i.changeVolume_last20 * 100 > changeVolume_last20_max) {
-      return false;
-    }
-
     if (i.changePrice * 100 < changePrice_min) {
       return false;
     }
 
     if (i.changePrice * 100 > changePrice_max) {
-      return false;
-    }
-
-    if (excludeVN30 && LIST_VN30.includes(i.symbol)) {
-      return false;
-    }
-
-    if (
-      validCount_5_day_within_base &&
-      i.count_5_day_within_base &&
-      !i.count_5_day_within_base.valid
-    ) {
-      return false;
-    }
-
-    if (
-      i.transaction_above_1_bil &&
-      i.transaction_above_1_bil.length < transaction_above_1_bil_min
-    ) {
-      return false;
-    }
-
-    if (
-      i.transaction_above_1_bil &&
-      i.transaction_above_1_bil.length > transaction_above_1_bil_max
-    ) {
-      return false;
-    }
-
-    if (i.estimated_vol_change < estimated_vol_change_min) {
-      return false;
-    }
-
-    if (i.estimated_vol_change > estimated_vol_change_max) {
       return false;
     }
 
