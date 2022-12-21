@@ -537,21 +537,22 @@ export default function StockTable() {
         </div>
         <div className={'flex'}>
           <Statistic
-            title="Sell < -2%"
-            value={_filter_1.length}
-            valueStyle={{ color: 'red' }}
-            prefix={<ArrowDownOutlined />}
+            title="Buy > 2%"
+            value={_filter_3.length}
+            valueStyle={{ color: 'green' }}
+            prefix={<ArrowUpOutlined />}
           />
           <Statistic
             title="Normal"
             value={_filter_2.length}
             style={{ margin: '0 10px' }}
           />
+
           <Statistic
-            title="Buy > 2%"
-            value={_filter_3.length}
-            valueStyle={{ color: 'green' }}
-            prefix={<ArrowUpOutlined />}
+            title="Sell < -2%"
+            value={_filter_1.length}
+            valueStyle={{ color: 'red' }}
+            prefix={<ArrowDownOutlined />}
           />
         </div>
         <Popover

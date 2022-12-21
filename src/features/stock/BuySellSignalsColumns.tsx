@@ -123,7 +123,14 @@ const BuySellSignalsColumns = (filteredData: any) => {
             }
           >
             <div className={className}>
-              {list_base.length === 5 ? 1 : 0} - {index_base}
+              {list_base.length === 5 ? (
+                <>
+                  <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                  {index_base}
+                </>
+              ) : (
+                <CloseCircleOutlined />
+              )}
             </div>
           </Tooltip>
         );
@@ -176,7 +183,14 @@ const BuySellSignalsColumns = (filteredData: any) => {
             }
           >
             <div className={className}>
-              {list_base.length === 5 ? 1 : 0} - {index_base}
+              {list_base.length === 5 ? (
+                <>
+                  <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                  {index_base}
+                </>
+              ) : (
+                <CloseCircleOutlined />
+              )}
             </div>
           </Tooltip>
         );

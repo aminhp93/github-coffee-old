@@ -618,7 +618,7 @@ const calculateBase = (data: any) => {
   if (!data || data.length === 0) return null;
   let list_base: any = [];
   let index_base;
-  console.log(data);
+
   data.forEach((_: any, index: number) => {
     if (
       !data[index + 1] ||
@@ -627,7 +627,7 @@ const calculateBase = (data: any) => {
       !data[index + 4]
     )
       return;
-    if (list_base.length === 1) return;
+    if (list_base.length === 5) return;
     const base_min = min([
       data[index].priceLow,
       data[index + 1].priceLow,
