@@ -9,6 +9,7 @@ import {
   LIST_VN30,
   UNIT_BILLION,
 } from './constants';
+import { min, max } from 'lodash';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -176,6 +177,7 @@ export const getHistorialQuote = async (symbol: string) => {
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
     const count_5_day_within_base = calculateBase(res.data.slice(1, 6));
+    const count_10_day_within_base = calculateBase(res.data.slice(1, 11));
     // let count_5_day_within_base: any = {
     //   count: 0,
     //   list: [],
@@ -184,9 +186,9 @@ export const getHistorialQuote = async (symbol: string) => {
     // count the number of dasy which percent price is within the min and max from the base today
 
     // base --> calculate from last_2_day
-    const base = last_2_data.priceClose;
-    let min_base = base - base * 0.07; // 7% up from last_2_day
-    let max_base = base + base * 0.07; // 7% up from last_2_day
+    // const base = last_2_data.priceClose;
+    // let min_base = base - base * 0.07; // 7% up from last_2_day
+    // let max_base = base + base * 0.07; // 7% up from last_2_day
 
     // const last_5_data = res.data.slice(1, 6);
 
@@ -202,22 +204,22 @@ export const getHistorialQuote = async (symbol: string) => {
     //   }
     // });
 
-    let count_10_day_within_base = {
-      count: 0,
-      valid: false,
-    };
-    // count the number of dasy which percent price is within the min and max from the base today
+    // let count_10_day_within_base = {
+    //   count: 0,
+    //   valid: false,
+    // };
+    // // count the number of dasy which percent price is within the min and max from the base today
 
     const last_10_data = res.data.slice(1, 11);
 
-    last_10_data.forEach((item: any) => {
-      if (item.priceClose >= min_base && item.priceClose <= max_base) {
-        count_10_day_within_base.count += 1;
-      }
-      if (count_10_day_within_base.count === 10) {
-        count_10_day_within_base.valid = true;
-      }
-    });
+    // last_10_data.forEach((item: any) => {
+    //   if (item.priceClose >= min_base && item.priceClose <= max_base) {
+    //     count_10_day_within_base.count += 1;
+    //   }
+    //   if (count_10_day_within_base.count === 10) {
+    //     count_10_day_within_base.valid = true;
+    //   }
+    // });
 
     const strong_sell: any = [];
     const strong_buy: any = [];
@@ -615,24 +617,46 @@ export const getFilterData = (
 const calculateBase = (data: any) => {
   if (!data || data.length === 0) return null;
   let list_base: any = [];
-  let base = data[0].priceClose;
-  let base_min = base - base * 0.07;
-  let base_max = base + base * 0.07;
-
-  data.forEach((i: any) => {
-    if (i.priceClose >= base_min && i.priceClose <= base_max) {
-      list_base.push(i);
-    } else {
-      if (list_base.length < 5) {
-        list_base = [];
-      }
-      base = i.priceClose;
-      base_min = base - base * 0.07;
-      base_max = base + base * 0.07;
+  let index_base;
+  console.log(data);
+  data.forEach((_: any, index: number) => {
+    if (
+      !data[index + 1] ||
+      !data[index + 2] ||
+      !data[index + 3] ||
+      !data[index + 4]
+    )
+      return;
+    if (list_base.length === 1) return;
+    const base_min = min([
+      data[index].priceLow,
+      data[index + 1].priceLow,
+      data[index + 2].priceLow,
+      data[index + 3].priceLow,
+      data[index + 4].priceLow,
+    ]);
+    const base_max = max([
+      data[index].priceHigh,
+      data[index + 1].priceHigh,
+      data[index + 2].priceHigh,
+      data[index + 3].priceHigh,
+      data[index + 4].priceHigh,
+    ]);
+    const percent = (100 * (base_max - base_min)) / base_min;
+    if (percent < 14) {
+      list_base = [
+        data[index],
+        data[index + 1],
+        data[index + 2],
+        data[index + 3],
+        data[index + 4],
+      ];
+      index_base = index;
     }
   });
 
   return {
     list_base,
+    index_base,
   };
 };

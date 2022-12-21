@@ -140,7 +140,7 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   changePrice_buy: 2,
   changePrice_sell: -2,
   count_5_day_within_base: 5,
-  count_10_day_within_base: 10,
+  count_10_day_within_base: 5,
   count_10_day_buy: 3,
   count_10_day_sell: 3,
   estimated_vol_change: 20,

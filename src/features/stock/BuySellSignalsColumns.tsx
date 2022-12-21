@@ -103,6 +103,11 @@ const BuySellSignalsColumns = (filteredData: any) => {
             data.count_5_day_within_base.list_base) ||
           [];
 
+        const index_base =
+          (data.count_5_day_within_base &&
+            data.count_5_day_within_base.index_base) ||
+          0;
+
         const className =
           list_base.length === BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base
             ? 'green'
@@ -117,7 +122,9 @@ const BuySellSignalsColumns = (filteredData: any) => {
               </div>
             }
           >
-            <div className={className}>{list_base.length}</div>
+            <div className={className}>
+              {list_base.length === 5 ? 1 : 0} - {index_base}
+            </div>
           </Tooltip>
         );
       },
@@ -131,7 +138,7 @@ const BuySellSignalsColumns = (filteredData: any) => {
                 <div>{`'No. valid days within 10 day base`}</div>
                 <div>
                   <CheckCircleOutlined style={{ color: 'green' }} />{' '}
-                  {`Value > ${BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base}`}
+                  {`Value = ${BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base}`}
                 </div>
                 <div>
                   <CloseCircleOutlined style={{ color: 'red' }} />{' '}
@@ -144,15 +151,35 @@ const BuySellSignalsColumns = (filteredData: any) => {
       },
       align: 'right',
       render: (data: any) => {
-        const count =
+        const list_base =
           (data.count_10_day_within_base &&
-            data.count_10_day_within_base.count) ||
+            data.count_10_day_within_base.list_base) ||
+          [];
+
+        const index_base =
+          (data.count_10_day_within_base &&
+            data.count_10_day_within_base.index_base) ||
           0;
+
         const className =
-          count === BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base
+          list_base.length === BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base
             ? 'green'
             : 'red';
-        return <div className={className}>{count}</div>;
+        return (
+          <Tooltip
+            title={
+              <div>
+                {list_base.map((i: any) => {
+                  return <div>{moment(i.date).format('DD/MM/YYYY')}</div>;
+                })}
+              </div>
+            }
+          >
+            <div className={className}>
+              {list_base.length === 5 ? 1 : 0} - {index_base}
+            </div>
+          </Tooltip>
+        );
       },
     },
     {

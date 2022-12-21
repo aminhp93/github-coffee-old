@@ -274,7 +274,7 @@ export default function StockTable() {
     setLoading(true);
     return Promise.all(listPromises)
       .then((res: any) => {
-        console.log(res);
+        console.log(277, res);
         setLoading(false);
         const newDataSource: any = thanh_khoan_vua_wl?.symbols.map((i: any) => {
           const filterRes = res.filter((j: any) => j.symbol === i);
@@ -286,13 +286,14 @@ export default function StockTable() {
           }
           return newItem;
         });
-
+        console.log(290, newDataSource);
         setDataSource(newDataSource);
         notification.success({ message: 'success' });
         return newDataSource;
       })
       .catch((e) => {
         setLoading(false);
+        console.log(296, e);
         notification.error({ message: 'error' });
       });
   };
