@@ -8,21 +8,21 @@ import {
   Button,
   Checkbox,
   notification,
+  Popover,
   TimePicker,
   Tooltip,
-  Popover,
 } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import type { Identifier, XYCoord } from 'dnd-core';
+import { useDebounce } from 'libs/hooks';
+import { PushNotificationService, TodoService } from 'libs/services';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
-import { memo, useEffect, useState, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
-import { TodoService, PushNotificationService } from 'libs/services';
-import { useDebounce } from 'libs/hooks';
 
 const format = 'HH:mm';
 
@@ -344,7 +344,11 @@ function TodoListItem({
   if (isDone) return null;
 
   return (
-    <div ref={ref} data-handler-id={handlerId} className={`TodoListItem flex `}>
+    <div
+      // ref={ref}
+      data-handler-id={handlerId}
+      className={`TodoListItem flex `}
+    >
       <div
         ref={divRef}
         style={{

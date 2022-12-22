@@ -1,11 +1,11 @@
 import { Button, Form, Input, notification, Select } from 'antd';
+import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
+import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 import { PostService } from 'libs/services';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './PostCreate.less';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import axios from 'axios';
 
 interface Props {
   onCreateSuccess: (data: any) => void;
@@ -79,6 +79,8 @@ export default function PostCreate({ onCreateSuccess }: Props) {
           rules={[{ required: true, message: 'Please input your title!' }]}
         >
           <Input />
+        </Form.Item>
+        <Form.Item name="Tags">
           <Select
             mode="tags"
             style={{ width: '100%' }}
@@ -87,6 +89,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
             options={tags}
           />
         </Form.Item>
+
         <Form.Item
           name="body"
           rules={[{ required: false, message: 'Please input your body!' }]}
