@@ -33,7 +33,7 @@ import {
 import {
   FinancialIndicatorsColumns,
   FundamentalColumns,
-  // getDailyTransaction,
+  getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
   getFundamentals,
@@ -134,6 +134,29 @@ export default function StockTable() {
     setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
+  };
+
+  const test = () => {
+    const listPromises: any = [];
+    const thanh_khoan_vua_wl: any =
+      listWatchlistObj && listWatchlistObj[737544];
+
+    if (!thanh_khoan_vua_wl) return;
+
+    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
+      listPromises.push(getDailyTransaction(j));
+    });
+
+    setLoading(true);
+    return Promise.all(listPromises)
+      .then((res: any) => {
+        setLoading(false);
+        console.log(res);
+      })
+      .catch((e) => {
+        setLoading(false);
+        notification.error({ message: 'error' });
+      });
   };
 
   const handleGetData = () => {
@@ -287,6 +310,7 @@ export default function StockTable() {
               onChange={(value: any) => setDelay(value)}
             />
           </div>
+          <Button onClick={test}>Test</Button>
         </div>
         <div className={'flex'}>
           <Statistic

@@ -451,12 +451,13 @@ export const getDailyTransaction = async (symbol: string) => {
     };
 
     return {
-      transaction_summary,
-      transaction_above_1_bil,
-      transaction_upto_1_bil,
-      buy_sell_vol,
-      symbol,
-      key: symbol,
+      // transaction_summary,
+      // transaction_above_1_bil,
+      // transaction_upto_1_bil,
+      // buy_sell_vol,
+      // symbol,
+      // key: symbol,
+      data: res.data,
     };
   }
   return null;
