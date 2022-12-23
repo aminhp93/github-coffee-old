@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { max, min } from 'lodash';
+import { max, min, indexOf, sortBy } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
@@ -136,6 +136,22 @@ export const FinancialIndicatorsColumns: any = FinancialIndicatorsKeys.map(
   }
 );
 
+export const getHistorialQuote2 = async (symbol: string, offset = 0) => {
+  if (!symbol) return;
+  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+  const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+
+  const res = await axios({
+    method: 'GET',
+    headers: {
+      Authorization:
+        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
+    },
+    url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=${offset}&limit=20`,
+  });
+  return res.data;
+};
+
 export const getHistorialQuote = async (symbol: string) => {
   if (!symbol) return;
   const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
@@ -176,8 +192,8 @@ export const getHistorialQuote = async (symbol: string) => {
     const changePrice =
       (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
 
-    const count_5_day_within_base = calculateBase(res.data.slice(1, 6));
-    const count_10_day_within_base = calculateBase(res.data.slice(1, 11));
+    const count_5_day_within_base = calculateBase(res.data.slice(1, 6), 1);
+    const count_10_day_within_base = calculateBase(res.data.slice(1, 11), 1);
 
     const last_10_data = res.data.slice(1, 11);
 
@@ -283,14 +299,15 @@ export const getHistorialQuote = async (symbol: string) => {
     const estimated_vol_change =
       (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
 
-    const extra_vol = (100 * last_data.putthroughVolume) / last_data.dealVolume;
+    const extra_vol =
+      (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
 
     return {
       ...last_data,
-      symbol,
       key: symbol,
-      last_20_day_historical_quote,
+      symbol,
       totalValue_last20_min,
+      last_20_day_historical_quote,
       totalValue_last20_max,
       averageVolume_last5,
       changeVolume_last5,
@@ -363,10 +380,10 @@ export const getDailyTransaction = async (symbol: string) => {
   if (res.data) {
     const transaction_upto_1_bil: any = [];
     const transaction_above_1_bil: any = [];
-    let total_buy_vol = 0;
-    let total_sell_vol = 0;
-    let buy_count = 0;
-    let sell_count = 0;
+    // let total_buy_vol = 0;
+    // let total_sell_vol = 0;
+    // let buy_count = 0;
+    // let sell_count = 0;
 
     const buy_summary = {
       key: 'buy',
@@ -399,14 +416,14 @@ export const getDailyTransaction = async (symbol: string) => {
         transaction_upto_1_bil.push(newItem);
       }
 
-      if (newItem.Side === 'B') {
-        total_buy_vol += newItem.Volume;
-        buy_count += 1;
-      }
-      if (newItem.Side === 'S') {
-        total_sell_vol += newItem.Volume;
-        sell_count += 1;
-      }
+      // if (newItem.Side === 'B') {
+      //   total_buy_vol += newItem.Volume;
+      //   buy_count += 1;
+      // }
+      // if (newItem.Side === 'S') {
+      //   total_sell_vol += newItem.Volume;
+      //   sell_count += 1;
+      // }
 
       const total = (newItem.Volume * newItem.Price) / UNIT_BILLION;
 
@@ -439,16 +456,16 @@ export const getDailyTransaction = async (symbol: string) => {
       }
     });
 
-    const transaction_summary = [buy_summary, sell_summary];
+    // const transaction_summary = [buy_summary, sell_summary];
 
-    const buy_sell_vol = {
-      total_buy_vol,
-      total_sell_vol,
-      buy_count,
-      sell_count,
-      buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
-      buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
-    };
+    // const buy_sell_vol = {
+    //   total_buy_vol,
+    //   total_sell_vol,
+    //   buy_count,
+    //   sell_count,
+    //   buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
+    //   buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+    // };
 
     return {
       // transaction_summary,
@@ -507,15 +524,67 @@ export const getFilterData = (
 
     return true;
   });
+
   return filteredData;
 };
 
-const calculateBase = (data: any) => {
+export const mapBuySell = (data: any) => {
+  if (!data || !data.length) return [];
+  let returnData = data.map((i: any) => {
+    // BUY 1
+    // 1. Have base: base_count > 0
+    // 2. Price change > 2%
+    // 3. Break from base
+    // 4. Volume change > 20%
+    // 5. show backtest result within 1 year
+    if (
+      i.changePrice > 0.02 &&
+      i.count_5_day_within_base.list_base.length === 1 &&
+      i.estimated_vol_change > 20
+    ) {
+      i.action = 'buy';
+    }
+
+    // BUY 2
+    // 1. Have base: base_count > 0
+    // 2. Price change > 2%
+
+    // SELL
+    // 1. in watching watchlist
+    // 2. Price change < -2%
+    if (i.changePrice < -0.02 && i.inWatchingWatchList) {
+      i.action = 'sell';
+    }
+    return i;
+  });
+
+  const order = ['buy', 'sell'];
+
+  const sortedData = sortBy(returnData, (obj) => {
+    return -indexOf(order, obj.action);
+  });
+
+  // Sort data based on action is sell, buy
+  // returnData.sort((a: any, b: any) => {
+  //   if (a.action === 'sell' && !b.action) return -1;
+  //   if (a.action === 'sell' && b.action === 'buy') return -1;
+  //   if (a.action === 'buy' && !b.action) return -1;
+  //   return 0;
+  // });
+
+  console.log(sortedData);
+
+  return sortedData;
+};
+
+export const calculateBase = (data: any, limit?: number) => {
   if (!data || data.length === 0) return null;
   let list_base: any = [];
-  let index_base;
 
   data.forEach((_: any, index: number) => {
+    if (_.symbol === 'VPB') {
+      console.log('VPB');
+    }
     if (
       !data[index + 1] ||
       !data[index + 2] ||
@@ -523,7 +592,7 @@ const calculateBase = (data: any) => {
       !data[index + 4]
     )
       return;
-    if (list_base.length === 5) return;
+    if (limit && list_base.length === limit) return;
     const base_min = min([
       data[index].priceLow,
       data[index + 1].priceLow,
@@ -540,19 +609,20 @@ const calculateBase = (data: any) => {
     ]);
     const percent = (100 * (base_max - base_min)) / base_min;
     if (percent < 14) {
-      list_base = [
-        data[index],
-        data[index + 1],
-        data[index + 2],
-        data[index + 3],
-        data[index + 4],
-      ];
-      index_base = index;
+      list_base.push({
+        list: [
+          data[index],
+          data[index + 1],
+          data[index + 2],
+          data[index + 3],
+          data[index + 4],
+        ],
+        index,
+      });
     }
   });
 
   return {
     list_base,
-    index_base,
   };
 };

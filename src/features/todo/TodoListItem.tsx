@@ -13,14 +13,12 @@ import {
   Tooltip,
 } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import type { Identifier, XYCoord } from 'dnd-core';
 import { useDebounce } from 'libs/hooks';
 import { PushNotificationService, TodoService } from 'libs/services';
 import { ITodo } from 'libs/types';
 import moment from 'moment';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
-import { useDrag, useDrop } from 'react-dnd';
 import { v4 as uuidv4 } from 'uuid';
 import './TodoListItem.less';
 
@@ -50,32 +48,11 @@ const renderer = (props: any) => {
   }
 };
 interface IProps {
-  countPrevious: number;
-  id: number;
   todoItem: ITodo;
-  index: number;
-  onMarkDone?: (todo: ITodo) => void;
   onDeleteSuccess?: (todoId: number) => void;
-  onUpdateSuccess?: (todo: ITodo) => void;
-  moveCard: (dragIndex: number, hoverIndex: number) => void;
 }
 
-interface DragItem {
-  index: number;
-  id: string;
-  type: string;
-}
-
-function TodoListItem({
-  countPrevious,
-  todoItem,
-  onMarkDone,
-  onUpdateSuccess,
-  onDeleteSuccess,
-  index,
-  id,
-  moveCard,
-}: IProps) {
+function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
   const [plateId, setPlateId] = useState(null as any);
   const [value, setValue] = useState(JSON.parse(todoItem.body));
   const [isDone, setIsDone] = useState(todoItem.isDone);
@@ -97,7 +74,6 @@ function TodoListItem({
       notification.success({
         message: 'Marked done',
       });
-      onMarkDone && onMarkDone({ ...todoItem, isDone: !isDone });
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -111,8 +87,7 @@ function TodoListItem({
       const data = {
         body: JSON.stringify(value),
       };
-      const res = await TodoService.updateTodo(todoItem.id, data);
-      onUpdateSuccess && onUpdateSuccess(res.data);
+      await TodoService.updateTodo(todoItem.id, data);
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -137,81 +112,6 @@ function TodoListItem({
     preventUpdate.current = false;
     setValue(data);
   };
-
-  const ref = useRef<HTMLDivElement>(null);
-  const [{ handlerId }, drop] = useDrop<
-    DragItem,
-    void,
-    { handlerId: Identifier | null }
-  >({
-    accept: 'card',
-    collect(monitor) {
-      return {
-        handlerId: monitor.getHandlerId(),
-      };
-    },
-    hover(item: DragItem, monitor) {
-      if (!ref.current) {
-        return;
-      }
-      const dragIndex = item.index;
-      const hoverIndex = index;
-
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
-      // Determine rectangle on screen
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-
-      // Get vertical middle
-      const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-      // Determine mouse position
-      const clientOffset = monitor.getClientOffset();
-
-      // Get pixels to the top
-      const hoverClientY = (clientOffset as XYCoord).y - hoverBoundingRect.top;
-
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-
-      // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-
-      // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-
-      // Time to actually perform the action
-      moveCard(dragIndex, hoverIndex);
-
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations,
-      // but it's good here for the sake of performance
-      // to avoid expensive index searches.
-      item.index = hoverIndex;
-    },
-  });
-
-  const [, drag] = useDrag({
-    type: 'card',
-    item: () => {
-      return { id, index };
-    },
-    collect: (monitor: any) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
-
-  // const opacity = isDragging ? 0 : 1;
-  drag(drop(ref));
 
   const handleStartTimer = () => {
     setStatus('start');
@@ -344,11 +244,7 @@ function TodoListItem({
   if (isDone) return null;
 
   return (
-    <div
-      // ref={ref}
-      data-handler-id={handlerId}
-      className={`TodoListItem flex `}
-    >
+    <div className={`TodoListItem flex `}>
       <div
         ref={divRef}
         style={{
@@ -398,6 +294,10 @@ function TodoListItem({
     </div>
   );
 }
+
+// const areEqual = (prevProps: any, nextProps: any) => {
+//   return isEqual(prevProps.todoItem, nextProps.todoItem);
+// };
 
 const MemoizedTodoListItem = memo(TodoListItem);
 

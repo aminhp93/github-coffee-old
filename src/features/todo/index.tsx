@@ -1,7 +1,5 @@
 import type { RadioChangeEvent } from 'antd';
 import { Divider, Empty, notification, Pagination, Radio } from 'antd';
-
-import update from 'immutability-helper';
 import { TodoService } from 'libs/services';
 import { ITodo } from 'libs/types';
 import * as React from 'react';
@@ -56,17 +54,6 @@ const Todo = () => {
     [filter]
   );
 
-  const handleUpdateSuccess = (todo: ITodo) => {
-    setListTodos((old: ITodo[]) => {
-      const newList: ITodo[] = [...old];
-      const index = newList.findIndex((i: ITodo) => i.id === todo.id);
-      if (index > 0) {
-        newList[index] = todo;
-      }
-      return newList;
-    });
-  };
-
   const handleDeleteSuccess = (todoId: number) => {
     setListTodos((old) => old.filter((i: ITodo) => i.id !== todoId));
   };
@@ -75,17 +62,6 @@ const Todo = () => {
     const value = e.target.value;
     setFilter(value);
   };
-
-  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
-    setListTodos((prevCards: ITodo[]) =>
-      update(prevCards, {
-        $splice: [
-          [dragIndex, 1],
-          [hoverIndex, 0, prevCards[dragIndex] as ITodo],
-        ],
-      })
-    );
-  }, []);
 
   const handleChangePage = (page: number) => {
     setCurrentPage(page);
@@ -117,15 +93,9 @@ const Todo = () => {
                 return (
                   <>
                     <TodoListItem
-                      id={i.id}
-                      countPrevious={(currentPage - 1) * DEFAULT_PAGE_SIZE}
                       key={i.id}
-                      index={index + 1}
                       todoItem={i}
-                      onMarkDone={handleUpdateSuccess}
                       onDeleteSuccess={handleDeleteSuccess}
-                      onUpdateSuccess={handleUpdateSuccess}
-                      moveCard={moveCard}
                     />
                     <Divider />
                   </>
