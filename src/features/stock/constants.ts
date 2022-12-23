@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const UNIT_BILLION = 1_000_000_000;
 export const NUMBER_UNIT_REDUCED = 1000;
 export const DATE_FORMAT = 'YYYY-MM-DD';
@@ -10,6 +12,7 @@ export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
 export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
 export const MIN_CHANGE = -1000;
 export const MAX_CHANGE = 1000;
+export const BACKTEST_COUNT = (50 * 20) / 20;
 
 export const FinancialIndicatorsKeys = [
   'P/E',
@@ -167,3 +170,91 @@ export const DEFAULT_SETTINGS: any = {
   size: 'small',
   showHeader: true,
 };
+
+export const NO_DATA_COLUMN = NoDataKeys.map((i) => {
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    align: 'right',
+    sorter: (a: any, b: any) => a[i] - b[i],
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
+
+export const HISTORICAL_QUOTE_COLUMN = HistoricalQuoteKeys.map((i) => {
+  if (i === 'date') {
+    return {
+      title: 'dateeeeeeeee',
+      dataIndex: i,
+      key: i,
+      render: (text: string) => moment(text).format(DATE_FORMAT),
+    };
+  }
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    align: 'right',
+    width: 200,
+    sorter: (a: any, b: any) => a[i] - b[i],
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
+
+export const FUNDAMENTAL_COLUMN = FundamentalKeys.map((i) => {
+  return {
+    title: i,
+    dataIndex: i,
+    key: i,
+    sorter: (a: any, b: any) => a[i] - b[i],
+    align: 'right',
+    render: (data: any) => {
+      if (typeof data === 'number') {
+        if (data > 1_000) {
+          return Number(data.toFixed(0)).toLocaleString();
+        }
+        return Number(data.toFixed(1)).toLocaleString();
+      }
+      return data;
+    },
+  };
+});
+
+export const FINANCIAL_INDICATORS_COLUMN: any = FinancialIndicatorsKeys.map(
+  (i) => {
+    return {
+      // remove all whitespace
+      title: i.replace(/\s/g, ''),
+      dataIndex: i,
+      key: i,
+      sorter: (a: any, b: any) => a[i] - b[i],
+      align: 'right',
+      render: (data: any) => {
+        if (typeof data === 'number') {
+          if (data > 1_000) {
+            return Number(data.toFixed(0)).toLocaleString();
+          }
+          return Number(data.toFixed(1)).toLocaleString();
+        }
+        return data;
+      },
+    };
+  }
+);

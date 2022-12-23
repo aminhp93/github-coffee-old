@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -20,31 +21,31 @@ import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { ColumnsType } from 'antd/es/table';
 import { useInterval } from 'libs/hooks';
-import { StockService } from 'libs/services';
+import StockService from '../service';
 import { Watchlist } from 'libs/types';
 import { keyBy, meanBy } from 'lodash';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_FILTER,
   DEFAULT_SETTINGS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
   DELAY_TIME,
   TYPE_INDICATOR_OPTIONS,
+  NO_DATA_COLUMN,
+  HISTORICAL_QUOTE_COLUMN,
+  FUNDAMENTAL_COLUMN,
+  FINANCIAL_INDICATORS_COLUMN,
+  DATE_FORMAT,
+  BACKTEST_COUNT,
 } from '../constants';
 import {
-  FinancialIndicatorsColumns,
-  FundamentalColumns,
+  calculateBase,
   getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
-  getFundamentals,
-  getHistorialQuote,
-  HistoricalQuoteColumns,
-  NoDataColumns,
-  updateWatchlist,
   mapBuySell,
-  getHistorialQuote2,
-  calculateBase,
+  mapHistoricalQuote,
+  mapFundamentals,
 } from '../utils';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
 import Filters from './Filters';
@@ -57,28 +58,21 @@ const CheckboxGroup = Checkbox.Group;
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
-
-  const [listWatchlist, setListWatchlist] = React.useState([]);
-  const [currentWatchlist, setCurrentWatchlist] =
-    React.useState<Watchlist | null>(null);
-
-  const [dataSource, setDataSource] = React.useState([]);
-
+  const [listWatchlist, setListWatchlist] = useState([]);
+  const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
+    null
+  );
+  const [dataSource, setDataSource] = useState([]);
   const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
-
   const [loading, setLoading] = useState(false);
-
   const [columns, setColumns] = useState<ColumnsType<any>>([]);
-
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-
   const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
     DEFAULT_TYPE_INDICATOR_OPTIONS
   );
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
 
@@ -87,7 +81,6 @@ export default function StockTable() {
       const res = await handleGetData();
       const filteredRes = getFilterData(res, filters);
       const symbols = filteredRes.map((item: any) => item.symbol);
-
       handleUpdateWatchlist(symbols);
     },
     isPlaying ? delay : null
@@ -119,7 +112,7 @@ export default function StockTable() {
         symbols: symbols ? symbols : filteredData.map((i: any) => i.symbol),
       };
 
-      await updateWatchlist(watchlistObj, updateData);
+      await StockService.updateWatchlist(watchlistObj, updateData);
       notification.success({ message: 'Update wl success' });
     } catch (e) {
       notification.error({ message: 'Update wl success' });
@@ -173,10 +166,25 @@ export default function StockTable() {
     if (!thanh_khoan_vua_wl) return;
 
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      listPromises.push(getHistorialQuote(j));
-      listPromises.push(getFundamentals(j));
+      const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+      const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+      listPromises.push(
+        StockService.getHistoricalQuotes(
+          { symbol: j, startDate, endDate },
+          mapHistoricalQuote,
+          {
+            key: j,
+            symbol: j,
+          }
+        )
+      );
+      listPromises.push(
+        StockService.getFundamentals({ symbol: j }, mapFundamentals, {
+          key: j,
+          symbol: j,
+        })
+      );
       listPromises.push(getFinancialIndicator(j));
-      // listPromises.push(getDailyTransaction(j));
     });
 
     setLoading(true);
@@ -211,17 +219,27 @@ export default function StockTable() {
   const getBackTestData = () => {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
-
+    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+    const endDate = moment().add(0, 'days').format(DATE_FORMAT);
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
-        for (let i = 1; i <= 50; i++) {
-          listPromises.push(getHistorialQuote2(j.symbol, i * 20));
+        for (let i = 0; i <= BACKTEST_COUNT; i++) {
+          listPromises.push(
+            StockService.getHistoricalQuotes({
+              symbol: j.symbol,
+              startDate,
+              endDate,
+              offset: i * 20,
+            })
+          );
         }
       });
+    setLoading(true);
 
     Promise.all(listPromises)
       .then((res: any) => {
+        setLoading(false);
         console.log(res);
         const flattenRes = res.flat();
         const newDataSource = [...dataSource];
@@ -256,7 +274,9 @@ export default function StockTable() {
 
         setDataSource(newDataSource);
       })
-      .catch((e) => {});
+      .catch((e) => {
+        setLoading(false);
+      });
   };
 
   const filteredData = useMemo(
@@ -281,35 +301,35 @@ export default function StockTable() {
     if (checkedList.includes('HistoricalQuote')) {
       columns.push({
         title: 'Historical Quotes',
-        children: HistoricalQuoteColumns,
+        children: HISTORICAL_QUOTE_COLUMN,
       });
     }
 
     if (checkedList.includes('Fundamental')) {
       columns.push({
         title: 'Fundamentals',
-        children: FundamentalColumns,
+        children: FUNDAMENTAL_COLUMN,
       });
     }
 
     if (checkedList.includes('FinancialIndicators')) {
       columns.push({
         title: 'FinancialIndicators',
-        children: FinancialIndicatorsColumns,
+        children: FINANCIAL_INDICATORS_COLUMN,
       });
     }
 
     if (checkedList.includes('BuySellSignals')) {
       columns.push({
         title: 'BuySellSignals',
-        children: BuySellSignalsColumns(filteredData),
+        children: BuySellSignalsColumns(),
       });
     }
 
     if (checkedList.includes('NoData')) {
       columns.push({
         title: 'NoData',
-        children: NoDataColumns,
+        children: NO_DATA_COLUMN,
       });
     }
 
@@ -321,7 +341,7 @@ export default function StockTable() {
     }
 
     setColumns(columns);
-  }, [checkedList, filteredData]);
+  }, [checkedList]);
 
   useEffect(() => {
     (async () => {
@@ -364,7 +384,6 @@ export default function StockTable() {
             <Button onClick={() => setPlaying(!isPlaying)}>
               {isPlaying ? 'Stop Interval' : 'Start Interval'}
             </Button>
-
             <InputNumber
               style={{ marginLeft: '8px' }}
               disabled={isPlaying}
@@ -387,7 +406,6 @@ export default function StockTable() {
             value={_filter_2.length}
             style={{ margin: '0 10px' }}
           />
-
           <Statistic
             title="Sell < -2%"
             value={_filter_1.length}
@@ -406,7 +424,6 @@ export default function StockTable() {
               >
                 All
               </Checkbox>
-
               <CheckboxGroup
                 options={TYPE_INDICATOR_OPTIONS}
                 value={checkedList}
@@ -448,6 +465,7 @@ export default function StockTable() {
             pageSizeOptions: ['10', '20', '30'],
             showSizeChanger: true,
           }}
+          loading={loading}
           columns={columns}
           dataSource={filteredData}
           footer={() => {

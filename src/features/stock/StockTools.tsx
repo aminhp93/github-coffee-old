@@ -1,6 +1,6 @@
 import { Button, Input, notification, Spin } from 'antd';
 import axios from 'axios';
-import { StockService } from 'libs/services';
+import StockService from './service';
 import {
   DATE_FORMAT,
   MIN_MEDIUM_TOTOL_VALUE,
@@ -42,12 +42,7 @@ export default function StockTools() {
       const listPromises: any = [];
       for (let j = 0; j < chunkedListSymbol[i].length; j++) {
         listPromises.push(
-          StockService.getHistoricalQuotes(
-            chunkedListSymbol[i][j],
-            '',
-            '',
-            'fireant'
-          )
+          StockService.getHistoricalQuotes({ symbol: chunkedListSymbol[i][j] })
         );
       }
       const partialRes = await Promise.all(listPromises);

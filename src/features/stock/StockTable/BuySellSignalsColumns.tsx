@@ -3,7 +3,7 @@ import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
-const BuySellSignalsColumns = (filteredData: any) => {
+const BuySellSignalsColumns = () => {
   return [
     {
       title: () => {
