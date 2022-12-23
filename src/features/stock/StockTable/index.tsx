@@ -341,7 +341,7 @@ export default function StockTable() {
     }
 
     setColumns(columns);
-  }, [checkedList]);
+  }, [checkedList, dataSource]);
 
   useEffect(() => {
     (async () => {
