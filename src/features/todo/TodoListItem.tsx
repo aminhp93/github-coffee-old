@@ -16,7 +16,6 @@ import CustomPlate from 'components/CustomPlate';
 import { useDebounce } from 'libs/hooks';
 import { PushNotificationService, TodoService } from 'libs/services';
 import { ITodo } from 'libs/types';
-import { isEqual } from 'lodash';
 import moment from 'moment';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';

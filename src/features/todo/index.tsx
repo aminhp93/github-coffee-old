@@ -1,7 +1,5 @@
 import type { RadioChangeEvent } from 'antd';
 import { Divider, Empty, notification, Pagination, Radio } from 'antd';
-
-import update from 'immutability-helper';
 import { TodoService } from 'libs/services';
 import { ITodo } from 'libs/types';
 import * as React from 'react';
@@ -64,17 +62,6 @@ const Todo = () => {
     const value = e.target.value;
     setFilter(value);
   };
-
-  const moveCard = useCallback((dragIndex: number, hoverIndex: number) => {
-    setListTodos((prevCards: ITodo[]) =>
-      update(prevCards, {
-        $splice: [
-          [dragIndex, 1],
-          [hoverIndex, 0, prevCards[dragIndex] as ITodo],
-        ],
-      })
-    );
-  }, []);
 
   const handleChangePage = (page: number) => {
     setCurrentPage(page);

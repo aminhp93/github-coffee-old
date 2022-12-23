@@ -139,8 +139,8 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   totalValue_last20_min: 1,
   changePrice_buy: 2,
   changePrice_sell: -2,
-  count_5_day_within_base: 5,
-  count_10_day_within_base: 5,
+  count_5_day_within_base: 1,
+  count_10_day_within_base: 1,
   count_10_day_buy: 3,
   count_10_day_sell: 3,
   estimated_vol_change: 20,
@@ -160,4 +160,10 @@ export const DEFAULT_FILTER = {
   count_10_day_sell_min: 3,
   estimated_vol_change_min: MIN_CHANGE,
   have_extra_vol: false,
+};
+
+export const DEFAULT_SETTINGS: any = {
+  bordered: true,
+  size: 'small',
+  showHeader: true,
 };

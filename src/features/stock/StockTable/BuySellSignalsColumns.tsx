@@ -102,10 +102,7 @@ const BuySellSignalsColumns = (filteredData: any) => {
             data.count_5_day_within_base.list_base) ||
           [];
 
-        const index_base =
-          (data.count_5_day_within_base &&
-            data.count_5_day_within_base.index_base) ||
-          0;
+        const index_base = list_base.length === 1 ? list_base[0].index : null;
 
         const className =
           list_base.length === BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base
@@ -122,7 +119,8 @@ const BuySellSignalsColumns = (filteredData: any) => {
             }
           >
             <div className={className}>
-              {list_base.length === 5 ? (
+              {list_base.length ===
+              BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base ? (
                 <>
                   <CheckCircleOutlined style={{ marginRight: '4px' }} />
                   {index_base}
@@ -162,10 +160,7 @@ const BuySellSignalsColumns = (filteredData: any) => {
             data.count_10_day_within_base.list_base) ||
           [];
 
-        const index_base =
-          (data.count_10_day_within_base &&
-            data.count_10_day_within_base.index_base) ||
-          0;
+        const index_base = list_base.length === 1 ? list_base[0].index : null;
 
         const className =
           list_base.length === BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base
@@ -182,7 +177,8 @@ const BuySellSignalsColumns = (filteredData: any) => {
             }
           >
             <div className={className}>
-              {list_base.length === 5 ? (
+              {list_base.length ===
+              BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base ? (
                 <>
                   <CheckCircleOutlined style={{ marginRight: '4px' }} />
                   {index_base}
@@ -362,33 +358,24 @@ const BuySellSignalsColumns = (filteredData: any) => {
       sorter: (a: any, b: any) => a.extra_vol - b.extra_vol,
       align: 'right',
       render: (data: any) => {
-        let action = '';
-
-        if (data.changePrice > 0.03) {
-          action = 'buy';
-        }
-
-        if (data.changePrice < -0.03) {
-          action = 'sell';
-        }
+        let action = data.action;
 
         return (
           <div
             className={'flex width-100'}
             style={{ justifyContent: 'center' }}
           >
-            <div
-              className={action === 'buy' ? 'bg-green white' : 'blur'}
-              style={{ padding: '2px 8px' }}
-            >
-              Buy
-            </div>
-            <div
-              className={action === 'sell' ? 'bg-red white' : 'blur'}
-              style={{ padding: '2px 8px' }}
-            >
-              Sell
-            </div>
+            {action === 'buy' && (
+              <div className="bg-green white" style={{ padding: '2px 8px' }}>
+                Buy: {data?.backtest?.winRate} ({data?.backtest?.winCount}/
+                {data?.backtest?.list_base.length})
+              </div>
+            )}
+            {action === 'sell' && (
+              <div className="bg-red white" style={{ padding: '2px 8px' }}>
+                Sell
+              </div>
+            )}
           </div>
         );
       },

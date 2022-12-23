@@ -1,10 +1,15 @@
-import { Button, notification, Dropdown, Menu } from 'antd';
-import { getAuth, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Button, Dropdown, Menu, notification } from 'antd';
+import {
+  getAuth,
+  GithubAuthProvider,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
 import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
+import config from 'libs/config';
 import { UserService } from 'libs/services/user';
 import { useEffect } from 'react';
 import { selectUser, update } from './userSlice';
-import config from 'libs/config';
 
 export default function User() {
   const auth = getAuth();
@@ -34,6 +39,7 @@ export default function User() {
 
   const handleLogout = () => {
     localStorage.removeItem('ACCESS_TOKEN');
+    signOut(auth);
     dispatch(update({}));
     notification.success({ message: 'Logout success' });
   };
