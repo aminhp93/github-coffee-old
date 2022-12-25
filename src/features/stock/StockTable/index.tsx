@@ -23,7 +23,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { useInterval } from 'libs/hooks';
 import StockService from '../service';
 import { Watchlist } from 'libs/types';
-import { keyBy, meanBy } from 'lodash';
+import { keyBy } from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_FILTER,
@@ -39,13 +39,13 @@ import {
   BACKTEST_COUNT,
 } from '../constants';
 import {
-  calculateBase,
   getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
   mapBuySell,
   mapHistoricalQuote,
   mapFundamentals,
+  getMapBackTestData,
 } from '../utils';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
 import Filters from './Filters';
@@ -240,38 +240,7 @@ export default function StockTable() {
     Promise.all(listPromises)
       .then((res: any) => {
         setLoading(false);
-        console.log(res);
-        const flattenRes = res.flat();
-        const newDataSource = [...dataSource];
-        newDataSource.forEach((i: any) => {
-          const filterRes = flattenRes.filter(
-            (j: any) => j.symbol === i.symbol
-          );
-          const list_base = calculateBase(filterRes)?.list_base || [];
-          const map_list_base = list_base
-            .map((i: any) => {
-              const averageVolume = meanBy(i.list, 'totalVolume');
-              i.estimated_vol_change =
-                filterRes[i.index + 1].totalVolume / averageVolume;
-              const buyPrice = filterRes[i.index].priceClose * 1.02;
-              const sellPrice = filterRes[i.index + 4].priceClose;
-              i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
-
-              return i;
-            })
-            .filter((i: any) => i.estimated_vol_change > 1.2);
-
-          const winCount = map_list_base.filter(
-            (i: any) => i.result > 0
-          ).length;
-          i.backtest = {
-            data: filterRes,
-            list_base: map_list_base,
-            winCount,
-            winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
-          };
-        });
-
+        const newDataSource: any = getMapBackTestData(res, dataSource);
         setDataSource(newDataSource);
       })
       .catch((e) => {
@@ -364,7 +333,7 @@ export default function StockTable() {
     </Menu>
   );
 
-  console.log(dataSource, filters, currentWatchlist, process.env);
+  // console.log(dataSource, filters, currentWatchlist, process.env);
 
   const renderHeader = () => {
     return (
@@ -402,18 +371,18 @@ export default function StockTable() {
         </div>
         <div className={'flex'}>
           <Statistic
-            title="Buy > 2%"
+            // title="Buy > 2%"
             value={_filter_3.length}
             valueStyle={{ color: 'green' }}
             prefix={<ArrowUpOutlined />}
           />
           <Statistic
-            title="Normal"
+            // title="Normal"
             value={_filter_2.length}
             style={{ margin: '0 10px' }}
           />
           <Statistic
-            title="Sell < -2%"
+            // title="Sell < -2%"
             value={_filter_1.length}
             valueStyle={{ color: 'red' }}
             prefix={<ArrowDownOutlined />}
@@ -452,27 +421,12 @@ export default function StockTable() {
   );
   const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
 
-  const handleChangeFilters = (data: any) => {
-    setFilters({ ...filters, ...data });
-  };
-
-  const handleChangeSettings = (data: any) => {
-    setSettings({ ...settings, ...data });
-  };
-
   return (
     <div className="StockTable">
       <div>
         {renderHeader()}
-
         <Table
           {...settings}
-          showSorterTooltip={false}
-          pagination={{
-            position: ['bottomRight'],
-            pageSizeOptions: ['10', '20', '30'],
-            showSizeChanger: true,
-          }}
           loading={loading}
           columns={columns}
           dataSource={filteredData}
@@ -502,13 +456,13 @@ export default function StockTable() {
       </div>
       <Filters
         open={openDrawerFilter}
-        onChange={handleChangeFilters}
+        onChange={(data: any) => setFilters({ ...filters, ...data })}
         onUpdateWatchlist={handleUpdateWatchlist}
         onClose={() => setOpenDrawerFilter(false)}
       />
       <Settings
         open={openDrawerSettings}
-        onChange={handleChangeSettings}
+        onChange={(data: any) => setSettings({ ...settings, ...data })}
         onClose={() => setOpenDrawerSettings(false)}
       />
     </div>

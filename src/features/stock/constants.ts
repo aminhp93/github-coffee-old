@@ -170,6 +170,12 @@ export const DEFAULT_SETTINGS: any = {
   bordered: true,
   size: 'small',
   showHeader: true,
+  showSorterTooltip: false,
+  pagination: {
+    position: ['bottomRight'],
+    pageSizeOptions: ['10', '20', '30'],
+    showSizeChanger: true,
+  },
 };
 
 export const NO_DATA_COLUMN = NoDataKeys.map((i) => {

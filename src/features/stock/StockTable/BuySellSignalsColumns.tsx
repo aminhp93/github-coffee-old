@@ -1,6 +1,11 @@
-import { Tooltip } from 'antd';
+import React from 'react';
+import { Tooltip, Button, Drawer } from 'antd';
 import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  InfoCircleOutlined,
+} from '@ant-design/icons';
 import moment from 'moment';
 
 const BuySellSignalsColumns = () => {
@@ -366,15 +371,19 @@ const BuySellSignalsColumns = () => {
             style={{ justifyContent: 'center' }}
           >
             {action === 'buy' && (
-              <div className="bg-green white" style={{ padding: '2px 8px' }}>
+              <div className="bg-green white" style={{ padding: '0px 8px' }}>
                 Buy: {data?.backtest?.winRate} ({data?.backtest?.winCount}/
                 {data?.backtest?.list_base.length})
               </div>
             )}
             {action === 'sell' && (
-              <div className="bg-red white" style={{ padding: '2px 8px' }}>
+              <div className="bg-red white" style={{ padding: '0px 8px' }}>
                 Sell
               </div>
+            )}
+
+            {data?.backtest?.list_base.length > 0 && (
+              <InfoListBackTest data={data?.backtest} />
             )}
           </div>
         );
@@ -384,3 +393,51 @@ const BuySellSignalsColumns = () => {
 };
 
 export default BuySellSignalsColumns;
+
+interface InfoListBackTestProp {
+  data: {
+    winRate: number;
+    winCount: number;
+    list_base: any[];
+  };
+}
+
+const InfoListBackTest = ({ data }: InfoListBackTestProp) => {
+  const [open, setOpen] = React.useState(false);
+  console.log(data);
+
+  const showDrawer = () => {
+    setOpen(true);
+  };
+
+  const onClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <Button
+        size="small"
+        type="primary"
+        onClick={showDrawer}
+        icon={<InfoCircleOutlined />}
+      />
+
+      <Drawer
+        title="Basic Drawer"
+        placement="right"
+        onClose={onClose}
+        open={open}
+      >
+        {data.list_base.map((i: any) => {
+          return (
+            <div>
+              {moment(i.date).format('YYYY-MM-DD')} - {i.action} -{' '}
+              {i.priceClose} - {i.last_price}
+            </div>
+          );
+        })}
+      </Drawer>
+    </>
+  );
+};

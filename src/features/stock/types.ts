@@ -73,3 +73,15 @@ export interface HistoricalQuote {
   totalValue: number;
   totalVolume: number;
 }
+
+export interface HistoricalQuoteParams {
+  symbol: string;
+  startDate?: string;
+  endDate?: string;
+  offset?: number;
+  limit?: number;
+}
+
+export interface FundamentalsParams {
+  symbol: string;
+}

@@ -1,18 +1,9 @@
 import axios from 'axios';
 import moment from 'moment';
 import { DATE_FORMAT } from './constants';
+import { HistoricalQuoteParams, FundamentalsParams } from './types';
 
-type HistoricalQuoteParams = {
-  symbol: string;
-  startDate?: string;
-  endDate?: string;
-  offset?: number;
-  limit?: number;
-};
-
-type FundamentalsParams = {
-  symbol: string;
-};
+const domain = 'https://restv2.fireant.vn';
 
 const headers = {
   Authorization:
@@ -37,7 +28,7 @@ const StockService = {
       if (!startDate) startDate = moment().add(-7, 'days').format(DATE_FORMAT);
 
       const res = await axios({
-        url: `https://restv2.fireant.vn/symbols/${symbol.toUpperCase()}/historical-quotes`,
+        url: `${domain}/symbols/${symbol.toUpperCase()}/historical-quotes`,
         method: 'GET',
         headers,
         params: {
@@ -63,7 +54,7 @@ const StockService = {
     if (!symbol) return null;
     try {
       const res = await axios({
-        url: `https://restv2.fireant.vn/symbols/${symbol}/fundamental`,
+        url: `${domain}/symbols/${symbol}/fundamental`,
         method: 'GET',
         headers,
       });
@@ -79,7 +70,7 @@ const StockService = {
   getWatchlist() {
     return axios({
       method: 'GET',
-      url: 'https://restv2.fireant.vn/me/watchlists',
+      url: `${domain}/me/watchlists`,
       headers,
     });
   },
@@ -87,7 +78,7 @@ const StockService = {
     if (!symbol) return;
     return axios({
       method: 'GET',
-      url: `https://restv2.fireant.vn/posts?symbol=${symbol}&type=1&offset=0&limit=20`,
+      url: `${domain}/posts?symbol=${symbol}&type=1&offset=0&limit=20`,
       headers,
       data: symbol,
     });
@@ -96,14 +87,14 @@ const StockService = {
     if (!id) return;
     return axios({
       method: 'GET',
-      url: `https://restv2.fireant.vn/posts/${id}`,
+      url: `${domain}/posts/${id}`,
       headers,
     });
   },
   updateWatchlist(watchlistObj: any, updateData: any) {
     return axios({
       method: 'PUT',
-      url: `https://restv2.fireant.vn/me/watchlists/${watchlistObj.watchlistID}`,
+      url: `${domain}/me/watchlists/${watchlistObj.watchlistID}`,
       headers,
       data: updateData,
     });

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { indexOf, max, min, sortBy } from 'lodash';
+import { indexOf, max, min, sortBy, meanBy } from 'lodash';
 import moment from 'moment';
 import { UNIT_BILLION } from './constants';
 
@@ -457,4 +457,34 @@ export const calculateBase = (data: any, limit?: number) => {
   return {
     list_base,
   };
+};
+
+export const getMapBackTestData = (res: any, dataSource: any) => {
+  const flattenRes = res.flat();
+  const newDataSource = [...dataSource];
+  newDataSource.forEach((i: any) => {
+    const filterRes = flattenRes.filter((j: any) => j.symbol === i.symbol);
+    const list_base = calculateBase(filterRes)?.list_base || [];
+    const map_list_base = list_base
+      .map((i: any) => {
+        const averageVolume = meanBy(i.list, 'totalVolume');
+        i.estimated_vol_change =
+          filterRes[i.index + 1].totalVolume / averageVolume;
+        const buyPrice = filterRes[i.index].priceClose * 1.02;
+        const sellPrice = filterRes[i.index + 4].priceClose;
+        i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+
+        return i;
+      })
+      .filter((i: any) => i.estimated_vol_change > 1.2);
+
+    const winCount = map_list_base.filter((i: any) => i.result > 0).length;
+    i.backtest = {
+      data: filterRes,
+      list_base: map_list_base,
+      winCount,
+      winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
+    };
+  });
+  return newDataSource;
 };
