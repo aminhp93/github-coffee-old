@@ -322,7 +322,7 @@ export default function StockTable() {
   }, []);
 
   const menu = (
-    <Menu onClick={handleClickMenuWatchlist}>
+    <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
       {listWatchlist.map((i: any) => {
         return (
           <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
@@ -421,6 +421,29 @@ export default function StockTable() {
   );
   const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
 
+  const footer = () => {
+    return (
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
+        <div>{String(filteredData.length)}</div>
+        <div>
+          <Button
+            size="small"
+            type="primary"
+            icon={<SettingOutlined />}
+            onClick={() => setOpenDrawerSettings(true)}
+          />
+          <Button
+            size="small"
+            type="primary"
+            icon={<FilterOutlined />}
+            style={{ marginLeft: 8 }}
+            onClick={() => setOpenDrawerFilter(true)}
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="StockTable">
       <div>
@@ -430,28 +453,7 @@ export default function StockTable() {
           loading={loading}
           columns={columns}
           dataSource={filteredData}
-          footer={() => {
-            return (
-              <div className="flex" style={{ justifyContent: 'space-between' }}>
-                <div>{String(filteredData.length)}</div>
-                <div>
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<SettingOutlined />}
-                    onClick={() => setOpenDrawerSettings(true)}
-                  />
-                  <Button
-                    size="small"
-                    type="primary"
-                    icon={<FilterOutlined />}
-                    style={{ marginLeft: 8 }}
-                    onClick={() => setOpenDrawerFilter(true)}
-                  />
-                </div>
-              </div>
-            );
-          }}
+          footer={footer}
         />
       </div>
       <Filters

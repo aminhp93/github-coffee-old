@@ -1,12 +1,13 @@
 import React from 'react';
-import { Tooltip, Button, Drawer } from 'antd';
-import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
+import { Tooltip, Button, Drawer, Table } from 'antd';
+import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS, DATE_FORMAT } from '../constants';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
 import moment from 'moment';
+import BackTestChart from './BackTestChart';
 
 const BuySellSignalsColumns = () => {
   return [
@@ -118,7 +119,11 @@ const BuySellSignalsColumns = () => {
             title={
               <div>
                 {list_base.map((i: any) => {
-                  return <div>{moment(i.date).format('DD/MM/YYYY')}</div>;
+                  return (
+                    <div key={i.date}>
+                      {moment(i.date).format('DD/MM/YYYY')}
+                    </div>
+                  );
                 })}
               </div>
             }
@@ -176,7 +181,11 @@ const BuySellSignalsColumns = () => {
             title={
               <div>
                 {list_base.map((i: any) => {
-                  return <div>{moment(i.date).format('DD/MM/YYYY')}</div>;
+                  return (
+                    <div key={i.date}>
+                      {moment(i.date).format('DD/MM/YYYY')}
+                    </div>
+                  );
                 })}
               </div>
             }
@@ -231,7 +240,11 @@ const BuySellSignalsColumns = () => {
             title={
               <div className="green" style={{ width: '100px' }}>
                 {strong_buy.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
+                  return (
+                    <div key={i.date}>
+                      {moment(i.date).format('YYYY-MM-DD')}
+                    </div>
+                  );
                 })}
               </div>
             }
@@ -276,7 +289,11 @@ const BuySellSignalsColumns = () => {
             title={
               <div className="red" style={{ width: '100px' }}>
                 {strong_sell.map((i: any) => {
-                  return <div>{moment(i.date).format('YYYY-MM-DD')}</div>;
+                  return (
+                    <div key={i.date}>
+                      {moment(i.date).format('YYYY-MM-DD')}
+                    </div>
+                  );
                 })}
               </div>
             }
@@ -383,7 +400,7 @@ const BuySellSignalsColumns = () => {
             )}
 
             {data?.backtest?.list_base.length > 0 && (
-              <InfoListBackTest data={data?.backtest} />
+              <InfoListBackTest backTestData={data?.backtest} />
             )}
           </div>
         );
@@ -395,16 +412,16 @@ const BuySellSignalsColumns = () => {
 export default BuySellSignalsColumns;
 
 interface InfoListBackTestProp {
-  data: {
+  backTestData: {
     winRate: number;
     winCount: number;
     list_base: any[];
   };
 }
 
-const InfoListBackTest = ({ data }: InfoListBackTestProp) => {
+const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
   const [open, setOpen] = React.useState(false);
-  console.log(data);
+  console.log(backTestData);
 
   const showDrawer = () => {
     setOpen(true);
@@ -413,6 +430,55 @@ const InfoListBackTest = ({ data }: InfoListBackTestProp) => {
   const onClose = () => {
     setOpen(false);
   };
+
+  const columns = [
+    {
+      title: 'buyDate',
+      render: (data: any) => {
+        const list = data.list || [];
+        if (!list.length) return null;
+
+        const buyDate = list[0].date;
+
+        return moment(buyDate).format('YYYY-MM-DD');
+      },
+    },
+    {
+      title: 'estimated_vol_change',
+
+      render: (data: any) => {
+        return data.estimated_vol_change.toFixed(2);
+      },
+    },
+    {
+      title: 'result',
+      render: (data: any) => {
+        return data.result.toFixed(2);
+      },
+    },
+    {
+      title: 'chart',
+      render: (data: any) => {
+        console.log(data.list);
+        const list = data.list || [];
+        const dates: any = list.map((i: any) =>
+          moment(i.date).format(DATE_FORMAT)
+        );
+        const prices: any = list.map((i: any) => [
+          i.priceOpen,
+          i.priceClose,
+          i.priceLow,
+          i.priceHigh,
+          i.totalVolume,
+        ]);
+        const volumes: any = list.map((i: any) => i.totalVolume);
+
+        return (
+          <BackTestChart dates={dates} prices={prices} volumes={volumes} />
+        );
+      },
+    },
+  ];
 
   return (
     <>
@@ -426,17 +492,17 @@ const InfoListBackTest = ({ data }: InfoListBackTestProp) => {
       <Drawer
         title="Basic Drawer"
         placement="right"
+        width={800}
         onClose={onClose}
         open={open}
       >
-        {data.list_base.map((i: any) => {
-          return (
-            <div>
-              {moment(i.date).format('YYYY-MM-DD')} - {i.action} -{' '}
-              {i.priceClose} - {i.last_price}
-            </div>
-          );
-        })}
+        <Table
+          dataSource={backTestData.list_base}
+          columns={columns}
+          bordered
+          size="small"
+          pagination={false}
+        />
       </Drawer>
     </>
   );
