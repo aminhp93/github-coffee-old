@@ -175,10 +175,13 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
               },
             ]}
           />
-          <Button onClick={handleChangeLayout}>Reset layout</Button>
+          <Button size="small" onClick={handleChangeLayout}>
+            Reset layout
+          </Button>
         </div>
       </Drawer>
       <Button
+        size="small"
         style={{ position: 'absolute', bottom: '2px', right: '2px', zIndex: 1 }}
         icon={<SettingOutlined />}
         onClick={() => showDrawer()}

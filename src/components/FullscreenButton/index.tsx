@@ -56,6 +56,7 @@ const FullscreenButton: React.FC = () => {
     <RequireFullscreen component={rootRef}>
       {(isFullscreen) => (
         <Button
+        size='small'
           //   type={isFullscreen ? 'ghost' : 'text'}
           icon={
             isFullscreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />

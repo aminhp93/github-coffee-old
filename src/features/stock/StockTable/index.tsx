@@ -224,7 +224,7 @@ export default function StockTable() {
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
-        for (let i = 0; i <= BACKTEST_COUNT; i++) {
+        for (let i = 1; i <= BACKTEST_COUNT; i++) {
           listPromises.push(
             StockService.getHistoricalQuotes({
               symbol: j.symbol,
@@ -371,28 +371,34 @@ export default function StockTable() {
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="flex">
           <Dropdown overlay={menu} trigger={['hover']}>
-            <Button style={{ marginRight: '8px' }}>
+            <Button size="small" style={{ marginRight: '8px' }}>
               {currentWatchlist?.name || 'Select watchlist'}
             </Button>
           </Dropdown>
           <Button
+            size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
             onClick={handleGetData}
           />
           <div style={{ marginLeft: '8px' }}>
-            <Button onClick={() => setPlaying(!isPlaying)}>
+            <Button size="small" onClick={() => setPlaying(!isPlaying)}>
               {isPlaying ? 'Stop Interval' : 'Start Interval'}
             </Button>
             <InputNumber
+              size="small"
               style={{ marginLeft: '8px' }}
               disabled={isPlaying}
               value={delay}
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-          <Button onClick={test}>Test</Button>
-          <Button onClick={getBackTestData}>Test2</Button>
+          <Button size="small" onClick={test}>
+            Test
+          </Button>
+          <Button size="small" onClick={getBackTestData}>
+            Test2
+          </Button>
         </div>
         <div className={'flex'}>
           <Statistic
@@ -432,7 +438,9 @@ export default function StockTable() {
             </div>
           }
         >
-          <Button type="primary">Hover me</Button>
+          <Button size="small" type="primary">
+            Hover me
+          </Button>
         </Popover>
       </div>
     );
@@ -474,11 +482,13 @@ export default function StockTable() {
                 <div>{String(filteredData.length)}</div>
                 <div>
                   <Button
+                    size="small"
                     type="primary"
                     icon={<SettingOutlined />}
                     onClick={() => setOpenDrawerSettings(true)}
                   />
                   <Button
+                    size="small"
                     type="primary"
                     icon={<FilterOutlined />}
                     style={{ marginLeft: 8 }}

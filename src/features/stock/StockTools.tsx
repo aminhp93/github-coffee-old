@@ -106,7 +106,7 @@ export default function StockTools() {
 
   return (
     <div>
-      <Button type="primary" onClick={handleUpdateThanhKhoanVua}>
+      <Button size="small" type="primary" onClick={handleUpdateThanhKhoanVua}>
         Update
       </Button>
       <hr />
@@ -204,6 +204,7 @@ function StockToolItem(props: IStockToolItemProps) {
     <div>
       {data.watchlistID} - {data.name} - {data.symbols.length}
       <Button
+        size="small"
         disabled={loading}
         style={{ marginLeft: '20px' }}
         danger
@@ -211,7 +212,7 @@ function StockToolItem(props: IStockToolItemProps) {
       >
         Reset
       </Button>
-      <Button onClick={handleFilter} disabled={loading}>
+      <Button size="small" onClick={handleFilter} disabled={loading}>
         Loc Tong Gia Tri
       </Button>
       {data.name === 'all' && (

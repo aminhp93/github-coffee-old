@@ -88,7 +88,9 @@ export default function User() {
           <div style={{ cursor: 'pointer' }}>{`${user.username}`}</div>
         </Dropdown>
       ) : (
-        <Button onClick={handleLogin}>Login</Button>
+        <Button size="small" onClick={handleLogin}>
+          Login
+        </Button>
       )}
     </div>
   );

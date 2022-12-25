@@ -344,6 +344,7 @@ export default function StockMarketOverview() {
           />
 
           <Button
+          size='small'
             style={{
               position: 'absolute',
               top: 0,
@@ -372,7 +373,7 @@ export default function StockMarketOverview() {
                 <div>Timeframe {TIME_FRAME}</div>
               </div>
               <Divider />
-              <Button onClick={handleFilter}>
+              <Button size='small' onClick={handleFilter}>
                 Turn {filtered ? 'Off' : 'On'} Filtered
               </Button>
               <div>Change Percent Min: {changePercentMin}</div>
@@ -381,7 +382,7 @@ export default function StockMarketOverview() {
               <Divider />
 
               <div>
-                <Button onClick={() => setPlaying(!isPlaying)}>
+                <Button size='small' onClick={() => setPlaying(!isPlaying)}>
                   {isPlaying ? 'Stop Interval' : 'Start Interval'}
                 </Button>
                 <TextArea

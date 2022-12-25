@@ -117,13 +117,21 @@ export default function Test() {
 
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
-      <Button onClick={handleClickPayment}>Test payment</Button>
-      <Button onClick={handleClickPushNotication}>
+      <Button size="small" onClick={handleClickPayment}>
+        Test payment
+      </Button>
+      <Button size="small" onClick={handleClickPushNotication}>
         Test Push notification
       </Button>
-      <Button onClick={handleStartJob}>Start job</Button>
-      <Button onClick={handleCancelJob}>Cancel job</Button>
-      <Button onClick={testAll}>Test</Button>
+      <Button size="small" onClick={handleStartJob}>
+        Start job
+      </Button>
+      <Button size="small" onClick={handleCancelJob}>
+        Cancel job
+      </Button>
+      <Button size="small" onClick={testAll}>
+        Test
+      </Button>
       <Table dataSource={list} columns={columns} size={'small'} />;
     </div>
   );
