@@ -454,7 +454,6 @@ export const calculateBase = (data: any, limit?: number) => {
           data[index + 3],
           data[index + 4],
         ],
-        index,
       });
     }
   });
@@ -469,39 +468,57 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
   const newDataSource = [...dataSource];
   newDataSource.forEach((i: any) => {
     // get data with selected symbol
-    const filterRes = flattenRes.filter((j: any) => j.symbol === i.symbol);
+    const filterRes = flattenRes
+      .filter((j: any) => j.symbol === i.symbol)
+      .sort((a: any, b: any) => b.date.localeCompare(a.date));
 
-    // calculate list base
-    const list_base = calculateBase(filterRes)?.list_base || [];
+    if (filterRes.length) {
+      // calculate list base
+      const list_base = calculateBase(filterRes)?.list_base || [];
 
-    // map more data to list base
-    const map_list_base = getMapListBase(list_base, filterRes);
+      // map more data to list base
+      const map_list_base = getMapListBase(list_base, filterRes);
 
-    const winCount = map_list_base.filter((j: any) => j.result > 0).length;
+      const winCount = map_list_base.filter((j: any) => j.result > 0).length;
 
-    i.backtest = {
-      data: filterRes,
-      list_base: map_list_base,
-      winCount,
-      winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
-    };
+      i.backtest = {
+        data: filterRes,
+        list_base: map_list_base,
+        winCount,
+        winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
+      };
+    }
   });
+
   return newDataSource;
 };
 
 const getMapListBase = (old_list: any, full_data: any) => {
   const new_list = old_list.map((i: any) => {
-    const averageVolume = meanBy(i.list, 'totalVolume');
-    i.buyItem = full_data[i.index - 1];
-    i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
-    const buyPrice = full_data[i.index].priceClose * 1.02;
-    const sellPrice = full_data[i.index - 4].priceClose;
-    i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+    const baseIndex = full_data.findIndex(
+      (j: any) => j.date === i.list[0].date
+    );
+    // Ignore base if baseIndex > 5
+    if (baseIndex > 5) {
+      i.index = baseIndex;
+      i.buyItem = full_data[i.index - 1];
+
+      // average volume of list base
+      const averageVolume = meanBy(i.list, 'totalVolume');
+
+      i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
+      i.estimated_price_change = i.buyItem.priceClose / i.list[0].priceClose;
+      const buyPrice = full_data[i.index].priceClose * 1.02;
+      const sellPrice = full_data[i.index - 4].priceClose;
+      i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+    }
 
     return i;
   });
 
-  const filter_list = new_list.filter((j: any) => j.estimated_vol_change > 1.2);
+  const filter_list = new_list.filter(
+    (j: any) => j.estimated_vol_change > 1.2 && j.estimated_price_change > 1.02
+  );
 
   return filter_list;
 };
