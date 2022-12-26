@@ -461,17 +461,20 @@ const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
       render: (data: any) => {
         console.log(data.list);
         const list = data.list || [];
-        const dates: any = list.map((i: any) =>
-          moment(i.date).format(DATE_FORMAT)
-        );
-        const prices: any = list.map((i: any) => [
-          i.priceOpen,
-          i.priceClose,
-          i.priceLow,
-          i.priceHigh,
-          i.totalVolume,
-        ]);
-        const volumes: any = list.map((i: any) => i.totalVolume);
+        list.unshift(data.buyItem);
+        const dates: any = list
+          .map((i: any) => moment(i.date).format(DATE_FORMAT))
+          .reverse();
+        const prices: any = list
+          .map((i: any) => [
+            i.priceOpen,
+            i.priceClose,
+            i.priceLow,
+            i.priceHigh,
+            i.totalVolume,
+          ])
+          .reverse();
+        const volumes: any = list.map((i: any) => i.totalVolume).reverse();
 
         return (
           <BackTestChart dates={dates} prices={prices} volumes={volumes} />

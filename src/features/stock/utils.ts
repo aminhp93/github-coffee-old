@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { indexOf, max, min, sortBy, meanBy } from 'lodash';
 import moment from 'moment';
-import { UNIT_BILLION } from './constants';
+import { DATE_FORMAT, UNIT_BILLION } from './constants';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -159,7 +159,12 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
       end_time.diff(start_time, 'minute') -
       end_time.diff(moment('11:30', 'HH:mm'), 'minute');
   }
-  const estimated_vol = (last_data.dealVolume * default_diff_time) / diff_time;
+  let estimated_vol = (last_data.dealVolume * default_diff_time) / diff_time;
+  if (
+    moment(last_data.date).format(DATE_FORMAT) !== moment().format(DATE_FORMAT)
+  ) {
+    estimated_vol = last_data.dealVolume;
+  }
   const estimated_vol_change =
     (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
 
@@ -463,22 +468,17 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
   const flattenRes = res.flat();
   const newDataSource = [...dataSource];
   newDataSource.forEach((i: any) => {
+    // get data with selected symbol
     const filterRes = flattenRes.filter((j: any) => j.symbol === i.symbol);
+
+    // calculate list base
     const list_base = calculateBase(filterRes)?.list_base || [];
-    const map_list_base = list_base
-      .map((i: any) => {
-        const averageVolume = meanBy(i.list, 'totalVolume');
-        i.estimated_vol_change =
-          filterRes[i.index + 1].totalVolume / averageVolume;
-        const buyPrice = filterRes[i.index].priceClose * 1.02;
-        const sellPrice = filterRes[i.index + 4].priceClose;
-        i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
 
-        return i;
-      })
-      .filter((i: any) => i.estimated_vol_change > 1.2);
+    // map more data to list base
+    const map_list_base = getMapListBase(list_base, filterRes);
 
-    const winCount = map_list_base.filter((i: any) => i.result > 0).length;
+    const winCount = map_list_base.filter((j: any) => j.result > 0).length;
+
     i.backtest = {
       data: filterRes,
       list_base: map_list_base,
@@ -487,4 +487,21 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
     };
   });
   return newDataSource;
+};
+
+const getMapListBase = (old_list: any, full_data: any) => {
+  const new_list = old_list.map((i: any) => {
+    const averageVolume = meanBy(i.list, 'totalVolume');
+    i.buyItem = full_data[i.index - 1];
+    i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
+    const buyPrice = full_data[i.index].priceClose * 1.02;
+    const sellPrice = full_data[i.index - 4].priceClose;
+    i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+
+    return i;
+  });
+
+  const filter_list = new_list.filter((j: any) => j.estimated_vol_change > 1.2);
+
+  return filter_list;
 };
