@@ -83,6 +83,7 @@ const Post = () => {
           {mode === 'create' ? (
             <Tooltip title="Back">
               <Button
+                size="small"
                 icon={<RollbackOutlined />}
                 onClick={() => setMode('list')}
               />
@@ -90,6 +91,7 @@ const Post = () => {
           ) : (
             <Tooltip title="Create post">
               <Button
+                size="small"
                 icon={<PlusOutlined />}
                 onClick={() => setMode('create')}
               />

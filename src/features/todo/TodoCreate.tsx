@@ -50,6 +50,7 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   return (
     <div className="TodoCreate flex" style={{ alignItems: 'center' }}>
       <Button
+        size="small"
         loading={loading}
         disabled={loading}
         type="primary"

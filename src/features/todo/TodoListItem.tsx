@@ -173,6 +173,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
               {isConfirmDelete ? (
                 <>
                   <Button
+                    size="small"
                     style={{ zIndex: 1 }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -183,6 +184,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
                     Confirm
                   </Button>
                   <Button
+                    size="small"
                     style={{ zIndex: 1, marginLeft: '8px' }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -195,6 +197,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
                 </>
               ) : (
                 <Button
+                  size="small"
                   icon={<DeleteOutlined />}
                   style={{ zIndex: 1 }}
                   onClick={(e) => {
@@ -214,6 +217,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
                     format={format}
                   />
                   <Button
+                    size="small"
                     style={{ marginLeft: '8px' }}
                     icon={<FieldTimeOutlined />}
                     onClick={handleStartTimer}
@@ -224,6 +228,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
             {status === 'start' && (
               <Tooltip placement="right" title="Reset time">
                 <Button
+                  size="small"
                   style={{ marginTop: '8px' }}
                   icon={<PauseOutlined />}
                   onClick={handleResetTimer}
@@ -234,6 +239,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
         }
       >
         <Button
+          size="small"
           icon={<SettingOutlined />}
           style={{ position: 'absolute', bottom: '2px', right: '2px' }}
         />

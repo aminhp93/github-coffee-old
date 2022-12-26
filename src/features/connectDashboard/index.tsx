@@ -61,6 +61,7 @@ export default function ConnectDashboard() {
     <div>
       <div className="flex" style={{ justifyContent: 'space-between' }}>
         <Button
+          size="small"
           onClick={() => {
             setShowListOldProblems((old) => !old);
             if (showListOldProblems) {
@@ -70,7 +71,9 @@ export default function ConnectDashboard() {
         >
           {showListOldProblems ? 'Hide' : 'Show'} list available problems
         </Button>
-        <Button onClick={() => setIsModalOpen(true)}>Create problem</Button>
+        <Button size="small" onClick={() => setIsModalOpen(true)}>
+          Create problem
+        </Button>
       </div>
 
       <Modal
@@ -81,7 +84,9 @@ export default function ConnectDashboard() {
         width={1400}
         onCancel={handleCancel}
       >
-        <Button onClick={handleUseDefaultTemplate}>Use default template</Button>
+        <Button size="small" onClick={handleUseDefaultTemplate}>
+          Use default template
+        </Button>
         <Input ref={inputRef} value={problemSrc} />
         <iframe
           src={problemSrc}

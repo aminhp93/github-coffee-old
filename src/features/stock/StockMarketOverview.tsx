@@ -1,7 +1,7 @@
 import { Button, Divider, Dropdown, Input, Menu, Spin, Table } from 'antd';
 import Echarts from 'components/Echarts';
 import request, { CustomTradingViewUrls } from 'libs/request';
-import { StockService } from 'libs/services';
+import StockService from './service';
 import { keyBy, meanBy } from 'lodash';
 import moment from 'moment';
 import * as React from 'react';
@@ -148,9 +148,7 @@ export default function StockMarketOverview() {
     const xxx2 = xxx[watchlistName];
     const listPromises: any = [];
     ((xxx2 || {}).symbols || []).forEach((i: any) => {
-      listPromises.push(
-        StockService.getHistoricalQuotes(i, undefined, undefined, 'fireant')
-      );
+      listPromises.push(StockService.getHistoricalQuotes({ symbol: i }));
     });
     setLoading(true);
     return Promise.all(listPromises)
@@ -346,6 +344,7 @@ export default function StockMarketOverview() {
           />
 
           <Button
+          size='small'
             style={{
               position: 'absolute',
               top: 0,
@@ -374,7 +373,7 @@ export default function StockMarketOverview() {
                 <div>Timeframe {TIME_FRAME}</div>
               </div>
               <Divider />
-              <Button onClick={handleFilter}>
+              <Button size='small' onClick={handleFilter}>
                 Turn {filtered ? 'Off' : 'On'} Filtered
               </Button>
               <div>Change Percent Min: {changePercentMin}</div>
@@ -383,7 +382,7 @@ export default function StockMarketOverview() {
               <Divider />
 
               <div>
-                <Button onClick={() => setPlaying(!isPlaying)}>
+                <Button size='small' onClick={() => setPlaying(!isPlaying)}>
                   {isPlaying ? 'Stop Interval' : 'Start Interval'}
                 </Button>
                 <TextArea

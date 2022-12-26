@@ -293,10 +293,12 @@ function StockHistoryTrade(props: TProps) {
         <div>OrderStatus: {filterObj.orderStatus === '4' ? 'Khop' : ''}</div>
       </div>
 
-      <Button onClick={() => setColumns(defaultColumns)}>
+      <Button size="small" onClick={() => setColumns(defaultColumns)}>
         Default Columns
       </Button>
-      <Button onClick={() => setColumns(mainColumns)}>Main Columns</Button>
+      <Button size="small" onClick={() => setColumns(mainColumns)}>
+        Main Columns
+      </Button>
       <Table
         dataSource={listOrdersHistory}
         columns={columns}

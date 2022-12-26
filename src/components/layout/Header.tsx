@@ -73,10 +73,12 @@ const Header = () => {
     <div className="Header flex height-100">
       <div className="flex">
         <Button
+        size='small'
           onClick={() => setOpenDrawer(true)}
           icon={<MenuUnfoldOutlined />}
         />
         <Button
+        size='small'
           style={{ marginLeft: '16px', marginRight: '16px' }}
           onClick={() => navigate('/')}
           icon={<HomeOutlined />}

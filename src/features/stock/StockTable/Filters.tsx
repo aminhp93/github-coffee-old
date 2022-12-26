@@ -2,6 +2,7 @@ import { Button, Drawer, InputNumber, Switch } from 'antd';
 import { useState } from 'react';
 import { DEFAULT_FILTER } from '../constants';
 import './index.less';
+import ReactMarkdown from 'react-markdown';
 
 const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
   // totalValue_last20_min
@@ -67,7 +68,13 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
 
   return (
     <Drawer
-      title="Filter"
+      title={
+        <div className="width-100 flex" style={{ justifyContent: 'flex-end' }}>
+          <Button size="small" onClick={onUpdateWatchlist}>
+            Update watchlist
+          </Button>
+        </div>
+      }
       placement="bottom"
       className="StockTableFilterDrawer"
       onClose={onClose}
@@ -78,121 +85,138 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
         style={{ justifyContent: 'space-between' }}
       >
         <div
-          className="flex"
+          className="flex flex-1"
           style={{ justifyContent: 'space-between', flexDirection: 'column' }}
         >
-          <div>
-            <div className="flex">
-              <InputNumber
-                addonBefore="totalValue_last20_min"
-                value={totalValue_last20_min}
-                onChange={(value: any) => {
-                  setTotalValue_last20_min(value);
-                  onChange({ totalValue_last20_min: value });
-                }}
-              />
-            </div>
-            <div className="flex" style={{ marginTop: '10px' }}>
-              <InputNumber
-                addonBefore="changePrice_min"
-                value={changePrice_min}
-                onChange={(value: any) => {
-                  setChangePrice_min(value);
-                  onChange({ changePrice_min: value });
-                }}
-              />
-              <InputNumber
-                style={{ marginLeft: '10px' }}
-                addonBefore="changePrice_max"
-                value={changePrice_max}
-                onChange={(value: any) => {
-                  setChangePrice_max(value);
-                  onChange({ changePrice_max: value });
-                }}
-              />
-            </div>
-            <div style={{ marginTop: '8px' }}>
-              <Switch
-                disabled
-                checkedChildren="have_base_in_5_day"
-                unCheckedChildren="have_base_in_5_day"
-                checked={have_base_in_5_day}
-                onChange={() => {
-                  setHave_base_in_5_day(!have_base_in_5_day);
-                  onChange({ have_base_in_5_day: !have_base_in_5_day });
-                }}
-              />
-            </div>
-            <div style={{ marginTop: '8px' }}>
-              <Switch
-                disabled
-                checkedChildren="have_base_in_10_day"
-                unCheckedChildren="have_base_in_10_day"
-                checked={have_base_in_10_day}
-                onChange={() => {
-                  setHave_base_in_10_day(!have_base_in_10_day);
-                  onChange({ have_base_in_10_day: !have_base_in_10_day });
-                }}
-              />
-            </div>
-            <div className="flex" style={{ marginTop: '10px' }}>
-              <InputNumber
-                disabled
-                addonBefore="count_10_day_buy_min"
-                value={count_10_day_buy_min}
-                onChange={(value: any) => {
-                  setCount_10_day_buy_min(value);
-                  onChange({ count_10_day_buy_min: value });
-                }}
-              />
-            </div>
-            <div className="flex" style={{ marginTop: '10px' }}>
-              <InputNumber
-                disabled
-                addonBefore="count_10_day_sell_min"
-                value={count_10_day_sell_min}
-                onChange={(value: any) => {
-                  setCount_10_day_sell_min(value);
-                  onChange({ count_10_day_sell_min: value });
-                }}
-              />
-            </div>
-            <div className="flex" style={{ marginTop: '10px' }}>
-              <InputNumber
-                disabled
-                addonBefore="estimated_vol_change_min"
-                value={estimated_vol_change_min}
-                onChange={(value: any) => {
-                  setEstimated_vol_change_min(value);
-                  onChange({ estimated_vol_change_min: value });
-                }}
-              />
-            </div>
-            <div style={{ marginTop: '8px' }}>
-              <Switch
-                disabled
-                checkedChildren="have_extra_vol"
-                unCheckedChildren="have_extra_vol"
-                checked={have_extra_vol}
-                onChange={() => {
-                  setHave_extra_vol(!have_extra_vol);
-                  onChange({ have_extra_vol: !have_extra_vol });
-                }}
-              />
-            </div>
+          <div className="flex">
+            <InputNumber
+              size="small"
+              addonBefore="totalValue_last20_min"
+              value={totalValue_last20_min}
+              onChange={(value: any) => {
+                setTotalValue_last20_min(value);
+                onChange({ totalValue_last20_min: value });
+              }}
+            />
+          </div>
+          <div className="flex" style={{ marginTop: '10px' }}>
+            <InputNumber
+              size="small"
+              addonBefore="changePrice_min"
+              value={changePrice_min}
+              onChange={(value: any) => {
+                setChangePrice_min(value);
+                onChange({ changePrice_min: value });
+              }}
+            />
+            <InputNumber
+              size="small"
+              style={{ marginLeft: '10px' }}
+              addonBefore="changePrice_max"
+              value={changePrice_max}
+              onChange={(value: any) => {
+                setChangePrice_max(value);
+                onChange({ changePrice_max: value });
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Switch
+              disabled
+              checkedChildren="have_base_in_5_day"
+              unCheckedChildren="have_base_in_5_day"
+              checked={have_base_in_5_day}
+              onChange={() => {
+                setHave_base_in_5_day(!have_base_in_5_day);
+                onChange({ have_base_in_5_day: !have_base_in_5_day });
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Switch
+              disabled
+              checkedChildren="have_base_in_10_day"
+              unCheckedChildren="have_base_in_10_day"
+              checked={have_base_in_10_day}
+              onChange={() => {
+                setHave_base_in_10_day(!have_base_in_10_day);
+                onChange({ have_base_in_10_day: !have_base_in_10_day });
+              }}
+            />
+          </div>
+          <div className="flex" style={{ marginTop: '10px' }}>
+            <InputNumber
+              disabled
+              size="small"
+              addonBefore="count_10_day_buy_min"
+              value={count_10_day_buy_min}
+              onChange={(value: any) => {
+                setCount_10_day_buy_min(value);
+                onChange({ count_10_day_buy_min: value });
+              }}
+            />
+          </div>
+          <div className="flex" style={{ marginTop: '10px' }}>
+            <InputNumber
+              disabled
+              size="small"
+              addonBefore="count_10_day_sell_min"
+              value={count_10_day_sell_min}
+              onChange={(value: any) => {
+                setCount_10_day_sell_min(value);
+                onChange({ count_10_day_sell_min: value });
+              }}
+            />
+          </div>
+          <div className="flex" style={{ marginTop: '10px' }}>
+            <InputNumber
+              disabled
+              size="small"
+              addonBefore="estimated_vol_change_min"
+              value={estimated_vol_change_min}
+              onChange={(value: any) => {
+                setEstimated_vol_change_min(value);
+                onChange({ estimated_vol_change_min: value });
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Switch
+              disabled
+              checkedChildren="have_extra_vol"
+              unCheckedChildren="have_extra_vol"
+              checked={have_extra_vol}
+              onChange={() => {
+                setHave_extra_vol(!have_extra_vol);
+                onChange({ have_extra_vol: !have_extra_vol });
+              }}
+            />
           </div>
         </div>
         <div
-          className="flex"
+          className="flex flex-1"
           style={{ justifyContent: 'space-between', flexDirection: 'column' }}
         >
-          <Button onClick={handleSetFilter}>Formula 1</Button>
-          <Button danger onClick={handleClearFilter}>
+          <div className="flex" style={{ justifyContent: 'space-between' }}>
+            <div>
+              <div>Description</div>
+              <div>
+                <ReactMarkdown
+                  children={`
+                - changePrice_min: 2
+                - changePrice_max: 6
+              `}
+                />
+              </div>
+            </div>
+            <Button size="small" onClick={handleSetFilter}>
+              Formula 1
+            </Button>
+          </div>
+
+          <Button size="small" danger onClick={handleClearFilter}>
             Clear filter
           </Button>
-        </div>
-        <div>
-          <Button onClick={onUpdateWatchlist}>Update watchlist</Button>
         </div>
       </div>
     </Drawer>

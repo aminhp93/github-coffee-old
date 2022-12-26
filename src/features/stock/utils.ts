@@ -1,14 +1,7 @@
 import axios from 'axios';
-import { max, min, indexOf, sortBy } from 'lodash';
+import { indexOf, max, min, sortBy, meanBy } from 'lodash';
 import moment from 'moment';
-import {
-  DATE_FORMAT,
-  FinancialIndicatorsKeys,
-  FundamentalKeys,
-  HistoricalQuoteKeys,
-  NoDataKeys,
-  UNIT_BILLION,
-} from './constants';
+import { DATE_FORMAT, UNIT_BILLION } from './constants';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -48,282 +41,163 @@ export const getStartAndEndTime = () => {
   return { start, end };
 };
 
-export const NoDataColumns = NoDataKeys.map((i) => {
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    align: 'right',
-    sorter: (a: any, b: any) => a[i] - b[i],
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
+export const mapHistoricalQuote = (data: any, extraData: any) => {
+  if (!data) return null;
 
-export const HistoricalQuoteColumns = HistoricalQuoteKeys.map((i) => {
-  if (i === 'date') {
-    return {
-      title: 'dateeeeeeeee',
-      dataIndex: i,
-      key: i,
-      render: (text: string) => moment(text).format(DATE_FORMAT),
-    };
-  }
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    align: 'right',
-    width: 200,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
+  const last_data = data[0];
+  const last_2_data = data[1];
+  const last_20_day_historical_quote = data;
+  const totalValue_last20_min = Math.min(
+    ...data.map((item: any) => item.totalValue)
+  );
+  const totalValue_last20_max = Math.max(
+    ...data.map((item: any) => item.totalValue)
+  );
 
-export const FundamentalColumns = FundamentalKeys.map((i) => {
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    align: 'right',
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
+  const averageVolume_last5 =
+    data.slice(1, 6).reduce((a: any, b: any) => a + b.totalVolume, 0) / 5;
 
-export const FinancialIndicatorsColumns: any = FinancialIndicatorsKeys.map(
-  (i) => {
-    return {
-      // remove all whitespace
-      title: i.replace(/\s/g, ''),
-      dataIndex: i,
-      key: i,
-      sorter: (a: any, b: any) => a[i] - b[i],
-      align: 'right',
-      render: (data: any) => {
-        if (typeof data === 'number') {
-          if (data > 1_000) {
-            return Number(data.toFixed(0)).toLocaleString();
-          }
-          return Number(data.toFixed(1)).toLocaleString();
-        }
-        return data;
-      },
-    };
-  }
-);
+  const changeVolume_last5 =
+    (data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
 
-export const getHistorialQuote2 = async (symbol: string, offset = 0) => {
-  if (!symbol) return;
-  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-  const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+  const averageVolume_last20 =
+    data.slice(1, 21).reduce((a: any, b: any) => a + b.totalVolume, 0) / 20;
 
-  const res = await axios({
-    method: 'GET',
-    headers: {
-      Authorization:
-        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-    },
-    url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=${offset}&limit=20`,
+  const changeVolume_last20 =
+    (data[0].totalVolume - averageVolume_last20) / averageVolume_last20;
+
+  const changePrice =
+    (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
+
+  const count_5_day_within_base = calculateBase(data.slice(1, 6), 1);
+  const count_10_day_within_base = calculateBase(data.slice(1, 11), 1);
+
+  const last_10_data = data.slice(1, 11);
+
+  const strong_sell: any = [];
+  const strong_buy: any = [];
+
+  const averageVolume_last10 =
+    last_10_data.reduce((a: any, b: any) => a + b.totalVolume, 0) / 10;
+
+  last_10_data.forEach((i: any, index: number) => {
+    if (index === 9) return;
+
+    const last_price = last_10_data[index + 1].priceClose;
+    let isSell = false;
+    let isBuy = false;
+
+    i.last_price = last_price;
+    // Check if it is the sell or buy
+    // Normal case is priceClose > priceOpen --> buy
+
+    // Special case: hammer candle
+    const upperHammer = Number(
+      (
+        (100 *
+          (i.priceHigh -
+            (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
+        last_price
+      ).toFixed(1)
+    );
+
+    const lowerHammer = Number(
+      (
+        (100 *
+          ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
+            i.priceLow)) /
+        last_price
+      ).toFixed(1)
+    );
+
+    if (
+      i.priceClose > last_price * 1.03 ||
+      (lowerHammer > 3 && upperHammer < 1)
+    ) {
+      isBuy = true;
+    }
+    if (
+      i.priceClose < last_price * 0.97 ||
+      (upperHammer > 3 && lowerHammer < 1)
+    ) {
+      isSell = true;
+    }
+
+    let strong_volume = false;
+    // Check if volume is strong
+    if (i.totalVolume > averageVolume_last10) {
+      strong_volume = true;
+    }
+
+    if (strong_volume && isBuy) {
+      strong_buy.push(i);
+    }
+    if (strong_volume && isSell) {
+      strong_sell.push(i);
+    }
   });
-  return res.data;
+
+  const last_10_day_summary: any = {
+    strong_buy,
+    strong_sell,
+  };
+
+  const test_in_day_review = 123;
+
+  const start_time = moment().set('hour', 9).set('minute', 0);
+  const default_end_time = moment().set('hour', 14).set('minute', 45);
+  const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
+
+  const end_time = moment();
+  let diff_time = 0;
+  if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
+    diff_time = end_time.diff(start_time, 'minute');
+  } else if (end_time.isAfter(moment('13:00', 'HH:mm'))) {
+    diff_time = end_time.diff(start_time, 'minute') - 90;
+  } else {
+    diff_time =
+      end_time.diff(start_time, 'minute') -
+      end_time.diff(moment('11:30', 'HH:mm'), 'minute');
+  }
+  let estimated_vol = (last_data.dealVolume * default_diff_time) / diff_time;
+  if (
+    moment(last_data.date).format(DATE_FORMAT) !== moment().format(DATE_FORMAT)
+  ) {
+    estimated_vol = last_data.dealVolume;
+  }
+  const estimated_vol_change =
+    (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
+
+  const extra_vol =
+    (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
+
+  return {
+    ...extraData,
+    ...last_data,
+    totalValue_last20_min,
+    last_20_day_historical_quote,
+    totalValue_last20_max,
+    averageVolume_last5,
+    changeVolume_last5,
+    averageVolume_last20,
+    changeVolume_last20,
+    changePrice,
+    count_5_day_within_base,
+    count_10_day_within_base,
+    last_10_day_summary,
+    test_in_day_review,
+    estimated_vol,
+    estimated_vol_change,
+    extra_vol,
+  };
 };
 
-export const getHistorialQuote = async (symbol: string) => {
-  if (!symbol) return;
-  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-  const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-
-  const res = await axios({
-    method: 'GET',
-    headers: {
-      Authorization:
-        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-    },
-    url: `https://restv2.fireant.vn/symbols/${symbol}/historical-quotes?startDate=${startDate}&endDate=${endDate}&offset=0&limit=20`,
-  });
-  if (res.data) {
-    const last_data = res.data[0];
-    const last_2_data = res.data[1];
-    const last_20_day_historical_quote = res.data;
-    const totalValue_last20_min = Math.min(
-      ...res.data.map((item: any) => item.totalValue)
-    );
-    const totalValue_last20_max = Math.max(
-      ...res.data.map((item: any) => item.totalValue)
-    );
-
-    const averageVolume_last5 =
-      res.data.slice(1, 6).reduce((a: any, b: any) => a + b.totalVolume, 0) / 5;
-
-    const changeVolume_last5 =
-      (res.data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
-
-    const averageVolume_last20 =
-      res.data.slice(1, 21).reduce((a: any, b: any) => a + b.totalVolume, 0) /
-      20;
-
-    const changeVolume_last20 =
-      (res.data[0].totalVolume - averageVolume_last20) / averageVolume_last20;
-
-    const changePrice =
-      (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
-
-    const count_5_day_within_base = calculateBase(res.data.slice(1, 6), 1);
-    const count_10_day_within_base = calculateBase(res.data.slice(1, 11), 1);
-
-    const last_10_data = res.data.slice(1, 11);
-
-    const strong_sell: any = [];
-    const strong_buy: any = [];
-
-    const averageVolume_last10 =
-      last_10_data.reduce((a: any, b: any) => a + b.totalVolume, 0) / 10;
-
-    last_10_data.forEach((i: any, index: number) => {
-      if (index === 9) return;
-
-      const last_price = last_10_data[index + 1].priceClose;
-      let isSell = false;
-      let isBuy = false;
-
-      i.last_price = last_price;
-      // Check if it is the sell or buy
-      // Normal case is priceClose > priceOpen --> buy
-
-      // Special case: hammer candle
-      const upperHammer = Number(
-        (
-          (100 *
-            (i.priceHigh -
-              (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
-          last_price
-        ).toFixed(1)
-      );
-
-      const lowerHammer = Number(
-        (
-          (100 *
-            ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
-              i.priceLow)) /
-          last_price
-        ).toFixed(1)
-      );
-
-      if (
-        i.priceClose > last_price * 1.03 ||
-        (lowerHammer > 3 && upperHammer < 1)
-      ) {
-        isBuy = true;
-      }
-      if (
-        i.priceClose < last_price * 0.97 ||
-        (upperHammer > 3 && lowerHammer < 1)
-      ) {
-        isSell = true;
-      }
-
-      let strong_volume = false;
-      // Check if volume is strong
-      if (i.totalVolume > averageVolume_last10) {
-        strong_volume = true;
-      }
-
-      if (strong_volume && isBuy) {
-        strong_buy.push(i);
-      }
-      if (strong_volume && isSell) {
-        strong_sell.push(i);
-      }
-      if (i.symbol === 'GEX') {
-        console.log({
-          date: i.date,
-          upperHammer,
-          lowerHammer,
-          priceHigh: i.priceHigh,
-          priceLow: i.priceLow,
-          last_price,
-          priceClose: i.priceClose,
-          priceOpen: i.priceOpen,
-        });
-      }
-    });
-
-    const last_10_day_summary: any = {
-      strong_buy,
-      strong_sell,
-    };
-
-    const test_in_day_review = 123;
-
-    const start_time = moment().set('hour', 9).set('minute', 0);
-    const default_end_time = moment().set('hour', 14).set('minute', 45);
-    const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
-
-    const end_time = moment();
-    let diff_time = 0;
-    if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
-      diff_time = end_time.diff(start_time, 'minute');
-    } else if (end_time.isAfter(moment('13:00', 'HH:mm'))) {
-      diff_time = end_time.diff(start_time, 'minute') - 90;
-    } else {
-      diff_time =
-        end_time.diff(start_time, 'minute') -
-        end_time.diff(moment('11:30', 'HH:mm'), 'minute');
-    }
-    const estimated_vol =
-      (last_data.dealVolume * default_diff_time) / diff_time;
-    const estimated_vol_change =
-      (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
-
-    const extra_vol =
-      (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
-
-    return {
-      ...last_data,
-      key: symbol,
-      symbol,
-      totalValue_last20_min,
-      last_20_day_historical_quote,
-      totalValue_last20_max,
-      averageVolume_last5,
-      changeVolume_last5,
-      averageVolume_last20,
-      changeVolume_last20,
-      changePrice,
-      count_5_day_within_base,
-      count_10_day_within_base,
-      last_10_day_summary,
-      test_in_day_review,
-      estimated_vol,
-      estimated_vol_change,
-      extra_vol,
-    };
-  }
-  return null;
+export const mapFundamentals = (data: any, extraData: any) => {
+  if (!data) return null;
+  return {
+    ...data,
+    ...extraData,
+  };
 };
 
 export const getFinancialIndicator = async (symbol: string) => {
@@ -348,32 +222,10 @@ export const getFinancialIndicator = async (symbol: string) => {
   return null;
 };
 
-export const getFundamentals = async (symbol: string) => {
-  if (!symbol) return;
-
-  const res = await axios({
-    method: 'GET',
-    headers: {
-      Authorization:
-        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-    },
-    url: `https://restv2.fireant.vn/symbols/${symbol}/fundamental`,
-  });
-  if (res.data) {
-    return { ...res.data, symbol, key: symbol };
-  }
-  return null;
-};
-
 export const getDailyTransaction = async (symbol: string) => {
   if (!symbol) return;
-  //svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=C4G
   const res = await axios({
     method: 'GET',
-    //  headers: {
-    //    Authorization:
-    //      'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
-    //  },
     url: `https://svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=${symbol}`,
   });
 
@@ -480,18 +332,6 @@ export const getDailyTransaction = async (symbol: string) => {
   return null;
 };
 
-export const updateWatchlist = async (watchlistObj: any, updateData: any) => {
-  return axios({
-    method: 'PUT',
-    url: `https://restv2.fireant.vn/me/watchlists/${watchlistObj.watchlistID}`,
-    headers: {
-      authorization:
-        'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNzE1ODY4LCJuYmYiOjE2MTM3MTU4NjgsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM3MTU4NjcsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiYzZmNmNkZWE2MTcxY2Q5NGRiNWZmOWZkNDIzOWM0OTYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.oZ8S_sTP6qVRJqY4h7g0JvXVPB0k8tm4go9pUFD0sS_sDZbC6zjelAVVNGHWJja82ewJbUEmTJrnDWAKR-rg5Pprp4DW7MzaN0lw3Bw0wEacphtyglx-H14-0Wnv_-2KMyQLP5EYH8wgyiw9I3ig_i7kHJy-XgCd__tdoMKvarkIXPzJJJY32gq-LScWb3HyZsfEdi-DEZUUzjAHR1nguY8oNmCiA6FaQCzOBU_qfgmOLWhN9ZNN1G3ODAeoOnphLJuWjHIrwPuVXy6B39eU2PtHmujtw_YOXdIWEi0lRhqV1pZOrJEarQqjdV3K5XNwpGvONT8lvUwUYGoOwwBFJg',
-    },
-    data: updateData,
-  });
-};
-
 export const getFilterData = (
   data: any,
   {
@@ -582,9 +422,6 @@ export const calculateBase = (data: any, limit?: number) => {
   let list_base: any = [];
 
   data.forEach((_: any, index: number) => {
-    if (_.symbol === 'VPB') {
-      console.log('VPB');
-    }
     if (
       !data[index + 1] ||
       !data[index + 2] ||
@@ -617,7 +454,6 @@ export const calculateBase = (data: any, limit?: number) => {
           data[index + 3],
           data[index + 4],
         ],
-        index,
       });
     }
   });
@@ -625,4 +461,64 @@ export const calculateBase = (data: any, limit?: number) => {
   return {
     list_base,
   };
+};
+
+export const getMapBackTestData = (res: any, dataSource: any) => {
+  const flattenRes = res.flat();
+  const newDataSource = [...dataSource];
+  newDataSource.forEach((i: any) => {
+    // get data with selected symbol
+    const filterRes = flattenRes
+      .filter((j: any) => j.symbol === i.symbol)
+      .sort((a: any, b: any) => b.date.localeCompare(a.date));
+
+    if (filterRes.length) {
+      // calculate list base
+      const list_base = calculateBase(filterRes)?.list_base || [];
+
+      // map more data to list base
+      const map_list_base = getMapListBase(list_base, filterRes);
+
+      const winCount = map_list_base.filter((j: any) => j.result > 0).length;
+
+      i.backtest = {
+        data: filterRes,
+        list_base: map_list_base,
+        winCount,
+        winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
+      };
+    }
+  });
+
+  return newDataSource;
+};
+
+const getMapListBase = (old_list: any, full_data: any) => {
+  const new_list = old_list.map((i: any) => {
+    const baseIndex = full_data.findIndex(
+      (j: any) => j.date === i.list[0].date
+    );
+    // Ignore base if baseIndex > 5
+    if (baseIndex > 5) {
+      i.index = baseIndex;
+      i.buyItem = full_data[i.index - 1];
+
+      // average volume of list base
+      const averageVolume = meanBy(i.list, 'totalVolume');
+
+      i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
+      i.estimated_price_change = i.buyItem.priceClose / i.list[0].priceClose;
+      const buyPrice = full_data[i.index].priceClose * 1.02;
+      const sellPrice = full_data[i.index - 4].priceClose;
+      i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+    }
+
+    return i;
+  });
+
+  const filter_list = new_list.filter(
+    (j: any) => j.estimated_vol_change > 1.2 && j.estimated_price_change > 1.02
+  );
+
+  return filter_list;
 };

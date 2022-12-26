@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -20,31 +21,31 @@ import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { ColumnsType } from 'antd/es/table';
 import { useInterval } from 'libs/hooks';
-import { StockService } from 'libs/services';
+import StockService from '../service';
 import { Watchlist } from 'libs/types';
-import { keyBy, meanBy } from 'lodash';
-import React, { useEffect, useMemo, useState } from 'react';
+import { keyBy } from 'lodash';
+import { useEffect, useMemo, useState } from 'react';
 import {
   DEFAULT_FILTER,
   DEFAULT_SETTINGS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
   DELAY_TIME,
   TYPE_INDICATOR_OPTIONS,
+  NO_DATA_COLUMN,
+  HISTORICAL_QUOTE_COLUMN,
+  FUNDAMENTAL_COLUMN,
+  FINANCIAL_INDICATORS_COLUMN,
+  DATE_FORMAT,
+  BACKTEST_COUNT,
 } from '../constants';
 import {
-  FinancialIndicatorsColumns,
-  FundamentalColumns,
   getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
-  getFundamentals,
-  getHistorialQuote,
-  HistoricalQuoteColumns,
-  NoDataColumns,
-  updateWatchlist,
   mapBuySell,
-  getHistorialQuote2,
-  calculateBase,
+  mapHistoricalQuote,
+  mapFundamentals,
+  getMapBackTestData,
 } from '../utils';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
 import Filters from './Filters';
@@ -57,28 +58,21 @@ const CheckboxGroup = Checkbox.Group;
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
-
-  const [listWatchlist, setListWatchlist] = React.useState([]);
-  const [currentWatchlist, setCurrentWatchlist] =
-    React.useState<Watchlist | null>(null);
-
-  const [dataSource, setDataSource] = React.useState([]);
-
+  const [listWatchlist, setListWatchlist] = useState([]);
+  const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
+    null
+  );
+  const [dataSource, setDataSource] = useState([]);
   const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
-
   const [loading, setLoading] = useState(false);
-
   const [columns, setColumns] = useState<ColumnsType<any>>([]);
-
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-
   const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
     DEFAULT_TYPE_INDICATOR_OPTIONS
   );
   const [indeterminate, setIndeterminate] = useState(true);
   const [checkAll, setCheckAll] = useState(false);
-
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
 
@@ -87,7 +81,6 @@ export default function StockTable() {
       const res = await handleGetData();
       const filteredRes = getFilterData(res, filters);
       const symbols = filteredRes.map((item: any) => item.symbol);
-
       handleUpdateWatchlist(symbols);
     },
     isPlaying ? delay : null
@@ -119,7 +112,7 @@ export default function StockTable() {
         symbols: symbols ? symbols : filteredData.map((i: any) => i.symbol),
       };
 
-      await updateWatchlist(watchlistObj, updateData);
+      await StockService.updateWatchlist(watchlistObj, updateData);
       notification.success({ message: 'Update wl success' });
     } catch (e) {
       notification.error({ message: 'Update wl success' });
@@ -173,10 +166,25 @@ export default function StockTable() {
     if (!thanh_khoan_vua_wl) return;
 
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      listPromises.push(getHistorialQuote(j));
-      listPromises.push(getFundamentals(j));
+      const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+      const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
+      listPromises.push(
+        StockService.getHistoricalQuotes(
+          { symbol: j, startDate, endDate },
+          mapHistoricalQuote,
+          {
+            key: j,
+            symbol: j,
+          }
+        )
+      );
+      listPromises.push(
+        StockService.getFundamentals({ symbol: j }, mapFundamentals, {
+          key: j,
+          symbol: j,
+        })
+      );
       listPromises.push(getFinancialIndicator(j));
-      // listPromises.push(getDailyTransaction(j));
     });
 
     setLoading(true);
@@ -211,52 +219,33 @@ export default function StockTable() {
   const getBackTestData = () => {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
-
+    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+    const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
-        for (let i = 1; i <= 50; i++) {
-          listPromises.push(getHistorialQuote2(j.symbol, i * 20));
+        for (let i = 1; i <= BACKTEST_COUNT; i++) {
+          listPromises.push(
+            StockService.getHistoricalQuotes({
+              symbol: j.symbol,
+              startDate,
+              endDate,
+              offset: i * 20,
+            })
+          );
         }
       });
+    setLoading(true);
 
     Promise.all(listPromises)
       .then((res: any) => {
-        console.log(res);
-        const flattenRes = res.flat();
-        const newDataSource = [...dataSource];
-        newDataSource.forEach((i: any) => {
-          const filterRes = flattenRes.filter(
-            (j: any) => j.symbol === i.symbol
-          );
-          const list_base = calculateBase(filterRes)?.list_base || [];
-          const map_list_base = list_base
-            .map((i: any) => {
-              const averageVolume = meanBy(i.list, 'totalVolume');
-              i.estimated_vol_change =
-                filterRes[i.index + 1].totalVolume / averageVolume;
-              const buyPrice = filterRes[i.index].priceClose * 1.02;
-              const sellPrice = filterRes[i.index + 4].priceClose;
-              i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
-
-              return i;
-            })
-            .filter((i: any) => i.estimated_vol_change > 1.2);
-
-          const winCount = map_list_base.filter(
-            (i: any) => i.result > 0
-          ).length;
-          i.backtest = {
-            data: filterRes,
-            list_base: map_list_base,
-            winCount,
-            winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
-          };
-        });
-
+        setLoading(false);
+        const newDataSource: any = getMapBackTestData(res, dataSource);
         setDataSource(newDataSource);
       })
-      .catch((e) => {});
+      .catch((e) => {
+        setLoading(false);
+      });
   };
 
   const filteredData = useMemo(
@@ -281,35 +270,35 @@ export default function StockTable() {
     if (checkedList.includes('HistoricalQuote')) {
       columns.push({
         title: 'Historical Quotes',
-        children: HistoricalQuoteColumns,
+        children: HISTORICAL_QUOTE_COLUMN,
       });
     }
 
     if (checkedList.includes('Fundamental')) {
       columns.push({
         title: 'Fundamentals',
-        children: FundamentalColumns,
+        children: FUNDAMENTAL_COLUMN,
       });
     }
 
     if (checkedList.includes('FinancialIndicators')) {
       columns.push({
         title: 'FinancialIndicators',
-        children: FinancialIndicatorsColumns,
+        children: FINANCIAL_INDICATORS_COLUMN,
       });
     }
 
     if (checkedList.includes('BuySellSignals')) {
       columns.push({
         title: 'BuySellSignals',
-        children: BuySellSignalsColumns(filteredData),
+        children: BuySellSignalsColumns(),
       });
     }
 
     if (checkedList.includes('NoData')) {
       columns.push({
         title: 'NoData',
-        children: NoDataColumns,
+        children: NO_DATA_COLUMN,
       });
     }
 
@@ -321,7 +310,7 @@ export default function StockTable() {
     }
 
     setColumns(columns);
-  }, [checkedList, filteredData]);
+  }, [checkedList, dataSource]);
 
   useEffect(() => {
     (async () => {
@@ -333,7 +322,7 @@ export default function StockTable() {
   }, []);
 
   const menu = (
-    <Menu onClick={handleClickMenuWatchlist}>
+    <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
       {listWatchlist.map((i: any) => {
         return (
           <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
@@ -344,52 +333,56 @@ export default function StockTable() {
     </Menu>
   );
 
-  console.log(dataSource, filters, currentWatchlist, process.env);
+  // console.log(dataSource, filters, currentWatchlist, process.env);
 
   const renderHeader = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="flex">
           <Dropdown overlay={menu} trigger={['hover']}>
-            <Button style={{ marginRight: '8px' }}>
+            <Button size="small" style={{ marginRight: '8px' }}>
               {currentWatchlist?.name || 'Select watchlist'}
             </Button>
           </Dropdown>
           <Button
+            size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
             onClick={handleGetData}
           />
           <div style={{ marginLeft: '8px' }}>
-            <Button onClick={() => setPlaying(!isPlaying)}>
+            <Button size="small" onClick={() => setPlaying(!isPlaying)}>
               {isPlaying ? 'Stop Interval' : 'Start Interval'}
             </Button>
-
             <InputNumber
+              size="small"
               style={{ marginLeft: '8px' }}
               disabled={isPlaying}
               value={delay}
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-          <Button onClick={test}>Test</Button>
-          <Button onClick={getBackTestData}>Test2</Button>
+          <Button size="small" onClick={test}>
+            Test
+          </Button>
+          <Button size="small" onClick={getBackTestData}>
+            Test2
+          </Button>
         </div>
         <div className={'flex'}>
           <Statistic
-            title="Buy > 2%"
+            // title="Buy > 2%"
             value={_filter_3.length}
             valueStyle={{ color: 'green' }}
             prefix={<ArrowUpOutlined />}
           />
           <Statistic
-            title="Normal"
+            // title="Normal"
             value={_filter_2.length}
             style={{ margin: '0 10px' }}
           />
-
           <Statistic
-            title="Sell < -2%"
+            // title="Sell < -2%"
             value={_filter_1.length}
             valueStyle={{ color: 'red' }}
             prefix={<ArrowDownOutlined />}
@@ -406,7 +399,6 @@ export default function StockTable() {
               >
                 All
               </Checkbox>
-
               <CheckboxGroup
                 options={TYPE_INDICATOR_OPTIONS}
                 value={checkedList}
@@ -415,7 +407,9 @@ export default function StockTable() {
             </div>
           }
         >
-          <Button type="primary">Hover me</Button>
+          <Button size="small" type="primary">
+            Hover me
+          </Button>
         </Popover>
       </div>
     );
@@ -427,60 +421,50 @@ export default function StockTable() {
   );
   const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
 
-  const handleChangeFilters = (data: any) => {
-    setFilters({ ...filters, ...data });
-  };
-
-  const handleChangeSettings = (data: any) => {
-    setSettings({ ...settings, ...data });
+  const footer = () => {
+    return (
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
+        <div>{String(filteredData.length)}</div>
+        <div>
+          <Button
+            size="small"
+            type="primary"
+            icon={<SettingOutlined />}
+            onClick={() => setOpenDrawerSettings(true)}
+          />
+          <Button
+            size="small"
+            type="primary"
+            icon={<FilterOutlined />}
+            style={{ marginLeft: 8 }}
+            onClick={() => setOpenDrawerFilter(true)}
+          />
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="StockTable">
       <div>
         {renderHeader()}
-
         <Table
           {...settings}
-          showSorterTooltip={false}
-          pagination={{
-            position: ['bottomRight'],
-            pageSizeOptions: ['10', '20', '30'],
-            showSizeChanger: true,
-          }}
+          loading={loading}
           columns={columns}
           dataSource={filteredData}
-          footer={() => {
-            return (
-              <div className="flex" style={{ justifyContent: 'space-between' }}>
-                <div>{String(filteredData.length)}</div>
-                <div>
-                  <Button
-                    type="primary"
-                    icon={<SettingOutlined />}
-                    onClick={() => setOpenDrawerSettings(true)}
-                  />
-                  <Button
-                    type="primary"
-                    icon={<FilterOutlined />}
-                    style={{ marginLeft: 8 }}
-                    onClick={() => setOpenDrawerFilter(true)}
-                  />
-                </div>
-              </div>
-            );
-          }}
+          footer={footer}
         />
       </div>
       <Filters
         open={openDrawerFilter}
-        onChange={handleChangeFilters}
+        onChange={(data: any) => setFilters({ ...filters, ...data })}
         onUpdateWatchlist={handleUpdateWatchlist}
         onClose={() => setOpenDrawerFilter(false)}
       />
       <Settings
         open={openDrawerSettings}
-        onChange={handleChangeSettings}
+        onChange={(data: any) => setSettings({ ...settings, ...data })}
         onClose={() => setOpenDrawerSettings(false)}
       />
     </div>

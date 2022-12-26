@@ -4,7 +4,7 @@ import { flatten, keyBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
-import { StockService } from 'libs/services';
+import StockService from './service';
 
 export default function StockNews() {
   const [list, setList] = useState([]);
@@ -84,7 +84,7 @@ export default function StockNews() {
           }}
         >
           <div style={{ height: '50px' }}>
-            <Button onClick={handleBack}>Back</Button>
+            <Button size='small' onClick={handleBack}>Back</Button>
           </div>
 
           <div style={{ flex: 1, overflow: 'auto' }}>

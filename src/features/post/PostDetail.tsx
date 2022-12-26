@@ -101,6 +101,7 @@ const MemoizedPostDetail = memo(function PostDetail({
     <div className="PostDetail width-100">
       {isUpdated ? (
         <Button
+          size="small"
           type="primary"
           // danger
           icon={<CheckCircleOutlined />}
@@ -114,6 +115,7 @@ const MemoizedPostDetail = memo(function PostDetail({
       ) : (
         <>
           <Button
+            size="small"
             // danger
             className="btn-warning"
             loading={loading}
@@ -132,6 +134,7 @@ const MemoizedPostDetail = memo(function PostDetail({
       {confirmDelete ? (
         <>
           <Button
+            size="small"
             type="primary"
             danger
             style={{
@@ -145,6 +148,7 @@ const MemoizedPostDetail = memo(function PostDetail({
             Confirm delete
           </Button>
           <Button
+            size="small"
             style={{
               position: 'absolute',
               bottom: '20px',
@@ -158,6 +162,7 @@ const MemoizedPostDetail = memo(function PostDetail({
         </>
       ) : (
         <Button
+          size="small"
           type="primary"
           danger
           onClick={() => setConfirmDelete(true)}

@@ -11,7 +11,10 @@ function Child({ random }: any) {
 
   return (
     <div>
-      <Button onClick={() => setCount((count: number) => count + 1)}>
+      <Button
+        size="small"
+        onClick={() => setCount((count: number) => count + 1)}
+      >
         Add
       </Button>
       {count}

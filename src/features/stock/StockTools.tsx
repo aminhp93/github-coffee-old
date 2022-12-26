@@ -1,6 +1,6 @@
 import { Button, Input, notification, Spin } from 'antd';
 import axios from 'axios';
-import { StockService } from 'libs/services';
+import StockService from './service';
 import {
   DATE_FORMAT,
   MIN_MEDIUM_TOTOL_VALUE,
@@ -42,12 +42,7 @@ export default function StockTools() {
       const listPromises: any = [];
       for (let j = 0; j < chunkedListSymbol[i].length; j++) {
         listPromises.push(
-          StockService.getHistoricalQuotes(
-            chunkedListSymbol[i][j],
-            '',
-            '',
-            'fireant'
-          )
+          StockService.getHistoricalQuotes({ symbol: chunkedListSymbol[i][j] })
         );
       }
       const partialRes = await Promise.all(listPromises);
@@ -111,7 +106,7 @@ export default function StockTools() {
 
   return (
     <div>
-      <Button type="primary" onClick={handleUpdateThanhKhoanVua}>
+      <Button size="small" type="primary" onClick={handleUpdateThanhKhoanVua}>
         Update
       </Button>
       <hr />
@@ -209,6 +204,7 @@ function StockToolItem(props: IStockToolItemProps) {
     <div>
       {data.watchlistID} - {data.name} - {data.symbols.length}
       <Button
+        size="small"
         disabled={loading}
         style={{ marginLeft: '20px' }}
         danger
@@ -216,7 +212,7 @@ function StockToolItem(props: IStockToolItemProps) {
       >
         Reset
       </Button>
-      <Button onClick={handleFilter} disabled={loading}>
+      <Button size="small" onClick={handleFilter} disabled={loading}>
         Loc Tong Gia Tri
       </Button>
       {data.name === 'all' && (
