@@ -46,6 +46,20 @@ export default function Test() {
     });
   };
 
+  const handleCreateStock = () => {
+    axios({
+      url: `${baseUrl}/api/stocks/create/`,
+      method: 'POST',
+    });
+  };
+
+  const handleGetStock = () => {
+    axios({
+      url: `${baseUrl}/api/stocks/`,
+      method: 'GET',
+    });
+  };
+
   const test = async (repoName: string) => {
     if (!repoName) return null;
     try {
@@ -130,6 +144,12 @@ export default function Test() {
       </Button>
       <Button size="small" onClick={testAll}>
         Test
+      </Button>
+      <Button size="small" onClick={handleCreateStock}>
+        Create Stock
+      </Button>
+      <Button size="small" onClick={handleGetStock}>
+        Get Stock
       </Button>
       <Table dataSource={list} columns={columns} size={'small'} />;
     </div>
