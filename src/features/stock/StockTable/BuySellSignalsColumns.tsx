@@ -15,17 +15,26 @@ const columns = [
     render: (data: any) => {
       const list = data.list || [];
       if (!list.length) return null;
-
       const buyDate = list[0].date;
-
       return moment(buyDate).format('YYYY-MM-DD');
     },
   },
   {
     title: 'estimated_vol_change',
-
     render: (data: any) => {
       return data.estimated_vol_change.toFixed(2);
+    },
+  },
+  {
+    title: 'buyPrice',
+    render: (data: any) => {
+      return data.buyPrice.toFixed(2);
+    },
+  },
+  {
+    title: 'sellPrice',
+    render: (data: any) => {
+      return data.sellPrice.toFixed(2);
     },
   },
   {
@@ -37,9 +46,7 @@ const columns = [
   {
     title: 'chart',
     render: (data: any) => {
-      console.log(data.list);
-      const list = data.list || [];
-      list.unshift(data.buyItem);
+      const list = data.addedData.concat(data.list);
       const dates: any = list
         .map((i: any) => moment(i.date).format(DATE_FORMAT))
         .reverse();
@@ -431,7 +438,6 @@ const BuySellSignalsColumns = () => {
       align: 'right',
       render: (data: any) => {
         let action = data.action;
-        console.log(384, data);
 
         return (
           <div
@@ -472,7 +478,6 @@ interface InfoListBackTestProp {
 
 const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
   const [open, setOpen] = React.useState(false);
-  console.log(425, backTestData);
 
   const showDrawer = () => {
     setOpen(true);

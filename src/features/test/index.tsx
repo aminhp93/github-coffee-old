@@ -92,7 +92,6 @@ export default function Test() {
 
       Promise.all(listPromises)
         .then((res: any) => {
-          console.log(res);
           setList(res);
         })
         .catch((err) => {

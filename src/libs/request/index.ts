@@ -66,7 +66,7 @@ const request = async (options: any) => {
     ) {
       // wait 1 second
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const auth: any = await getAuth();
+      const auth: any = getAuth();
 
       if (!auth || !auth.currentUser) return;
       console.log('auth', auth);

@@ -148,7 +148,6 @@ export default function StockTable() {
     return Promise.all(listPromises)
       .then((res: any) => {
         setLoading(false);
-        console.log(res);
       })
       .catch((e) => {
         setLoading(false);
@@ -167,7 +166,8 @@ export default function StockTable() {
 
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
       const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-      const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
+      // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+      const endDate = '2022-12-25';
       listPromises.push(
         StockService.getHistoricalQuotes(
           { symbol: j, startDate, endDate },
@@ -220,7 +220,8 @@ export default function StockTable() {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
+    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+    const endDate = '2022-12-25';
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
@@ -332,8 +333,6 @@ export default function StockTable() {
       })}
     </Menu>
   );
-
-  // console.log(dataSource, filters, currentWatchlist, process.env);
 
   const renderHeader = () => {
     return (
