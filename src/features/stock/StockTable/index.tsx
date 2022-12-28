@@ -53,6 +53,11 @@ import InDayReviewColumns from './InDayReviewColumns';
 import './index.less';
 import Settings from './Settings';
 
+import request from 'libs/request';
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
 const CheckboxGroup = Checkbox.Group;
 
 export default function StockTable() {
@@ -216,6 +221,44 @@ export default function StockTable() {
       });
   };
 
+  const createBackTestData = () => {
+    const thanh_khoan_vua_wl: any =
+      listWatchlistObj && listWatchlistObj[737544];
+
+    // Get data to backtest within 1 year from buy, sell symbol
+    const listPromises: any = [];
+    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+    const endDate = '2022-12-25';
+    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
+      for (let i = 1; i <= BACKTEST_COUNT; i++) {
+        listPromises.push(
+          StockService.getHistoricalQuotes({
+            symbol: j,
+            startDate,
+            endDate,
+            offset: i * 20,
+          })
+        );
+      }
+    });
+    setLoading(true);
+
+    Promise.all(listPromises)
+      .then((res: any) => {
+        const flatten = res.flat();
+        setLoading(false);
+        request({
+          url: `${baseUrl}/api/stocks/create/`,
+          method: 'POST',
+          data: flatten,
+        });
+      })
+      .catch((e) => {
+        setLoading(false);
+      });
+  };
+
   const getBackTestData = () => {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
@@ -365,7 +408,10 @@ export default function StockTable() {
             Test
           </Button>
           <Button size="small" onClick={getBackTestData}>
-            Test2
+            Backtest
+          </Button>
+          <Button size="small" onClick={createBackTestData}>
+            Create backtest
           </Button>
         </div>
         <div className={'flex'}>
