@@ -5,6 +5,7 @@ import {
   CheckCircleOutlined,
   FilterOutlined,
   SettingOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -39,7 +40,6 @@ import {
   BACKTEST_COUNT,
 } from '../constants';
 import {
-  getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
   mapBuySell,
@@ -52,17 +52,17 @@ import Filters from './Filters';
 import InDayReviewColumns from './InDayReviewColumns';
 import './index.less';
 import Settings from './Settings';
-
-import request from 'libs/request';
+import Testing from './Testing';
 import config from 'libs/config';
+import request from 'libs/request';
 
 const baseUrl = config.apiUrl;
-
 const CheckboxGroup = Checkbox.Group;
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
+  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listWatchlist, setListWatchlist] = useState([]);
   const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
     null
@@ -138,28 +138,6 @@ export default function StockTable() {
     setCheckAll(e.target.checked);
   };
 
-  const test = () => {
-    const listPromises: any = [];
-    const thanh_khoan_vua_wl: any =
-      listWatchlistObj && listWatchlistObj[737544];
-
-    if (!thanh_khoan_vua_wl) return;
-
-    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      listPromises.push(getDailyTransaction(j));
-    });
-
-    setLoading(true);
-    return Promise.all(listPromises)
-      .then((res: any) => {
-        setLoading(false);
-      })
-      .catch((e) => {
-        setLoading(false);
-        notification.error({ message: 'error' });
-      });
-  };
-
   const handleGetData = () => {
     const listPromises: any = [];
     const thanh_khoan_vua_wl: any =
@@ -221,44 +199,6 @@ export default function StockTable() {
       });
   };
 
-  const createBackTestData = () => {
-    const thanh_khoan_vua_wl: any =
-      listWatchlistObj && listWatchlistObj[737544];
-
-    // Get data to backtest within 1 year from buy, sell symbol
-    const listPromises: any = [];
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = '2022-12-25';
-    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      for (let i = 1; i <= BACKTEST_COUNT; i++) {
-        listPromises.push(
-          StockService.getHistoricalQuotes({
-            symbol: j,
-            startDate,
-            endDate,
-            offset: i * 20,
-          })
-        );
-      }
-    });
-    setLoading(true);
-
-    Promise.all(listPromises)
-      .then((res: any) => {
-        const flatten = res.flat();
-        setLoading(false);
-        request({
-          url: `${baseUrl}/api/stocks/create/`,
-          method: 'POST',
-          data: flatten,
-        });
-      })
-      .catch((e) => {
-        setLoading(false);
-      });
-  };
-
   const getBackTestData = () => {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
@@ -284,12 +224,22 @@ export default function StockTable() {
     Promise.all(listPromises)
       .then((res: any) => {
         setLoading(false);
-        const newDataSource: any = getMapBackTestData(res, dataSource);
+        const flattenData = res.flat();
+        const newDataSource: any = getMapBackTestData(flattenData, dataSource);
         setDataSource(newDataSource);
       })
       .catch((e) => {
         setLoading(false);
       });
+  };
+
+  const getBackTestDataOffline = async () => {
+    const res = await request({
+      url: `${baseUrl}/api/stocks/`,
+      method: 'GET',
+    });
+    const newDataSource: any = getMapBackTestData(res, dataSource);
+    setDataSource(newDataSource);
   };
 
   const filteredData = useMemo(
@@ -404,14 +354,12 @@ export default function StockTable() {
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-          <Button size="small" onClick={test}>
-            Test
-          </Button>
+
           <Button size="small" onClick={getBackTestData}>
-            Backtest
+            Backtest online
           </Button>
-          <Button size="small" onClick={createBackTestData}>
-            Create backtest
+          <Button size="small" onClick={getBackTestDataOffline}>
+            Backtest offline
           </Button>
         </div>
         <div className={'flex'}>
@@ -474,6 +422,13 @@ export default function StockTable() {
           <Button
             size="small"
             type="primary"
+            icon={<WarningOutlined />}
+            onClick={() => setOpenDrawerTesting(true)}
+          />
+          <Button
+            size="small"
+            type="primary"
+            style={{ marginLeft: 8 }}
             icon={<SettingOutlined />}
             onClick={() => setOpenDrawerSettings(true)}
           />
@@ -501,6 +456,11 @@ export default function StockTable() {
           footer={footer}
         />
       </div>
+      <Testing
+        listWatchlistObj={listWatchlistObj}
+        open={openDrawerTesting}
+        onClose={() => setOpenDrawerTesting(false)}
+      />
       <Filters
         open={openDrawerFilter}
         onChange={(data: any) => setFilters({ ...filters, ...data })}

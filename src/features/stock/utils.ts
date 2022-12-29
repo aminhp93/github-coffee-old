@@ -462,7 +462,7 @@ export const calculateBase = (data: any, limit?: number) => {
 };
 
 export const getMapBackTestData = (res: any, dataSource: any) => {
-  const flattenRes = res.flat();
+  const flattenRes = res;
   const newDataSource = [...dataSource];
   newDataSource.forEach((i: any) => {
     // get data with selected symbol
