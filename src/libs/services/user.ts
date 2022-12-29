@@ -1,19 +1,22 @@
-import request, { UserUrls } from 'libs/request';
+import request from 'libs/request';
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
+const UserUrls = {
+  getAuthUser: `${baseUrl}/api/users/firebase/auth/`,
+  checkAuthUser: `${baseUrl}/api/users/firebase/auth/`,
+  getAccessToken: `${baseUrl}/api/token/`,
+  getPublic: `${baseUrl}/api/users/public/`,
+  getProtected: `${baseUrl}/api/users/protected/`,
+};
 
 export const UserService = {
-  getAuthUser(headers?: any) {
-    return request(
-      headers
-        ? {
-            headers,
-            method: 'GET',
-            url: UserUrls.getAuthUser,
-          }
-        : {
-            method: 'GET',
-            url: UserUrls.getAuthUser,
-          }
-    );
+  getAuthUser() {
+    return request({
+      method: 'GET',
+      url: UserUrls.getAuthUser,
+    });
   },
   getAccessToken(data: any) {
     return request({

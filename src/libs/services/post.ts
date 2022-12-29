@@ -1,4 +1,15 @@
-import request, { PostUrls } from 'libs/request';
+import request from 'libs/request';
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
+export const PostUrls = {
+  createPost: `${baseUrl}/api/posts/create/`,
+  listPost: `${baseUrl}/api/posts/`,
+  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
+  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
+  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
+};
 
 export const PostService = {
   createPost(data: any) {

@@ -140,7 +140,7 @@ const Chat = ({ hideOnlineUsers }: IProps) => {
           <div style={{ flex: 1, overflow: 'auto' }}>
             <div className="ChatMessageList">
               {chats.map((chat: IChat) => {
-                return <ChatMessageListItem chat={chat} />;
+                return <ChatMessageListItem key={chat.id} chat={chat} />;
               })}
               <div ref={bottomRef} />
             </div>

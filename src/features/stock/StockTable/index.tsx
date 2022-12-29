@@ -5,6 +5,7 @@ import {
   CheckCircleOutlined,
   FilterOutlined,
   SettingOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -39,7 +40,6 @@ import {
   BACKTEST_COUNT,
 } from '../constants';
 import {
-  getDailyTransaction,
   getFilterData,
   getFinancialIndicator,
   mapBuySell,
@@ -52,12 +52,17 @@ import Filters from './Filters';
 import InDayReviewColumns from './InDayReviewColumns';
 import './index.less';
 import Settings from './Settings';
+import Testing from './Testing';
+import config from 'libs/config';
+import request from 'libs/request';
 
+const baseUrl = config.apiUrl;
 const CheckboxGroup = Checkbox.Group;
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
+  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listWatchlist, setListWatchlist] = useState([]);
   const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
     null
@@ -133,29 +138,6 @@ export default function StockTable() {
     setCheckAll(e.target.checked);
   };
 
-  const test = () => {
-    const listPromises: any = [];
-    const thanh_khoan_vua_wl: any =
-      listWatchlistObj && listWatchlistObj[737544];
-
-    if (!thanh_khoan_vua_wl) return;
-
-    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      listPromises.push(getDailyTransaction(j));
-    });
-
-    setLoading(true);
-    return Promise.all(listPromises)
-      .then((res: any) => {
-        setLoading(false);
-        console.log(res);
-      })
-      .catch((e) => {
-        setLoading(false);
-        notification.error({ message: 'error' });
-      });
-  };
-
   const handleGetData = () => {
     const listPromises: any = [];
     const thanh_khoan_vua_wl: any =
@@ -167,7 +149,8 @@ export default function StockTable() {
 
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
       const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-      const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
+      // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+      const endDate = '2022-12-25';
       listPromises.push(
         StockService.getHistoricalQuotes(
           { symbol: j, startDate, endDate },
@@ -220,7 +203,8 @@ export default function StockTable() {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    const endDate = moment().add(-1, 'days').format(DATE_FORMAT);
+    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+    const endDate = '2022-12-25';
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
@@ -240,12 +224,51 @@ export default function StockTable() {
     Promise.all(listPromises)
       .then((res: any) => {
         setLoading(false);
-        const newDataSource: any = getMapBackTestData(res, dataSource);
+        const flattenData = res.flat();
+        console.log(flattenData);
+        const newDataSource: any = getMapBackTestData(flattenData, dataSource);
         setDataSource(newDataSource);
       })
       .catch((e) => {
         setLoading(false);
       });
+  };
+
+  const getBackTestDataOffline = async () => {
+    try {
+      const symbols = filteredData
+        .filter((i: any) => i.action === 'buy' || i.action === 'sell')
+        .map((i: any) => i.symbol);
+
+      setLoading(true);
+      const res = await request({
+        url: `${baseUrl}/api/stocks/`,
+        method: 'GET',
+        params: {
+          symbols: symbols.join(','),
+        },
+      });
+      setLoading(false);
+      const mappedData = res.data.map((i: any) => {
+        const item: any = {};
+        item.date = i.d;
+        item.dealVolume = i.v;
+        item.priceClose = i.c;
+        item.priceHigh = i.h;
+        item.priceLow = i.l;
+        item.priceOpen = i.o;
+        item.totalVolume = i.v2;
+        item.symbol = i.s;
+        return item;
+      });
+      console.log(mappedData);
+
+      const newDataSource: any = getMapBackTestData(mappedData, dataSource);
+      setDataSource(newDataSource);
+    } catch (e) {
+      setLoading(false);
+      console.log(e);
+    }
   };
 
   const filteredData = useMemo(
@@ -333,8 +356,6 @@ export default function StockTable() {
     </Menu>
   );
 
-  // console.log(dataSource, filters, currentWatchlist, process.env);
-
   const renderHeader = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -362,11 +383,12 @@ export default function StockTable() {
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-          <Button size="small" onClick={test}>
-            Test
-          </Button>
+
           <Button size="small" onClick={getBackTestData}>
-            Test2
+            Backtest online
+          </Button>
+          <Button size="small" onClick={getBackTestDataOffline}>
+            Backtest offline
           </Button>
         </div>
         <div className={'flex'}>
@@ -429,6 +451,13 @@ export default function StockTable() {
           <Button
             size="small"
             type="primary"
+            icon={<WarningOutlined />}
+            onClick={() => setOpenDrawerTesting(true)}
+          />
+          <Button
+            size="small"
+            type="primary"
+            style={{ marginLeft: 8 }}
             icon={<SettingOutlined />}
             onClick={() => setOpenDrawerSettings(true)}
           />
@@ -456,6 +485,11 @@ export default function StockTable() {
           footer={footer}
         />
       </div>
+      <Testing
+        listWatchlistObj={listWatchlistObj}
+        open={openDrawerTesting}
+        onClose={() => setOpenDrawerTesting(false)}
+      />
       <Filters
         open={openDrawerFilter}
         onChange={(data: any) => setFilters({ ...filters, ...data })}

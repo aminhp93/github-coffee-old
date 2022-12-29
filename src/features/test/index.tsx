@@ -3,6 +3,7 @@ import axios from 'axios';
 import config from 'libs/config';
 import React, { useState } from 'react';
 import { Octokit } from '@octokit/rest';
+import request from 'libs/request';
 
 const baseUrl = config.apiUrl;
 const token = process.env.GITHUB_TOKEN;
@@ -42,6 +43,51 @@ export default function Test() {
   const handleCancelJob = () => {
     axios({
       url: `${baseUrl}/api/test/cancel-job/`,
+      method: 'GET',
+    });
+  };
+
+  const handleCreateStock = () => {
+    request({
+      url: `${baseUrl}/api/stocks/create/`,
+      method: 'POST',
+      data: [
+        {
+          key: 'HPG_2022-11-',
+          adjRatio: 1,
+          buyCount: 18808,
+          buyForeignQuantity: 22667864,
+          buyForeignValue: 367095950000,
+          buyQuantity: 98277150,
+          currentForeignRoom: 1695520523,
+          date: '2022-11-28',
+          dealVolume: 58844900,
+          priceAverage: 16.11906,
+          priceBasic: 15.3,
+          priceClose: 16.35,
+          priceHigh: 16.35,
+          priceLow: 15.6,
+          priceOpen: 15.6,
+          propTradingNetDealValue: 11145075000,
+          propTradingNetPTValue: 0,
+          propTradingNetValue: 11145075000,
+          putthroughValue: 1151850000,
+          putthroughVolume: 77000,
+          sellCount: 20335,
+          sellForeignQuantity: 3276699,
+          sellForeignValue: 52627540000,
+          sellQuantity: 78495636,
+          symbol: 'HPG',
+          totalValue: 949676323794,
+          totalVolume: 58921900,
+        },
+      ],
+    });
+  };
+
+  const handleGetStock = () => {
+    axios({
+      url: `${baseUrl}/api/stocks/`,
       method: 'GET',
     });
   };
@@ -92,7 +138,6 @@ export default function Test() {
 
       Promise.all(listPromises)
         .then((res: any) => {
-          console.log(res);
           setList(res);
         })
         .catch((err) => {
@@ -131,6 +176,12 @@ export default function Test() {
       </Button>
       <Button size="small" onClick={testAll}>
         Test
+      </Button>
+      <Button size="small" onClick={handleCreateStock}>
+        Create Stock
+      </Button>
+      <Button size="small" onClick={handleGetStock}>
+        Get Stock
       </Button>
       <Table dataSource={list} columns={columns} size={'small'} />;
     </div>

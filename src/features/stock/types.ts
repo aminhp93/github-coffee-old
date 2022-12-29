@@ -80,6 +80,7 @@ export interface HistoricalQuoteParams {
   endDate?: string;
   offset?: number;
   limit?: number;
+  returnRequest?: boolean;
 }
 
 export interface FundamentalsParams {

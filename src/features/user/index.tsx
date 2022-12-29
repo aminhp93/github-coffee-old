@@ -27,10 +27,9 @@ export default function User() {
 
       localStorage.removeItem('ACCESS_TOKEN');
       localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
-      const headers = {
-        Authorization: `Bearer ${res.user.accessToken}`,
-      };
-      await getAuthUser(headers);
+
+      const res2 = await UserService.getAuthUser();
+      dispatch(update(res2.data));
       notification.success({ message: 'Login success' });
     } catch (e) {
       notification.error({ message: 'Login failed' });
@@ -44,19 +43,10 @@ export default function User() {
     notification.success({ message: 'Logout success' });
   };
 
-  const getAuthUser = async (headers?: any) => {
-    try {
-      const res = await UserService.getAuthUser(headers);
-      dispatch(update(res.data));
-    } catch (e) {
-      notification.error({ message: 'Get user failed' });
-    }
-  };
-
   useEffect(() => {
-    (async (headers?: any) => {
+    (async () => {
       try {
-        const res = await UserService.getAuthUser(headers);
+        const res = await UserService.getAuthUser();
         dispatch(update(res.data));
       } catch (e) {
         notification.error({ message: 'Get user failed' });

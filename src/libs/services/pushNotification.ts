@@ -1,5 +1,12 @@
 import axios from 'axios';
-import { PushNotificationUrls } from 'libs/request';
+
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
+export const PushNotificationUrls = {
+  create: `${baseUrl}/api/pushnotifications/`,
+};
 
 interface PushNotificationRequest {
   title: string;

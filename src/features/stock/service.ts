@@ -18,6 +18,7 @@ const StockService = {
       endDate,
       offset = 0,
       limit = 20,
+      returnRequest = false,
     }: HistoricalQuoteParams,
     callback?: any,
     extraDataCb?: any
@@ -26,6 +27,19 @@ const StockService = {
     try {
       if (!endDate) endDate = moment().format(DATE_FORMAT);
       if (!startDate) startDate = moment().add(-7, 'days').format(DATE_FORMAT);
+      if (returnRequest) {
+        return axios({
+          url: `${domain}/symbols/${symbol.toUpperCase()}/historical-quotes`,
+          method: 'GET',
+          headers,
+          params: {
+            startDate,
+            endDate,
+            offset,
+            limit,
+          },
+        });
+      }
 
       const res = await axios({
         url: `${domain}/symbols/${symbol.toUpperCase()}/historical-quotes`,

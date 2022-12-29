@@ -230,8 +230,8 @@ export const getDailyTransaction = async (symbol: string) => {
   });
 
   if (res.data) {
-    const transaction_upto_1_bil: any = [];
-    const transaction_above_1_bil: any = [];
+    // const transaction_upto_1_bil: any = [];
+    // const transaction_above_1_bil: any = [];
     // let total_buy_vol = 0;
     // let total_sell_vol = 0;
     // let buy_count = 0;
@@ -262,11 +262,11 @@ export const getDailyTransaction = async (symbol: string) => {
       delete newItem.Symbol;
       delete newItem.TotalVolume;
 
-      if (newItem.Volume * newItem.Price > UNIT_BILLION) {
-        transaction_above_1_bil.push(newItem);
-      } else {
-        transaction_upto_1_bil.push(newItem);
-      }
+      // if (newItem.Volume * newItem.Price > UNIT_BILLION) {
+      //   transaction_above_1_bil.push(newItem);
+      // } else {
+      //   transaction_upto_1_bil.push(newItem);
+      // }
 
       // if (newItem.Side === 'B') {
       //   total_buy_vol += newItem.Volume;
@@ -412,8 +412,6 @@ export const mapBuySell = (data: any) => {
   //   return 0;
   // });
 
-  console.log(sortedData);
-
   return sortedData;
 };
 
@@ -464,7 +462,7 @@ export const calculateBase = (data: any, limit?: number) => {
 };
 
 export const getMapBackTestData = (res: any, dataSource: any) => {
-  const flattenRes = res.flat();
+  const flattenRes = res;
   const newDataSource = [...dataSource];
   newDataSource.forEach((i: any) => {
     // get data with selected symbol
@@ -502,6 +500,12 @@ const getMapListBase = (old_list: any, full_data: any) => {
     if (baseIndex > 5) {
       i.index = baseIndex;
       i.buyItem = full_data[i.index - 1];
+      i.addedData = [
+        full_data[i.index - 4], // t3
+        full_data[i.index - 3], // t2
+        full_data[i.index - 2], // t1
+        full_data[i.index - 1], // t0
+      ];
 
       // average volume of list base
       const averageVolume = meanBy(i.list, 'totalVolume');
@@ -509,7 +513,10 @@ const getMapListBase = (old_list: any, full_data: any) => {
       i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
       i.estimated_price_change = i.buyItem.priceClose / i.list[0].priceClose;
       const buyPrice = full_data[i.index].priceClose * 1.02;
+
       const sellPrice = full_data[i.index - 4].priceClose;
+      i.buyPrice = buyPrice;
+      i.sellPrice = sellPrice;
       i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
     }
 
