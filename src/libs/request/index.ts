@@ -1,161 +1,188 @@
-import axios from 'axios';
+// import axios from 'axios';
+// import { getAuth } from 'firebase/auth';
+// import config from 'libs/config';
+// import qs from 'qs';
+
+// const baseUrl = config.apiUrl;
+
+// let headers = {
+//   'Content-Type': 'application/json',
+// };
+
+// const client = axios.create({
+//   headers,
+//   paramsSerializer: (params) => {
+//     return qs.stringify(params);
+//   },
+// });
+
+// // Add authenitcation token to request header
+// client.interceptors.request.use(
+//   async (config) => {
+//     // Try refreshing the session, without relying on the cache
+
+//     return {
+//       ...config,
+//     };
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
+
+// client.interceptors.response.use(
+//   (res) => res,
+//   (err) => {
+//     if (err.response && err.response.status === 401) {
+//       throw err;
+//     } else if (err.response && err.response.status === 500) {
+//       // TODO: display error dialog
+//     }
+//     return Promise.reject(err);
+//   }
+// );
+
+// const request = async (options: any) => {
+//   const accessToken = localStorage.getItem('ACCESS_TOKEN');
+
+//   const finalOptions = {
+//     ...{
+//       headers: {
+//         Authorization: `Bearer ${accessToken}`,
+//       },
+//     },
+//     ...options,
+//   };
+//   const onSuccess = (res: any) => res;
+
+//   const onError: any = async (err: any) => {
+//     console.log(err);
+//     if (!err.response || !err.response.data) {
+//       throw err;
+//     }
+//     if (
+//       err.response.data.detail &&
+//       err.response.data.detail === 'Token expired'
+//     ) {
+//       // wait 1 second
+//       await new Promise((resolve) => setTimeout(resolve, 1000));
+//       const auth: any = getAuth();
+
+//       if (!auth || !auth.currentUser) return;
+//       console.log('auth', auth);
+//       const accessToken = await auth.currentUser.getIdToken();
+//       console.log('accessToken', accessToken);
+
+//       localStorage.removeItem('ACCESS_TOKEN');
+//       localStorage.setItem('ACCESS_TOKEN', accessToken);
+//       const headers = {
+//         Authorization: `Bearer ${accessToken}`,
+//       };
+//       return request({
+//         ...options,
+//         headers,
+//       });
+//     }
+//     throw err;
+//   };
+
+//   return client(finalOptions).then(onSuccess).catch(onError);
+// };
+
+// export default request;
+
+// ** Axios
+import axios, { AxiosRequestConfig } from 'axios';
 import { getAuth } from 'firebase/auth';
 import config from 'libs/config';
+
 import qs from 'qs';
 
 const baseUrl = config.apiUrl;
 
-let headers = {
-  'Content-Type': 'application/json',
-};
+function subscribeTokenRefresh(cb: any) {
+  refreshSubscribers.push(cb);
+}
 
-const client = axios.create({
-  headers,
+function onRrefreshed(token: string) {
+  refreshSubscribers.map((cb: any) => cb(token));
+}
+
+let isRefreshing = false;
+const refreshSubscribers: any = [];
+
+const axiosInstance = axios.create({
+  headers: { 'Content-Type': 'application/json' },
   paramsSerializer: (params) => {
     return qs.stringify(params);
   },
 });
 
-// Add authenitcation token to request header
-client.interceptors.request.use(
-  async (config) => {
-    // Try refreshing the session, without relying on the cache
+// Add a request interceptor
+axiosInstance.interceptors.request.use(
+  function (config: AxiosRequestConfig) {
+    // Do something before request is sent
+    const accessToken = localStorage.getItem('ACCESS_TOKEN');
+    if (accessToken) {
+      config.headers!['Authorization'] = 'Bearer ' + accessToken;
+    }
 
-    return {
-      ...config,
-    };
+    return config;
   },
-  (error) => {
+  function (error) {
+    // Do something with request error
     return Promise.reject(error);
   }
 );
 
-client.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response && err.response.status === 401) {
-      throw err;
-    } else if (err.response && err.response.status === 500) {
-      // TODO: display error dialog
+// Add a response interceptor
+axiosInstance.interceptors.response.use(
+  function (response) {
+    // Any status code that lie within the range of 2xx cause this function to trigger
+    // Do something with response data
+    return response;
+  },
+  async function (error) {
+    console.log(error);
+
+    if (
+      error.response.status === 403 &&
+      error.response.data.detail === 'Token expired'
+    ) {
+      const { config } = error;
+      const originalRequest = config;
+      if (!isRefreshing) {
+        isRefreshing = true;
+
+        const auth: any = getAuth();
+
+        if (!auth || !auth.currentUser) return;
+        const accessToken = await auth.currentUser.getIdToken();
+        localStorage.setItem('ACCESS_TOKEN', accessToken);
+        isRefreshing = false;
+        onRrefreshed(accessToken);
+      }
+      const retryOrigReq = new Promise((resolve) => {
+        subscribeTokenRefresh((token: any) => {
+          // replace the expired token and retry
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: 'Bearer ' + token,
+          };
+          resolve(axios(originalRequest));
+        });
+      });
+
+      return retryOrigReq;
     }
-    return Promise.reject(err);
+
+    // Any status codes that falls outside the range of 2xx cause this function to trigger
+    // Do something with response error
+    return Promise.reject(error);
   }
 );
 
-const request = async (options: any) => {
-  const accessToken = localStorage.getItem('ACCESS_TOKEN');
-
-  const finalOptions = {
-    ...{
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-    ...options,
-  };
-  const onSuccess = (res: any) => res;
-
-  const onError: any = async (err: any) => {
-    console.log(err);
-    if (!err.response || !err.response.data) {
-      throw err;
-    }
-    if (
-      err.response.data.detail &&
-      err.response.data.detail === 'Token expired'
-    ) {
-      // wait 1 second
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const auth: any = getAuth();
-
-      if (!auth || !auth.currentUser) return;
-      console.log('auth', auth);
-      const accessToken = await auth.currentUser.getIdToken();
-      console.log('accessToken', accessToken);
-
-      localStorage.removeItem('ACCESS_TOKEN');
-      localStorage.setItem('ACCESS_TOKEN', accessToken);
-      const headers = {
-        Authorization: `Bearer ${accessToken}`,
-      };
-      return request({
-        ...options,
-        headers,
-      });
-    }
-    throw err;
-  };
-
-  return client(finalOptions).then(onSuccess).catch(onError);
-};
-
-export default request;
-
-export const AccountUrls = {
-  postAuthToken: 'https://auth-api.vndirect.com.vn/v3/auth',
-  fetchAccount: 'https://trade-api.vndirect.com.vn/accounts/0001069456',
-  fetchAccountPortfolio:
-    'https://trade-api.vndirect.com.vn/accounts/v3/0001069456/portfolio',
-  fetchAccountAssets:
-    'https://trade-api.vndirect.com.vn/accounts/v2/0001069456/assets',
-  fetchAccountStocks:
-    'https://trade-api.vndirect.com.vn/accounts/v3/0001069456/stocks',
-  fetchOrdersHistory: (fromDate: string, toDate: string) =>
-    `https://trade-report-api.vndirect.com.vn/accounts/0001069456/orders_history/?fromDate=${fromDate}&toDate=${toDate}&pageSize=1000`,
-  fetchCashStatement: (index: number) =>
-    `https://trade-report-api.vndirect.com.vn/accounts/0001069456/cashStatement?fromDate=2017-01-01&index=${index}&offset=50&types=`,
-};
-
-export const NoteUrls = {
-  createNote: 'https://testapi.io/api/aminhp93/resource/note',
-  listNote: 'https://testapi.io/api/aminhp93/resource/note',
-  detailNote: (noteId: number) =>
-    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
-  updateNote: (noteId: number) =>
-    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
-  deleteNote: (noteId: number) =>
-    `https://testapi.io/api/aminhp93/resource/note/${noteId}`,
-};
-
-export const PostUrls = {
-  createPost: `${baseUrl}/api/posts/create/`,
-  listPost: `${baseUrl}/api/posts/`,
-  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-};
-
-export const TodoUrls = {
-  createTodo: `${baseUrl}/api/todos/create/`,
-  listTodo: `${baseUrl}/api/todos/`,
-  detailTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-  updateTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-  deleteTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-};
-
-export const ChatUrls = {
-  getChatList: `${baseUrl}/api/chats/`,
-  createChat: `${baseUrl}/api/chats/`,
-  getPusherToken: `${baseUrl}/api/chats/pusher/auth/`,
-};
-
-export const UserUrls = {
-  getAuthUser: `${baseUrl}/api/users/firebase/auth/`,
-  checkAuthUser: `${baseUrl}/api/users/firebase/auth/`,
-  getAccessToken: `${baseUrl}/api/token/`,
-  getPublic: `${baseUrl}/api/users/public/`,
-  getProtected: `${baseUrl}/api/users/protected/`,
-};
-
-export const GitHubUrls = {
-  getUsersDetail: (userId: string) => `https://api.github.com/users/${userId}`,
-  getReposList: (userId: string) =>
-    `https://api.github.com/users/${userId}/repos`,
-  getReposDetail: (userId: string, repoId: string) =>
-    `https://api.github.com/repos/${userId}/${repoId}`,
-  getReposDetailLanguages: (userId: string, repoId: string) =>
-    `https://api.github.com/repos/${userId}/${repoId}/languages`,
-};
+export default axiosInstance;
 
 export const CustomTradingViewUrls = {
   getAllLayoutsUrl:
@@ -178,8 +205,4 @@ export const CustomTradingViewUrls = {
 
 export const RedirectUrls = {
   get: `${baseUrl}/api/redirects/`,
-};
-
-export const PushNotificationUrls = {
-  create: `${baseUrl}/api/pushnotifications/`,
 };

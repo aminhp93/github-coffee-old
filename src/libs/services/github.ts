@@ -1,10 +1,20 @@
-import request, { GitHubUrls } from 'libs/request';
+import request from 'libs/request';
+
+export const GitHubUrls = {
+  getUsersDetail: (userId: string) => `https://api.github.com/users/${userId}`,
+  getReposList: (userId: string) =>
+    `https://api.github.com/users/${userId}/repos`,
+  getReposDetail: (userId: string, repoId: string) =>
+    `https://api.github.com/repos/${userId}/${repoId}`,
+  getReposDetailLanguages: (userId: string, repoId: string) =>
+    `https://api.github.com/repos/${userId}/${repoId}/languages`,
+};
 
 export const GitHubService = {
-  getReposDetail() {
+  getReposDetail(userId: string, repoId: string) {
     return request({
       method: 'GET',
-      url: GitHubUrls.getReposDetail,
+      url: GitHubUrls.getReposDetail(userId, repoId),
     });
   },
   getReposList(userId: string) {

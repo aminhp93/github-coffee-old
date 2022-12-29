@@ -1,4 +1,15 @@
-import request, { TodoUrls } from 'libs/request';
+import request from 'libs/request';
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
+const TodoUrls = {
+  createTodo: `${baseUrl}/api/todos/create/`,
+  listTodo: `${baseUrl}/api/todos/`,
+  detailTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+  updateTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+  deleteTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
+};
 
 export const TodoService = {
   createTodo(data: any) {

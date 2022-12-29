@@ -1,4 +1,13 @@
-import request, { ChatUrls } from 'libs/request';
+import request from 'libs/request';
+import config from 'libs/config';
+
+const baseUrl = config.apiUrl;
+
+export const ChatUrls = {
+  getChatList: `${baseUrl}/api/chats/`,
+  createChat: `${baseUrl}/api/chats/`,
+  getPusherToken: `${baseUrl}/api/chats/pusher/auth/`,
+};
 
 export const ChatService = {
   getChatList() {
