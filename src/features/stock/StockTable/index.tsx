@@ -225,6 +225,7 @@ export default function StockTable() {
       .then((res: any) => {
         setLoading(false);
         const flattenData = res.flat();
+        console.log(flattenData);
         const newDataSource: any = getMapBackTestData(flattenData, dataSource);
         setDataSource(newDataSource);
       })
@@ -234,12 +235,33 @@ export default function StockTable() {
   };
 
   const getBackTestDataOffline = async () => {
-    const res = await request({
-      url: `${baseUrl}/api/stocks/`,
-      method: 'GET',
-    });
-    const newDataSource: any = getMapBackTestData(res, dataSource);
-    setDataSource(newDataSource);
+    try {
+      setLoading(true);
+      const res = await request({
+        url: `${baseUrl}/api/stocks/`,
+        method: 'GET',
+      });
+      setLoading(false);
+      const mappedData = res.data.map((i: any) => {
+        const item: any = {};
+        item.date = i.d;
+        item.dealVolume = i.v;
+        item.priceClose = i.c;
+        item.priceHigh = i.h;
+        item.priceLow = i.l;
+        item.priceOpen = i.o;
+        item.totalVolume = i.v2;
+        item.symbol = i.s;
+        return item;
+      });
+      console.log(mappedData);
+
+      const newDataSource: any = getMapBackTestData(mappedData, dataSource);
+      setDataSource(newDataSource);
+    } catch (e) {
+      setLoading(false);
+      console.log(e);
+    }
   };
 
   const filteredData = useMemo(
