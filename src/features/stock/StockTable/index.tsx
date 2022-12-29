@@ -236,10 +236,17 @@ export default function StockTable() {
 
   const getBackTestDataOffline = async () => {
     try {
+      const symbols = filteredData
+        .filter((i: any) => i.action === 'buy' || i.action === 'sell')
+        .map((i: any) => i.symbol);
+
       setLoading(true);
       const res = await request({
         url: `${baseUrl}/api/stocks/`,
         method: 'GET',
+        params: {
+          symbols: symbols.join(','),
+        },
       });
       setLoading(false);
       const mappedData = res.data.map((i: any) => {
