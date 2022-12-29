@@ -86,6 +86,9 @@ const Testing = ({ onChange, onClose, open, listWatchlistObj }: any) => {
     notification.success({ message: 'success' });
   };
 
+  // disable if production env
+  const disabled = process.env.NODE_ENV === 'production';
+
   return (
     <Drawer title="Settings" placement="bottom" onClose={onClose} open={open}>
       <div
@@ -96,7 +99,7 @@ const Testing = ({ onChange, onClose, open, listWatchlistObj }: any) => {
           flexDirection: 'column',
         }}
       >
-        <Button size="small" onClick={createBackTestData}>
+        <Button disabled={disabled} size="small" onClick={createBackTestData}>
           Create backtest
         </Button>
       </div>
