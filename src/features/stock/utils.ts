@@ -507,6 +507,9 @@ const getMapListBase = (old_list: any, full_data: any) => {
         full_data[i.index - 1], // t0
       ];
 
+      // full data have next 10 days and previous 30 days
+      i.fullData = full_data.slice(i.index - 10, i.index + 30);
+
       // average volume of list base
       const averageVolume = meanBy(i.list, 'totalVolume');
 

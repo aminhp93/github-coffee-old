@@ -1,12 +1,16 @@
+import { useEffect, useState } from 'react';
 import Echarts from 'components/Echarts';
 
 interface Props {
-  dates: string[];
-  prices: number[];
-  volumes: number[];
+  data: {
+    dates: string[];
+    prices: number[];
+    volumes: number[];
+  };
 }
 
-const BackTestChart = ({ dates, prices, volumes }: Props) => {
+const BackTestChart = ({ data }: Props) => {
+  const { dates, prices, volumes } = data;
   //   const dates = [
   //     '2016-03-29',
   //     '2016-03-30',
@@ -141,6 +145,7 @@ const BackTestChart = ({ dates, prices, volumes }: Props) => {
       },
     },
   ];
+
   const option = {
     color: colorList,
     xAxis,
@@ -151,18 +156,19 @@ const BackTestChart = ({ dates, prices, volumes }: Props) => {
         left: 20,
         right: 20,
         top: 0,
-        height: 30,
+        height: '60%',
       },
       {
         left: 20,
         right: 20,
-        height: 16,
-        top: 30,
+        height: '30%',
+        bottom: 0,
       },
     ],
   };
+
   return (
-    <div style={{ overflow: 'auto', width: '150px', height: '50px' }}>
+    <div style={{ overflow: 'auto', width: '100%', height: '100%' }}>
       <Echarts option={option} />
     </div>
   );

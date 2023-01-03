@@ -1,8 +1,10 @@
-import { Button, Drawer, InputNumber, Switch } from 'antd';
+import { Button, Drawer, InputNumber, Switch, DatePicker } from 'antd';
 import { useState } from 'react';
-import { DEFAULT_FILTER } from '../constants';
+import { DATE_FORMAT, DEFAULT_FILTER } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
+import type { DatePickerProps } from 'antd';
+import moment from 'moment';
 
 const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
   // totalValue_last20_min
@@ -66,6 +68,10 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
     onChange({ changePrice_min: 2, changePrice_max: 6 });
   };
 
+  const onChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
+    console.log(date, dateString);
+  };
+
   return (
     <Drawer
       title={
@@ -88,6 +94,13 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
           className="flex flex-1"
           style={{ justifyContent: 'space-between', flexDirection: 'column' }}
         >
+          <div className="flex">
+            <DatePicker
+              onChange={onChangeDate}
+              defaultValue={moment('2022-12-25', DATE_FORMAT)}
+              format={DATE_FORMAT}
+            />
+          </div>
           <div className="flex">
             <InputNumber
               size="small"

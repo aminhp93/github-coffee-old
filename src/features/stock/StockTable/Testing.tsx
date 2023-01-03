@@ -4,12 +4,22 @@ import request from 'libs/request';
 import { chunk } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
+import { getMapBackTestData } from '../utils';
 
 import config from 'libs/config';
 
 const baseUrl = config.apiUrl;
 
-const Testing = ({ onChange, onClose, open, listWatchlistObj }: any) => {
+const Testing = ({
+  onChange,
+  onClose,
+  open,
+  listWatchlistObj,
+  cbSetLoading,
+  cbSetDataSource,
+  dataSource,
+  filteredData,
+}: any) => {
   const getListPromise = async (data: any) => {
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
     // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
@@ -86,18 +96,58 @@ const Testing = ({ onChange, onClose, open, listWatchlistObj }: any) => {
     notification.success({ message: 'success' });
   };
 
+  const getBackTestData = () => {
+    // Get data to backtest within 1 year from buy, sell symbol
+    const listPromises: any = [];
+    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+    const endDate = '2022-12-25';
+    filteredData
+      .filter((i: any) => i.action === 'buy' || i.action === 'sell')
+      .forEach((j: any) => {
+        for (let i = 1; i <= BACKTEST_COUNT; i++) {
+          listPromises.push(
+            StockService.getHistoricalQuotes({
+              symbol: j.symbol,
+              startDate,
+              endDate,
+              offset: i * 20,
+            })
+          );
+        }
+      });
+    cbSetLoading && cbSetLoading(true);
+
+    Promise.all(listPromises)
+      .then((res: any) => {
+        cbSetLoading && cbSetLoading(false);
+        const flattenData = res.flat();
+        console.log(flattenData);
+        const newDataSource: any = getMapBackTestData(flattenData, dataSource);
+        cbSetDataSource && cbSetDataSource(newDataSource);
+      })
+      .catch((e) => {
+        cbSetLoading && cbSetLoading(false);
+      });
+  };
+
   return (
-    <Drawer title="Settings" placement="bottom" onClose={onClose} open={open}>
+    <Drawer title="Testing" placement="bottom" onClose={onClose} open={open}>
       <div
         className="height-100"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          flexDirection: 'column',
-        }}
+        style={
+          {
+            // display: 'flex',
+            // justifyContent: 'space-between',
+            // flexDirection: 'column',
+          }
+        }
       >
         <Button size="small" onClick={createBackTestData}>
           Create backtest
+        </Button>
+        <Button size="small" onClick={getBackTestData}>
+          Backtest online
         </Button>
       </div>
     </Drawer>
