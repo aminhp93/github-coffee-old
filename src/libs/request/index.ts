@@ -1,97 +1,3 @@
-// import axios from 'axios';
-// import { getAuth } from 'firebase/auth';
-// import config from 'libs/config';
-// import qs from 'qs';
-
-// const baseUrl = config.apiUrl;
-
-// let headers = {
-//   'Content-Type': 'application/json',
-// };
-
-// const client = axios.create({
-//   headers,
-//   paramsSerializer: (params) => {
-//     return qs.stringify(params);
-//   },
-// });
-
-// // Add authenitcation token to request header
-// client.interceptors.request.use(
-//   async (config) => {
-//     // Try refreshing the session, without relying on the cache
-
-//     return {
-//       ...config,
-//     };
-//   },
-//   (error) => {
-//     return Promise.reject(error);
-//   }
-// );
-
-// client.interceptors.response.use(
-//   (res) => res,
-//   (err) => {
-//     if (err.response && err.response.status === 401) {
-//       throw err;
-//     } else if (err.response && err.response.status === 500) {
-//       // TODO: display error dialog
-//     }
-//     return Promise.reject(err);
-//   }
-// );
-
-// const request = async (options: any) => {
-//   const accessToken = localStorage.getItem('ACCESS_TOKEN');
-
-//   const finalOptions = {
-//     ...{
-//       headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//       },
-//     },
-//     ...options,
-//   };
-//   const onSuccess = (res: any) => res;
-
-//   const onError: any = async (err: any) => {
-//     console.log(err);
-//     if (!err.response || !err.response.data) {
-//       throw err;
-//     }
-//     if (
-//       err.response.data.detail &&
-//       err.response.data.detail === 'Token expired'
-//     ) {
-//       // wait 1 second
-//       await new Promise((resolve) => setTimeout(resolve, 1000));
-//       const auth: any = getAuth();
-
-//       if (!auth || !auth.currentUser) return;
-//       console.log('auth', auth);
-//       const accessToken = await auth.currentUser.getIdToken();
-//       console.log('accessToken', accessToken);
-
-//       localStorage.removeItem('ACCESS_TOKEN');
-//       localStorage.setItem('ACCESS_TOKEN', accessToken);
-//       const headers = {
-//         Authorization: `Bearer ${accessToken}`,
-//       };
-//       return request({
-//         ...options,
-//         headers,
-//       });
-//     }
-//     throw err;
-//   };
-
-//   return client(finalOptions).then(onSuccess).catch(onError);
-// };
-
-// export default request;
-
-// ** Axios
 import axios, { AxiosRequestConfig } from 'axios';
 import { getAuth } from 'firebase/auth';
 import config from 'libs/config';
@@ -142,7 +48,7 @@ axiosInstance.interceptors.response.use(
     // Do something with response data
     return response;
   },
-  async function (error) {
+  function (error) {
     console.log(error);
 
     if (
@@ -155,12 +61,14 @@ axiosInstance.interceptors.response.use(
         isRefreshing = true;
 
         const auth: any = getAuth();
+        console.log(auth);
 
-        if (!auth || !auth.currentUser) return;
-        const accessToken = await auth.currentUser.getIdToken();
-        localStorage.setItem('ACCESS_TOKEN', accessToken);
-        isRefreshing = false;
-        onRrefreshed(accessToken);
+        if (auth && auth.currentUser) {
+          const accessToken = auth.currentUser.getIdToken();
+          localStorage.setItem('ACCESS_TOKEN', accessToken);
+          isRefreshing = false;
+          onRrefreshed(accessToken);
+        }
       }
       const retryOrigReq = new Promise((resolve) => {
         subscribeTokenRefresh((token: any) => {
