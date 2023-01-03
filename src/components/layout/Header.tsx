@@ -16,6 +16,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Header.less';
 import { Button, Drawer, List } from 'antd';
 import FullscreenButton from 'components/FullscreenButton';
+import { getAuth } from 'firebase/auth';
 
 const LIST_NOT_LOGIN = [
   {
@@ -67,18 +68,21 @@ const LIST_NOT_LOGIN = [
 
 const Header = () => {
   let navigate = useNavigate();
+  const auth = getAuth();
   const [openDrawer, setOpenDrawer] = React.useState(false);
+
+  console.log('auth', auth);
 
   return (
     <div className="Header flex height-100">
       <div className="flex">
         <Button
-        size='small'
+          size="small"
           onClick={() => setOpenDrawer(true)}
           icon={<MenuUnfoldOutlined />}
         />
         <Button
-        size='small'
+          size="small"
           style={{ marginLeft: '16px', marginRight: '16px' }}
           onClick={() => navigate('/')}
           icon={<HomeOutlined />}
