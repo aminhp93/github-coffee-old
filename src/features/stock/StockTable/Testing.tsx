@@ -1,5 +1,5 @@
 import { Drawer, Button, notification } from 'antd';
-import { BACKTEST_COUNT, DATE_FORMAT } from '../constants';
+import { BACKTEST_COUNT, DATE_FORMAT, DEFAULT_DATE } from '../constants';
 import request from 'libs/request';
 import { chunk } from 'lodash';
 import StockService from '../service';
@@ -23,7 +23,7 @@ const Testing = ({
   const getListPromise = async (data: any) => {
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
     // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = '2022-12-25';
+    const endDate = DEFAULT_DATE.format(DATE_FORMAT);
     const listPromise: any = [];
     data.forEach((i: any) => {
       listPromise.push(
@@ -103,7 +103,7 @@ const Testing = ({
     const listPromises: any = [];
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
     // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = '2022-12-25';
+    const endDate = DEFAULT_DATE.format(DATE_FORMAT);
     filteredData
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {

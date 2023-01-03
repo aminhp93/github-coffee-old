@@ -1,11 +1,7 @@
 import React from 'react';
 import { Tooltip, Button, Drawer, Table } from 'antd';
 import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS, DATE_FORMAT } from '../constants';
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
 
@@ -383,26 +379,26 @@ const BuySellSignalsColumns = () => {
         let action = data.action;
 
         return (
-          <div
-            className={'flex width-100'}
-            style={{ justifyContent: 'center' }}
-          >
-            {action === 'buy' && (
-              <div className="bg-green white" style={{ padding: '0px 8px' }}>
-                Buy: {data?.backtest?.winRate} ({data?.backtest?.winCount}/
-                {data?.backtest?.list_base.length})
-              </div>
-            )}
-            {action === 'sell' && (
-              <div className="bg-red white" style={{ padding: '0px 8px' }}>
-                Sell
-              </div>
-            )}
-
-            {data?.backtest?.list_base.length > 0 && (
-              <InfoListBackTest backTestData={data?.backtest} />
-            )}
-          </div>
+          <InfoListBackTest backTestData={data?.backtest}>
+            <div
+              className={'flex width-100'}
+              style={{ justifyContent: 'center' }}
+            >
+              {action === 'buy' && (
+                <div className="bg-green white" style={{ padding: '0px 8px' }}>
+                  {data?.backtest?.winRate
+                    ? `${data?.backtest?.winRate} (${data?.backtest?.winCount}/
+                ${data?.backtest?.list_base.length})`
+                    : 'Buy'}
+                </div>
+              )}
+              {action === 'sell' && (
+                <div className="bg-red white" style={{ padding: '0px 8px' }}>
+                  Sell
+                </div>
+              )}
+            </div>
+          </InfoListBackTest>
         );
       },
     },
@@ -412,6 +408,7 @@ const BuySellSignalsColumns = () => {
 export default BuySellSignalsColumns;
 
 interface InfoListBackTestProp {
+  children: any;
   backTestData: {
     winRate: number;
     winCount: number;
@@ -419,7 +416,7 @@ interface InfoListBackTestProp {
   };
 }
 
-const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
+const InfoListBackTest = ({ backTestData, children }: InfoListBackTestProp) => {
   const [open, setOpen] = React.useState(false);
   const [dataChart, setDataChart] = React.useState<any>(null);
 
@@ -526,12 +523,9 @@ const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
 
   return (
     <>
-      <Button
-        size="small"
-        type="primary"
-        onClick={showDrawer}
-        icon={<InfoCircleOutlined />}
-      />
+      <Button size="small" type="primary" onClick={showDrawer}>
+        {children}
+      </Button>
 
       <Drawer
         title="Basic Drawer"
@@ -546,7 +540,7 @@ const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
           </div>
           <Table
             style={{ flex: 1 }}
-            dataSource={backTestData.list_base}
+            dataSource={backTestData?.list_base || []}
             columns={columns}
             bordered
             size="small"

@@ -153,7 +153,7 @@ export default function StockTable() {
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
       const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
       // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-      const endDate = date;
+      const endDate = date.format(DATE_FORMAT);
       listPromises.push(
         StockService.getHistoricalQuotes(
           { symbol: j, startDate, endDate },
@@ -356,7 +356,11 @@ export default function StockTable() {
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-          <Button size="small" onClick={getBackTestDataOffline}>
+          <Button
+            size="small"
+            onClick={getBackTestDataOffline}
+            style={{ marginLeft: '8px' }}
+          >
             Backtest offline
           </Button>
         </div>

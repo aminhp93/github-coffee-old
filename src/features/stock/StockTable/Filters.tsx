@@ -1,12 +1,17 @@
 import { Button, Drawer, InputNumber, Switch, DatePicker } from 'antd';
 import { useState } from 'react';
-import { DATE_FORMAT, DEFAULT_FILTER } from '../constants';
+import { DATE_FORMAT, DEFAULT_DATE, DEFAULT_FILTER } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
 import type { DatePickerProps } from 'antd';
-import moment from 'moment';
 
-const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
+const Filters = ({
+  onChange,
+  onClose,
+  onUpdateWatchlist,
+  open,
+  onDateChange,
+}: any) => {
   // totalValue_last20_min
   const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
     DEFAULT_FILTER.totalValue_last20_min
@@ -68,8 +73,11 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
     onChange({ changePrice_min: 2, changePrice_max: 6 });
   };
 
-  const onChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
+  const handleChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
+    if (date && onDateChange) {
+      onDateChange(date);
+    }
   };
 
   return (
@@ -96,8 +104,8 @@ const Filters = ({ onChange, onClose, onUpdateWatchlist, open }: any) => {
         >
           <div className="flex">
             <DatePicker
-              onChange={onChangeDate}
-              defaultValue={moment('2022-12-25', DATE_FORMAT)}
+              onChange={handleChangeDate}
+              defaultValue={DEFAULT_DATE}
               format={DATE_FORMAT}
             />
           </div>
