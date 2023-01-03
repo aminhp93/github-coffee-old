@@ -1,70 +1,9 @@
 import React from 'react';
 import { Tooltip, Button, Drawer, Table } from 'antd';
 import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS, DATE_FORMAT } from '../constants';
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
-
-const columns = [
-  {
-    title: 'buyDate',
-    render: (data: any) => {
-      const list = data.list || [];
-      if (!list.length) return null;
-      const buyDate = list[0].date;
-      return moment(buyDate).format('YYYY-MM-DD');
-    },
-  },
-  {
-    title: 'estimated_vol_change',
-    render: (data: any) => {
-      return data.estimated_vol_change.toFixed(2);
-    },
-  },
-  {
-    title: 'buyPrice',
-    render: (data: any) => {
-      return data.buyPrice.toFixed(2);
-    },
-  },
-  {
-    title: 'sellPrice',
-    render: (data: any) => {
-      return data.sellPrice.toFixed(2);
-    },
-  },
-  {
-    title: 'result',
-    render: (data: any) => {
-      return data.result.toFixed(2);
-    },
-  },
-  {
-    title: 'chart',
-    render: (data: any) => {
-      const list = data.addedData.concat(data.list);
-      const dates: any = list
-        .map((i: any) => moment(i.date).format(DATE_FORMAT))
-        .reverse();
-      const prices: any = list
-        .map((i: any) => [
-          i.priceOpen,
-          i.priceClose,
-          i.priceLow,
-          i.priceHigh,
-          i.totalVolume,
-        ])
-        .reverse();
-      const volumes: any = list.map((i: any) => i.totalVolume).reverse();
-
-      return <BackTestChart dates={dates} prices={prices} volumes={volumes} />;
-    },
-  },
-];
 
 const BuySellSignalsColumns = () => {
   return [
@@ -440,26 +379,26 @@ const BuySellSignalsColumns = () => {
         let action = data.action;
 
         return (
-          <div
-            className={'flex width-100'}
-            style={{ justifyContent: 'center' }}
-          >
-            {action === 'buy' && (
-              <div className="bg-green white" style={{ padding: '0px 8px' }}>
-                Buy: {data?.backtest?.winRate} ({data?.backtest?.winCount}/
-                {data?.backtest?.list_base.length})
-              </div>
-            )}
-            {action === 'sell' && (
-              <div className="bg-red white" style={{ padding: '0px 8px' }}>
-                Sell
-              </div>
-            )}
-
-            {data?.backtest?.list_base.length > 0 && (
-              <InfoListBackTest backTestData={data?.backtest} />
-            )}
-          </div>
+          <InfoListBackTest backTestData={data?.backtest}>
+            <div
+              className={'flex width-100'}
+              style={{ justifyContent: 'center' }}
+            >
+              {action === 'buy' && (
+                <div className="bg-green white" style={{ padding: '0px 8px' }}>
+                  {data?.backtest?.winRate
+                    ? `${data?.backtest?.winRate} (${data?.backtest?.winCount}/
+                ${data?.backtest?.list_base.length})`
+                    : 'Buy'}
+                </div>
+              )}
+              {action === 'sell' && (
+                <div className="bg-red white" style={{ padding: '0px 8px' }}>
+                  Sell
+                </div>
+              )}
+            </div>
+          </InfoListBackTest>
         );
       },
     },
@@ -469,6 +408,7 @@ const BuySellSignalsColumns = () => {
 export default BuySellSignalsColumns;
 
 interface InfoListBackTestProp {
+  children: any;
   backTestData: {
     winRate: number;
     winCount: number;
@@ -476,8 +416,78 @@ interface InfoListBackTestProp {
   };
 }
 
-const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
+const InfoListBackTest = ({ backTestData, children }: InfoListBackTestProp) => {
   const [open, setOpen] = React.useState(false);
+  const [dataChart, setDataChart] = React.useState<any>(null);
+
+  const columns = [
+    {
+      title: 'buyDate',
+      render: (data: any) => {
+        const list = data.list || [];
+        if (!list.length) return null;
+        const buyDate = list[0].date;
+        return (
+          <Button onClick={() => handleClickRow(data)}>
+            {moment(buyDate).format('YYYY-MM-DD')}
+          </Button>
+        );
+      },
+    },
+    {
+      title: 'estimated_vol_change',
+      render: (data: any) => {
+        return data.estimated_vol_change.toFixed(2);
+      },
+    },
+    {
+      title: 'buyPrice',
+      render: (data: any) => {
+        return data.buyPrice.toFixed(2);
+      },
+    },
+    {
+      title: 'sellPrice',
+      render: (data: any) => {
+        return data.sellPrice.toFixed(2);
+      },
+    },
+    {
+      title: 'result',
+      render: (data: any) => {
+        return data.result.toFixed(2);
+      },
+    },
+    {
+      title: 'chart',
+      render: (data: any) => {
+        const list = data.addedData.concat(data.list);
+        const dates: any = list
+          .map((i: any) => moment(i.date).format(DATE_FORMAT))
+          .reverse();
+        const prices: any = list
+          .map((i: any) => [
+            i.priceOpen,
+            i.priceClose,
+            i.priceLow,
+            i.priceHigh,
+            i.totalVolume,
+          ])
+          .reverse();
+        const volumes: any = list.map((i: any) => i.totalVolume).reverse();
+        const dataChart = {
+          dates,
+          prices,
+          volumes,
+        };
+        return (
+          <div style={{ width: '150px', height: '50px' }}>
+            <BackTestChart data={dataChart} />
+          </div>
+        );
+      },
+    },
+  ];
 
   const showDrawer = () => {
     setOpen(true);
@@ -487,29 +497,56 @@ const InfoListBackTest = ({ backTestData }: InfoListBackTestProp) => {
     setOpen(false);
   };
 
+  const handleClickRow = (record: any) => {
+    const list = record.fullData;
+    const dates: any = list
+      .map((i: any) => moment(i.date).format(DATE_FORMAT))
+      .reverse();
+    const prices: any = list
+      .map((i: any) => [
+        i.priceOpen,
+        i.priceClose,
+        i.priceLow,
+        i.priceHigh,
+        i.totalVolume,
+      ])
+      .reverse();
+    const volumes: any = list.map((i: any) => i.totalVolume).reverse();
+    const newDataChart = {
+      dates,
+      prices,
+      volumes,
+    };
+
+    setDataChart(newDataChart);
+  };
+
   return (
     <>
-      <Button
-        size="small"
-        type="primary"
-        onClick={showDrawer}
-        icon={<InfoCircleOutlined />}
-      />
+      <Button size="small" type="primary" onClick={showDrawer}>
+        {children}
+      </Button>
 
       <Drawer
         title="Basic Drawer"
         placement="right"
-        width={800}
+        width={1200}
         onClose={onClose}
         open={open}
       >
-        <Table
-          dataSource={backTestData.list_base}
-          columns={columns}
-          bordered
-          size="small"
-          pagination={false}
-        />
+        <div className="flex">
+          <div style={{ height: '300px', width: '500px' }}>
+            {dataChart && <BackTestChart data={dataChart} />}
+          </div>
+          <Table
+            style={{ flex: 1 }}
+            dataSource={backTestData?.list_base || []}
+            columns={columns}
+            bordered
+            size="small"
+            pagination={false}
+          />
+        </div>
       </Drawer>
     </>
   );

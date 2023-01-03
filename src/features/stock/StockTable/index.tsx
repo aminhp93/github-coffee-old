@@ -37,14 +37,14 @@ import {
   FUNDAMENTAL_COLUMN,
   FINANCIAL_INDICATORS_COLUMN,
   DATE_FORMAT,
-  BACKTEST_COUNT,
+  DEFAULT_DATE,
 } from '../constants';
 import {
   getFilterData,
-  getFinancialIndicator,
+  // getFinancialIndicator,
   mapBuySell,
   mapHistoricalQuote,
-  mapFundamentals,
+  // mapFundamentals,
   getMapBackTestData,
 } from '../utils';
 import BuySellSignalsColumns from './BuySellSignalsColumns';
@@ -58,6 +58,8 @@ import request from 'libs/request';
 
 const baseUrl = config.apiUrl;
 const CheckboxGroup = Checkbox.Group;
+
+console.log('DEFAULT_DATE', DEFAULT_DATE);
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -80,6 +82,7 @@ export default function StockTable() {
   const [checkAll, setCheckAll] = useState(false);
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
+  const [date, setDate] = useState<any>(DEFAULT_DATE);
 
   useInterval(
     async () => {
@@ -150,7 +153,7 @@ export default function StockTable() {
     thanh_khoan_vua_wl.symbols.forEach((j: any) => {
       const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
       // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-      const endDate = '2022-12-25';
+      const endDate = date.format(DATE_FORMAT);
       listPromises.push(
         StockService.getHistoricalQuotes(
           { symbol: j, startDate, endDate },
@@ -161,13 +164,13 @@ export default function StockTable() {
           }
         )
       );
-      listPromises.push(
-        StockService.getFundamentals({ symbol: j }, mapFundamentals, {
-          key: j,
-          symbol: j,
-        })
-      );
-      listPromises.push(getFinancialIndicator(j));
+      // listPromises.push(
+      //   StockService.getFundamentals({ symbol: j }, mapFundamentals, {
+      //     key: j,
+      //     symbol: j,
+      //   })
+      // );
+      // listPromises.push(getFinancialIndicator(j));
     });
 
     setLoading(true);
@@ -196,41 +199,6 @@ export default function StockTable() {
       .catch((e) => {
         setLoading(false);
         notification.error({ message: 'error' });
-      });
-  };
-
-  const getBackTestData = () => {
-    // Get data to backtest within 1 year from buy, sell symbol
-    const listPromises: any = [];
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = '2022-12-25';
-    filteredData
-      .filter((i: any) => i.action === 'buy' || i.action === 'sell')
-      .forEach((j: any) => {
-        for (let i = 1; i <= BACKTEST_COUNT; i++) {
-          listPromises.push(
-            StockService.getHistoricalQuotes({
-              symbol: j.symbol,
-              startDate,
-              endDate,
-              offset: i * 20,
-            })
-          );
-        }
-      });
-    setLoading(true);
-
-    Promise.all(listPromises)
-      .then((res: any) => {
-        setLoading(false);
-        const flattenData = res.flat();
-        console.log(flattenData);
-        const newDataSource: any = getMapBackTestData(flattenData, dataSource);
-        setDataSource(newDataSource);
-      })
-      .catch((e) => {
-        setLoading(false);
       });
   };
 
@@ -280,6 +248,11 @@ export default function StockTable() {
     handleGetData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWatchlist]);
+
+  useEffect(() => {
+    handleGetData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date]);
 
   useEffect(() => {
     const columns: any = [
@@ -383,11 +356,11 @@ export default function StockTable() {
               onChange={(value: any) => setDelay(value)}
             />
           </div>
-
-          <Button size="small" onClick={getBackTestData}>
-            Backtest online
-          </Button>
-          <Button size="small" onClick={getBackTestDataOffline}>
+          <Button
+            size="small"
+            onClick={getBackTestDataOffline}
+            style={{ marginLeft: '8px' }}
+          >
             Backtest offline
           </Button>
         </div>
@@ -486,6 +459,10 @@ export default function StockTable() {
         />
       </div>
       <Testing
+        dataSource={dataSource}
+        filteredData={filteredData}
+        cbSetLoading={setLoading}
+        cbSetDataSource={setDataSource}
         listWatchlistObj={listWatchlistObj}
         open={openDrawerTesting}
         onClose={() => setOpenDrawerTesting(false)}
@@ -493,6 +470,7 @@ export default function StockTable() {
       <Filters
         open={openDrawerFilter}
         onChange={(data: any) => setFilters({ ...filters, ...data })}
+        onDateChange={(newDate: any) => setDate(newDate)}
         onUpdateWatchlist={handleUpdateWatchlist}
         onClose={() => setOpenDrawerFilter(false)}
       />
