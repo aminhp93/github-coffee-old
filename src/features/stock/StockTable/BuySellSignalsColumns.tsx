@@ -513,11 +513,13 @@ const InfoListBackTest = ({
         open={open}
       >
         <div className="flex">
-          <div style={{ height: '300px', width: '500px' }}>
+          <div
+            style={{ height: '300px', width: '500px', position: 'absolute' }}
+          >
             {dataChart && <BackTestChart data={dataChart} />}
           </div>
           <Table
-            style={{ flex: 1 }}
+            style={{ flex: 1, marginLeft: '500px' }}
             dataSource={backTestData?.list_base || []}
             columns={columns}
             bordered
