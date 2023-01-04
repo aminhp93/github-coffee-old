@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { indexOf, max, min, sortBy, meanBy } from 'lodash';
+import { max, min, meanBy } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
 
@@ -398,19 +398,18 @@ export const mapBuySell = (data: any) => {
     return i;
   });
 
-  const order = ['buy', 'sell'];
-
-  const sortedData = sortBy(returnData, (obj) => {
-    return -indexOf(order, obj.action);
-  });
-
   // Sort data based on action is sell, buy
-  // returnData.sort((a: any, b: any) => {
-  //   if (a.action === 'sell' && !b.action) return -1;
-  //   if (a.action === 'sell' && b.action === 'buy') return -1;
-  //   if (a.action === 'buy' && !b.action) return -1;
-  //   return 0;
-  // });
+  const sortedData = returnData.sort((a: any, b: any) => {
+    if (a.action === 'sell' && !b.action) return -1;
+    if (a.action === 'sell' && b.action === 'buy') return -1;
+    if (a.action === 'buy' && !b.action) return -1;
+    // next sort by backtest winrate desc
+    if (a.action === 'buy' && b.action === 'buy' && a.backtest && b.backtest) {
+      if (Number(a.backtest.winRate) > Number(b.backtest.winRate)) return -1;
+    }
+
+    return 0;
+  });
 
   return sortedData;
 };
@@ -531,4 +530,32 @@ const getMapListBase = (old_list: any, full_data: any) => {
   );
 
   return filter_list;
+};
+
+export const getDataChart = (data: any) => {
+  const dates: any = data
+    .map((i: any) => moment(i.date).format(DATE_FORMAT))
+    .reverse();
+  const prices: any = data
+    .map((i: any) => [
+      i.priceOpen,
+      i.priceClose,
+      i.priceLow,
+      i.priceHigh,
+      i.totalVolume,
+    ])
+    .reverse();
+  const volumes: any = data
+    .reverse()
+    .map((i: any, index: number) => [
+      index,
+      i.totalVolume,
+      i.priceOpen < i.priceClose ? 1 : -1,
+    ]);
+
+  return {
+    dates,
+    prices,
+    volumes,
+  };
 };

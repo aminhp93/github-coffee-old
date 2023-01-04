@@ -1,5 +1,76 @@
 import Echarts from 'components/Echarts';
 
+const color = [
+  '#c23531',
+  '#2f4554',
+  '#61a0a8',
+  '#d48265',
+  '#91c7ae',
+  '#749f83',
+  '#ca8622',
+  '#bda29a',
+  '#6e7074',
+  '#546570',
+  '#c4ccd3',
+];
+
+const upColor = '#14b143';
+const downColor = '#ef232a';
+
+const grid = [
+  {
+    left: 20,
+    right: 20,
+    top: 0,
+    height: '60%',
+  },
+  {
+    left: 20,
+    right: 20,
+    height: '30%',
+    bottom: 0,
+  },
+];
+
+const visualMap = {
+  show: false,
+  seriesIndex: 1,
+  dimension: 2,
+  pieces: [
+    {
+      value: 1,
+      color: upColor,
+    },
+    {
+      value: -1,
+      color: downColor,
+    },
+  ],
+};
+
+const yAxis = [
+  {
+    scale: true,
+    splitNumber: 2,
+    axisLine: { lineStyle: { color: '#777' } },
+    splitLine: { show: true },
+    axisTick: { show: false },
+    axisLabel: {
+      inside: true,
+      show: false,
+      formatter: '{value}\n',
+    },
+  },
+  {
+    scale: true,
+    gridIndex: 1,
+    splitNumber: 2,
+    axisLabel: { show: false },
+    axisLine: { show: false },
+    axisTick: { show: false },
+    splitLine: { show: false },
+  },
+];
 interface Props {
   data: {
     dates: string[];
@@ -28,20 +99,6 @@ const BackTestChart = ({ data }: Props) => {
   //   ];
 
   //   const volumes = [86160000, 79330000, 102600000, 104890000, 85230000];
-
-  const colorList = [
-    '#c23531',
-    '#2f4554',
-    '#61a0a8',
-    '#d48265',
-    '#91c7ae',
-    '#749f83',
-    '#ca8622',
-    '#bda29a',
-    '#6e7074',
-    '#546570',
-    '#c4ccd3',
-  ];
 
   const xAxis = [
     {
@@ -85,30 +142,27 @@ const BackTestChart = ({ data }: Props) => {
       },
     },
   ];
-  const yAxis = [
+
+  const series = [
     {
-      scale: true,
-      splitNumber: 2,
-      axisLine: { lineStyle: { color: '#777' } },
-      splitLine: { show: true },
-      axisTick: { show: false },
-      axisLabel: {
-        inside: true,
-        show: false,
-        formatter: '{value}\n',
+      type: 'candlestick',
+      name: '日K',
+      data: prices,
+      itemStyle: {
+        color0: downColor,
+        color: upColor,
+        borderColor0: downColor,
+        borderColor: upColor,
+      },
+      emphasis: {
+        itemStyle: {
+          color: 'black',
+          color0: '#444',
+          borderColor: 'black',
+          borderColor0: '#444',
+        },
       },
     },
-    {
-      scale: true,
-      gridIndex: 1,
-      splitNumber: 2,
-      axisLabel: { show: false },
-      axisLine: { show: false },
-      axisTick: { show: false },
-      splitLine: { show: false },
-    },
-  ];
-  const series = [
     {
       name: 'Volume',
       type: 'bar',
@@ -124,46 +178,15 @@ const BackTestChart = ({ data }: Props) => {
       },
       data: volumes,
     },
-    {
-      type: 'candlestick',
-      name: '日K',
-      data: prices,
-      itemStyle: {
-        color: '#ef232a',
-        color0: '#14b143',
-        borderColor: '#ef232a',
-        borderColor0: '#14b143',
-      },
-      emphasis: {
-        itemStyle: {
-          color: 'black',
-          color0: '#444',
-          borderColor: 'black',
-          borderColor0: '#444',
-        },
-      },
-    },
   ];
 
   const option = {
-    color: colorList,
+    color,
     xAxis,
     yAxis,
     series,
-    grid: [
-      {
-        left: 20,
-        right: 20,
-        top: 0,
-        height: '60%',
-      },
-      {
-        left: 20,
-        right: 20,
-        height: '30%',
-        bottom: 0,
-      },
-    ],
+    grid,
+    visualMap,
   };
 
   return (
