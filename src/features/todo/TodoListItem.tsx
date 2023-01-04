@@ -3,15 +3,9 @@ import {
   FieldTimeOutlined,
   PauseOutlined,
   SettingOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Checkbox,
-  notification,
-  Popover,
-  TimePicker,
-  Tooltip,
-} from 'antd';
+import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { useDebounce } from 'libs/hooks';
 import { PushNotificationService, TodoService } from 'libs/services';
@@ -272,8 +266,15 @@ function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
           maxHeight: '300px',
         }}
       >
-        <Checkbox
-          defaultChecked={todoItem.isDone}
+        <Button
+          size="small"
+          icon={<CloseCircleOutlined />}
+          style={{
+            position: 'absolute',
+            top: '2px',
+            right: '2px',
+            zIndex: 1,
+          }}
           onClick={() => handleDone()}
         />
 
