@@ -81,6 +81,7 @@ interface Props {
 }
 
 const BackTestChart = ({ data }: Props) => {
+  // console.log(data);
   const { dates, prices, volumes, seriesMarkPoint } = data;
   //   const dates = [
   //     '2016-03-29',
