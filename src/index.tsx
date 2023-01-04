@@ -7,6 +7,7 @@ import 'styles/index.less';
 import { store } from './libs/app/store';
 import { initializeApp } from 'firebase/app';
 import Router from 'components/router';
+import { FirebaseAuthProvider } from 'libs/context/FirebaseContext';
 
 notification.config({
   placement: 'bottomLeft',
@@ -20,7 +21,9 @@ const root = ReactDOM.createRoot(document.getElementById('root') as any);
 root.render(
   <React.Fragment>
     <Provider store={store}>
-      <Router />
+      <FirebaseAuthProvider>
+        <Router />
+      </FirebaseAuthProvider>
     </Provider>
   </React.Fragment>
 );

@@ -16,7 +16,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import './Header.less';
 import { Button, Drawer, List } from 'antd';
 import FullscreenButton from 'components/FullscreenButton';
-import { getAuth } from 'firebase/auth';
 
 const LIST_NOT_LOGIN = [
   {
@@ -68,10 +67,7 @@ const LIST_NOT_LOGIN = [
 
 const Header = () => {
   let navigate = useNavigate();
-  const auth = getAuth();
   const [openDrawer, setOpenDrawer] = React.useState(false);
-
-  console.log('auth', auth);
 
   return (
     <div className="Header flex height-100">

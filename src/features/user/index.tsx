@@ -1,61 +1,12 @@
-import { Button, Dropdown, Menu, notification } from 'antd';
-import {
-  getAuth,
-  GithubAuthProvider,
-  signInWithPopup,
-  signOut,
-} from 'firebase/auth';
-import { useAppDispatch, useAppSelector } from 'libs/app/hooks';
+import { Button, Dropdown, Menu } from 'antd';
 import config from 'libs/config';
-import { UserService } from 'libs/services/user';
-import { useEffect } from 'react';
-import { selectUser, update } from './userSlice';
+import { useAuth } from 'libs/context/FirebaseContext';
 
 export default function User() {
-  const auth = getAuth();
-  const user = useAppSelector(selectUser);
-  const dispatch = useAppDispatch();
-
-  const provider = new GithubAuthProvider();
-
-  const handleLogin = async () => {
-    try {
-      const res: any = await signInWithPopup(auth, provider);
-      if (!res) {
-        throw new Error('Could not complete signup');
-      }
-
-      localStorage.removeItem('ACCESS_TOKEN');
-      localStorage.setItem('ACCESS_TOKEN', res.user.accessToken);
-
-      const res2 = await UserService.getAuthUser();
-      dispatch(update(res2.data));
-      notification.success({ message: 'Login success' });
-    } catch (e) {
-      notification.error({ message: 'Login failed' });
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('ACCESS_TOKEN');
-    signOut(auth);
-    dispatch(update({}));
-    notification.success({ message: 'Logout success' });
-  };
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await UserService.getAuthUser();
-        dispatch(update(res.data));
-      } catch (e) {
-        notification.error({ message: 'Get user failed' });
-      }
-    })();
-  }, [dispatch]);
+  const { authUser, signOut, signInWithPopup }: any = useAuth();
 
   const menu = (
-    <Menu onClick={handleLogout}>
+    <Menu onClick={signOut}>
       <Menu.Item>Logout</Menu.Item>
     </Menu>
   );
@@ -73,12 +24,12 @@ export default function User() {
       <div style={{ marginRight: '8px' }}>
         {config.env === 'production' ? '[PRO] ' : '[DEV] '}
       </div>
-      {user && user.id ? (
+      {authUser?.email ? (
         <Dropdown overlay={menu} trigger={['click']}>
-          <div style={{ cursor: 'pointer' }}>{`${user.username}`}</div>
+          <div style={{ cursor: 'pointer' }}>{`${authUser?.email}`}</div>
         </Dropdown>
       ) : (
-        <Button size="small" onClick={handleLogin}>
+        <Button size="small" onClick={signInWithPopup}>
           Login
         </Button>
       )}
