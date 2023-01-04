@@ -64,7 +64,8 @@ axiosInstance.interceptors.response.use(
         console.log(auth);
 
         if (auth && auth.currentUser) {
-          const accessToken = auth.currentUser.getIdToken();
+          const accessToken = auth.currentUser.accessToken;
+          console.log('accessToken', accessToken);
           localStorage.setItem('ACCESS_TOKEN', accessToken);
           isRefreshing = false;
           onRrefreshed(accessToken);
