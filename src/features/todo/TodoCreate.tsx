@@ -55,7 +55,12 @@ function TodoCreate({ onCreateSuccess }: IProps) {
         disabled={loading}
         type="primary"
         onClick={handleSubmit}
-        style={{ margin: '0 5px' }}
+        style={{
+          position: 'absolute',
+          top: '2px',
+          right: '2px',
+          zIndex: 1,
+        }}
         icon={<PlusOutlined />}
       />
       <div className="height-100 width-100" style={{ minHeight: '100px' }}>
