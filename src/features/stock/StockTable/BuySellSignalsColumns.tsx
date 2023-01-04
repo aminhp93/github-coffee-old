@@ -377,7 +377,6 @@ const BuySellSignalsColumns = () => {
       sorter: (a: any, b: any) => a.extra_vol - b.extra_vol,
       align: 'right',
       render: (data: any) => {
-        console.log(data);
         let action = data.action;
 
         return (
@@ -440,18 +439,18 @@ const InfoListBackTest = ({
         return data.estimated_vol_change.toFixed(2);
       },
     },
-    {
-      title: 'buyPrice',
-      render: (data: any) => {
-        return data.buyPrice.toFixed(2);
-      },
-    },
-    {
-      title: 'sellPrice',
-      render: (data: any) => {
-        return data.sellPrice.toFixed(2);
-      },
-    },
+    // {
+    //   title: 'buyPrice',
+    //   render: (data: any) => {
+    //     return data.buyPrice.toFixed(2);
+    //   },
+    // },
+    // {
+    //   title: 'sellPrice',
+    //   render: (data: any) => {
+    //     return data.sellPrice.toFixed(2);
+    //   },
+    // },
     {
       title: 'result',
       render: (data: any) => {
@@ -462,7 +461,7 @@ const InfoListBackTest = ({
       title: 'chart',
       render: (data: any) => {
         const list = data.addedData.concat(data.list);
-        const dataChart = getDataChart(list);
+        const dataChart = getDataChart(list, data.buyItem);
 
         return (
           <div style={{ width: '150px', height: '50px' }}>
@@ -482,7 +481,7 @@ const InfoListBackTest = ({
   };
 
   const handleClickRow = (record: any) => {
-    const newDataChart = getDataChart(record.fullData);
+    const newDataChart = getDataChart(record.fullData, record.buyItem);
     setDataChart(newDataChart);
   };
 

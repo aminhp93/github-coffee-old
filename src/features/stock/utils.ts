@@ -532,7 +532,7 @@ const getMapListBase = (old_list: any, full_data: any) => {
   return filter_list;
 };
 
-export const getDataChart = (data: any) => {
+export const getDataChart = (data: any, buyItem: any) => {
   const dates: any = data
     .map((i: any) => moment(i.date).format(DATE_FORMAT))
     .reverse();
@@ -553,9 +553,31 @@ export const getDataChart = (data: any) => {
       i.priceOpen < i.priceClose ? 1 : -1,
     ]);
 
+  const seriesMarkPoint = {
+    symbol: 'arrow',
+    symbolSize: 10,
+    symbolOffset: [0, 10],
+    label: {
+      formatter: function (param: any) {
+        return '';
+      },
+    },
+    data: [
+      {
+        name: 'Mark',
+        coord: [moment(buyItem.date).format(DATE_FORMAT), buyItem.priceOpen],
+        value: buyItem.priceOpen,
+        itemStyle: {
+          color: 'blue',
+        },
+      },
+    ],
+  };
+
   return {
     dates,
     prices,
     volumes,
+    seriesMarkPoint,
   };
 };

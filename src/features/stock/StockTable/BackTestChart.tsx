@@ -76,11 +76,12 @@ interface Props {
     dates: string[];
     prices: number[];
     volumes: number[];
+    seriesMarkPoint: any;
   };
 }
 
 const BackTestChart = ({ data }: Props) => {
-  const { dates, prices, volumes } = data;
+  const { dates, prices, volumes, seriesMarkPoint } = data;
   //   const dates = [
   //     '2016-03-29',
   //     '2016-03-30',
@@ -162,6 +163,7 @@ const BackTestChart = ({ data }: Props) => {
           borderColor0: '#444',
         },
       },
+      markPoint: seriesMarkPoint,
     },
     {
       name: 'Volume',
