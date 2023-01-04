@@ -55,13 +55,14 @@ axiosInstance.interceptors.response.use(
       error.response.status === 403 &&
       error.response.data.detail === 'Token expired'
     ) {
+      console.log('403 retry');
       const { config } = error;
       const originalRequest = config;
       if (!isRefreshing) {
         isRefreshing = true;
 
         const auth: any = getAuth();
-        console.log(auth);
+        console.log('64', auth);
 
         if (auth && auth.currentUser) {
           const accessToken = auth.currentUser.accessToken;
