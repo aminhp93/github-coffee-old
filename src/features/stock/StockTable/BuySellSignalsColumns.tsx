@@ -453,6 +453,7 @@ const InfoListBackTest = ({
     // },
     {
       title: 'result',
+      sorter: (a: any, b: any) => a.result - b.result,
       render: (data: any) => {
         return data.result.toFixed(2);
       },
@@ -481,7 +482,10 @@ const InfoListBackTest = ({
   };
 
   const handleClickRow = (record: any) => {
-    const newDataChart = getDataChart(record.fullData, record.buyItem);
+    const fullData = [...record.fullData];
+    const buyItem = { ...record.buyItem };
+    const newDataChart = getDataChart(fullData, buyItem);
+    console.log(newDataChart);
     setDataChart(newDataChart);
   };
 
@@ -497,7 +501,12 @@ const InfoListBackTest = ({
       </Button>
 
       <Drawer
-        title={symbol}
+        title={
+          <div className="flex" style={{ justifyContent: 'space-between' }}>
+            <div>{symbol}</div>
+            <div>{` ${backTestData?.winRate} - ${backTestData?.winCount}/${columns.length}`}</div>
+          </div>
+        }
         placement="right"
         width={1200}
         onClose={onClose}
