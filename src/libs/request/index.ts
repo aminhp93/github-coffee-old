@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { getAuth } from 'firebase/auth';
 import config from 'libs/config';
+import { useAuth } from 'libs/context/FirebaseContext';
 
 import qs from 'qs';
 
@@ -28,7 +28,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   function (config: AxiosRequestConfig) {
     // Do something before request is sent
-    const accessToken = localStorage.getItem('ACCESS_TOKEN');
+    const accessToken = localStorage.getItem('accessToken');
     if (accessToken) {
       config.headers!['Authorization'] = 'Bearer ' + accessToken;
     }
@@ -55,19 +55,18 @@ axiosInstance.interceptors.response.use(
       error.response.status === 403 &&
       error.response.data.detail === 'Token expired'
     ) {
-      console.log('403 retry');
+      console.log('403 ret');
       const { config } = error;
       const originalRequest = config;
       if (!isRefreshing) {
         isRefreshing = true;
 
-        const auth: any = getAuth();
-        console.log('64', auth);
+        const { authUser }: any = useAuth();
 
-        if (auth && auth.currentUser) {
-          const accessToken = auth.currentUser.accessToken;
+        if (authUser?.accessToken) {
+          const accessToken = authUser?.accessToken;
           console.log('accessToken', accessToken);
-          localStorage.setItem('ACCESS_TOKEN', accessToken);
+          localStorage.setItem('accessToken', accessToken);
           isRefreshing = false;
           onRrefreshed(accessToken);
         }

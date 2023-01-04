@@ -8,24 +8,17 @@ import Snippet from 'features/snippet';
 import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test';
-import { selectUser } from 'features/user/userSlice';
 import Work from 'features/work';
-import { useAppSelector } from 'libs/app/hooks';
-import { useAuth } from 'libs/hooks';
-import { useTag } from 'libs/hooks/useTag';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { useAuth } from 'libs/context/FirebaseContext';
 
 const Router = () => {
-  useAuth();
-  const user: any = useAppSelector(selectUser);
-
-  useTag();
-  console.log(user);
-
+  const { authUser }: any = useAuth();
+  console.log('authUser', authUser);
   return (
     <>
       <BrowserRouter>
-        {user && user.id ? (
+        {authUser?.email ? (
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route path="work" element={<Work />} />
