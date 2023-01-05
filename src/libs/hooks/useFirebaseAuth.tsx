@@ -7,6 +7,7 @@ import {
   onAuthStateChanged,
   GithubAuthProvider,
   signInWithPopup as signInWithPopupFirebase,
+  getIdToken as getIdTokenFirebase,
 } from 'firebase/auth';
 
 interface UserType {
@@ -29,6 +30,7 @@ const useFirebaseAuth = () => {
   const [loading, setLoading] = useState(true);
 
   const authStateChanged = async (authState: any) => {
+    console.log('authState', authState);
     if (!authState) {
       setAuthUser(null);
       setLoading(false);
@@ -62,6 +64,12 @@ const useFirebaseAuth = () => {
 
   const signOut = () => signOutFirebase(auth).then(resetUser);
 
+  const getIdToken = () => {
+    // get currentuser from firebase
+    const user = auth?.currentUser;
+    if (user) return getIdTokenFirebase(user, true);
+  };
+
   // listen for Firebase state change
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, authStateChanged);
@@ -78,6 +86,7 @@ const useFirebaseAuth = () => {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signInWithPopup,
+    getIdToken,
   };
 };
 

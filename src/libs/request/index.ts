@@ -61,15 +61,13 @@ axiosInstance.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
 
-        const { authUser }: any = useAuth();
-
-        if (authUser?.accessToken) {
-          const accessToken = authUser?.accessToken;
-          console.log('accessToken', accessToken);
-          localStorage.setItem('accessToken', accessToken);
+        const { getIdToken }: any = useAuth();
+        getIdToken().then((idToken: any) => {
+          console.log('idToken', idToken);
+          localStorage.setItem('accessToken', idToken);
           isRefreshing = false;
-          onRrefreshed(accessToken);
-        }
+          onRrefreshed(idToken);
+        });
       }
       const retryOrigReq = new Promise((resolve) => {
         subscribeTokenRefresh((token: any) => {
