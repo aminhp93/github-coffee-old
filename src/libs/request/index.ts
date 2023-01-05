@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import config from 'libs/config';
-import { useAuth } from 'libs/context/FirebaseContext';
+import { getAuth, getIdToken as getIdTokenFirebase } from 'firebase/auth';
 
 import qs from 'qs';
 
@@ -56,19 +56,27 @@ axiosInstance.interceptors.response.use(
       error.response.data.detail === 'Token expired'
     ) {
       console.log('403 ret');
+
       const { config } = error;
       const originalRequest = config;
+
       if (!isRefreshing) {
         isRefreshing = true;
-
-        const { getIdToken }: any = useAuth();
-        getIdToken().then((idToken: any) => {
-          console.log('idToken', idToken);
-          localStorage.setItem('accessToken', idToken);
-          isRefreshing = false;
-          onRrefreshed(idToken);
-        });
+        const auth = getAuth();
+        const user = auth?.currentUser;
+        if (user)
+          getIdTokenFirebase(user, true)
+            .then((idToken: any) => {
+              console.log('idToken', idToken);
+              localStorage.setItem('accessToken', idToken);
+              isRefreshing = false;
+              onRrefreshed(idToken);
+            })
+            .catch((e: any) => {
+              console.log('e', e);
+            });
       }
+
       const retryOrigReq = new Promise((resolve) => {
         subscribeTokenRefresh((token: any) => {
           // replace the expired token and retry
