@@ -10,6 +10,8 @@ const authUserContext: any = createContext({
   signOut: async () => Promise.resolve(),
   signInWithEmailAndPassword: async () => Promise.resolve(),
   createUserWithEmailAndPassword: async () => Promise.resolve(),
+  signInWithPopup: async () => Promise.resolve(),
+  getIdToken: async () => Promise.resolve(),
 });
 
 export const FirebaseAuthProvider = ({ children }: { children: ReactNode }) => {
