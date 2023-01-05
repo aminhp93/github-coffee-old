@@ -1,7 +1,7 @@
 import { Button, Table } from 'antd';
 import axios from 'axios';
 import config from 'libs/config';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Octokit } from '@octokit/rest';
 import request from 'libs/request';
 
