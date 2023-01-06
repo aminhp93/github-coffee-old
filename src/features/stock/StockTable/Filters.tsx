@@ -54,6 +54,11 @@ const Filters = ({
     DEFAULT_FILTER.have_extra_vol
   );
 
+  // only_buy_sell
+  const [only_buy_sell, setOnly_buy_sell] = useState<boolean>(
+    DEFAULT_FILTER.only_buy_sell
+  );
+
   const handleClearFilter = () => {
     setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
     setChangePrice_min(DEFAULT_FILTER.changePrice_min);
@@ -143,7 +148,6 @@ const Filters = ({
           </div>
           <div style={{ marginTop: '8px' }}>
             <Switch
-              disabled
               checkedChildren="have_base_in_5_day"
               unCheckedChildren="have_base_in_5_day"
               checked={have_base_in_5_day}
@@ -152,10 +156,8 @@ const Filters = ({
                 onChange({ have_base_in_5_day: !have_base_in_5_day });
               }}
             />
-          </div>
-          <div style={{ marginTop: '8px' }}>
+
             <Switch
-              disabled
               checkedChildren="have_base_in_10_day"
               unCheckedChildren="have_base_in_10_day"
               checked={have_base_in_10_day}
@@ -167,7 +169,6 @@ const Filters = ({
           </div>
           <div className="flex" style={{ marginTop: '10px' }}>
             <InputNumber
-              disabled
               size="small"
               addonBefore="count_10_day_buy_min"
               value={count_10_day_buy_min}
@@ -179,7 +180,6 @@ const Filters = ({
           </div>
           <div className="flex" style={{ marginTop: '10px' }}>
             <InputNumber
-              disabled
               size="small"
               addonBefore="count_10_day_sell_min"
               value={count_10_day_sell_min}
@@ -191,7 +191,6 @@ const Filters = ({
           </div>
           <div className="flex" style={{ marginTop: '10px' }}>
             <InputNumber
-              disabled
               size="small"
               addonBefore="estimated_vol_change_min"
               value={estimated_vol_change_min}
@@ -203,13 +202,21 @@ const Filters = ({
           </div>
           <div style={{ marginTop: '8px' }}>
             <Switch
-              disabled
               checkedChildren="have_extra_vol"
               unCheckedChildren="have_extra_vol"
               checked={have_extra_vol}
               onChange={() => {
                 setHave_extra_vol(!have_extra_vol);
                 onChange({ have_extra_vol: !have_extra_vol });
+              }}
+            />
+            <Switch
+              checkedChildren="only_buy_sell"
+              unCheckedChildren="only_buy_sell"
+              checked={only_buy_sell}
+              onChange={() => {
+                setOnly_buy_sell(!only_buy_sell);
+                onChange({ only_buy_sell: !only_buy_sell });
               }}
             />
           </div>

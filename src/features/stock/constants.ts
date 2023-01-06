@@ -14,7 +14,7 @@ export const MIN_CHANGE = -1000;
 export const MAX_CHANGE = 1000;
 const DEFAULT_OFFSET = 20;
 export const BACKTEST_COUNT = (50 * DEFAULT_OFFSET) / DEFAULT_OFFSET; // change number to change number of fetching days
-export const DEFAULT_DATE = moment('2023-01-03', DATE_FORMAT);
+export const DEFAULT_DATE = moment();
 
 export const FinancialIndicatorsKeys = [
   'P/E',
@@ -165,6 +165,7 @@ export const DEFAULT_FILTER = {
   count_10_day_sell_min: 3,
   estimated_vol_change_min: MIN_CHANGE,
   have_extra_vol: false,
+  only_buy_sell: true,
 };
 
 export const DEFAULT_SETTINGS: any = {

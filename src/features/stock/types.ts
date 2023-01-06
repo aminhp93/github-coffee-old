@@ -86,3 +86,15 @@ export interface HistoricalQuoteParams {
 export interface FundamentalsParams {
   symbol: string;
 }
+
+export interface BuySellSignals {
+  symbol: string;
+  index: number;
+  buyItem: HistoricalQuote;
+  addedData: HistoricalQuote[];
+  fullData: HistoricalQuote[];
+  list: HistoricalQuote[];
+  estimated_vol_change: number;
+  estimated_price_change: number;
+  t3: number; // percent result from t0
+}

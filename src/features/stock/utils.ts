@@ -2,6 +2,7 @@ import axios from 'axios';
 import { max, min, meanBy } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
+import { BuySellSignals } from './types';
 
 export const checkMarketOpen = (): boolean => {
   const currentTime = moment();
@@ -142,8 +143,6 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
     strong_sell,
   };
 
-  const test_in_day_review = 123;
-
   const start_time = moment().set('hour', 9).set('minute', 0);
   const default_end_time = moment().set('hour', 14).set('minute', 45);
   const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
@@ -171,9 +170,27 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
   const extra_vol =
     (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
 
-  return {
-    ...extraData,
-    ...last_data,
+  let action = null;
+  if (
+    changePrice > 0.02 &&
+    count_5_day_within_base?.list_base.length === 1 &&
+    estimated_vol_change > 20
+  ) {
+    action = 'buy';
+  }
+
+  // BUY 2
+  // 1. Have base: base_count > 0
+  // 2. Price change > 2%
+
+  // SELL
+  // 1. in watching watchlist
+  // 2. Price change < -2%
+  if (changePrice < -0.02 && extraData?.inWatchingWatchList) {
+    action = 'sell';
+  }
+
+  const calculatedHistoricalQuote = {
     totalValue_last20_min,
     last_20_day_historical_quote,
     totalValue_last20_max,
@@ -185,10 +202,16 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
     count_5_day_within_base,
     count_10_day_within_base,
     last_10_day_summary,
-    test_in_day_review,
     estimated_vol,
     estimated_vol_change,
     extra_vol,
+    action,
+  };
+
+  return {
+    ...extraData,
+    latestHistoricalQuote: last_data,
+    calculatedHistoricalQuote,
   };
 };
 
@@ -339,6 +362,7 @@ export const getFilterData = (
     totalValue_last20_min,
     changePrice_min,
     changePrice_max,
+    only_buy_sell,
   }: any
 ) => {
   const filteredData = data.filter((i: any) => {
@@ -490,8 +514,9 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
   return newDataSource;
 };
 
-const getMapListBase = (old_list: any, full_data: any) => {
-  const new_list = old_list.map((i: any) => {
+const getMapListBase = (old_list: BuySellSignals[], full_data: any) => {
+  console.log('getMapListBase', old_list);
+  const new_list = old_list.map((i: BuySellSignals) => {
     const baseIndex = full_data.findIndex(
       (j: any) => j.date === i.list[0].date
     );
@@ -516,10 +541,8 @@ const getMapListBase = (old_list: any, full_data: any) => {
       i.estimated_price_change = i.buyItem.priceClose / i.list[0].priceClose;
       const buyPrice = full_data[i.index].priceClose * 1.02;
 
-      const sellPrice = full_data[i.index - 4].priceClose;
-      i.buyPrice = buyPrice;
-      i.sellPrice = sellPrice;
-      i.result = (100 * (sellPrice - buyPrice)) / buyPrice;
+      const t3Price = full_data[i.index - 4].priceClose;
+      i.t3 = (100 * (t3Price - buyPrice)) / buyPrice;
     }
 
     return i;

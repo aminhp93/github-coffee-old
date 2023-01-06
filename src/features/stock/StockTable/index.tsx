@@ -161,6 +161,7 @@ export default function StockTable() {
           {
             key: j,
             symbol: j,
+            inWatchingWatchList: watching_wl?.symbols.includes(j),
           }
         )
       );
@@ -177,6 +178,8 @@ export default function StockTable() {
     return Promise.all(listPromises)
       .then((res: any) => {
         setLoading(false);
+
+        console.log(182, res);
         const newDataSource: any = thanh_khoan_vua_wl?.symbols.map((i: any) => {
           const filterRes = res.filter((j: any) => j.symbol === i);
           let newItem = { key: i, symbol: i };
@@ -184,8 +187,8 @@ export default function StockTable() {
             filterRes.forEach((j: any) => {
               newItem = {
                 ...newItem,
-                ...j,
-                inWatchingWatchList: watching_wl?.symbols.includes(i),
+                ...{ latestHistoricalQuote: j },
+                ...{ inWatchingWatchList: watching_wl?.symbols.includes(i) },
               };
             });
           }
@@ -445,6 +448,8 @@ export default function StockTable() {
       </div>
     );
   };
+
+  console.log('filteredData', filteredData);
 
   return (
     <div className="StockTable">
