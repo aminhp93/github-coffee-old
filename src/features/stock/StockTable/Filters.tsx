@@ -1,9 +1,27 @@
-import { Button, Drawer, InputNumber, Switch, DatePicker } from 'antd';
+import {
+  Button,
+  Drawer,
+  InputNumber,
+  Switch,
+  DatePicker,
+  Popover,
+  Checkbox,
+} from 'antd';
 import { useState } from 'react';
-import { DATE_FORMAT, DEFAULT_DATE, DEFAULT_FILTER } from '../constants';
+import {
+  DATE_FORMAT,
+  DEFAULT_DATE,
+  DEFAULT_FILTER,
+  TYPE_INDICATOR_OPTIONS,
+  DEFAULT_TYPE_INDICATOR_OPTIONS,
+} from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
 import type { DatePickerProps } from 'antd';
+import type { CheckboxValueType } from 'antd/es/checkbox/Group';
+import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+
+const CheckboxGroup = Checkbox.Group;
 
 const Filters = ({
   onChange,
@@ -59,6 +77,12 @@ const Filters = ({
     DEFAULT_FILTER.only_buy_sell
   );
 
+  const [indeterminate, setIndeterminate] = useState(true);
+  const [checkAll, setCheckAll] = useState(false);
+  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
+    DEFAULT_TYPE_INDICATOR_OPTIONS
+  );
+
   const handleClearFilter = () => {
     setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
     setChangePrice_min(DEFAULT_FILTER.changePrice_min);
@@ -85,6 +109,20 @@ const Filters = ({
     }
   };
 
+  const onChangeColumn = (list: CheckboxValueType[]) => {
+    // setCheckedList(list);
+    setIndeterminate(
+      !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
+    );
+    setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
+  };
+
+  const onCheckAllChange = (e: CheckboxChangeEvent) => {
+    // setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+  };
+
   return (
     <Drawer
       title={
@@ -94,7 +132,8 @@ const Filters = ({
           </Button>
         </div>
       }
-      placement="bottom"
+      placement="right"
+      width={'100%'}
       className="StockTableFilterDrawer"
       onClose={onClose}
       open={open}
@@ -114,6 +153,7 @@ const Filters = ({
               format={DATE_FORMAT}
             />
           </div>
+
           <div className="flex">
             <InputNumber
               size="small"
@@ -219,6 +259,31 @@ const Filters = ({
                 onChange({ only_buy_sell: !only_buy_sell });
               }}
             />
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <Popover
+              placement="leftTop"
+              content={
+                <div>
+                  <Checkbox
+                    indeterminate={indeterminate}
+                    onChange={onCheckAllChange}
+                    checked={checkAll}
+                  >
+                    All
+                  </Checkbox>
+                  <CheckboxGroup
+                    options={TYPE_INDICATOR_OPTIONS}
+                    value={checkedList}
+                    onChange={onChangeColumn}
+                  />
+                </div>
+              }
+            >
+              <Button size="small" type="primary">
+                Hover me
+              </Button>
+            </Popover>
           </div>
         </div>
         <div

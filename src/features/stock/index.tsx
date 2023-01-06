@@ -3,7 +3,6 @@ import { IJsonModel } from 'flexlayout-react';
 import './index.less';
 import StockHistoryTrade from './StockHistoryTrade';
 import StockTools from './StockTools';
-import StockMarketOverview from './StockMarketOverview';
 import StockNews from './StockNews';
 import StockTable from './StockTable';
 import { v4 as uuidv4 } from 'uuid';
@@ -34,12 +33,7 @@ let defaultJson: IJsonModel = {
             name: 'StockTable',
             component: 'StockTable',
           },
-          {
-            type: 'tab',
-            id: '#StockMarketOverview',
-            name: 'StockMarketOverview',
-            component: 'StockMarketOverview',
-          },
+
           {
             type: 'tab',
             id: '#StockNews',
@@ -63,7 +57,6 @@ const Stock = () => {
         layoutName="flexLayoutModel_Stock"
         defaultJson={defaultJson}
         componentObj={{
-          StockMarketOverview: <StockMarketOverview />,
           StockNews: <StockNews />,
           StockTable: <StockTable />,
           StockTools: <StockTools />,

@@ -3,6 +3,7 @@ import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import InfoListBackTest from './InfoListBackTest';
+import { CustomSymbol } from '../types';
 
 const BuySellSignalsColumns = () => {
   return [
@@ -26,11 +27,12 @@ const BuySellSignalsColumns = () => {
           >{`_min_total`}</Tooltip>
         );
       },
-      sorter: (a: any, b: any) =>
-        a.totalValue_last20_min - b.totalValue_last20_min,
+      sorter: (a: CustomSymbol, b: CustomSymbol) =>
+        a.buySellSignals?.totalValue_last20_min -
+        b.buySellSignals?.totalValue_last20_min,
       align: 'right',
-      render: (data: any) => {
-        const value = data.totalValue_last20_min || 0;
+      render: (data: CustomSymbol) => {
+        const value = data.buySellSignals?.totalValue_last20_min || 0;
         const formattedValue = Number(
           Number(value / UNIT_BILLION).toFixed(0)
         ).toLocaleString();
@@ -59,10 +61,11 @@ const BuySellSignalsColumns = () => {
           >{`_%_price`}</Tooltip>
         );
       },
-      sorter: (a: any, b: any) => a.changePrice - b.changePrice,
+      sorter: (a: CustomSymbol, b: CustomSymbol) =>
+        a.buySellSignals?.changePrice - b.buySellSignals?.changePrice,
       align: 'right',
-      render: (data: any) => {
-        const changePrice = data.changePrice || 0;
+      render: (data: CustomSymbol) => {
+        const changePrice = data.buySellSignals?.changePrice || 0;
         const formattedChangePrice = Number(
           Number((changePrice * 100) / 1).toFixed(2)
         ).toLocaleString();
@@ -97,10 +100,10 @@ const BuySellSignalsColumns = () => {
         );
       },
       align: 'right',
-      render: (data: any) => {
+      render: (data: CustomSymbol) => {
         const list_base =
-          (data.count_5_day_within_base &&
-            data.count_5_day_within_base.list_base) ||
+          (data.buySellSignals?.count_5_day_within_base &&
+            data.buySellSignals?.count_5_day_within_base.list_base) ||
           [];
 
         const index_base = list_base.length === 1 ? list_base[0].index : null;
@@ -159,10 +162,10 @@ const BuySellSignalsColumns = () => {
         );
       },
       align: 'right',
-      render: (data: any) => {
+      render: (data: CustomSymbol) => {
         const list_base =
-          (data.count_10_day_within_base &&
-            data.count_10_day_within_base.list_base) ||
+          (data.buySellSignals?.count_10_day_within_base &&
+            data.buySellSignals?.count_10_day_within_base.list_base) ||
           [];
 
         const index_base = list_base.length === 1 ? list_base[0].index : null;
@@ -222,9 +225,10 @@ const BuySellSignalsColumns = () => {
         );
       },
       align: 'right',
-      render: (data: any) => {
+      render: (data: CustomSymbol) => {
         const strong_buy =
-          (data.last_10_day_summary && data.last_10_day_summary.strong_buy) ||
+          (data.buySellSignals?.last_10_day_summary &&
+            data.buySellSignals?.last_10_day_summary.strong_buy) ||
           [];
         const className =
           strong_buy.length >= BUY_SELL_SIGNNAL_KEYS.count_10_day_buy
@@ -271,9 +275,10 @@ const BuySellSignalsColumns = () => {
         );
       },
       align: 'right',
-      render: (data: any) => {
+      render: (data: CustomSymbol) => {
         const strong_sell =
-          (data.last_10_day_summary && data.last_10_day_summary.strong_sell) ||
+          (data.buySellSignals?.last_10_day_summary &&
+            data.buySellSignals?.last_10_day_summary.strong_sell) ||
           [];
         const className =
           strong_sell.length >= BUY_SELL_SIGNNAL_KEYS.count_10_day_sell
@@ -316,11 +321,13 @@ const BuySellSignalsColumns = () => {
           </Tooltip>
         );
       },
-      sorter: (a: any, b: any) =>
-        a.estimated_vol_change - b.estimated_vol_change,
+      sorter: (a: CustomSymbol, b: CustomSymbol) =>
+        a.buySellSignals?.estimated_vol_change -
+        b.buySellSignals?.estimated_vol_change,
       align: 'right',
-      render: (data: any) => {
-        const estimated_vol_change = data.estimated_vol_change || 0;
+      render: (data: CustomSymbol) => {
+        const estimated_vol_change =
+          data.buySellSignals?.estimated_vol_change || 0;
         const className =
           estimated_vol_change > BUY_SELL_SIGNNAL_KEYS.estimated_vol_change
             ? 'green'
@@ -349,10 +356,11 @@ const BuySellSignalsColumns = () => {
           </Tooltip>
         );
       },
-      sorter: (a: any, b: any) => a.extra_vol - b.extra_vol,
+      sorter: (a: CustomSymbol, b: CustomSymbol) =>
+        a.buySellSignals?.extra_vol - b.buySellSignals?.extra_vol,
       align: 'right',
-      render: (data: any) => {
-        const extra_vol = data.extra_vol || 0;
+      render: (data: CustomSymbol) => {
+        const extra_vol = data.buySellSignals?.extra_vol || 0;
 
         return <span className={''}>{extra_vol.toFixed(0)}</span>;
       },
@@ -372,10 +380,12 @@ const BuySellSignalsColumns = () => {
           </Tooltip>
         );
       },
-      sorter: (a: any, b: any) => a.extra_vol - b.extra_vol,
+      sorter: (a: CustomSymbol, b: CustomSymbol) =>
+        a.buySellSignals?.extra_vol - b.buySellSignals?.extra_vol,
       align: 'right',
       render: (data: any) => {
-        let action = data.action;
+        console.log(387, data);
+        let action = data.buySellSignals?.action;
 
         return (
           <InfoListBackTest backTestData={data?.backtest} symbol={data.symbol}>

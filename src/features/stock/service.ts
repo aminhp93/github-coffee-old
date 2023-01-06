@@ -1,7 +1,12 @@
 import axios from 'axios';
 import moment from 'moment';
-import { DATE_FORMAT } from './constants';
-import { HistoricalQuoteParams, FundamentalsParams } from './types';
+import { DATE_FORMAT, UNIT_BILLION } from './constants';
+import {
+  HistoricalQuoteParams,
+  FundamentalsParams,
+  HistoricalQuote,
+  ExtraData,
+} from './types';
 
 const domain = 'https://restv2.fireant.vn';
 
@@ -20,7 +25,7 @@ const StockService = {
       limit = 20,
       returnRequest = false,
     }: HistoricalQuoteParams,
-    callback?: any,
+    callback?: (data: HistoricalQuote[], extraData: ExtraData) => void,
     extraDataCb?: any
   ) {
     if (!symbol) return;
@@ -112,6 +117,133 @@ const StockService = {
       headers,
       data: updateData,
     });
+  },
+  async getFinancialIndicator(symbol: string) {
+    if (!symbol) return;
+
+    const res = await axios({
+      method: 'GET',
+      headers,
+      url: `https://restv2.fireant.vn/symbols/${symbol}/financial-indicators`,
+    });
+    if (res.data) {
+      const newData: any = {};
+      res.data.map((i: any) => {
+        newData[i.name] = i.value;
+        return i;
+      });
+      return { ...newData, symbol, key: symbol };
+    }
+    return null;
+  },
+  async getDailyTransaction(symbol: string) {
+    if (!symbol) return;
+    const res = await axios({
+      method: 'GET',
+      url: `https://svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=${symbol}`,
+    });
+
+    if (res.data) {
+      // const transaction_upto_1_bil: any = [];
+      // const transaction_above_1_bil: any = [];
+      // let total_buy_vol = 0;
+      // let total_sell_vol = 0;
+      // let buy_count = 0;
+      // let sell_count = 0;
+
+      const buy_summary = {
+        key: 'buy',
+        _filter_1: 0,
+        _filter_2: 0,
+        _filter_3: 0,
+        _filter_4: 0,
+        _filter_5: 0,
+      };
+
+      const sell_summary = {
+        key: 'sell',
+        _filter_1: 0,
+        _filter_2: 0,
+        _filter_3: 0,
+        _filter_4: 0,
+        _filter_5: 0,
+      };
+
+      res.data.forEach((item: any) => {
+        const newItem = { ...item };
+        // remove properties ID, Symbol, TotalVolume
+        delete newItem.ID;
+        delete newItem.Symbol;
+        delete newItem.TotalVolume;
+
+        // if (newItem.Volume * newItem.Price > UNIT_BILLION) {
+        //   transaction_above_1_bil.push(newItem);
+        // } else {
+        //   transaction_upto_1_bil.push(newItem);
+        // }
+
+        // if (newItem.Side === 'B') {
+        //   total_buy_vol += newItem.Volume;
+        //   buy_count += 1;
+        // }
+        // if (newItem.Side === 'S') {
+        //   total_sell_vol += newItem.Volume;
+        //   sell_count += 1;
+        // }
+
+        const total = (newItem.Volume * newItem.Price) / UNIT_BILLION;
+
+        if (newItem.Side === 'B') {
+          if (total < 0.1) {
+            buy_summary._filter_1 += 1;
+          } else if (0.1 <= total && total < 0.5) {
+            buy_summary._filter_2 += 1;
+          } else if (0.5 <= total && total < 1) {
+            buy_summary._filter_3 += 1;
+          } else if (1 <= total && total < 2) {
+            buy_summary._filter_4 += 1;
+          } else {
+            buy_summary._filter_5 += 1;
+          }
+        }
+
+        if (newItem.Side === 'S') {
+          if (total < 0.1) {
+            sell_summary._filter_1 += 1;
+          } else if (0.1 <= total && total < 0.5) {
+            sell_summary._filter_2 += 1;
+          } else if (0.5 <= total && total < 1) {
+            sell_summary._filter_3 += 1;
+          } else if (1 <= total && total < 2) {
+            sell_summary._filter_4 += 1;
+          } else {
+            sell_summary._filter_5 += 1;
+          }
+        }
+      });
+
+      // const transaction_summary = [buy_summary, sell_summary];
+
+      // const buy_sell_vol = {
+      //   total_buy_vol,
+      //   total_sell_vol,
+      //   buy_count,
+      //   sell_count,
+      //   buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
+      //   buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+      // };
+
+      return {
+        // transaction_summary,
+        // transaction_above_1_bil,
+        // transaction_upto_1_bil,
+        // buy_sell_vol,
+        // symbol,
+        // key: symbol,
+        data: res.data,
+      };
+    }
+    return null;
   },
 };
 

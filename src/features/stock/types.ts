@@ -41,7 +41,7 @@ export interface Fundamental {
   priceChange1y: number;
   sales_TTM: number;
   sharesOutstanding: number;
-  // symbol: string;
+  symbol: string;
 }
 
 export interface HistoricalQuote {
@@ -53,7 +53,7 @@ export interface HistoricalQuote {
   currentForeignRoom: number;
   date: string;
   dealVolume: number;
-  // key: string;
+  key: string;
   priceAverage: number;
   priceBasic: number;
   priceClose: number;
@@ -69,7 +69,7 @@ export interface HistoricalQuote {
   sellForeignQuantity: number;
   sellForeignValue: number;
   sellQuantity: number;
-  // symbol: string;
+  symbol: string;
   totalValue: number;
   totalVolume: number;
 }
@@ -88,13 +88,50 @@ export interface FundamentalsParams {
 }
 
 export interface BuySellSignals {
-  symbol: string;
-  index: number;
-  buyItem: HistoricalQuote;
-  addedData: HistoricalQuote[];
-  fullData: HistoricalQuote[];
-  list: HistoricalQuote[];
+  totalValue_last20_min: number;
+  averageVolume_last5: number;
+  changeVolume_last5: number;
+  changePrice: number;
+  count_5_day_within_base: {
+    list_base: Base[];
+  };
+  count_10_day_within_base: {
+    list_base: Base[];
+  };
+  last_10_day_summary: {
+    strong_buy: HistoricalQuote[];
+    strong_sell: HistoricalQuote[];
+  };
   estimated_vol_change: number;
-  estimated_price_change: number;
-  t3: number; // percent result from t0
+  extra_vol: number;
+  action: ActionType;
 }
+
+export interface ExtraData {
+  key: string;
+  symbol: string;
+  inWatchingWatchList?: boolean;
+}
+
+export interface CustomHistoricalQuote extends ExtraData {
+  latestHistoricalQuote: HistoricalQuote;
+  buySellSignals: BuySellSignals;
+}
+
+export type ActionType = 'buy' | 'sell' | 'unknown';
+
+export interface Base {
+  list: HistoricalQuote[];
+  index: number;
+}
+
+export interface CustomSymbol {
+  buySellSignals: BuySellSignals;
+  inWatchingWatchList: boolean;
+  key: string;
+  symbol: string;
+  latestHistoricalQuote: HistoricalQuote;
+  backtest?: any;
+}
+
+export interface BackTest {}
