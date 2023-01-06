@@ -61,12 +61,6 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
   const changeVolume_last5 =
     (data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
 
-  const averageVolume_last20 =
-    data.slice(1, 21).reduce((a: any, b: any) => a + b.totalVolume, 0) / 20;
-
-  const changeVolume_last20 =
-    (data[0].totalVolume - averageVolume_last20) / averageVolume_last20;
-
   const changePrice =
     (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
 
@@ -196,13 +190,10 @@ export const mapHistoricalQuote = (data: any, extraData: any) => {
     totalValue_last20_max,
     averageVolume_last5,
     changeVolume_last5,
-    averageVolume_last20,
-    changeVolume_last20,
     changePrice,
     count_5_day_within_base,
     count_10_day_within_base,
     last_10_day_summary,
-    estimated_vol,
     estimated_vol_change,
     extra_vol,
     action,
