@@ -1,4 +1,7 @@
+import { Filter } from './types';
+
 import moment from 'moment';
+import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
 
 export const UNIT_BILLION = 1_000_000_000;
 export const NUMBER_UNIT_REDUCED = 1000;
@@ -155,7 +158,8 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   buy_sell_vol__sell: 0.7,
 };
 
-export const DEFAULT_FILTER = {
+export const DEFAULT_FILTER: Filter = {
+  currentWatchlist: null,
   totalValue_last20_min: 1,
   changePrice_min: -20,
   changePrice_max: 20,
@@ -179,6 +183,19 @@ export const DEFAULT_SETTINGS: any = {
     showSizeChanger: true,
   },
 };
+
+export const DEFAULT_COLUMNS = [
+  {
+    title: 'Symbol',
+    dataIndex: 'symbol',
+    key: 'symbol',
+    sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
+  },
+  {
+    title: 'BuySellSignals',
+    children: BuySellSignalsColumns(),
+  },
+];
 
 export const NO_DATA_COLUMN = NoDataKeys.map((i) => {
   return {

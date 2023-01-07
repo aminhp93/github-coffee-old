@@ -121,8 +121,14 @@ export interface CustomHistoricalQuote extends ExtraData {
 export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
-  list: HistoricalQuote[];
-  index: number;
+  list?: (HistoricalQuote | BasePriceSymbol)[];
+  index?: number;
+  addedData?: HistoricalQuote[];
+  buyItem?: HistoricalQuote;
+  estimated_vol_change?: number;
+  estimated_price_change?: number;
+  fullData?: HistoricalQuote[];
+  t3?: number;
 }
 
 export interface CustomSymbol {
@@ -131,7 +137,56 @@ export interface CustomSymbol {
   key: string;
   symbol: string;
   latestHistoricalQuote: HistoricalQuote;
-  backtest?: any;
+  backtest?: BackTest;
 }
 
-export interface BackTest {}
+export interface BackTest {
+  data: BasePriceSymbol[];
+  list_base: Base[];
+  winCount: number;
+  winRate: number;
+}
+
+export interface Watchlist {
+  displayIndex: number;
+  name: string;
+  symbols: string[];
+  userName: string;
+  watchlistID: number;
+}
+
+export interface Filter {
+  currentWatchlist: Watchlist | null;
+  totalValue_last20_min: number;
+  changePrice_min: number;
+  changePrice_max: number;
+  have_base_in_5_day: boolean;
+  have_base_in_10_day: boolean;
+  count_10_day_buy_min: number;
+  count_10_day_sell_min: number;
+  estimated_vol_change_min: number;
+  have_extra_vol: boolean;
+  only_buy_sell: boolean;
+}
+
+export interface BasePriceSymbol {
+  date: string;
+  dealVolume: number;
+  priceClose: number;
+  priceHigh: number;
+  priceLow: number;
+  priceOpen: number;
+  totalVolume: number;
+  symbol: string;
+}
+
+export interface BasePriceSymbolResponse {
+  d: string;
+  v: number;
+  c: number;
+  h: number;
+  l: number;
+  o: number;
+  v2: number;
+  s: string;
+}

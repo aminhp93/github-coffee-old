@@ -17,8 +17,8 @@ const Testing = ({
   listWatchlistObj,
   cbSetLoading,
   cbSetDataSource,
+  fullDataSource,
   dataSource,
-  filteredData,
 }: any) => {
   const getListPromise = async (data: any) => {
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
@@ -104,7 +104,7 @@ const Testing = ({
     const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
     // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
     const endDate = DEFAULT_DATE.format(DATE_FORMAT);
-    filteredData
+    dataSource
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
         for (let i = 1; i <= BACKTEST_COUNT; i++) {
@@ -125,7 +125,10 @@ const Testing = ({
         cbSetLoading && cbSetLoading(false);
         const flattenData = res.flat();
         console.log(flattenData);
-        const newDataSource: any = getMapBackTestData(flattenData, dataSource);
+        const newDataSource: any = getMapBackTestData(
+          flattenData,
+          fullDataSource
+        );
         cbSetDataSource && cbSetDataSource(newDataSource);
       })
       .catch((e) => {

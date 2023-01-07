@@ -6,6 +6,8 @@ import {
   DatePicker,
   Popover,
   Checkbox,
+  Dropdown,
+  Menu,
 } from 'antd';
 import { useState } from 'react';
 import {
@@ -14,21 +16,29 @@ import {
   DEFAULT_FILTER,
   TYPE_INDICATOR_OPTIONS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
+  DELAY_TIME,
 } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
 import type { DatePickerProps } from 'antd';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { keyBy } from 'lodash';
+import { Watchlist } from '../types';
+import { useInterval } from 'libs/hooks';
+import { getColumns } from '../utils';
 
 const CheckboxGroup = Checkbox.Group;
 
 const Filters = ({
+  listWatchlist,
   onChange,
   onClose,
   onUpdateWatchlist,
   open,
   onDateChange,
+  onGetData,
+  onColumnChange,
 }: any) => {
   // totalValue_last20_min
   const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
@@ -83,6 +93,42 @@ const Filters = ({
     DEFAULT_TYPE_INDICATOR_OPTIONS
   );
 
+  const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
+    null
+  );
+
+  const [isPlaying, setPlaying] = useState<boolean>(false);
+  const [delay, setDelay] = useState<number>(DELAY_TIME);
+
+  const menu = (
+    <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
+      {listWatchlist.map((i: any) => {
+        return (
+          <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
+            {i.name}
+          </Menu.Item>
+        );
+      })}
+    </Menu>
+  );
+
+  useInterval(
+    async () => {
+      onGetData && onGetData();
+      //  const res = await handleGetData();
+      // const filteredRes = getFilterData(res, filters);
+      // const symbols = filteredRes.map((item: any) => item.symbol);
+      // handleUpdateWatchlist(symbols);
+    },
+    isPlaying ? delay : null
+  );
+
+  const handleClickMenuWatchlist = (e: any) => {
+    const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
+
+    setCurrentWatchlist(listWatchlistObj[e.key]);
+  };
+
   const handleClearFilter = () => {
     setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
     setChangePrice_min(DEFAULT_FILTER.changePrice_min);
@@ -103,24 +149,28 @@ const Filters = ({
   };
 
   const handleChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
     if (date && onDateChange) {
       onDateChange(date);
     }
   };
 
-  const onChangeColumn = (list: CheckboxValueType[]) => {
-    // setCheckedList(list);
+  const handleChangeColumn = (list: CheckboxValueType[]) => {
+    setCheckedList(list);
     setIndeterminate(
       !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
     );
     setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
+    const newColumns = getColumns(list);
+    onColumnChange && onColumnChange(newColumns);
   };
 
-  const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    // setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
+  const handleCheckAllChange = (e: CheckboxChangeEvent) => {
+    const newCheckedList = e.target.checked ? TYPE_INDICATOR_OPTIONS : [];
+    setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
+    const newColumns = getColumns(newCheckedList);
+    onColumnChange && onColumnChange(newColumns);
   };
 
   return (
@@ -146,6 +196,25 @@ const Filters = ({
           className="flex flex-1"
           style={{ justifyContent: 'space-between', flexDirection: 'column' }}
         >
+          <div className="flex">
+            <Dropdown overlay={menu} trigger={['hover']}>
+              <Button size="small" style={{ marginRight: '8px' }}>
+                {currentWatchlist?.name || 'Select watchlist'}
+              </Button>
+            </Dropdown>
+            <div style={{ marginLeft: '8px' }}>
+              <Button size="small" onClick={() => setPlaying(!isPlaying)}>
+                {isPlaying ? 'Stop Interval' : 'Start Interval'}
+              </Button>
+              <InputNumber
+                size="small"
+                style={{ marginLeft: '8px' }}
+                disabled={isPlaying}
+                value={delay}
+                onChange={(value: any) => setDelay(value)}
+              />
+            </div>
+          </div>
           <div className="flex">
             <DatePicker
               onChange={handleChangeDate}
@@ -267,7 +336,7 @@ const Filters = ({
                 <div>
                   <Checkbox
                     indeterminate={indeterminate}
-                    onChange={onCheckAllChange}
+                    onChange={handleCheckAllChange}
                     checked={checkAll}
                   >
                     All
@@ -275,7 +344,7 @@ const Filters = ({
                   <CheckboxGroup
                     options={TYPE_INDICATOR_OPTIONS}
                     value={checkedList}
-                    onChange={onChangeColumn}
+                    onChange={handleChangeColumn}
                   />
                 </div>
               }

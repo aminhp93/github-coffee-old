@@ -368,32 +368,19 @@ const BuySellSignalsColumns = () => {
 
     {
       title: () => {
-        return (
-          <Tooltip
-            title={
-              <div>
-                <div>{`Estimated volume in day compared to last 5`}</div>
-              </div>
-            }
-          >
-            {`_action`}
-          </Tooltip>
-        );
+        return <Tooltip title={''}>{`_action`}</Tooltip>;
       },
-      sorter: (a: CustomSymbol, b: CustomSymbol) =>
-        a.buySellSignals?.extra_vol - b.buySellSignals?.extra_vol,
       align: 'right',
       render: (data: any) => {
-        console.log(387, data);
         let action = data.buySellSignals?.action;
 
         return (
-          <InfoListBackTest backTestData={data?.backtest} symbol={data.symbol}>
+          <InfoListBackTest backTestData={data.backtest} symbol={data.symbol}>
             {action === 'buy' && (
               <div className="bg-green white" style={{ padding: '0px 8px' }}>
-                {data?.backtest?.winRate
-                  ? `${data?.backtest?.winRate} (${data?.backtest?.winCount}/
-                ${data?.backtest?.list_base.length})`
+                {data.backtest?.winRate
+                  ? `${data.backtest?.winRate} (${data.backtest?.winCount}/
+                ${data.backtest?.list_base.length})`
                   : 'Buy'}
               </div>
             )}

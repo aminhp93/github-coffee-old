@@ -1,13 +1,26 @@
-import { max, min, meanBy } from 'lodash';
+import { max, min, meanBy, uniq } from 'lodash';
 import moment from 'moment';
-import { DATE_FORMAT, UNIT_BILLION } from './constants';
 import {
-  BuySellSignals,
+  DATE_FORMAT,
+  UNIT_BILLION,
+  NO_DATA_COLUMN,
+  HISTORICAL_QUOTE_COLUMN,
+  FUNDAMENTAL_COLUMN,
+  FINANCIAL_INDICATORS_COLUMN,
+} from './constants';
+import {
   HistoricalQuote,
   ExtraData,
   CustomHistoricalQuote,
   ActionType,
+  Watchlist,
+  CustomSymbol,
+  Filter,
+  BasePriceSymbol,
+  Base,
 } from './types';
+import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
+import InDayReviewColumns from './StockTable/InDayReviewColumns';
 
 export const mapHistoricalQuote = (
   data: HistoricalQuote[],
@@ -77,93 +90,15 @@ export const mapFundamentals = (data: any, extraData: any) => {
   };
 };
 
-export const getFilterData = (
-  data: any,
-  {
-    currentWatchlist,
-    totalValue_last20_min,
-    changePrice_min,
-    changePrice_max,
-    only_buy_sell,
-  }: any
-) => {
-  const filteredData = data.filter((i: any) => {
-    if (
-      currentWatchlist &&
-      currentWatchlist.symbols &&
-      !currentWatchlist.symbols.includes(i.symbol)
-    ) {
-      return false;
-    }
+export const calculateBase = (
+  data: BasePriceSymbol[],
+  limit?: number
+): {
+  list_base: Base[];
+} => {
+  let list_base: Base[] = [];
 
-    if (i.totalValue_last20_min < totalValue_last20_min * UNIT_BILLION) {
-      return false;
-    }
-
-    if (i.changePrice * 100 < changePrice_min) {
-      return false;
-    }
-
-    if (i.changePrice * 100 > changePrice_max) {
-      return false;
-    }
-
-    return true;
-  });
-
-  return filteredData;
-};
-
-export const mapBuySell = (data: any) => {
-  if (!data || !data.length) return [];
-  let returnData = data.map((i: any) => {
-    // BUY 1
-    // 1. Have base: base_count > 0
-    // 2. Price change > 2%
-    // 3. Break from base
-    // 4. Volume change > 20%
-    // 5. show backtest result within 1 year
-    if (
-      i.changePrice > 0.02 &&
-      i.count_5_day_within_base.list_base.length === 1 &&
-      i.estimated_vol_change > 20
-    ) {
-      i.action = 'buy';
-    }
-
-    // BUY 2
-    // 1. Have base: base_count > 0
-    // 2. Price change > 2%
-
-    // SELL
-    // 1. in watching watchlist
-    // 2. Price change < -2%
-    if (i.changePrice < -0.02 && i.inWatchingWatchList) {
-      i.action = 'sell';
-    }
-    return i;
-  });
-
-  // Sort data based on action is sell, buy
-  const sortedData = returnData.sort((a: any, b: any) => {
-    if (a.action === 'sell' && !b.action) return -1;
-    if (a.action === 'sell' && b.action === 'buy') return -1;
-    if (a.action === 'buy' && !b.action) return -1;
-    // next sort by backtest winrate desc
-    if (a.action === 'buy' && b.action === 'buy' && a.backtest && b.backtest) {
-      if (Number(a.backtest.winRate) > Number(b.backtest.winRate)) return -1;
-    }
-
-    return 0;
-  });
-
-  return sortedData;
-};
-
-export const calculateBase = (data: any, limit?: number) => {
-  let list_base: any = [];
-
-  data.forEach((_: any, index: number) => {
+  data.forEach((_: BasePriceSymbol, index: number) => {
     if (
       !data[index + 1] ||
       !data[index + 2] ||
@@ -186,17 +121,19 @@ export const calculateBase = (data: any, limit?: number) => {
       data[index + 3].priceHigh,
       data[index + 4].priceHigh,
     ]);
-    const percent = (100 * (base_max - base_min)) / base_min;
-    if (percent < 14) {
-      list_base.push({
-        list: [
-          data[index],
-          data[index + 1],
-          data[index + 2],
-          data[index + 3],
-          data[index + 4],
-        ],
-      });
+    if (base_max && base_min) {
+      const percent = (100 * (base_max - base_min)) / base_min;
+      if (percent < 14) {
+        list_base.push({
+          list: [
+            data[index],
+            data[index + 1],
+            data[index + 2],
+            data[index + 3],
+            data[index + 4],
+          ],
+        });
+      }
     }
   });
 
@@ -205,14 +142,19 @@ export const calculateBase = (data: any, limit?: number) => {
   };
 };
 
-export const getMapBackTestData = (res: any, dataSource: any) => {
+export const getMapBackTestData = (
+  res: BasePriceSymbol[],
+  fullDataSource: CustomSymbol[]
+) => {
   const flattenRes = res;
-  const newDataSource = [...dataSource];
-  newDataSource.forEach((i: any) => {
+  const newDataSource = [...fullDataSource];
+  newDataSource.forEach((i: CustomSymbol) => {
     // get data with selected symbol
-    const filterRes = flattenRes
-      .filter((j: any) => j.symbol === i.symbol)
-      .sort((a: any, b: any) => b.date.localeCompare(a.date));
+    const filterRes: BasePriceSymbol[] = flattenRes
+      .filter((j: BasePriceSymbol) => j.symbol === i.symbol)
+      .sort((a: BasePriceSymbol, b: BasePriceSymbol) =>
+        b.date.localeCompare(a.date)
+      );
 
     if (filterRes.length) {
       // calculate list base
@@ -221,13 +163,13 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
       // map more data to list base
       const map_list_base = getMapListBase(list_base, filterRes);
 
-      const winCount = map_list_base.filter((j: any) => j.result > 0).length;
+      const winCount = map_list_base.filter((j: Base) => j.t3! > 0).length;
 
       i.backtest = {
         data: filterRes,
         list_base: map_list_base,
         winCount,
-        winRate: ((100 * winCount) / map_list_base.length).toFixed(2),
+        winRate: Number(((100 * winCount) / map_list_base.length).toFixed(2)),
       };
     }
   });
@@ -235,31 +177,34 @@ export const getMapBackTestData = (res: any, dataSource: any) => {
   return newDataSource;
 };
 
-const getMapListBase = (old_list: any, full_data: any) => {
-  console.log('getMapListBase', old_list);
-  const new_list = old_list.map((i: any) => {
+const getMapListBase = (list: Base[], full_data: BasePriceSymbol[]) => {
+  console.log('getMapListBase', list);
+  const new_list = list.map((i: Base) => {
     const baseIndex = full_data.findIndex(
-      (j: any) => j.date === i.list[0].date
+      (j: BasePriceSymbol) => j.date === i.list![0].date
     );
     // Ignore base if baseIndex > 5
     if (baseIndex > 5) {
       i.index = baseIndex;
-      i.buyItem = full_data[i.index - 1];
+      i.buyItem = full_data[i.index - 1] as HistoricalQuote;
       i.addedData = [
         full_data[i.index - 4], // t3
         full_data[i.index - 3], // t2
         full_data[i.index - 2], // t1
         full_data[i.index - 1], // t0
-      ];
+      ] as HistoricalQuote[];
 
       // full data have next 10 days and previous 30 days
-      i.fullData = full_data.slice(i.index - 10, i.index + 30);
+      i.fullData = full_data.slice(
+        i.index - 10,
+        i.index + 30
+      ) as HistoricalQuote[];
 
       // average volume of list base
       const averageVolume = meanBy(i.list, 'totalVolume');
 
       i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
-      i.estimated_price_change = i.buyItem.priceClose / i.list[0].priceClose;
+      i.estimated_price_change = i.buyItem.priceClose / i.list![0].priceClose;
       const buyPrice = full_data[i.index].priceClose * 1.02;
 
       const t3Price = full_data[i.index - 4].priceClose;
@@ -449,4 +394,151 @@ const getLast10DaySummary = ({ last_10_data }: any) => {
     strong_buy,
     strong_sell,
   };
+};
+
+export const getListAllSymbols = (listWatchlist: Watchlist[]) => {
+  // get list all symbol from all watchlist
+  const LIST_WATCHLIST_INCLUDES = [
+    476435, // 1757_thep
+    476706, // 8355_ngan_hang
+    476714, // 8633_dau_co_va_BDS
+    476720, // 8781_chung_khoan
+    476724, // 0533_dau_khi
+    737544, // thanh_khoan_vua
+    927584, // dau tu cong
+  ];
+  let listAllSymbols = listWatchlist
+    .filter((i: Watchlist) => LIST_WATCHLIST_INCLUDES.includes(i.watchlistID))
+    .reduce((acc: any, item: any) => {
+      return [...acc, ...item.symbols];
+    }, []);
+
+  // unique listAllSYmbols
+  listAllSymbols = uniq(listAllSymbols);
+  return listAllSymbols;
+};
+
+export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
+  const {
+    currentWatchlist,
+    totalValue_last20_min,
+    changePrice_min,
+    changePrice_max,
+    only_buy_sell,
+  } = filter;
+  const result = data.filter((i: CustomSymbol) => {
+    if (
+      currentWatchlist &&
+      currentWatchlist.symbols &&
+      !currentWatchlist.symbols.includes(i.symbol)
+    ) {
+      return false;
+    }
+
+    if (
+      i.buySellSignals?.totalValue_last20_min <
+      totalValue_last20_min * UNIT_BILLION
+    ) {
+      return false;
+    }
+
+    if (i.buySellSignals?.changePrice * 100 < changePrice_min) {
+      return false;
+    }
+
+    if (i.buySellSignals?.changePrice * 100 > changePrice_max) {
+      return false;
+    }
+
+    if (only_buy_sell && i.buySellSignals?.action === 'unknown') {
+      return false;
+    }
+
+    return true;
+  });
+
+  result.sort((a: CustomSymbol, b: CustomSymbol) => {
+    if (
+      a.buySellSignals?.action === 'sell' &&
+      b.buySellSignals?.action === 'unknown'
+    )
+      return -1;
+    if (
+      a.buySellSignals?.action === 'sell' &&
+      b.buySellSignals?.action === 'buy'
+    )
+      return -1;
+    if (
+      a.buySellSignals?.action === 'buy' &&
+      b.buySellSignals?.action === 'unknown'
+    )
+      return -1;
+    // next sort by backtest winrate desc
+    if (
+      a.buySellSignals?.action === 'buy' &&
+      b.buySellSignals?.action === 'buy' &&
+      a.backtest &&
+      b.backtest
+    ) {
+      if (Number(a.backtest.winRate) > Number(b.backtest.winRate)) return -1;
+    }
+
+    return 0;
+  });
+
+  return result;
+};
+
+export const getColumns = (checkedList: any) => {
+  const columns: any = [
+    {
+      title: 'Symbol',
+      dataIndex: 'symbol',
+      key: 'symbol',
+      sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
+    },
+  ];
+  if (checkedList.includes('HistoricalQuote')) {
+    columns.push({
+      title: 'Historical Quotes',
+      children: HISTORICAL_QUOTE_COLUMN,
+    });
+  }
+
+  if (checkedList.includes('Fundamental')) {
+    columns.push({
+      title: 'Fundamentals',
+      children: FUNDAMENTAL_COLUMN,
+    });
+  }
+
+  if (checkedList.includes('FinancialIndicators')) {
+    columns.push({
+      title: 'FinancialIndicators',
+      children: FINANCIAL_INDICATORS_COLUMN,
+    });
+  }
+
+  if (checkedList.includes('BuySellSignals')) {
+    columns.push({
+      title: 'BuySellSignals',
+      children: BuySellSignalsColumns(),
+    });
+  }
+
+  if (checkedList.includes('NoData')) {
+    columns.push({
+      title: 'NoData',
+      children: NO_DATA_COLUMN,
+    });
+  }
+
+  if (checkedList.includes('InDayReview')) {
+    columns.push({
+      title: 'InDayReview',
+      children: InDayReviewColumns,
+    });
+  }
+
+  return columns;
 };
