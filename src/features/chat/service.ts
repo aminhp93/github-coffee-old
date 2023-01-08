@@ -1,5 +1,5 @@
-import request from 'libs/request';
-import config from 'libs/config';
+import request from '@/services/request';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 
@@ -9,7 +9,7 @@ export const ChatUrls = {
   getPusherToken: `${baseUrl}/api/chats/pusher/auth/`,
 };
 
-export const ChatService = {
+const ChatService = {
   getChatList() {
     return request({
       method: 'GET',
@@ -34,3 +34,5 @@ export const ChatService = {
     });
   },
 };
+
+export default ChatService;

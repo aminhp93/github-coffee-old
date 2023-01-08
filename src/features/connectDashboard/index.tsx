@@ -1,6 +1,6 @@
 import type { InputRef } from 'antd';
 import { Button, Input, Modal } from 'antd';
-import request from 'libs/request';
+import request from '@/services/request';
 import { useEffect, useRef, useState } from 'react';
 import ProblemItem from './ProblemItem';
 

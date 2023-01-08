@@ -17,3 +17,33 @@
 .PostDetailContainer {
   overflow: auto;
 }
+
+.PostCreate {
+  .CustomPlate {
+    background: @white;
+  }
+}
+
+.PostDetail {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.PostList {
+  flex-direction: column;
+  overflow: auto;
+}
+
+.PostListItem {
+  cursor: pointer;
+  padding: 8px;
+}
+
+.PostListItem:hover {
+  background: @gray-100;
+}
+
+.PostListItem.selected {
+  background: @gray-100;
+}

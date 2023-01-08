@@ -29,8 +29,8 @@ import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import config from 'libs/config';
-import request from 'libs/request';
+import config from '@/config';
+import request from '@/services/request';
 import {
   CustomSymbol,
   Watchlist,

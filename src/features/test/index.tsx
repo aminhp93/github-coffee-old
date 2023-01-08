@@ -1,9 +1,9 @@
 import { Button, Table } from 'antd';
 import axios from 'axios';
-import config from 'libs/config';
+import config from '@/config';
 import { useState } from 'react';
 import { Octokit } from '@octokit/rest';
-import request from 'libs/request';
+import request from '@/services/request';
 
 const baseUrl = config.apiUrl;
 const token = process.env.GITHUB_TOKEN;

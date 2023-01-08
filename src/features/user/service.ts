@@ -1,5 +1,5 @@
-import request from 'libs/request';
-import config from 'libs/config';
+import request from '@/services/request';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 
@@ -11,7 +11,7 @@ const UserUrls = {
   getProtected: `${baseUrl}/api/users/protected/`,
 };
 
-export const UserService = {
+const UserService = {
   getAuthUser() {
     return request({
       method: 'GET',
@@ -38,3 +38,5 @@ export const UserService = {
     });
   },
 };
+
+export default UserService;

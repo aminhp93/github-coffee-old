@@ -1,8 +1,8 @@
 import { notification } from 'antd';
 import { update } from 'features/user/userSlice';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { useAppDispatch } from 'libs/app/hooks';
-import { UserService } from 'libs/services/user';
+import { useAppDispatch } from '@/hooks';
+import UserService from 'features/user/service';
 import { useEffect } from 'react';
 
 export function useAuth() {

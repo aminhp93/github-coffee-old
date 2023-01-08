@@ -2,7 +2,7 @@
 import { createContext, useContext, ReactNode } from 'react';
 
 // ** Hooks Imports
-import useFirebaseAuth from 'libs/hooks/useFirebaseAuth';
+import useFirebaseAuth from '@/hooks/useFirebaseAuth';
 
 const authUserContext: any = createContext({
   authUser: null,

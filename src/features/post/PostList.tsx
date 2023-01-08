@@ -1,13 +1,14 @@
-import { IPost } from 'libs/types';
 import { useCallback, useState } from 'react';
-import './PostList.less';
+import './index.less';
 import PostListItem from './PostListItem';
-export interface IPostListProps {
+import { IPost } from './types';
+
+interface Props {
   cb?: any;
   listPosts: IPost[];
 }
 
-export default function PostList({ cb, listPosts }: IPostListProps) {
+const PostList = ({ cb, listPosts }: Props) => {
   const [selectedPost, setSelectedPost] = useState({} as IPost);
 
   const handleSelect = useCallback(
@@ -32,4 +33,6 @@ export default function PostList({ cb, listPosts }: IPostListProps) {
       })}
     </div>
   );
-}
+};
+
+export default PostList;

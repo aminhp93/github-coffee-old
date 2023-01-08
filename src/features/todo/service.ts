@@ -1,5 +1,5 @@
-import request from 'libs/request';
-import config from 'libs/config';
+import request from '@/services/request';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 
@@ -11,7 +11,7 @@ const TodoUrls = {
   deleteTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
 };
 
-export const TodoService = {
+const TodoService = {
   createTodo(data: any) {
     return request({
       method: 'POST',
@@ -52,3 +52,5 @@ export const TodoService = {
     });
   },
 };
+
+export default TodoService;

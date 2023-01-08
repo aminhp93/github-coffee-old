@@ -9,3 +9,53 @@
 .ChatBoxContainer {
   height: 100px;
 }
+
+.ChatListUsers {
+  background: lightblue;
+  height: 100%;
+  overflow: auto;
+}
+
+.ChatMessageListItem-avatar {
+  border-radius: 50%;
+  background: @yellow;
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 20px;
+}
+
+.ChatMessageListItem-message-container {
+  margin-left: 20px;
+  margin-right: 20px;
+  background: @white;
+  border-radius: @border-radius-base;
+  padding: 4px 50px 4px 8px;
+  position: relative;
+  width: fit-content;
+  word-break: break-word;
+}
+
+.ChatMessageListItem-message-time {
+  position: absolute;
+  bottom: 0;
+  right: 8px;
+  color: @gray-200;
+}
+
+.ChatBox {
+  display: flex;
+  width: 100%;
+
+  .ant-form-item {
+    margin: 0;
+  }
+
+  .CustomPlate {
+    background: @white;
+    max-height: 200px;
+    overflow: auto;
+  }
+}

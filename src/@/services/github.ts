@@ -1,6 +1,6 @@
-import request from 'libs/request';
+import request from '@/services/request';
 
-export const GitHubUrls = {
+const GitHubUrls = {
   getUsersDetail: (userId: string) => `https://api.github.com/users/${userId}`,
   getReposList: (userId: string) =>
     `https://api.github.com/users/${userId}/repos`,
@@ -10,7 +10,7 @@ export const GitHubUrls = {
     `https://api.github.com/repos/${userId}/${repoId}/languages`,
 };
 
-export const GitHubService = {
+const GitHubService = {
   getReposDetail(userId: string, repoId: string) {
     return request({
       method: 'GET',
@@ -36,3 +36,5 @@ export const GitHubService = {
     });
   },
 };
+
+export default GitHubService;

@@ -1,6 +1,6 @@
 import { Button, Dropdown, Menu } from 'antd';
-import config from 'libs/config';
-import { useAuth } from 'libs/context/FirebaseContext';
+import config from '@/config';
+import { useAuth } from '@/context/FirebaseContext';
 
 export default function User() {
   const { authUser, signOut, signInWithPopup }: any = useAuth();

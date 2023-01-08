@@ -1,12 +1,13 @@
 import { Input } from 'antd';
-import React from 'react';
-import './ChatBox.less';
-interface IProps {
+import { useState } from 'react';
+import './index.less';
+
+interface Props {
   cb: any;
 }
 
-const ChatBox = ({ cb }: IProps) => {
-  const [message, setMessage] = React.useState('');
+const ChatBox = ({ cb }: Props) => {
+  const [message, setMessage] = useState('');
 
   const handlePressEnter = async () => {
     cb && cb({ message });

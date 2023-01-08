@@ -2,10 +2,10 @@ import { Button, Form, Input, notification, Select } from 'antd';
 import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import { PostService } from 'libs/services';
+import PostService from './service';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import './PostCreate.less';
+import './index.less';
 
 interface Props {
   onCreateSuccess: (data: any) => void;

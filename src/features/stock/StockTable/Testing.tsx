@@ -1,12 +1,12 @@
 import { Drawer, Button, notification } from 'antd';
 import { BACKTEST_COUNT, DATE_FORMAT, DEFAULT_DATE } from '../constants';
-import request from 'libs/request';
+import request from '@/services/request';
 import { chunk } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
 import { getMapBackTestData } from '../utils';
 
-import config from 'libs/config';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 

@@ -1,10 +1,9 @@
 import axios from 'axios';
-
-import config from 'libs/config';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 
-export const PushNotificationUrls = {
+const PushNotificationUrls = {
   create: `${baseUrl}/api/pushnotifications/`,
 };
 
@@ -13,7 +12,7 @@ interface PushNotificationRequest {
   body: string;
 }
 
-export const PushNotificationService = {
+const PushNotificationService = {
   createPushNotification(data: PushNotificationRequest) {
     return axios({
       method: 'POST',
@@ -22,3 +21,5 @@ export const PushNotificationService = {
     });
   },
 };
+
+export default PushNotificationService;

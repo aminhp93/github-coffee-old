@@ -1,1 +1,33 @@
 @import 'styles';
+
+.TodoListItem-toolbox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+
+  .ant-picker {
+    width: 90px;
+  }
+}
+
+.TodoListItem:hover .TodoListItem-toolbox {
+  display: flex;
+  flex-direction: column;
+}
+
+.TodoListItem {
+  align-items: center;
+  position: relative;
+
+  .ant-checkbox-inner {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    margin: 0 8px;
+  }
+}
+
+.TodoListItem:hover,
+.TodoListItem::selection {
+  background-color: @gray-100;
+}

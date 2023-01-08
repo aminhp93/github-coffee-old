@@ -25,7 +25,7 @@ import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { keyBy } from 'lodash';
 import { Watchlist } from '../types';
-import { useInterval } from 'libs/hooks';
+import { useInterval } from '@/hooks';
 import { getColumns } from '../utils';
 
 const CheckboxGroup = Checkbox.Group;

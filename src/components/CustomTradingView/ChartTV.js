@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CustomTradingViewUrls } from 'libs/request';
+import { CustomTradingViewUrls } from '@/services/request';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';

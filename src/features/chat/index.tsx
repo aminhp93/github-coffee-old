@@ -1,19 +1,19 @@
+import config from '@/config';
 import { Col, Divider } from 'antd';
-import config from 'libs/config';
-import { ChatService } from 'libs/services/chat';
-import { IChat } from 'libs/types';
 import Pusher from 'pusher-js';
-import * as React from 'react';
+import React from 'react';
 import ChatBox from './ChatBox';
 import ChatMessageListItem from './ChatMessageListItem';
 import ChatUserList from './ChatUserList';
 import './index.less';
+import ChatService from './service';
+import { IChat } from './types';
 
-interface IProps {
+interface Props {
   hideOnlineUsers?: boolean;
 }
 
-const Chat = ({ hideOnlineUsers }: IProps) => {
+const Chat = ({ hideOnlineUsers }: Props) => {
   const bottomRef = React.useRef(null as any);
 
   const [chats, setChats] = React.useState([] as any);
