@@ -1,82 +1,67 @@
-import React from 'react';
+import { useState, ReactNode } from 'react';
 import { Button, Drawer, Table } from 'antd';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
 import { getDataChart } from '../utils';
+import { BackTest, Base } from '../types';
+import { DATE_FORMAT } from '../constants';
 
-interface InfoListBackTestProp {
+interface Props {
   symbol: string;
-  children: any;
-  backTestData: {
-    winRate: number;
-    winCount: number;
-    list_base: any[];
-  };
+  children: ReactNode;
+  backTestData: BackTest | null;
 }
 
-const InfoListBackTest = ({
-  backTestData,
-  children,
-  symbol,
-}: InfoListBackTestProp) => {
-  const [open, setOpen] = React.useState(false);
-  const [dataChart, setDataChart] = React.useState<any>(null);
+const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
+  console.log(backTestData);
+  const [open, setOpen] = useState(false);
+  const [dataChart, setDataChart] = useState<any>(null);
 
   const columns = [
     {
       title: 'buyDate',
-      render: (data: any) => {
-        const buyDate = data.buyItem?.date;
+      render: (data: Base) => {
+        const buyDate = data.fullData[data.buyIndex]?.date;
         return (
           <Button onClick={() => handleClickRow(data)}>
-            {moment(buyDate).format('YYYY-MM-DD')}
+            {moment(buyDate).format(DATE_FORMAT)}
           </Button>
         );
       },
     },
     {
       title: '%vol',
-      render: (data: any) => {
+      render: (data: Base) => {
+        if (!data.estimated_vol_change) return '';
+
         return data.estimated_vol_change.toFixed(2);
       },
     },
-    // {
-    //   title: 'buyPrice',
-    //   render: (data: any) => {
-    //     return data.buyPrice.toFixed(2);
-    //   },
-    // },
-    // {
-    //   title: 'sellPrice',
-    //   render: (data: any) => {
-    //     return data.sellPrice.toFixed(2);
-    //   },
-    // },
     {
       title: 't3 (%)',
-      sorter: (a: any, b: any) => a.result - b.result,
-      render: (data: any) => {
-        return data.result.toFixed(2);
+      sorter: (a: Base, b: Base) => (a.t3 && b.t3 ? a.t3 - b.t3 : 0),
+      render: (data: Base) => {
+        if (!data.t3) return '';
+        return data.t3.toFixed(2);
       },
     },
     {
       title: 'buy confidence (%)',
-      //   sorter: (a: any, b: any) => a.result - b.result,
-      render: (data: any) => {
+      render: (data: Base) => {
         return '';
       },
     },
     {
       title: 'sell (%)',
-      //   sorter: (a: any, b: any) => a.result - b.result,
-      render: (data: any) => {
+      render: (data: Base) => {
         return '';
       },
     },
     {
       title: 'chart',
-      render: (data: any) => {
-        const list = data.addedData.concat(data.list);
+      render: (data: Base) => {
+        if (!data.addedData || !data.list) return '';
+        const list = data.addedData.concat(data.list as any);
         const dataChart = getDataChart(list, data.buyItem);
 
         return (
@@ -96,11 +81,10 @@ const InfoListBackTest = ({
     setOpen(false);
   };
 
-  const handleClickRow = (record: any) => {
+  const handleClickRow = (record: Base) => {
     const fullData = [...record.fullData];
-    const buyItem = { ...record.buyItem };
+    const buyItem = { ...record.fullData[record.buyIndex] };
     const newDataChart = getDataChart(fullData, buyItem);
-    console.log(newDataChart);
     setDataChart(newDataChart);
   };
 
@@ -123,19 +107,30 @@ const InfoListBackTest = ({
           </div>
         }
         placement="right"
-        width={1200}
+        width={'100%'}
         onClose={onClose}
         open={open}
       >
         <div className="flex">
           <div
-            style={{ height: '300px', width: '500px', position: 'absolute' }}
+            className="flex"
+            style={{
+              height: '100%',
+              width: '500px',
+              position: 'absolute',
+              flexDirection: 'column',
+            }}
           >
-            {dataChart && <BackTestChart data={dataChart} />}
+            <div style={{ height: '300px', width: '100%' }}>
+              {dataChart && <BackTestChart data={dataChart} />}
+            </div>
+            <div style={{ height: '300px', width: '100%' }}>
+              {dataChart && <BackTestChart data={dataChart} />}
+            </div>
           </div>
           <Table
             style={{ flex: 1, marginLeft: '500px' }}
-            dataSource={backTestData?.list_base || []}
+            dataSource={backTestData?.listBase || []}
             columns={columns}
             bordered
             size="small"

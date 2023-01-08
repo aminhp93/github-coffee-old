@@ -92,15 +92,11 @@ export interface BuySellSignals {
   averageVolume_last5: number;
   changeVolume_last5: number;
   changePrice: number;
-  count_5_day_within_base: {
-    list_base: Base[];
-  };
-  count_10_day_within_base: {
-    list_base: Base[];
-  };
+  count_5_day_within_base: Base[];
+  count_10_day_within_base: Base[];
   last_10_day_summary: {
-    strong_buy: HistoricalQuote[];
-    strong_sell: HistoricalQuote[];
+    strong_buy: BackTestSymbol[];
+    strong_sell: BackTestSymbol[];
   };
   estimated_vol_change: number;
   extra_vol: number;
@@ -110,25 +106,18 @@ export interface BuySellSignals {
 export interface ExtraData {
   key: string;
   symbol: string;
-  inWatchingWatchList?: boolean;
-}
-
-export interface CustomHistoricalQuote extends ExtraData {
-  latestHistoricalQuote: HistoricalQuote;
-  buySellSignals: BuySellSignals;
+  inWatchingWatchList: boolean;
 }
 
 export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
-  list?: (HistoricalQuote | BasePriceSymbol)[];
-  index?: number;
-  addedData?: HistoricalQuote[];
-  buyItem?: HistoricalQuote;
-  estimated_vol_change?: number;
-  estimated_price_change?: number;
-  fullData?: HistoricalQuote[];
-  t3?: number;
+  list: BackTestSymbol[];
+  buyIndex: number;
+  estimated_vol_change: number | null;
+  estimated_price_change: number | null;
+  fullData: BackTestSymbol[];
+  t3: number | null;
 }
 
 export interface CustomSymbol {
@@ -136,13 +125,13 @@ export interface CustomSymbol {
   inWatchingWatchList: boolean;
   key: string;
   symbol: string;
-  latestHistoricalQuote: HistoricalQuote;
-  backtest?: BackTest;
+  last20HistoricalQuote: BackTestSymbol[]; // last 20 days
+  backtest: BackTest | null;
 }
 
 export interface BackTest {
-  data: BasePriceSymbol[];
-  list_base: Base[];
+  backTestList: BackTestSymbol[];
+  listBase: Base[];
   winCount: number;
   winRate: number;
 }
@@ -169,7 +158,7 @@ export interface Filter {
   only_buy_sell: boolean;
 }
 
-export interface BasePriceSymbol {
+export interface BackTestSymbol {
   date: string;
   dealVolume: number;
   priceClose: number;
@@ -180,7 +169,7 @@ export interface BasePriceSymbol {
   symbol: string;
 }
 
-export interface BasePriceSymbolResponse {
+export interface SimplifiedBackTestSymbol {
   d: string;
   v: number;
   c: number;

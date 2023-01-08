@@ -1,9 +1,9 @@
 import { Tooltip } from 'antd';
-import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
+import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS, DATE_FORMAT } from '../constants';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import InfoListBackTest from './InfoListBackTest';
-import { CustomSymbol } from '../types';
+import { Base, CustomSymbol, BackTestSymbol } from '../types';
 
 const BuySellSignalsColumns = () => {
   return [
@@ -101,25 +101,21 @@ const BuySellSignalsColumns = () => {
       },
       align: 'right',
       render: (data: CustomSymbol) => {
-        const list_base =
-          (data.buySellSignals?.count_5_day_within_base &&
-            data.buySellSignals?.count_5_day_within_base.list_base) ||
-          [];
-
-        const index_base = list_base.length === 1 ? list_base[0].index : null;
-
+        const listBase = data.buySellSignals?.count_5_day_within_base || [];
+        const buyIndex = listBase.length === 1 ? listBase[0].buyIndex : null;
         const className =
-          list_base.length === BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base
+          listBase.length === BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base
             ? 'green'
             : 'red';
+
         return (
           <Tooltip
             title={
               <div>
-                {list_base.map((i: any) => {
+                {listBase.map((i: Base, index: number) => {
                   return (
-                    <div key={i.date}>
-                      {moment(i.date).format('DD/MM/YYYY')}
+                    <div key={index}>
+                      {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
                     </div>
                   );
                 })}
@@ -127,11 +123,11 @@ const BuySellSignalsColumns = () => {
             }
           >
             <div className={className}>
-              {list_base.length ===
+              {listBase.length ===
               BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base ? (
                 <>
                   <CheckCircleOutlined style={{ marginRight: '4px' }} />
-                  {index_base}
+                  {buyIndex}
                 </>
               ) : (
                 <CloseCircleOutlined />
@@ -163,25 +159,21 @@ const BuySellSignalsColumns = () => {
       },
       align: 'right',
       render: (data: CustomSymbol) => {
-        const list_base =
-          (data.buySellSignals?.count_10_day_within_base &&
-            data.buySellSignals?.count_10_day_within_base.list_base) ||
-          [];
-
-        const index_base = list_base.length === 1 ? list_base[0].index : null;
-
+        const listBase = data.buySellSignals?.count_10_day_within_base || [];
+        const buyIndex = listBase.length === 1 ? listBase[0].buyIndex : null;
         const className =
-          list_base.length === BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base
+          listBase.length === BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base
             ? 'green'
             : 'red';
+
         return (
           <Tooltip
             title={
               <div>
-                {list_base.map((i: any) => {
+                {listBase.map((i: Base, index: number) => {
                   return (
-                    <div key={i.date}>
-                      {moment(i.date).format('DD/MM/YYYY')}
+                    <div key={index}>
+                      {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
                     </div>
                   );
                 })}
@@ -189,11 +181,11 @@ const BuySellSignalsColumns = () => {
             }
           >
             <div className={className}>
-              {list_base.length ===
+              {listBase.length ===
               BUY_SELL_SIGNNAL_KEYS.count_10_day_within_base ? (
                 <>
                   <CheckCircleOutlined style={{ marginRight: '4px' }} />
-                  {index_base}
+                  {buyIndex}
                 </>
               ) : (
                 <CloseCircleOutlined />
@@ -238,11 +230,9 @@ const BuySellSignalsColumns = () => {
           <Tooltip
             title={
               <div className="green" style={{ width: '100px' }}>
-                {strong_buy.map((i: any) => {
+                {strong_buy.map((i: BackTestSymbol) => {
                   return (
-                    <div key={i.date}>
-                      {moment(i.date).format('YYYY-MM-DD')}
-                    </div>
+                    <div key={i.date}>{moment(i.date).format(DATE_FORMAT)}</div>
                   );
                 })}
               </div>
@@ -288,11 +278,9 @@ const BuySellSignalsColumns = () => {
           <Tooltip
             title={
               <div className="red" style={{ width: '100px' }}>
-                {strong_sell.map((i: any) => {
+                {strong_sell.map((i: BackTestSymbol) => {
                   return (
-                    <div key={i.date}>
-                      {moment(i.date).format('YYYY-MM-DD')}
-                    </div>
+                    <div key={i.date}>{moment(i.date).format(DATE_FORMAT)}</div>
                   );
                 })}
               </div>
@@ -361,8 +349,7 @@ const BuySellSignalsColumns = () => {
       align: 'right',
       render: (data: CustomSymbol) => {
         const extra_vol = data.buySellSignals?.extra_vol || 0;
-
-        return <span className={''}>{extra_vol.toFixed(0)}</span>;
+        return extra_vol.toFixed(0);
       },
     },
 
@@ -370,21 +357,22 @@ const BuySellSignalsColumns = () => {
       title: () => {
         return <Tooltip title={''}>{`_action`}</Tooltip>;
       },
+      key: 'backtest',
       align: 'right',
-      render: (data: any) => {
-        let action = data.buySellSignals?.action;
+      render: (data: CustomSymbol) => {
+        let { buySellSignals, backtest, symbol } = data;
 
         return (
-          <InfoListBackTest backTestData={data.backtest} symbol={data.symbol}>
-            {action === 'buy' && (
+          <InfoListBackTest backTestData={backtest} symbol={symbol}>
+            {buySellSignals?.action === 'buy' && (
               <div className="bg-green white" style={{ padding: '0px 8px' }}>
-                {data.backtest?.winRate
-                  ? `${data.backtest?.winRate} (${data.backtest?.winCount}/
-                ${data.backtest?.list_base.length})`
+                {backtest?.winRate
+                  ? `${backtest?.winRate} (${backtest?.winCount}/
+                ${backtest?.listBase.length})`
                   : 'Buy'}
               </div>
             )}
-            {action === 'sell' && (
+            {buySellSignals?.action === 'sell' && (
               <div className="bg-red white" style={{ padding: '0px 8px' }}>
                 Sell
               </div>

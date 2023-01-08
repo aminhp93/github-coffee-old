@@ -34,8 +34,8 @@ import request from '@/services/request';
 import {
   CustomSymbol,
   Watchlist,
-  BasePriceSymbol,
-  BasePriceSymbolResponse,
+  BackTestSymbol,
+  SimplifiedBackTestSymbol,
 } from '../types';
 
 const baseUrl = config.apiUrl;
@@ -52,7 +52,7 @@ export default function StockTable() {
   const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [date, setDate] = useState<any>(DEFAULT_DATE);
+  const [date, setDate] = useState<moment.Moment>(DEFAULT_DATE);
 
   const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
@@ -64,7 +64,9 @@ export default function StockTable() {
 
       const updateData = {
         ...watchlistObj,
-        symbols: symbols ? symbols : dataSource.map((i: any) => i.symbol),
+        symbols: symbols
+          ? symbols
+          : dataSource.map((i: CustomSymbol) => i.symbol),
       };
 
       await StockService.updateWatchlist(watchlistObj, updateData);
@@ -80,7 +82,7 @@ export default function StockTable() {
     const thanh_khoan_vua_wl: Watchlist =
       listWatchlistObj && listWatchlistObj[737544];
 
-    const watching_wl: any = listWatchlistObj && listWatchlistObj[75482];
+    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
 
     if (!thanh_khoan_vua_wl) return;
 
@@ -103,6 +105,7 @@ export default function StockTable() {
     setLoading(true);
     return Promise.all(listPromises)
       .then((res: CustomSymbol[]) => {
+        console.log(106, res);
         setLoading(false);
         setFullDataSource(res);
 
@@ -137,8 +140,8 @@ export default function StockTable() {
         },
       });
       setLoading(false);
-      const mappedData: BasePriceSymbol[] = res.data.map(
-        (i: BasePriceSymbolResponse) => {
+      const mappedData: BackTestSymbol[] = res.data.map(
+        (i: SimplifiedBackTestSymbol) => {
           return {
             date: i.d,
             dealVolume: i.v,
@@ -152,12 +155,11 @@ export default function StockTable() {
         }
       );
 
-      const newFullDataSource: any = getMapBackTestData(
-        mappedData,
-        fullDataSource
-      );
+      const newFullDataSource = getMapBackTestData(mappedData, fullDataSource);
       const newData = getDataSource(newFullDataSource, filters);
+
       setFullDataSource(newFullDataSource);
+
       setDataSource(newData);
     } catch (e) {
       setLoading(false);
@@ -214,11 +216,17 @@ export default function StockTable() {
     );
   };
 
-  const _filter_1 = dataSource.filter((i: any) => i.changePrice < -0.02);
-  const _filter_2 = dataSource.filter(
-    (i: any) => i.changePrice >= -0.02 && i.changePrice <= 0.02
+  const _filter_1 = dataSource.filter(
+    (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
   );
-  const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
+  const _filter_2 = dataSource.filter(
+    (i: CustomSymbol) =>
+      i.buySellSignals.changePrice >= -0.02 &&
+      i.buySellSignals.changePrice <= 0.02
+  );
+  const _filter_3 = dataSource.filter(
+    (i: CustomSymbol) => i.buySellSignals.changePrice > 0.02
+  );
 
   const footer = () => {
     return (
@@ -250,8 +258,6 @@ export default function StockTable() {
     );
   };
 
-  console.log('stockTable', dataSource);
-
   return (
     <div className="StockTable height-100 flex">
       {renderHeader()}
@@ -278,10 +284,10 @@ export default function StockTable() {
         open={openDrawerFilter}
         listWatchlist={listWatchlist}
         onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDate: any) => setDate(newDate)}
+        onDateChange={(newDate: moment.Moment) => setDate(newDate)}
         onUpdateWatchlist={handleUpdateWatchlist}
         onGetData={() => {
-          console.log('onGetData');
+          // console.log('onGetData');
         }}
         onColumnChange={(newColumns: any) => setColumns(newColumns)}
         onClose={() => setOpenDrawerFilter(false)}

@@ -1,4 +1,4 @@
-import { max, min, meanBy, uniq } from 'lodash';
+import { max, min, meanBy, uniq, cloneDeep } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
@@ -11,12 +11,11 @@ import {
 import {
   HistoricalQuote,
   ExtraData,
-  CustomHistoricalQuote,
   ActionType,
   Watchlist,
   CustomSymbol,
   Filter,
-  BasePriceSymbol,
+  BackTestSymbol,
   Base,
 } from './types';
 import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
@@ -25,15 +24,17 @@ import InDayReviewColumns from './StockTable/InDayReviewColumns';
 export const mapHistoricalQuote = (
   data: HistoricalQuote[],
   extraData: ExtraData
-): CustomHistoricalQuote => {
+): CustomSymbol => {
   const last_data = data[0];
   const last_2_data = data[1];
   const totalValue_last20_min = Math.min(
-    ...data.map((item: any) => item.totalValue)
+    ...data.map((item: HistoricalQuote) => item.totalValue)
   );
 
   const averageVolume_last5 =
-    data.slice(1, 6).reduce((a: any, b: any) => a + b.totalVolume, 0) / 5;
+    data
+      .slice(1, 6)
+      .reduce((a: number, b: HistoricalQuote) => a + b.totalVolume, 0) / 5;
 
   const changeVolume_last5 =
     (data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
@@ -41,9 +42,15 @@ export const mapHistoricalQuote = (
   const changePrice =
     (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
 
-  const count_5_day_within_base = calculateBase(data.slice(1, 6), 1);
+  const count_5_day_within_base = getListBase({
+    data: data.slice(1, 6),
+    limit: 1,
+  });
 
-  const count_10_day_within_base = calculateBase(data.slice(1, 11), 1);
+  const count_10_day_within_base = getListBase({
+    data: data.slice(1, 11),
+    limit: 1,
+  });
 
   const last_10_data = data.slice(1, 11);
 
@@ -64,9 +71,24 @@ export const mapHistoricalQuote = (
     extraData,
   });
 
+  const last20HistoricalQuote: BackTestSymbol[] = data.map(
+    (i: HistoricalQuote) => {
+      return {
+        date: i.date,
+        dealVolume: i.dealVolume,
+        priceClose: i.priceClose,
+        priceHigh: i.priceHigh,
+        priceLow: i.priceLow,
+        priceOpen: i.priceOpen,
+        totalVolume: i.totalVolume,
+        symbol: i.symbol,
+      };
+    }
+  );
+
   return {
     ...extraData,
-    latestHistoricalQuote: last_data,
+    last20HistoricalQuote,
     buySellSignals: {
       totalValue_last20_min,
       averageVolume_last5,
@@ -79,6 +101,7 @@ export const mapHistoricalQuote = (
       extra_vol,
       action,
     },
+    backtest: null,
   };
 };
 
@@ -90,15 +113,16 @@ export const mapFundamentals = (data: any, extraData: any) => {
   };
 };
 
-export const calculateBase = (
-  data: BasePriceSymbol[],
-  limit?: number
-): {
-  list_base: Base[];
-} => {
-  let list_base: Base[] = [];
+export const getListBase = ({
+  data,
+  limit,
+}: {
+  data: BackTestSymbol[];
+  limit?: number;
+}): Base[] => {
+  let listBase: Base[] = [];
 
-  data.forEach((_: BasePriceSymbol, index: number) => {
+  data.forEach((_: BackTestSymbol, index: number) => {
     if (
       !data[index + 1] ||
       !data[index + 2] ||
@@ -106,7 +130,7 @@ export const calculateBase = (
       !data[index + 4]
     )
       return;
-    if (limit && list_base.length === limit) return;
+    if (limit && listBase.length === limit) return;
     const base_min = min([
       data[index].priceLow,
       data[index + 1].priceLow,
@@ -124,101 +148,69 @@ export const calculateBase = (
     if (base_max && base_min) {
       const percent = (100 * (base_max - base_min)) / base_min;
       if (percent < 14) {
-        list_base.push({
-          list: [
-            data[index],
-            data[index + 1],
-            data[index + 2],
-            data[index + 3],
-            data[index + 4],
-          ],
+        const list = [
+          data[index],
+          data[index + 1],
+          data[index + 2],
+          data[index + 3],
+          data[index + 4],
+        ];
+        const buyIndex = index - 1;
+
+        const averageVolume = meanBy(list, 'totalVolume');
+        const estimated_vol_change =
+          data[index - 1].totalVolume / averageVolume;
+        const estimated_price_change =
+          data[index - 1].priceClose / list![0].priceClose;
+
+        const t3Price = data[index - 4].priceClose;
+        const buyPrice = data[index - 1].priceClose * 1.02;
+
+        const t3 = (100 * (t3Price - buyPrice)) / buyPrice;
+
+        listBase.push({
+          list,
+          buyIndex,
+          fullData: data,
+          estimated_price_change,
+          estimated_vol_change,
+          t3,
         });
       }
     }
   });
 
-  return {
-    list_base,
-  };
+  return listBase;
 };
 
 export const getMapBackTestData = (
-  res: BasePriceSymbol[],
+  res: BackTestSymbol[],
   fullDataSource: CustomSymbol[]
 ) => {
   const flattenRes = res;
   const newDataSource = [...fullDataSource];
   newDataSource.forEach((i: CustomSymbol) => {
     // get data with selected symbol
-    const filterRes: BasePriceSymbol[] = flattenRes
-      .filter((j: BasePriceSymbol) => j.symbol === i.symbol)
-      .sort((a: BasePriceSymbol, b: BasePriceSymbol) =>
+    const filterRes: BackTestSymbol[] = flattenRes
+      .filter((j: BackTestSymbol) => j.symbol === i.symbol)
+      .sort((a: BackTestSymbol, b: BackTestSymbol) =>
         b.date.localeCompare(a.date)
       );
 
     if (filterRes.length) {
-      // calculate list base
-      const list_base = calculateBase(filterRes)?.list_base || [];
-
-      // map more data to list base
-      const map_list_base = getMapListBase(list_base, filterRes);
-
-      const winCount = map_list_base.filter((j: Base) => j.t3! > 0).length;
+      const listBase = getListBase({ data: filterRes });
+      const winCount = listBase.filter((j: Base) => j.t3! > 0).length;
 
       i.backtest = {
-        data: filterRes,
-        list_base: map_list_base,
+        backTestList: filterRes,
+        listBase,
         winCount,
-        winRate: Number(((100 * winCount) / map_list_base.length).toFixed(2)),
+        winRate: Number(((100 * winCount) / listBase.length).toFixed(2)),
       };
     }
   });
 
   return newDataSource;
-};
-
-const getMapListBase = (list: Base[], full_data: BasePriceSymbol[]) => {
-  console.log('getMapListBase', list);
-  const new_list = list.map((i: Base) => {
-    const baseIndex = full_data.findIndex(
-      (j: BasePriceSymbol) => j.date === i.list![0].date
-    );
-    // Ignore base if baseIndex > 5
-    if (baseIndex > 5) {
-      i.index = baseIndex;
-      i.buyItem = full_data[i.index - 1] as HistoricalQuote;
-      i.addedData = [
-        full_data[i.index - 4], // t3
-        full_data[i.index - 3], // t2
-        full_data[i.index - 2], // t1
-        full_data[i.index - 1], // t0
-      ] as HistoricalQuote[];
-
-      // full data have next 10 days and previous 30 days
-      i.fullData = full_data.slice(
-        i.index - 10,
-        i.index + 30
-      ) as HistoricalQuote[];
-
-      // average volume of list base
-      const averageVolume = meanBy(i.list, 'totalVolume');
-
-      i.estimated_vol_change = i.buyItem.totalVolume / averageVolume;
-      i.estimated_price_change = i.buyItem.priceClose / i.list![0].priceClose;
-      const buyPrice = full_data[i.index].priceClose * 1.02;
-
-      const t3Price = full_data[i.index - 4].priceClose;
-      i.t3 = (100 * (t3Price - buyPrice)) / buyPrice;
-    }
-
-    return i;
-  });
-
-  const filter_list = new_list.filter(
-    (j: any) => j.estimated_vol_change > 1.2 && j.estimated_price_change > 1.02
-  );
-
-  return filter_list;
 };
 
 export const getDataChart = (data: any, buyItem: any) => {
@@ -327,21 +319,27 @@ const getEstimatedVol = ({ last_data }: any) => {
   return estimated_vol;
 };
 
-const getLast10DaySummary = ({ last_10_data }: any) => {
-  const strong_sell: any = [];
-  const strong_buy: any = [];
+const getLast10DaySummary = ({
+  last_10_data,
+}: {
+  last_10_data: HistoricalQuote[];
+}) => {
+  const strong_sell: BackTestSymbol[] = [];
+  const strong_buy: BackTestSymbol[] = [];
 
   const averageVolume_last10 =
-    last_10_data.reduce((a: any, b: any) => a + b.totalVolume, 0) / 10;
+    last_10_data.reduce(
+      (a: number, b: HistoricalQuote) => a + b.totalVolume,
+      0
+    ) / 10;
 
-  last_10_data.forEach((i: any, index: number) => {
+  last_10_data.forEach((i: HistoricalQuote, index: number) => {
     if (index === 9) return;
 
     const last_price = last_10_data[index + 1].priceClose;
     let isSell = false;
     let isBuy = false;
 
-    i.last_price = last_price;
     // Check if it is the sell or buy
     // Normal case is priceClose > priceOpen --> buy
 
@@ -426,7 +424,10 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
     changePrice_max,
     only_buy_sell,
   } = filter;
-  const result = data.filter((i: CustomSymbol) => {
+
+  const newData = cloneDeep(data);
+
+  const result = newData.filter((i: CustomSymbol) => {
     if (
       currentWatchlist &&
       currentWatchlist.symbols &&
@@ -480,7 +481,7 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
       a.backtest &&
       b.backtest
     ) {
-      if (Number(a.backtest.winRate) > Number(b.backtest.winRate)) return -1;
+      if (a.backtest.winRate > b.backtest.winRate) return -1;
     }
 
     return 0;
