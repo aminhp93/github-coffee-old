@@ -155,26 +155,33 @@ export const getListBase = ({
           data[index + 3],
           data[index + 4],
         ];
-        const buyIndex = index - 1;
+        let buyIndex = null;
 
         const averageVolume = meanBy(list, 'totalVolume');
-        const estimated_vol_change =
-          data[index - 1].totalVolume / averageVolume;
-        const estimated_price_change =
-          data[index - 1].priceClose / list![0].priceClose;
+        let change_t0_vol = null;
+        let change_t0 = null;
+        let change_t3 = null;
 
-        const t3Price = data[index - 4].priceClose;
-        const buyPrice = data[index - 1].priceClose * 1.02;
+        if (data[index - 1] && data[index - 4]) {
+          buyIndex = index - 1;
+          change_t0_vol = data[buyIndex].totalVolume / averageVolume;
+          change_t0 =
+            (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
+            list[0].priceClose;
 
-        const t3 = (100 * (t3Price - buyPrice)) / buyPrice;
+          const t3Price = data[index - 4].priceClose;
+          const buyPrice = data[buyIndex].priceClose * 1.02;
+
+          change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
+        }
 
         listBase.push({
           list,
           buyIndex,
           fullData: data,
-          estimated_price_change,
-          estimated_vol_change,
-          t3,
+          change_t0_vol,
+          change_t0,
+          change_t3,
         });
       }
     }
@@ -198,8 +205,11 @@ export const getMapBackTestData = (
       );
 
     if (filterRes.length) {
-      const listBase = getListBase({ data: filterRes });
-      const winCount = listBase.filter((j: Base) => j.t3! > 0).length;
+      const listBase = getListBase({ data: filterRes }).filter(
+        (j: Base) => j.change_t0! > 2
+      );
+
+      const winCount = listBase.filter((j: Base) => j.change_t3! > 0).length;
 
       i.backtest = {
         backTestList: filterRes,
@@ -213,12 +223,15 @@ export const getMapBackTestData = (
   return newDataSource;
 };
 
-export const getDataChart = (data: any, buyItem: any) => {
-  const dates: any = data
-    .map((i: any) => moment(i.date).format(DATE_FORMAT))
+export const getDataChart = (
+  data: BackTestSymbol[],
+  buyItem: BackTestSymbol | null
+) => {
+  const dates = data
+    .map((i: BackTestSymbol) => moment(i.date).format(DATE_FORMAT))
     .reverse();
-  const prices: any = data
-    .map((i: any) => [
+  const prices = data
+    .map((i: BackTestSymbol) => [
       i.priceOpen,
       i.priceClose,
       i.priceLow,
@@ -226,9 +239,9 @@ export const getDataChart = (data: any, buyItem: any) => {
       i.totalVolume,
     ])
     .reverse();
-  const volumes: any = data
+  const volumes = data
     .reverse()
-    .map((i: any, index: number) => [
+    .map((i: BackTestSymbol, index: number) => [
       index,
       i.totalVolume,
       i.priceOpen < i.priceClose ? 1 : -1,
@@ -243,16 +256,21 @@ export const getDataChart = (data: any, buyItem: any) => {
         return '';
       },
     },
-    data: [
-      {
-        name: 'Mark',
-        coord: [moment(buyItem.date).format(DATE_FORMAT), buyItem.priceOpen],
-        value: buyItem.priceOpen,
-        itemStyle: {
-          color: 'blue',
-        },
-      },
-    ],
+    data: buyItem
+      ? [
+          {
+            name: 'Mark',
+            coord: [
+              moment(buyItem.date).format(DATE_FORMAT),
+              buyItem.priceOpen,
+            ],
+            value: buyItem.priceOpen,
+            itemStyle: {
+              color: 'blue',
+            },
+          },
+        ]
+      : [],
   };
 
   return {
@@ -268,12 +286,17 @@ const getAction = ({
   count_5_day_within_base,
   estimated_vol_change,
   extraData,
-}: any): ActionType => {
+}: {
+  changePrice: number;
+  count_5_day_within_base: Base[];
+  estimated_vol_change: number;
+  extraData: ExtraData;
+}): ActionType => {
   let action: ActionType = 'unknown';
 
   if (
     changePrice > 0.02 &&
-    count_5_day_within_base?.list_base.length === 1 &&
+    count_5_day_within_base.length === 1 &&
     estimated_vol_change > 20
   ) {
     action = 'buy';

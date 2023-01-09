@@ -258,6 +258,8 @@ export default function StockTable() {
     );
   };
 
+  console.log(dataSource, 'dataSource');
+
   return (
     <div className="StockTable height-100 flex">
       {renderHeader()}

@@ -113,11 +113,11 @@ export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
   list: BackTestSymbol[];
-  buyIndex: number;
-  estimated_vol_change: number | null;
-  estimated_price_change: number | null;
   fullData: BackTestSymbol[];
-  t3: number | null;
+  buyIndex: number | null;
+  change_t0_vol: number | null;
+  change_t0: number | null;
+  change_t3: number | null;
 }
 
 export interface CustomSymbol {

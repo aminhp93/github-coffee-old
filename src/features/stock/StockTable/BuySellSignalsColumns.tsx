@@ -113,6 +113,7 @@ const BuySellSignalsColumns = () => {
             title={
               <div>
                 {listBase.map((i: Base, index: number) => {
+                  if (!i.buyIndex) return '';
                   return (
                     <div key={index}>
                       {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
@@ -171,6 +172,7 @@ const BuySellSignalsColumns = () => {
             title={
               <div>
                 {listBase.map((i: Base, index: number) => {
+                  if (!i.buyIndex) return '';
                   return (
                     <div key={index}>
                       {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
@@ -361,7 +363,6 @@ const BuySellSignalsColumns = () => {
       align: 'right',
       render: (data: CustomSymbol) => {
         let { buySellSignals, backtest, symbol } = data;
-
         return (
           <InfoListBackTest backTestData={backtest} symbol={symbol}>
             {buySellSignals?.action === 'buy' && (
