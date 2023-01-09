@@ -7,6 +7,7 @@ import {
   HISTORICAL_QUOTE_COLUMN,
   FUNDAMENTAL_COLUMN,
   FINANCIAL_INDICATORS_COLUMN,
+  BACKTEST_FILTER,
 } from './constants';
 import {
   HistoricalQuote,
@@ -40,7 +41,8 @@ export const mapHistoricalQuote = (
     (data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
 
   const changePrice =
-    (last_data.priceClose - last_2_data.priceClose) / last_2_data.priceClose;
+    (100 * (last_data.priceClose - last_2_data.priceClose)) /
+    last_2_data.priceClose;
 
   const count_5_day_within_base = getListBase({
     data: data.slice(1, 6),
@@ -164,7 +166,9 @@ export const getListBase = ({
 
         if (data[index - 1] && data[index - 4]) {
           buyIndex = index - 1;
-          change_t0_vol = data[buyIndex].totalVolume / averageVolume;
+          change_t0_vol =
+            (100 * (data[buyIndex].totalVolume - averageVolume)) /
+            averageVolume;
           change_t0 =
             (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
             list[0].priceClose;
@@ -205,8 +209,11 @@ export const getMapBackTestData = (
       );
 
     if (filterRes.length) {
+      console.log(210, getListBase({ data: filterRes }));
       const listBase = getListBase({ data: filterRes }).filter(
-        (j: Base) => j.change_t0! > 2
+        (j: Base) =>
+          j.change_t0! > BACKTEST_FILTER.change_t0 &&
+          j.change_t0_vol! > BACKTEST_FILTER.change_t0_vol
       );
 
       const winCount = listBase.filter((j: Base) => j.change_t3! > 0).length;
@@ -295,7 +302,7 @@ const getAction = ({
   let action: ActionType = 'unknown';
 
   if (
-    changePrice > 0.02 &&
+    changePrice > 2 &&
     count_5_day_within_base.length === 1 &&
     estimated_vol_change > 20
   ) {
@@ -309,7 +316,7 @@ const getAction = ({
   // SELL
   // 1. in watching watchlist
   // 2. Price change < -2%
-  if (changePrice < -0.02 && extraData?.inWatchingWatchList) {
+  if (changePrice < -2 && extraData?.inWatchingWatchList) {
     action = 'sell';
   }
 
@@ -317,6 +324,9 @@ const getAction = ({
 };
 
 const getEstimatedVol = ({ last_data }: any) => {
+  if (last_data.symbol === 'HVN') {
+    console.log('HVN');
+  }
   const start_time = moment().set('hour', 9).set('minute', 0);
   const default_end_time = moment().set('hour', 14).set('minute', 45);
   const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
@@ -325,7 +335,10 @@ const getEstimatedVol = ({ last_data }: any) => {
   let diff_time = 0;
   if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
     diff_time = end_time.diff(start_time, 'minute');
-  } else if (end_time.isAfter(moment('13:00', 'HH:mm'))) {
+  } else if (
+    end_time.isAfter(moment('13:00', 'HH:mm')) &&
+    end_time.isBefore(moment('14:45', 'HH:mm'))
+  ) {
     diff_time = end_time.diff(start_time, 'minute') - 90;
   } else {
     diff_time =
@@ -334,7 +347,11 @@ const getEstimatedVol = ({ last_data }: any) => {
   }
   let estimated_vol = (last_data.dealVolume * default_diff_time) / diff_time;
   if (
-    moment(last_data.date).format(DATE_FORMAT) !== moment().format(DATE_FORMAT)
+    moment(last_data.date).format(DATE_FORMAT) !==
+      moment().format(DATE_FORMAT) ||
+    (moment(last_data.date).format(DATE_FORMAT) !==
+      moment().format(DATE_FORMAT) &&
+      end_time.isAfter(moment('15:00', 'HH:mm')))
   ) {
     estimated_vol = last_data.dealVolume;
   }
@@ -446,11 +463,15 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
     changePrice_min,
     changePrice_max,
     only_buy_sell,
+    estimated_vol_change_min,
   } = filter;
 
   const newData = cloneDeep(data);
 
   const result = newData.filter((i: CustomSymbol) => {
+    if (i.symbol === 'HVN') {
+      console.log('HVN');
+    }
     if (
       currentWatchlist &&
       currentWatchlist.symbols &&
@@ -466,15 +487,22 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
       return false;
     }
 
-    if (i.buySellSignals?.changePrice * 100 < changePrice_min) {
+    if (i.buySellSignals?.changePrice < changePrice_min) {
       return false;
     }
 
-    if (i.buySellSignals?.changePrice * 100 > changePrice_max) {
+    if (i.buySellSignals?.changePrice > changePrice_max) {
       return false;
     }
 
     if (only_buy_sell && i.buySellSignals?.action === 'unknown') {
+      return false;
+    }
+
+    if (
+      estimated_vol_change_min &&
+      i.buySellSignals?.estimated_vol_change < estimated_vol_change_min
+    ) {
       return false;
     }
 

@@ -161,15 +161,21 @@ export const BUY_SELL_SIGNNAL_KEYS = {
 export const DEFAULT_FILTER: Filter = {
   currentWatchlist: null,
   totalValue_last20_min: 1,
-  changePrice_min: -20,
-  changePrice_max: 20,
+  changePrice_min: 2,
+  changePrice_max: 5,
   have_base_in_5_day: false,
   have_base_in_10_day: false,
   count_10_day_buy_min: 3,
   count_10_day_sell_min: 3,
-  estimated_vol_change_min: MIN_CHANGE,
+  estimated_vol_change_min: 20,
   have_extra_vol: false,
   only_buy_sell: true,
+};
+
+export const BACKTEST_FILTER = {
+  change_t0: DEFAULT_FILTER.changePrice_min,
+  change_t3: 0,
+  change_t0_vol: DEFAULT_FILTER.estimated_vol_change_min,
 };
 
 export const DEFAULT_SETTINGS: any = {

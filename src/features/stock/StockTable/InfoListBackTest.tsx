@@ -1,10 +1,10 @@
 import { useState, ReactNode, useEffect } from 'react';
-import { Button, Drawer, Table } from 'antd';
+import { Button, Drawer, Table, InputNumber } from 'antd';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
 import { getDataChart, mapHistoricalQuote } from '../utils';
 import { BackTest, Base, CustomSymbol } from '../types';
-import { DATE_FORMAT, DEFAULT_DATE } from '../constants';
+import { DATE_FORMAT, DEFAULT_DATE, BACKTEST_FILTER } from '../constants';
 import StockService from '../service';
 
 interface Props {
@@ -16,6 +16,11 @@ interface Props {
 const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   const [open, setOpen] = useState(false);
   const [dataChart, setDataChart] = useState<any>(null);
+  const [change_t0, setChange_t0] = useState<number>(BACKTEST_FILTER.change_t0);
+  const [change_t3, setChange_t3] = useState<number>(BACKTEST_FILTER.change_t3);
+  const [change_t0_vol, setChange_t0_vol] = useState<number>(
+    BACKTEST_FILTER.change_t0_vol
+  );
 
   const columns = [
     {
@@ -63,7 +68,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       title: 'chart',
       render: (data: Base) => {
         // get data in data.fullData from data.buyIndex to next 5 items
-        console.log(data);
         if (!data.buyIndex) return '';
         const list = data.fullData.slice(data.buyIndex - 3, data.buyIndex + 5);
         const dataChart = getDataChart(list, data.fullData[data.buyIndex]);
@@ -112,6 +116,23 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         title={
           <div className="flex" style={{ justifyContent: 'space-between' }}>
             <div>{symbol}</div>
+            <div>
+              <InputNumber
+                size="small"
+                addonBefore="change_t0"
+                value={change_t0}
+              />
+              <InputNumber
+                size="small"
+                addonBefore="change_t3"
+                value={change_t3}
+              />
+              <InputNumber
+                size="small"
+                addonBefore="change_t0_vol"
+                value={change_t0_vol}
+              />
+            </div>
             <div>{` ${backTestData?.winRate} - ${backTestData?.winCount}/${columns.length}`}</div>
           </div>
         }
