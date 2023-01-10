@@ -189,6 +189,32 @@ const BackTestChart = ({ data }: Props) => {
     series,
     grid,
     visualMap,
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'cross',
+      },
+      borderWidth: 1,
+      borderColor: '#ccc',
+      padding: 10,
+      textStyle: {
+        color: '#000',
+      },
+      position: function (
+        pos: number[],
+        params: any,
+        el: any,
+        elRect: any,
+        size: { viewSize: number[] }
+      ) {
+        const obj: any = {
+          top: 10,
+        };
+        obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+        return obj;
+      },
+      // extraCssText: 'width: 170px'
+    },
   };
 
   return (

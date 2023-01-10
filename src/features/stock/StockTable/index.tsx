@@ -105,13 +105,11 @@ export default function StockTable() {
     setLoading(true);
     return Promise.all(listPromises)
       .then((res: CustomSymbol[]) => {
-        console.log(106, res);
+        const newData = getDataSource(res, filters);
+
         setLoading(false);
         setFullDataSource(res);
-
-        const newData = getDataSource(res, filters);
         setDataSource(newData);
-
         notification.success({ message: 'success' });
         return res;
       })
@@ -159,7 +157,6 @@ export default function StockTable() {
       const newData = getDataSource(newFullDataSource, filters);
 
       setFullDataSource(newFullDataSource);
-
       setDataSource(newData);
     } catch (e) {
       setLoading(false);

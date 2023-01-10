@@ -1,8 +1,9 @@
 import { useState, ReactNode, useEffect } from 'react';
 import { Button, Drawer, Table, InputNumber } from 'antd';
+import { AlignType } from 'rc-table/lib/interface';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
-import { getDataChart, mapHistoricalQuote } from '../utils';
+import { getDataChart, mapHistoricalQuote, getBackTest } from '../utils';
 import { BackTest, Base, CustomSymbol } from '../types';
 import { DATE_FORMAT, DEFAULT_DATE, BACKTEST_FILTER } from '../constants';
 import StockService from '../service';
@@ -14,10 +15,10 @@ interface Props {
 }
 
 const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
+  const [backTest, setBackTest] = useState<BackTest | null>(backTestData);
   const [open, setOpen] = useState(false);
   const [dataChart, setDataChart] = useState<any>(null);
   const [change_t0, setChange_t0] = useState<number>(BACKTEST_FILTER.change_t0);
-  const [change_t3, setChange_t3] = useState<number>(BACKTEST_FILTER.change_t3);
   const [change_t0_vol, setChange_t0_vol] = useState<number>(
     BACKTEST_FILTER.change_t0_vol
   );
@@ -25,6 +26,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   const columns = [
     {
       title: 'buyDate',
+      width: 100,
       render: (data: Base) => {
         if (!data.buyIndex) return '';
         const buyDate = data.fullData[data.buyIndex]?.date;
@@ -36,15 +38,23 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       },
     },
     {
-      title: '%vol',
+      title: 'change_t0_vol (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      sorter: (a: Base, b: Base) =>
+        a.change_t0_vol && b.change_t0_vol
+          ? a.change_t0_vol - b.change_t0_vol
+          : 0,
       render: (data: Base) => {
         if (!data.change_t0_vol) return '';
 
-        return data.change_t0_vol.toFixed(2);
+        return data.change_t0_vol.toFixed(0);
       },
     },
     {
-      title: 't3 (%)',
+      title: 'change_t3 (%)',
+      width: 100,
+      align: 'right' as AlignType,
       sorter: (a: Base, b: Base) =>
         a.change_t3 && b.change_t3 ? a.change_t3 - b.change_t3 : 0,
       render: (data: Base) => {
@@ -53,19 +63,34 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       },
     },
     {
-      title: 'buy confidence (%)',
+      title: 'change_t0 (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      sorter: (a: Base, b: Base) =>
+        a.change_t0 && b.change_t0 ? a.change_t0 - b.change_t0 : 0,
+      render: (data: Base) => {
+        if (!data.change_t0) return '';
+        return data.change_t0.toFixed(2);
+      },
+    },
+    {
+      title: 'buy conf (%)',
+      width: 100,
       render: (data: Base) => {
         return '';
       },
     },
     {
       title: 'sell (%)',
+      width: 100,
       render: (data: Base) => {
         return '';
       },
     },
+
     {
       title: 'chart',
+      width: 150,
       render: (data: Base) => {
         // get data in data.fullData from data.buyIndex to next 5 items
         if (!data.buyIndex) return '';
@@ -77,6 +102,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
             <BackTestChart data={dataChart as any} />
           </div>
         );
+      },
+    },
+    {
+      title: 'other',
+      render: (data: Base) => {
+        return '';
       },
     },
   ];
@@ -93,13 +124,36 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
     if (!record.buyIndex) return;
     const list = record.fullData.slice(
       record.buyIndex - 10,
-      record.buyIndex + 20
+      record.buyIndex + 40
     );
 
     const buyItem = { ...record.fullData[record.buyIndex] };
     const newDataChart = getDataChart(list, buyItem);
     setDataChart(newDataChart);
   };
+
+  const handleRetest = async () => {
+    if (!backTestData) return;
+    const filter = {
+      change_t0,
+      change_t0_vol,
+    };
+    const newBackTest = getBackTest(backTestData.listBase, filter);
+
+    setBackTest(newBackTest);
+  };
+
+  useEffect(() => {
+    handleRetest();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [change_t0, change_t0_vol]);
+
+  useEffect(() => {
+    if (backTestData) {
+      setBackTest(backTestData);
+    }
+  }, [backTestData]);
 
   return (
     <>
@@ -120,20 +174,21 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
               <InputNumber
                 size="small"
                 addonBefore="change_t0"
+                onChange={(value) => setChange_t0(value as number)}
                 value={change_t0}
               />
               <InputNumber
                 size="small"
-                addonBefore="change_t3"
-                value={change_t3}
-              />
-              <InputNumber
-                size="small"
                 addonBefore="change_t0_vol"
+                onChange={(value) => setChange_t0_vol(value as number)}
                 value={change_t0_vol}
               />
             </div>
-            <div>{` ${backTestData?.winRate} - ${backTestData?.winCount}/${columns.length}`}</div>
+            {backTest && (
+              <div>{`${backTest.winRate.toFixed(0)}% - ${backTest.winCount}/${
+                backTest.filteredBase.length
+              }`}</div>
+            )}
           </div>
         }
         placement="right"
@@ -141,14 +196,11 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         onClose={onClose}
         open={open}
       >
-        <div className="flex">
+        <div className="flex" style={{ flexDirection: 'column' }}>
           <div
             className="flex"
             style={{
               height: '100%',
-              width: '500px',
-              position: 'absolute',
-              flexDirection: 'column',
             }}
           >
             <div style={{ height: '300px', width: '100%' }}>
@@ -158,14 +210,16 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
               {dataChart && <BackTestChart data={dataChart} />}
             </div>
           </div>
-          <Table
-            style={{ flex: 1, marginLeft: '500px' }}
-            dataSource={backTestData?.listBase || []}
-            columns={columns}
-            bordered
-            size="small"
-            pagination={false}
-          />
+          {backTest && (
+            <Table
+              style={{ flex: 1 }}
+              dataSource={backTest.filteredBase}
+              columns={columns}
+              bordered
+              size="small"
+              pagination={false}
+            />
+          )}
         </div>
       </Drawer>
     </>

@@ -163,6 +163,7 @@ export const getListBase = ({
         let change_t0_vol = null;
         let change_t0 = null;
         let change_t3 = null;
+        let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
 
         if (data[index - 1] && data[index - 4]) {
           buyIndex = index - 1;
@@ -174,7 +175,9 @@ export const getListBase = ({
             list[0].priceClose;
 
           const t3Price = data[index - 4].priceClose;
-          const buyPrice = data[buyIndex].priceClose * 1.02;
+          const buyPrice =
+            data[buyIndex].priceClose *
+            (1 + BACKTEST_FILTER.change_buyPrice / 100);
 
           change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
         }
@@ -186,6 +189,7 @@ export const getListBase = ({
           change_t0_vol,
           change_t0,
           change_t3,
+          change_buyPrice,
         });
       }
     }
@@ -209,21 +213,12 @@ export const getMapBackTestData = (
       );
 
     if (filterRes.length) {
-      console.log(210, getListBase({ data: filterRes }));
-      const listBase = getListBase({ data: filterRes }).filter(
-        (j: Base) =>
-          j.change_t0! > BACKTEST_FILTER.change_t0 &&
-          j.change_t0_vol! > BACKTEST_FILTER.change_t0_vol
-      );
+      const listBase = getListBase({ data: filterRes });
 
-      const winCount = listBase.filter((j: Base) => j.change_t3! > 0).length;
-
-      i.backtest = {
-        backTestList: filterRes,
-        listBase,
-        winCount,
-        winRate: Number(((100 * winCount) / listBase.length).toFixed(2)),
-      };
+      i.backtest = getBackTest(listBase, {
+        change_t0: BACKTEST_FILTER.change_t0,
+        change_t0_vol: BACKTEST_FILTER.change_t0_vol,
+      });
     }
   });
 
@@ -232,25 +227,27 @@ export const getMapBackTestData = (
 
 export const getDataChart = (
   data: BackTestSymbol[],
-  buyItem: BackTestSymbol | null
+  buyItem: BackTestSymbol | null,
+  volumeField: 'dealVolume' | 'totalVolume' = 'totalVolume'
 ) => {
-  const dates = data
+  const newData = [...data];
+  const dates = newData
     .map((i: BackTestSymbol) => moment(i.date).format(DATE_FORMAT))
     .reverse();
-  const prices = data
+  const prices = newData
     .map((i: BackTestSymbol) => [
       i.priceOpen,
       i.priceClose,
       i.priceLow,
       i.priceHigh,
-      i.totalVolume,
+      i[volumeField],
     ])
     .reverse();
-  const volumes = data
+  const volumes = newData
     .reverse()
     .map((i: BackTestSymbol, index: number) => [
       index,
-      i.totalVolume,
+      i[volumeField],
       i.priceOpen < i.priceClose ? 1 : -1,
     ]);
 
@@ -593,4 +590,27 @@ export const getColumns = (checkedList: any) => {
   }
 
   return columns;
+};
+
+export const getBackTest = (
+  listBase: Base[],
+  filterCondition: {
+    change_t0: number;
+    change_t0_vol: number;
+  }
+) => {
+  const filteredBase = listBase.filter(
+    (j: Base) =>
+      j.change_t0! > filterCondition.change_t0 &&
+      j.change_t0_vol! > filterCondition.change_t0_vol
+  );
+  const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
+  const winRate = Number(((100 * winCount) / filteredBase.length).toFixed(2));
+
+  return {
+    filteredBase,
+    listBase,
+    winCount,
+    winRate,
+  };
 };

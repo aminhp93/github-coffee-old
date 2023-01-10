@@ -118,6 +118,7 @@ export interface Base {
   change_t0_vol: number | null;
   change_t0: number | null;
   change_t3: number | null;
+  change_buyPrice: number | null;
 }
 
 export interface CustomSymbol {
@@ -130,7 +131,7 @@ export interface CustomSymbol {
 }
 
 export interface BackTest {
-  backTestList: BackTestSymbol[];
+  filteredBase: Base[];
   listBase: Base[];
   winCount: number;
   winRate: number;

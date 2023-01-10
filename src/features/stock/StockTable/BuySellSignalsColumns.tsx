@@ -363,13 +363,14 @@ const BuySellSignalsColumns = () => {
       align: 'right',
       render: (data: CustomSymbol) => {
         let { buySellSignals, backtest, symbol } = data;
+
         return (
           <InfoListBackTest backTestData={backtest} symbol={symbol}>
             {buySellSignals?.action === 'buy' && (
               <div className="bg-green white" style={{ padding: '0px 8px' }}>
                 {backtest?.winRate
                   ? `${backtest?.winRate} (${backtest?.winCount}/
-                ${backtest?.listBase.length})`
+                ${backtest?.filteredBase.length})`
                   : 'Buy'}
               </div>
             )}
