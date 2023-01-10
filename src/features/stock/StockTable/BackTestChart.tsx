@@ -17,21 +17,6 @@ const color = [
 const upColor = '#14b143';
 const downColor = '#ef232a';
 
-const grid = [
-  {
-    left: 20,
-    right: 20,
-    top: 0,
-    height: '60%',
-  },
-  {
-    left: 20,
-    right: 20,
-    height: '30%',
-    bottom: 0,
-  },
-];
-
 const visualMap = {
   show: false,
   seriesIndex: 1,
@@ -77,11 +62,12 @@ interface Props {
     prices: number[];
     volumes: number[];
     seriesMarkPoint: any;
+    grid: any;
   };
 }
 
 const BackTestChart = ({ data }: Props) => {
-  const { dates, prices, volumes, seriesMarkPoint } = data;
+  const { dates, prices, volumes, seriesMarkPoint, grid } = data;
   //   const dates = [
   //     '2016-03-29',
   //     '2016-03-30',

@@ -3,8 +3,13 @@ import { Button, Drawer, Table, InputNumber } from 'antd';
 import { AlignType } from 'rc-table/lib/interface';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
-import { getDataChart, mapHistoricalQuote, getBackTest } from '../utils';
-import { BackTest, Base, CustomSymbol } from '../types';
+import {
+  getDataChart,
+  mapHistoricalQuote,
+  getBackTest,
+  getSeriesMarkPoint,
+} from '../utils';
+import { BackTest, Base, CustomSymbol, FilterBackTest } from '../types';
 import { DATE_FORMAT, DEFAULT_DATE, BACKTEST_FILTER } from '../constants';
 import StockService from '../service';
 
@@ -21,6 +26,9 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   const [change_t0, setChange_t0] = useState<number>(BACKTEST_FILTER.change_t0);
   const [change_t0_vol, setChange_t0_vol] = useState<number>(
     BACKTEST_FILTER.change_t0_vol
+  );
+  const [num_high_vol_than_t0, setNum_high_vol_than_t0] = useState<number>(
+    BACKTEST_FILTER.num_high_vol_than_t0
   );
 
   const columns = [
@@ -51,17 +59,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         return data.change_t0_vol.toFixed(0);
       },
     },
-    {
-      title: 'change_t3 (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) =>
-        a.change_t3 && b.change_t3 ? a.change_t3 - b.change_t3 : 0,
-      render: (data: Base) => {
-        if (!data.change_t3) return '';
-        return data.change_t3.toFixed(2);
-      },
-    },
+
     {
       title: 'change_t0 (%)',
       width: 100,
@@ -74,20 +72,23 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       },
     },
     {
-      title: 'buy conf (%)',
+      title: 'num_high_vol_than_t0 (%)',
       width: 100,
+      align: 'right' as AlignType,
+      sorter: (a: Base, b: Base) =>
+        a.num_high_vol_than_t0 && b.num_high_vol_than_t0
+          ? a.num_high_vol_than_t0 - b.num_high_vol_than_t0
+          : 0,
       render: (data: Base) => {
-        return '';
+        return data.num_high_vol_than_t0;
       },
     },
     {
-      title: 'sell (%)',
-      width: 100,
+      title: 'other',
       render: (data: Base) => {
         return '';
       },
     },
-
     {
       title: 'chart',
       width: 150,
@@ -95,7 +96,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         // get data in data.fullData from data.buyIndex to next 5 items
         if (!data.buyIndex) return '';
         const list = data.fullData.slice(data.buyIndex - 3, data.buyIndex + 5);
-        const dataChart = getDataChart(list, data.fullData[data.buyIndex]);
+        const buyItem = data.fullData[data.buyIndex];
+        const seriesMarkPoint = getSeriesMarkPoint({ buyItem });
+        const dataChart = getDataChart({
+          data: list,
+          seriesMarkPoint,
+        });
 
         return (
           <div style={{ width: '150px', height: '50px' }}>
@@ -104,10 +110,16 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         );
       },
     },
+
     {
-      title: 'other',
+      title: 'change_t3 (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      sorter: (a: Base, b: Base) =>
+        a.change_t3 && b.change_t3 ? a.change_t3 - b.change_t3 : 0,
       render: (data: Base) => {
-        return '';
+        if (!data.change_t3) return '';
+        return data.change_t3.toFixed(2);
       },
     },
   ];
@@ -128,15 +140,38 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
     );
 
     const buyItem = { ...record.fullData[record.buyIndex] };
-    const newDataChart = getDataChart(list, buyItem);
+    const sellItem = { ...record.fullData[record.buyIndex - 3] };
+    const grid = [
+      {
+        left: 20,
+        right: 20,
+        top: 20,
+        height: '70%',
+      },
+      {
+        left: 20,
+        right: 20,
+        height: '20%',
+        bottom: 0,
+      },
+    ];
+
+    const seriesMarkPoint = getSeriesMarkPoint({
+      buyItem,
+      sellItem,
+      offset: 20,
+    });
+
+    const newDataChart = getDataChart({ data: list, grid, seriesMarkPoint });
     setDataChart(newDataChart);
   };
 
   const handleRetest = async () => {
     if (!backTestData) return;
-    const filter = {
+    const filter: FilterBackTest = {
       change_t0,
       change_t0_vol,
+      num_high_vol_than_t0,
     };
     const newBackTest = getBackTest(backTestData.listBase, filter);
 
@@ -183,6 +218,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
                 onChange={(value) => setChange_t0_vol(value as number)}
                 value={change_t0_vol}
               />
+              <InputNumber
+                size="small"
+                addonBefore="num_high_vol_than_t0"
+                onChange={(value) => setNum_high_vol_than_t0(value as number)}
+                value={num_high_vol_than_t0}
+              />
             </div>
             {backTest && (
               <div>{`${backTest.winRate.toFixed(0)}% - ${backTest.winCount}/${
@@ -196,28 +237,29 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         onClose={onClose}
         open={open}
       >
-        <div className="flex" style={{ flexDirection: 'column' }}>
+        <div className="flex height-100" style={{ flexDirection: 'column' }}>
           <div
             className="flex"
             style={{
-              height: '100%',
+              height: '300px',
             }}
           >
-            <div style={{ height: '300px', width: '100%' }}>
+            <div style={{ height: '100%', width: '100%' }}>
               <CurrentChart symbol={symbol} />
             </div>
-            <div style={{ height: '300px', width: '100%' }}>
+            <div style={{ height: '100%', width: '100%' }}>
               {dataChart && <BackTestChart data={dataChart} />}
             </div>
           </div>
           {backTest && (
             <Table
-              style={{ flex: 1 }}
+              style={{ flex: 1, marginTop: '20px', overflow: 'auto' }}
               dataSource={backTest.filteredBase}
               columns={columns}
               bordered
               size="small"
               pagination={false}
+              // scroll={{ y: 1000 }}
             />
           )}
         </div>
@@ -252,7 +294,7 @@ const CurrentChart = ({ symbol }: CurrentChartProps) => {
     Promise.all(listPromises)
       .then((res: CustomSymbol[]) => {
         const data = res.map((item) => item.last20HistoricalQuote).flat();
-        const dataChart = getDataChart(data, null);
+        const dataChart = getDataChart({ data });
         console.log(dataChart);
         setCurrentDataChart(dataChart);
       })

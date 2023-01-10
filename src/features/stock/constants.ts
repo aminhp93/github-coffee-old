@@ -177,6 +177,7 @@ export const BACKTEST_FILTER = {
   change_t3: 0,
   change_t0_vol: DEFAULT_FILTER.estimated_vol_change_min,
   change_buyPrice: 2,
+  num_high_vol_than_t0: 0,
 };
 
 export const DEFAULT_SETTINGS: any = {

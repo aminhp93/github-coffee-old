@@ -119,6 +119,7 @@ export interface Base {
   change_t0: number | null;
   change_t3: number | null;
   change_buyPrice: number | null;
+  num_high_vol_than_t0: number | null;
 }
 
 export interface CustomSymbol {
@@ -179,4 +180,10 @@ export interface SimplifiedBackTestSymbol {
   o: number;
   v2: number;
   s: string;
+}
+
+export interface FilterBackTest {
+  change_t0: number;
+  change_t0_vol: number;
+  num_high_vol_than_t0: number;
 }

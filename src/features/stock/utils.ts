@@ -18,6 +18,7 @@ import {
   Filter,
   BackTestSymbol,
   Base,
+  FilterBackTest,
 } from './types';
 import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
 import InDayReviewColumns from './StockTable/InDayReviewColumns';
@@ -157,13 +158,14 @@ export const getListBase = ({
           data[index + 3],
           data[index + 4],
         ];
-        let buyIndex = null;
+        let buyIndex: number | null = null;
 
         const averageVolume = meanBy(list, 'totalVolume');
         let change_t0_vol = null;
         let change_t0 = null;
         let change_t3 = null;
         let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+        let num_high_vol_than_t0 = 0;
 
         if (data[index - 1] && data[index - 4]) {
           buyIndex = index - 1;
@@ -180,6 +182,9 @@ export const getListBase = ({
             (1 + BACKTEST_FILTER.change_buyPrice / 100);
 
           change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
+          num_high_vol_than_t0 = list.filter(
+            (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+          ).length;
         }
 
         listBase.push({
@@ -190,6 +195,7 @@ export const getListBase = ({
           change_t0,
           change_t3,
           change_buyPrice,
+          num_high_vol_than_t0,
         });
       }
     }
@@ -218,6 +224,7 @@ export const getMapBackTestData = (
       i.backtest = getBackTest(listBase, {
         change_t0: BACKTEST_FILTER.change_t0,
         change_t0_vol: BACKTEST_FILTER.change_t0_vol,
+        num_high_vol_than_t0: BACKTEST_FILTER.num_high_vol_than_t0,
       });
     }
   });
@@ -225,11 +232,17 @@ export const getMapBackTestData = (
   return newDataSource;
 };
 
-export const getDataChart = (
-  data: BackTestSymbol[],
-  buyItem: BackTestSymbol | null,
-  volumeField: 'dealVolume' | 'totalVolume' = 'totalVolume'
-) => {
+export const getDataChart = ({
+  data,
+  volumeField = 'totalVolume',
+  grid,
+  seriesMarkPoint,
+}: {
+  data: BackTestSymbol[];
+  volumeField?: 'dealVolume' | 'totalVolume';
+  grid?: any;
+  seriesMarkPoint?: any;
+}) => {
   const newData = [...data];
   const dates = newData
     .map((i: BackTestSymbol) => moment(i.date).format(DATE_FORMAT))
@@ -251,37 +264,27 @@ export const getDataChart = (
       i.priceOpen < i.priceClose ? 1 : -1,
     ]);
 
-  const seriesMarkPoint = {
-    symbol: 'arrow',
-    symbolSize: 10,
-    symbolOffset: [0, 10],
-    label: {
-      formatter: function (param: any) {
-        return '';
-      },
+  const DEFAULT_GRID = [
+    {
+      left: 20,
+      right: 20,
+      top: 0,
+      height: '70%',
     },
-    data: buyItem
-      ? [
-          {
-            name: 'Mark',
-            coord: [
-              moment(buyItem.date).format(DATE_FORMAT),
-              buyItem.priceOpen,
-            ],
-            value: buyItem.priceOpen,
-            itemStyle: {
-              color: 'blue',
-            },
-          },
-        ]
-      : [],
-  };
+    {
+      left: 20,
+      right: 20,
+      height: '20%',
+      bottom: 0,
+    },
+  ];
 
   return {
     dates,
     prices,
     volumes,
-    seriesMarkPoint,
+    seriesMarkPoint: seriesMarkPoint ? seriesMarkPoint : null,
+    grid: grid ? grid : DEFAULT_GRID,
   };
 };
 
@@ -594,15 +597,13 @@ export const getColumns = (checkedList: any) => {
 
 export const getBackTest = (
   listBase: Base[],
-  filterCondition: {
-    change_t0: number;
-    change_t0_vol: number;
-  }
+  filterCondition: FilterBackTest
 ) => {
   const filteredBase = listBase.filter(
     (j: Base) =>
       j.change_t0! > filterCondition.change_t0 &&
-      j.change_t0_vol! > filterCondition.change_t0_vol
+      j.change_t0_vol! > filterCondition.change_t0_vol &&
+      j.num_high_vol_than_t0! === filterCondition.num_high_vol_than_t0
   );
   const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
   const winRate = Number(((100 * winCount) / filteredBase.length).toFixed(2));
@@ -612,5 +613,52 @@ export const getBackTest = (
     listBase,
     winCount,
     winRate,
+  };
+};
+
+export const getSeriesMarkPoint = ({
+  buyItem,
+  sellItem,
+  offset = 10,
+}: {
+  buyItem?: BackTestSymbol;
+  sellItem?: BackTestSymbol;
+  offset?: number;
+}) => {
+  const seriesMarkPointData = [];
+
+  if (buyItem) {
+    seriesMarkPointData.push({
+      name: 'Buy',
+      coord: [moment(buyItem.date).format(DATE_FORMAT), buyItem.priceOpen],
+      value: buyItem.priceOpen,
+      itemStyle: {
+        color: '#e700ff',
+      },
+      symbolOffset: [0, offset],
+    });
+  }
+  if (sellItem) {
+    seriesMarkPointData.push({
+      name: 'Sell',
+      coord: [moment(sellItem.date).format(DATE_FORMAT), sellItem.priceOpen],
+      value: sellItem.priceOpen,
+      itemStyle: {
+        color: '#0007ff',
+      },
+      symbolOffset: [0, -offset],
+      symbolRotate: 180,
+    });
+  }
+
+  return {
+    symbol: 'arrow',
+    symbolSize: 10,
+    label: {
+      formatter: function (param: any) {
+        return '';
+      },
+    },
+    data: seriesMarkPointData,
   };
 };
