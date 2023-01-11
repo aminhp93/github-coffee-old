@@ -120,6 +120,8 @@ export interface Base {
   change_t3: number | null;
   change_buyPrice: number | null;
   num_high_vol_than_t0: number | null;
+  base_max: number | null;
+  base_min: number | null;
 }
 
 export interface CustomSymbol {

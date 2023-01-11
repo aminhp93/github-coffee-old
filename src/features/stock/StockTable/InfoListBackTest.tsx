@@ -162,7 +162,52 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       offset: 20,
     });
 
-    const newDataChart = getDataChart({ data: list, grid, seriesMarkPoint });
+    const markLine = {
+      data: [
+        [
+          {
+            name: '',
+            symbol: 'none',
+
+            coord: [
+              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
+              record.base_min,
+            ],
+          },
+          {
+            coord: [
+              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
+              record.base_min,
+            ],
+          },
+        ],
+        [
+          {
+            name: '',
+            symbol: 'none',
+
+            coord: [
+              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
+              record.base_max,
+            ],
+          },
+          {
+            coord: [
+              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
+              record.base_max,
+            ],
+          },
+        ],
+      ],
+    };
+
+    const newDataChart = getDataChart({
+      data: list,
+      grid,
+      seriesMarkPoint,
+      markLine,
+    });
+    console.log(newDataChart);
     setDataChart(newDataChart);
   };
 
@@ -195,7 +240,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       <Button
         size="small"
         type="primary"
-        onClick={showDrawer}
+        onClick={() => (backTest ? showDrawer() : null)}
         style={{ background: 'transparent', border: 'none' }}
       >
         {children}

@@ -17,6 +17,7 @@ import {
   TYPE_INDICATOR_OPTIONS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
   DELAY_TIME,
+  getColumns,
 } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
@@ -26,7 +27,6 @@ import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { keyBy } from 'lodash';
 import { Watchlist } from '../types';
 import { useInterval } from '@/hooks';
-import { getColumns } from '../utils';
 
 const CheckboxGroup = Checkbox.Group;
 

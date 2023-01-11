@@ -1,18 +1,18 @@
-import { max, min, meanBy, cloneDeep } from 'lodash';
+import { meanBy, cloneDeep } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
   UNIT_BILLION,
-  NO_DATA_COLUMN,
-  HISTORICAL_QUOTE_COLUMN,
-  FUNDAMENTAL_COLUMN,
-  FINANCIAL_INDICATORS_COLUMN,
   BACKTEST_FILTER,
+  LIST_ALL_SYMBOLS,
+  getAction,
+  getEstimatedVol,
+  getLast10DaySummary,
+  getBase_min_max,
 } from './constants';
 import {
   HistoricalQuote,
   ExtraData,
-  ActionType,
   Watchlist,
   CustomSymbol,
   Filter,
@@ -20,8 +20,6 @@ import {
   Base,
   FilterBackTest,
 } from './types';
-import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
-import InDayReviewColumns from './StockTable/InDayReviewColumns';
 
 export const mapHistoricalQuote = (
   data: HistoricalQuote[],
@@ -56,10 +54,8 @@ export const mapHistoricalQuote = (
   });
 
   const last_10_data = data.slice(1, 11);
-
-  const last_10_day_summary = getLast10DaySummary({ last_10_data });
-
-  const estimated_vol = getEstimatedVol({ last_data });
+  const last_10_day_summary = getLast10DaySummary(last_10_data);
+  const estimated_vol = getEstimatedVol(last_data);
 
   const estimated_vol_change =
     (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
@@ -108,14 +104,6 @@ export const mapHistoricalQuote = (
   };
 };
 
-export const mapFundamentals = (data: any, extraData: any) => {
-  if (!data) return null;
-  return {
-    ...data,
-    ...extraData,
-  };
-};
-
 export const getListBase = ({
   data,
   limit,
@@ -124,8 +112,11 @@ export const getListBase = ({
   limit?: number;
 }): Base[] => {
   let listBase: Base[] = [];
+  // let nextIndex = 0;
 
   data.forEach((_: BackTestSymbol, index: number) => {
+    // nextIndex += 1;
+    // if (index < nextIndex) return;
     if (
       !data[index + 1] ||
       !data[index + 2] ||
@@ -134,70 +125,89 @@ export const getListBase = ({
     )
       return;
     if (limit && listBase.length === limit) return;
-    const base_min = min([
-      data[index].priceLow,
-      data[index + 1].priceLow,
-      data[index + 2].priceLow,
-      data[index + 3].priceLow,
-      data[index + 4].priceLow,
-    ]);
-    const base_max = max([
-      data[index].priceHigh,
-      data[index + 1].priceHigh,
-      data[index + 2].priceHigh,
-      data[index + 3].priceHigh,
-      data[index + 4].priceHigh,
-    ]);
-    if (base_max && base_min) {
-      const percent = (100 * (base_max - base_min)) / base_min;
-      if (percent < 14) {
-        const list = [
-          data[index],
-          data[index + 1],
-          data[index + 2],
-          data[index + 3],
-          data[index + 4],
-        ];
-        let buyIndex: number | null = null;
+    const list = [
+      data[index],
+      data[index + 1],
+      data[index + 2],
+      data[index + 3],
+      data[index + 4],
+    ];
+    const { base_min, base_max } = getBase_min_max(list, index);
+    if (!base_max || !base_min) return;
 
-        const averageVolume = meanBy(list, 'totalVolume');
-        let change_t0_vol = null;
-        let change_t0 = null;
-        let change_t3 = null;
-        let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
-        let num_high_vol_than_t0 = 0;
+    const percent = (100 * (base_max - base_min)) / base_min;
+    if (percent < 14) {
+      let buyIndex: number | null = null;
 
-        if (data[index - 1] && data[index - 4]) {
-          buyIndex = index - 1;
-          change_t0_vol =
-            (100 * (data[buyIndex].totalVolume - averageVolume)) /
-            averageVolume;
-          change_t0 =
-            (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
-            list[0].priceClose;
+      const averageVolume = meanBy(list, 'totalVolume');
+      let change_t0_vol = null;
+      let change_t0 = null;
+      let change_t3 = null;
+      let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      let num_high_vol_than_t0 = 0;
 
-          const t3Price = data[index - 4].priceClose;
-          const buyPrice =
-            data[buyIndex].priceClose *
-            (1 + BACKTEST_FILTER.change_buyPrice / 100);
+      if (data[index - 1] && data[index - 4]) {
+        buyIndex = index - 1;
+        change_t0_vol =
+          (100 * (data[buyIndex].totalVolume - averageVolume)) / averageVolume;
+        change_t0 =
+          (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
+          list[0].priceClose;
 
-          change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
-          num_high_vol_than_t0 = list.filter(
-            (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
-          ).length;
-        }
+        const t3Price = data[index - 4].priceClose;
+        const buyPrice =
+          data[buyIndex].priceClose *
+          (1 + BACKTEST_FILTER.change_buyPrice / 100);
 
-        listBase.push({
-          list,
-          buyIndex,
-          fullData: data,
-          change_t0_vol,
-          change_t0,
-          change_t3,
-          change_buyPrice,
-          num_high_vol_than_t0,
-        });
+        change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
+        num_high_vol_than_t0 = list.filter(
+          (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+        ).length;
+        // if (
+        //   data[index + 5].priceOpen > base_min &&
+        //   data[index + 5].priceClose < base_max
+        // ) {
+        //   list.push(data[index + 5]);
+        //   if (
+        //     data[index + 6].priceOpen > base_min &&
+        //     data[index + 6].priceClose < base_max
+        //   ) {
+        //     list.push(data[index + 6]);
+        //     if (
+        //       data[index + 7].priceOpen > base_min &&
+        //       data[index + 7].priceClose < base_max
+        //     ) {
+        //       list.push(data[index + 7]);
+        //       if (
+        //         data[index + 8].priceOpen > base_min &&
+        //         data[index + 8].priceClose < base_max
+        //       ) {
+        //         list.push(data[index + 8]);
+        //         if (
+        //           data[index + 9].priceOpen > base_min &&
+        //           data[index + 9].priceClose < base_max
+        //         ) {
+        //           list.push(data[index + 9]);
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
       }
+
+      listBase.push({
+        list,
+        buyIndex,
+        fullData: data,
+        change_t0_vol,
+        change_t0,
+        change_t3,
+        change_buyPrice,
+        num_high_vol_than_t0,
+        base_max,
+        base_min,
+      });
+      // nextIndex = nextIndex + list.length - 1;
     }
   });
 
@@ -237,11 +247,13 @@ export const getDataChart = ({
   volumeField = 'totalVolume',
   grid,
   seriesMarkPoint,
+  markLine,
 }: {
   data: BackTestSymbol[];
   volumeField?: 'dealVolume' | 'totalVolume';
   grid?: any;
   seriesMarkPoint?: any;
+  markLine?: any;
 }) => {
   const newData = [...data];
   const dates = newData
@@ -285,336 +297,12 @@ export const getDataChart = ({
     volumes,
     seriesMarkPoint: seriesMarkPoint ? seriesMarkPoint : null,
     grid: grid ? grid : DEFAULT_GRID,
-  };
-};
-
-const getAction = ({
-  changePrice,
-  count_5_day_within_base,
-  estimated_vol_change,
-  extraData,
-}: {
-  changePrice: number;
-  count_5_day_within_base: Base[];
-  estimated_vol_change: number;
-  extraData: ExtraData;
-}): ActionType => {
-  let action: ActionType = 'unknown';
-
-  if (
-    changePrice > 2 &&
-    count_5_day_within_base.length === 1 &&
-    estimated_vol_change > 20
-  ) {
-    action = 'buy';
-  }
-
-  // BUY 2
-  // 1. Have base: base_count > 0
-  // 2. Price change > 2%
-
-  // SELL
-  // 1. in watching watchlist
-  // 2. Price change < -2%
-  if (changePrice < -2 && extraData?.inWatchingWatchList) {
-    action = 'sell';
-  }
-
-  return action;
-};
-
-const getEstimatedVol = ({ last_data }: any) => {
-  if (last_data.symbol === 'HVN') {
-    console.log('HVN');
-  }
-  const start_time = moment().set('hour', 9).set('minute', 0);
-  const default_end_time = moment().set('hour', 14).set('minute', 45);
-  const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
-
-  const end_time = moment();
-  let diff_time = 0;
-  if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
-    diff_time = end_time.diff(start_time, 'minute');
-  } else if (
-    end_time.isAfter(moment('13:00', 'HH:mm')) &&
-    end_time.isBefore(moment('14:45', 'HH:mm'))
-  ) {
-    diff_time = end_time.diff(start_time, 'minute') - 90;
-  } else {
-    diff_time =
-      end_time.diff(start_time, 'minute') -
-      end_time.diff(moment('11:30', 'HH:mm'), 'minute');
-  }
-  let estimated_vol = (last_data.dealVolume * default_diff_time) / diff_time;
-  if (
-    moment(last_data.date).format(DATE_FORMAT) !==
-      moment().format(DATE_FORMAT) ||
-    (moment(last_data.date).format(DATE_FORMAT) !==
-      moment().format(DATE_FORMAT) &&
-      end_time.isAfter(moment('15:00', 'HH:mm')))
-  ) {
-    estimated_vol = last_data.dealVolume;
-  }
-
-  return estimated_vol;
-};
-
-const getLast10DaySummary = ({
-  last_10_data,
-}: {
-  last_10_data: HistoricalQuote[];
-}) => {
-  const strong_sell: BackTestSymbol[] = [];
-  const strong_buy: BackTestSymbol[] = [];
-
-  const averageVolume_last10 =
-    last_10_data.reduce(
-      (a: number, b: HistoricalQuote) => a + b.totalVolume,
-      0
-    ) / 10;
-
-  last_10_data.forEach((i: HistoricalQuote, index: number) => {
-    if (index === 9) return;
-
-    const last_price = last_10_data[index + 1].priceClose;
-    let isSell = false;
-    let isBuy = false;
-
-    // Check if it is the sell or buy
-    // Normal case is priceClose > priceOpen --> buy
-
-    // Special case: hammer candle
-    const upperHammer = Number(
-      (
-        (100 *
-          (i.priceHigh -
-            (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
-        last_price
-      ).toFixed(1)
-    );
-
-    const lowerHammer = Number(
-      (
-        (100 *
-          ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
-            i.priceLow)) /
-        last_price
-      ).toFixed(1)
-    );
-
-    if (
-      i.priceClose > last_price * 1.03 ||
-      (lowerHammer > 3 && upperHammer < 1)
-    ) {
-      isBuy = true;
-    }
-    if (
-      i.priceClose < last_price * 0.97 ||
-      (upperHammer > 3 && lowerHammer < 1)
-    ) {
-      isSell = true;
-    }
-
-    let strong_volume = false;
-    // Check if volume is strong
-    if (i.totalVolume > averageVolume_last10) {
-      strong_volume = true;
-    }
-
-    if (strong_volume && isBuy) {
-      strong_buy.push(i);
-    }
-    if (strong_volume && isSell) {
-      strong_sell.push(i);
-    }
-  });
-  return {
-    strong_buy,
-    strong_sell,
+    markLine: markLine ? markLine : null,
   };
 };
 
 export const getListAllSymbols = (listWatchlist?: Watchlist[]) => {
-  return [
-    'HPG',
-    'HSG',
-    'NKG',
-    'SHI',
-    'SMC',
-    'TLH',
-    'ABB',
-    'ACB',
-    'BID',
-    'BVB',
-    'CTG',
-    'HDB',
-    'KLB',
-    'LPB',
-    'MBB',
-    'MSB',
-    'NAB',
-    'NVB',
-    'OCB',
-    'PGB',
-    'SHB',
-    'STB',
-    'TCB',
-    'TPB',
-    'VIB',
-    'VPB',
-    'EIB',
-    'SGB',
-    'SSB',
-    'VBB',
-    'VCB',
-    'AGG',
-    'D2D',
-    'DIG',
-    'DXG',
-    'HDC',
-    'HDG',
-    'HPX',
-    'IJC',
-    'KDH',
-    'LHG',
-    'NLG',
-    'NTL',
-    'NVL',
-    'PDR',
-    'SJS',
-    'TDC',
-    'TIG',
-    'TIP',
-    'KBC',
-    'SCR',
-    'KHG',
-    'CRE',
-    'HQC',
-    'CKG',
-    'AGR',
-    'BSI',
-    'BVS',
-    'CTS',
-    'FTS',
-    'HCM',
-    'MBS',
-    'ORS',
-    'SHS',
-    'SSI',
-    'TVB',
-    'VCI',
-    'VIX',
-    'VND',
-    'VDS',
-    'SBS',
-    'BSR',
-    'OIL',
-    'PLX',
-    'PVD',
-    'PVS',
-    'PVC',
-    'ADS',
-    'DLG',
-    'APG',
-    'PAS',
-    'TCD',
-    'DRC',
-    'OGC',
-    'DDG',
-    'AMV',
-    'FIT',
-    'MST',
-    'HAX',
-    'DPR',
-    'VGS',
-    'IPA',
-    'MBG',
-    'HHS',
-    'ITC',
-    'BCM',
-    'LDG',
-    'GEG',
-    'LCG',
-    'EVG',
-    'AAT',
-    'KOS',
-    'VC3',
-    'HVN',
-    'TTF',
-    'DDV',
-    'PTB',
-    'PET',
-    'DXS',
-    'CSV',
-    'FIR',
-    'NT2',
-    'NBB',
-    'DPG',
-    'SAM',
-    'VGI',
-    'SSH',
-    'MIG',
-    'ABS',
-    'FCN',
-    'CTF',
-    'C4G',
-    'KSB',
-    'IDI',
-    'PNJ',
-    'TCM',
-    'GMD',
-    'CTR',
-    'SCG',
-    'CTD',
-    'SZC',
-    'DHC',
-    'HBC',
-    'VPI',
-    'VJC',
-    'BCG',
-    'VPG',
-    'HUT',
-    'APH',
-    'ANV',
-    'REE',
-    'HNG',
-    'VGC',
-    'VHC',
-    'HHV',
-    'PHR',
-    'TNG',
-    'AAA',
-    'CEO',
-    'GAS',
-    'PVT',
-    'HAH',
-    'GVR',
-    'BVH',
-    'BAF',
-    'PC1',
-    'GIL',
-    'ASM',
-    'PAN',
-    'SBT',
-    'DGW',
-    'DBC',
-    'FRT',
-    'TCH',
-    'VRE',
-    'DPM',
-    'FPT',
-    'CII',
-    'VCG',
-    'DCM',
-    'POW',
-    'IDC',
-    'HAG',
-    'MWG',
-    'GEX',
-    'DGC',
-    'HT1',
-    'BCC',
-  ];
+  return LIST_ALL_SYMBOLS;
 
   // // get list all symbol from all watchlist
   // const LIST_WATCHLIST_INCLUDES = [
@@ -651,9 +339,6 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
   const newData = cloneDeep(data);
 
   const result = newData.filter((i: CustomSymbol) => {
-    if (i.symbol === 'HVN') {
-      console.log('HVN');
-    }
     if (
       currentWatchlist &&
       currentWatchlist.symbols &&
@@ -721,60 +406,6 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
   });
 
   return result;
-};
-
-export const getColumns = (checkedList: any) => {
-  const columns: any = [
-    {
-      title: 'Symbol',
-      dataIndex: 'symbol',
-      key: 'symbol',
-      sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
-    },
-  ];
-  if (checkedList.includes('HistoricalQuote')) {
-    columns.push({
-      title: 'Historical Quotes',
-      children: HISTORICAL_QUOTE_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('Fundamental')) {
-    columns.push({
-      title: 'Fundamentals',
-      children: FUNDAMENTAL_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('FinancialIndicators')) {
-    columns.push({
-      title: 'FinancialIndicators',
-      children: FINANCIAL_INDICATORS_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('BuySellSignals')) {
-    columns.push({
-      title: 'BuySellSignals',
-      children: BuySellSignalsColumns(),
-    });
-  }
-
-  if (checkedList.includes('NoData')) {
-    columns.push({
-      title: 'NoData',
-      children: NO_DATA_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('InDayReview')) {
-    columns.push({
-      title: 'InDayReview',
-      children: InDayReviewColumns,
-    });
-  }
-
-  return columns;
 };
 
 export const getBackTest = (
