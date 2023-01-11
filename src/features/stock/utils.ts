@@ -1,4 +1,4 @@
-import { max, min, meanBy, uniq, cloneDeep } from 'lodash';
+import { max, min, meanBy, cloneDeep } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
@@ -434,26 +434,208 @@ const getLast10DaySummary = ({
   };
 };
 
-export const getListAllSymbols = (listWatchlist: Watchlist[]) => {
-  // get list all symbol from all watchlist
-  const LIST_WATCHLIST_INCLUDES = [
-    476435, // 1757_thep
-    476706, // 8355_ngan_hang
-    476714, // 8633_dau_co_va_BDS
-    476720, // 8781_chung_khoan
-    476724, // 0533_dau_khi
-    737544, // thanh_khoan_vua
-    927584, // dau tu cong
+export const getListAllSymbols = (listWatchlist?: Watchlist[]) => {
+  return [
+    'HPG',
+    'HSG',
+    'NKG',
+    'SHI',
+    'SMC',
+    'TLH',
+    'ABB',
+    'ACB',
+    'BID',
+    'BVB',
+    'CTG',
+    'HDB',
+    'KLB',
+    'LPB',
+    'MBB',
+    'MSB',
+    'NAB',
+    'NVB',
+    'OCB',
+    'PGB',
+    'SHB',
+    'STB',
+    'TCB',
+    'TPB',
+    'VIB',
+    'VPB',
+    'EIB',
+    'SGB',
+    'SSB',
+    'VBB',
+    'VCB',
+    'AGG',
+    'D2D',
+    'DIG',
+    'DXG',
+    'HDC',
+    'HDG',
+    'HPX',
+    'IJC',
+    'KDH',
+    'LHG',
+    'NLG',
+    'NTL',
+    'NVL',
+    'PDR',
+    'SJS',
+    'TDC',
+    'TIG',
+    'TIP',
+    'KBC',
+    'SCR',
+    'KHG',
+    'CRE',
+    'HQC',
+    'CKG',
+    'AGR',
+    'BSI',
+    'BVS',
+    'CTS',
+    'FTS',
+    'HCM',
+    'MBS',
+    'ORS',
+    'SHS',
+    'SSI',
+    'TVB',
+    'VCI',
+    'VIX',
+    'VND',
+    'VDS',
+    'SBS',
+    'BSR',
+    'OIL',
+    'PLX',
+    'PVD',
+    'PVS',
+    'PVC',
+    'ADS',
+    'DLG',
+    'APG',
+    'PAS',
+    'TCD',
+    'DRC',
+    'OGC',
+    'DDG',
+    'AMV',
+    'FIT',
+    'MST',
+    'HAX',
+    'DPR',
+    'VGS',
+    'IPA',
+    'MBG',
+    'HHS',
+    'ITC',
+    'BCM',
+    'LDG',
+    'GEG',
+    'LCG',
+    'EVG',
+    'AAT',
+    'KOS',
+    'VC3',
+    'HVN',
+    'TTF',
+    'DDV',
+    'PTB',
+    'PET',
+    'DXS',
+    'CSV',
+    'FIR',
+    'NT2',
+    'NBB',
+    'DPG',
+    'SAM',
+    'VGI',
+    'SSH',
+    'MIG',
+    'ABS',
+    'FCN',
+    'CTF',
+    'C4G',
+    'KSB',
+    'IDI',
+    'PNJ',
+    'TCM',
+    'GMD',
+    'CTR',
+    'SCG',
+    'CTD',
+    'SZC',
+    'DHC',
+    'HBC',
+    'VPI',
+    'VJC',
+    'BCG',
+    'VPG',
+    'HUT',
+    'APH',
+    'ANV',
+    'REE',
+    'HNG',
+    'VGC',
+    'VHC',
+    'HHV',
+    'PHR',
+    'TNG',
+    'AAA',
+    'CEO',
+    'GAS',
+    'PVT',
+    'HAH',
+    'GVR',
+    'BVH',
+    'BAF',
+    'PC1',
+    'GIL',
+    'ASM',
+    'PAN',
+    'SBT',
+    'DGW',
+    'DBC',
+    'FRT',
+    'TCH',
+    'VRE',
+    'DPM',
+    'FPT',
+    'CII',
+    'VCG',
+    'DCM',
+    'POW',
+    'IDC',
+    'HAG',
+    'MWG',
+    'GEX',
+    'DGC',
+    'HT1',
+    'BCC',
   ];
-  let listAllSymbols = listWatchlist
-    .filter((i: Watchlist) => LIST_WATCHLIST_INCLUDES.includes(i.watchlistID))
-    .reduce((acc: any, item: any) => {
-      return [...acc, ...item.symbols];
-    }, []);
 
-  // unique listAllSYmbols
-  listAllSymbols = uniq(listAllSymbols);
-  return listAllSymbols;
+  // // get list all symbol from all watchlist
+  // const LIST_WATCHLIST_INCLUDES = [
+  //   476435, // 1757_thep
+  //   476706, // 8355_ngan_hang
+  //   476714, // 8633_dau_co_va_BDS
+  //   476720, // 8781_chung_khoan
+  //   476724, // 0533_dau_khi
+  //   737544, // thanh_khoan_vua
+  //   927584, // dau tu cong
+  // ];
+  // let listAllSymbols = listWatchlist
+  //   .filter((i: Watchlist) => LIST_WATCHLIST_INCLUDES.includes(i.watchlistID))
+  //   .reduce((acc: any, item: any) => {
+  //     return [...acc, ...item.symbols];
+  //   }, []);
+
+  // // unique listAllSYmbols
+  // listAllSymbols = uniq(listAllSymbols);
+  // // console.log(listAllSymbols);
+  //  return listAllSymbols;
 };
 
 export const getDataSource = (data: CustomSymbol[], filter: Filter) => {

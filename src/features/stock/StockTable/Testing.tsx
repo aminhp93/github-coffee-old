@@ -4,11 +4,14 @@ import request from '@/services/request';
 import { chunk } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
-import { getMapBackTestData } from '../utils';
+import { getMapBackTestData, getListAllSymbols } from '../utils';
 
 import config from '@/config';
 
 const baseUrl = config.apiUrl;
+
+const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+const endDate = DEFAULT_DATE.add(-1, 'days').format(DATE_FORMAT);
 
 const Testing = ({
   onChange,
@@ -21,9 +24,6 @@ const Testing = ({
   dataSource,
 }: any) => {
   const getListPromise = async (data: any) => {
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = DEFAULT_DATE.format(DATE_FORMAT);
     const listPromise: any = [];
     data.forEach((i: any) => {
       listPromise.push(
@@ -41,13 +41,10 @@ const Testing = ({
   };
 
   const createBackTestData = async () => {
-    const thanh_khoan_vua_wl: any =
-      listWatchlistObj && listWatchlistObj[737544];
-
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
-    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
-      for (let i = 1; i <= BACKTEST_COUNT; i++) {
+    getListAllSymbols().forEach((j: any) => {
+      for (let i = 0; i <= BACKTEST_COUNT; i++) {
         listPromises.push({
           symbol: j,
           offset: i,
@@ -72,6 +69,7 @@ const Testing = ({
         .flat()
         .map((i: any) => {
           i.key = `${i.symbol}_${i.date}`;
+          i.date = moment(i.date).format(DATE_FORMAT);
           return i;
         });
       // const res2 = await request({
@@ -101,9 +99,7 @@ const Testing = ({
   const getBackTestData = () => {
     // Get data to backtest within 1 year from buy, sell symbol
     const listPromises: any = [];
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
     // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    const endDate = DEFAULT_DATE.format(DATE_FORMAT);
     dataSource
       .filter((i: any) => i.action === 'buy' || i.action === 'sell')
       .forEach((j: any) => {
