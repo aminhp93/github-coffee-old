@@ -116,7 +116,7 @@ const BuySellSignalsColumns = () => {
                   if (!i.buyIndex) return '';
                   return (
                     <div key={index}>
-                      {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
+                      {/* {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)} */}
                     </div>
                   );
                 })}
@@ -175,7 +175,7 @@ const BuySellSignalsColumns = () => {
                   if (!i.buyIndex) return '';
                   return (
                     <div key={index}>
-                      {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)}
+                      {/* {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)} */}
                     </div>
                   );
                 })}

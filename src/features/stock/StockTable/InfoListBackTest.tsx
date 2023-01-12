@@ -36,8 +36,8 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       title: 'buyDate',
       width: 100,
       render: (data: Base) => {
-        if (!data.buyIndex) return '';
-        const buyDate = data.fullData[data.buyIndex]?.date;
+        if (!data.buyIndex || !backTestData) return '';
+        const buyDate = backTestData.fullData[data.buyIndex]?.date;
         return (
           <Button onClick={() => handleClickRow(data)}>
             {moment(buyDate).format(DATE_FORMAT)}
@@ -94,9 +94,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       width: 150,
       render: (data: Base) => {
         // get data in data.fullData from data.buyIndex to next 5 items
-        if (!data.buyIndex) return '';
-        const list = data.fullData.slice(data.buyIndex - 3, data.buyIndex + 5);
-        const buyItem = data.fullData[data.buyIndex];
+        if (!data.buyIndex || !backTestData) return '';
+        const list = backTestData.fullData.slice(
+          data.buyIndex - 3,
+          data.buyIndex + 5
+        );
+        const buyItem = backTestData.fullData[data.buyIndex];
         const seriesMarkPoint = getSeriesMarkPoint({ buyItem });
         const dataChart = getDataChart({
           data: list,
@@ -133,14 +136,14 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   };
 
   const handleClickRow = (record: Base) => {
-    if (!record.buyIndex) return;
-    const list = record.fullData.slice(
+    if (!record.buyIndex || !backTestData) return;
+    const list = backTestData.fullData.slice(
       record.buyIndex - 10,
       record.buyIndex + 40
     );
 
-    const buyItem = { ...record.fullData[record.buyIndex] };
-    const sellItem = { ...record.fullData[record.buyIndex - 3] };
+    const buyItem = { ...backTestData.fullData[record.buyIndex] };
+    const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
     const grid = [
       {
         left: 20,
@@ -218,7 +221,11 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       change_t0_vol,
       num_high_vol_than_t0,
     };
-    const newBackTest = getBackTest(backTestData.listBase, filter);
+    const newBackTest = getBackTest(
+      backTestData.fullData,
+      backTestData.listBase,
+      filter
+    );
 
     setBackTest(newBackTest);
   };

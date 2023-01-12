@@ -8,8 +8,15 @@ import {
   ExtraData,
 } from './types';
 import request from '@/services/request';
+import config from '@/config';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
+const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const domain = 'https://restv2.fireant.vn';
+const baseUrl = config.apiUrl;
 
 const headers = {
   Authorization:
@@ -245,6 +252,30 @@ const StockService = {
       };
     }
     return null;
+  },
+  getBackTestData: ({
+    database = 'supabase',
+    symbols,
+  }: {
+    database?: 'supabase' | 'heroku';
+    symbols: string[];
+  }) => {
+    if (database === 'supabase') {
+      return supabase
+        .from('stock')
+        .select(
+          'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume'
+        )
+        .in('symbol', symbols);
+    }
+
+    return request({
+      url: `${baseUrl}/api/stocks/`,
+      method: 'GET',
+      params: {
+        symbols: symbols.join(','),
+      },
+    });
   },
 };
 

@@ -113,7 +113,6 @@ export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
   list: BackTestSymbol[];
-  fullData: BackTestSymbol[];
   buyIndex: number | null;
   change_t0_vol: number | null;
   change_t0: number | null;
@@ -138,6 +137,7 @@ export interface BackTest {
   listBase: Base[];
   winCount: number;
   winRate: number;
+  fullData: BackTestSymbol[];
 }
 
 export interface Watchlist {

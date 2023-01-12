@@ -29,16 +29,7 @@ import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import config from '@/config';
-import request from '@/services/request';
-import {
-  CustomSymbol,
-  Watchlist,
-  BackTestSymbol,
-  SimplifiedBackTestSymbol,
-} from '../types';
-
-const baseUrl = config.apiUrl;
+import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -119,7 +110,7 @@ export default function StockTable() {
       });
   };
 
-  const getBackTestDataOffline = async () => {
+  const getBackTestDataOffline = async (database?: 'supabase' | 'heroku') => {
     try {
       const symbols = dataSource
         .filter(
@@ -130,16 +121,14 @@ export default function StockTable() {
         .map((i: CustomSymbol) => i.symbol);
 
       setLoading(true);
-      const res = await request({
-        url: `${baseUrl}/api/stocks/`,
-        method: 'GET',
-        params: {
-          symbols: symbols.join(','),
-        },
-      });
+
+      const res = await StockService.getBackTestData({ symbols, database });
+
       setLoading(false);
-      const mappedData: BackTestSymbol[] = res.data.map(
-        (i: SimplifiedBackTestSymbol) => {
+      let mappedData: any;
+
+      if (database === 'heroku') {
+        mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
           return {
             date: i.d,
             dealVolume: i.v,
@@ -150,8 +139,12 @@ export default function StockTable() {
             totalVolume: i.v2,
             symbol: i.s,
           };
-        }
-      );
+        });
+      } else {
+        mappedData = res.data;
+      }
+
+      console.log(mappedData);
 
       const newFullDataSource = getMapBackTestData(mappedData, fullDataSource);
       const newData = getDataSource(newFullDataSource, filters);
@@ -190,10 +183,17 @@ export default function StockTable() {
 
           <Button
             size="small"
-            onClick={getBackTestDataOffline}
+            onClick={() => getBackTestDataOffline('supabase')}
             style={{ marginLeft: '8px' }}
           >
-            Backtest offline
+            Backtest offline supabase
+          </Button>
+          <Button
+            size="small"
+            onClick={() => getBackTestDataOffline('heroku')}
+            style={{ marginLeft: '8px' }}
+          >
+            Backtest offline heroku
           </Button>
         </div>
         <div className={'flex'}>

@@ -198,7 +198,6 @@ export const getListBase = ({
       listBase.push({
         list,
         buyIndex,
-        fullData: data,
         change_t0_vol,
         change_t0,
         change_t3,
@@ -231,7 +230,7 @@ export const getMapBackTestData = (
     if (filterRes.length) {
       const listBase = getListBase({ data: filterRes });
 
-      i.backtest = getBackTest(listBase, {
+      i.backtest = getBackTest(filterRes, listBase, {
         change_t0: BACKTEST_FILTER.change_t0,
         change_t0_vol: BACKTEST_FILTER.change_t0_vol,
         num_high_vol_than_t0: BACKTEST_FILTER.num_high_vol_than_t0,
@@ -409,6 +408,7 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
 };
 
 export const getBackTest = (
+  fullData: BackTestSymbol[],
   listBase: Base[],
   filterCondition: FilterBackTest
 ) => {
@@ -426,6 +426,7 @@ export const getBackTest = (
     listBase,
     winCount,
     winRate,
+    fullData,
   };
 };
 
