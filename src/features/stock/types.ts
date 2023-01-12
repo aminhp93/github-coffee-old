@@ -93,11 +93,6 @@ export interface BuySellSignals {
   changeVolume_last5: number;
   changePrice: number;
   count_5_day_within_base: Base[];
-  count_10_day_within_base: Base[];
-  last_10_day_summary: {
-    strong_buy: BackTestSymbol[];
-    strong_sell: BackTestSymbol[];
-  };
   estimated_vol_change: number;
   extra_vol: number;
   action: ActionType;
@@ -152,11 +147,7 @@ export interface Filter {
   currentWatchlist: Watchlist | null;
   totalValue_last20_min: number;
   changePrice_min: number;
-  changePrice_max: number;
   have_base_in_5_day: boolean;
-  have_base_in_10_day: boolean;
-  count_10_day_buy_min: number;
-  count_10_day_sell_min: number;
   estimated_vol_change_min: number;
   have_extra_vol: boolean;
   only_buy_sell: boolean;

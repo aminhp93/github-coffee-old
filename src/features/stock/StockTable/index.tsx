@@ -18,11 +18,11 @@ import {
   DEFAULT_COLUMNS,
   DATE_FORMAT,
   DEFAULT_DATE,
+  getListAllSymbols,
 } from '../constants';
 import {
   mapHistoricalQuote,
   getMapBackTestData,
-  getListAllSymbols,
   getDataSource,
 } from '../utils';
 import Filters from './Filters';
@@ -143,8 +143,6 @@ export default function StockTable() {
       } else {
         mappedData = res.data;
       }
-
-      console.log(mappedData);
 
       const newFullDataSource = getMapBackTestData(mappedData, fullDataSource);
       const newData = getDataSource(newFullDataSource, filters);

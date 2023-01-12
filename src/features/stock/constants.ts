@@ -9,6 +9,7 @@ import {
   Filter,
   BackTestSymbol,
   Base,
+  Watchlist,
 } from './types';
 
 export const UNIT_BILLION = 1_000_000_000;
@@ -170,11 +171,7 @@ export const DEFAULT_FILTER: Filter = {
   currentWatchlist: null,
   totalValue_last20_min: 1,
   changePrice_min: 2,
-  changePrice_max: 5,
   have_base_in_5_day: false,
-  have_base_in_10_day: false,
-  count_10_day_buy_min: 3,
-  count_10_day_sell_min: 3,
   estimated_vol_change_min: 20,
   have_extra_vol: false,
   only_buy_sell: true,
@@ -602,80 +599,34 @@ export const getEstimatedVol = (data: HistoricalQuote) => {
   return estimated_vol;
 };
 
-export const getLast10DaySummary = (last_10_data: HistoricalQuote[]) => {
-  const strong_sell: BackTestSymbol[] = [];
-  const strong_buy: BackTestSymbol[] = [];
-
-  const averageVolume_last10 =
-    last_10_data.reduce(
-      (a: number, b: HistoricalQuote) => a + b.totalVolume,
-      0
-    ) / 10;
-
-  last_10_data.forEach((i: HistoricalQuote, index: number) => {
-    if (index === 9) return;
-
-    const last_price = last_10_data[index + 1].priceClose;
-    let isSell = false;
-    let isBuy = false;
-
-    // Check if it is the sell or buy
-    // Normal case is priceClose > priceOpen --> buy
-
-    // Special case: hammer candle
-    const upperHammer = Number(
-      (
-        (100 *
-          (i.priceHigh -
-            (i.priceClose > i.priceOpen ? i.priceClose : i.priceOpen))) /
-        last_price
-      ).toFixed(1)
-    );
-
-    const lowerHammer = Number(
-      (
-        (100 *
-          ((i.priceClose < i.priceOpen ? i.priceClose : i.priceOpen) -
-            i.priceLow)) /
-        last_price
-      ).toFixed(1)
-    );
-
-    if (
-      i.priceClose > last_price * 1.03 ||
-      (lowerHammer > 3 && upperHammer < 1)
-    ) {
-      isBuy = true;
-    }
-    if (
-      i.priceClose < last_price * 0.97 ||
-      (upperHammer > 3 && lowerHammer < 1)
-    ) {
-      isSell = true;
-    }
-
-    let strong_volume = false;
-    // Check if volume is strong
-    if (i.totalVolume > averageVolume_last10) {
-      strong_volume = true;
-    }
-
-    if (strong_volume && isBuy) {
-      strong_buy.push(i);
-    }
-    if (strong_volume && isSell) {
-      strong_sell.push(i);
-    }
-  });
-  return {
-    strong_buy,
-    strong_sell,
-  };
-};
-
 export const getBase_min_max = (data: BackTestSymbol[], index: number) => {
   return {
     base_min: minBy(data, 'priceLow')?.priceLow,
     base_max: maxBy(data, 'priceHigh')?.priceHigh,
   };
+};
+
+export const getListAllSymbols = (listWatchlist?: Watchlist[]) => {
+  return LIST_ALL_SYMBOLS;
+
+  // // get list all symbol from all watchlist
+  // const LIST_WATCHLIST_INCLUDES = [
+  //   476435, // 1757_thep
+  //   476706, // 8355_ngan_hang
+  //   476714, // 8633_dau_co_va_BDS
+  //   476720, // 8781_chung_khoan
+  //   476724, // 0533_dau_khi
+  //   737544, // thanh_khoan_vua
+  //   927584, // dau tu cong
+  // ];
+  // let listAllSymbols = listWatchlist
+  //   .filter((i: Watchlist) => LIST_WATCHLIST_INCLUDES.includes(i.watchlistID))
+  //   .reduce((acc: any, item: any) => {
+  //     return [...acc, ...item.symbols];
+  //   }, []);
+
+  // // unique listAllSYmbols
+  // listAllSymbols = uniq(listAllSymbols);
+  // // console.log(listAllSymbols);
+  //  return listAllSymbols;
 };

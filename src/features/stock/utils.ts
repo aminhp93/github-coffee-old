@@ -4,16 +4,13 @@ import {
   DATE_FORMAT,
   UNIT_BILLION,
   BACKTEST_FILTER,
-  LIST_ALL_SYMBOLS,
   getAction,
   getEstimatedVol,
-  getLast10DaySummary,
   getBase_min_max,
 } from './constants';
 import {
   HistoricalQuote,
   ExtraData,
-  Watchlist,
   CustomSymbol,
   Filter,
   BackTestSymbol,
@@ -48,13 +45,6 @@ export const mapHistoricalQuote = (
     limit: 1,
   });
 
-  const count_10_day_within_base = getListBase({
-    data: data.slice(1, 11),
-    limit: 1,
-  });
-
-  const last_10_data = data.slice(1, 11);
-  const last_10_day_summary = getLast10DaySummary(last_10_data);
   const estimated_vol = getEstimatedVol(last_data);
 
   const estimated_vol_change =
@@ -94,8 +84,6 @@ export const mapHistoricalQuote = (
       changeVolume_last5,
       changePrice,
       count_5_day_within_base,
-      count_10_day_within_base,
-      last_10_day_summary,
       estimated_vol_change,
       extra_vol,
       action,
@@ -300,37 +288,11 @@ export const getDataChart = ({
   };
 };
 
-export const getListAllSymbols = (listWatchlist?: Watchlist[]) => {
-  return LIST_ALL_SYMBOLS;
-
-  // // get list all symbol from all watchlist
-  // const LIST_WATCHLIST_INCLUDES = [
-  //   476435, // 1757_thep
-  //   476706, // 8355_ngan_hang
-  //   476714, // 8633_dau_co_va_BDS
-  //   476720, // 8781_chung_khoan
-  //   476724, // 0533_dau_khi
-  //   737544, // thanh_khoan_vua
-  //   927584, // dau tu cong
-  // ];
-  // let listAllSymbols = listWatchlist
-  //   .filter((i: Watchlist) => LIST_WATCHLIST_INCLUDES.includes(i.watchlistID))
-  //   .reduce((acc: any, item: any) => {
-  //     return [...acc, ...item.symbols];
-  //   }, []);
-
-  // // unique listAllSYmbols
-  // listAllSymbols = uniq(listAllSymbols);
-  // // console.log(listAllSymbols);
-  //  return listAllSymbols;
-};
-
 export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
   const {
     currentWatchlist,
     totalValue_last20_min,
     changePrice_min,
-    changePrice_max,
     only_buy_sell,
     estimated_vol_change_min,
   } = filter;
@@ -354,10 +316,6 @@ export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
     }
 
     if (i.buySellSignals?.changePrice < changePrice_min) {
-      return false;
-    }
-
-    if (i.buySellSignals?.changePrice > changePrice_max) {
       return false;
     }
 

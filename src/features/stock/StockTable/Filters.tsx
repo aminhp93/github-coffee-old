@@ -49,28 +49,10 @@ const Filters = ({
   const [changePrice_min, setChangePrice_min] = useState<number>(
     DEFAULT_FILTER.changePrice_min
   );
-  const [changePrice_max, setChangePrice_max] = useState<number>(
-    DEFAULT_FILTER.changePrice_max
-  );
 
   // count_5_day_within_base
   const [have_base_in_5_day, setHave_base_in_5_day] = useState(
     DEFAULT_FILTER.have_base_in_5_day
-  );
-
-  // count_10_day_within_base
-  const [have_base_in_10_day, setHave_base_in_10_day] = useState(
-    DEFAULT_FILTER.have_base_in_10_day
-  );
-
-  // count_10_day_buy
-  const [count_10_day_buy_min, setCount_10_day_buy_min] = useState<number>(
-    DEFAULT_FILTER.count_10_day_buy_min
-  );
-
-  // count_10_day_sell
-  const [count_10_day_sell_min, setCount_10_day_sell_min] = useState<number>(
-    DEFAULT_FILTER.count_10_day_sell_min
   );
 
   // estimated_vol_change
@@ -132,11 +114,7 @@ const Filters = ({
   const handleClearFilter = () => {
     setTotalValue_last20_min(DEFAULT_FILTER.totalValue_last20_min);
     setChangePrice_min(DEFAULT_FILTER.changePrice_min);
-    setChangePrice_max(DEFAULT_FILTER.changePrice_max);
     setHave_base_in_5_day(DEFAULT_FILTER.have_base_in_5_day);
-    setHave_base_in_10_day(DEFAULT_FILTER.have_base_in_10_day);
-    setCount_10_day_buy_min(DEFAULT_FILTER.count_10_day_buy_min);
-    setCount_10_day_sell_min(DEFAULT_FILTER.count_10_day_sell_min);
     setEstimated_vol_change_min(DEFAULT_FILTER.estimated_vol_change_min);
     setHave_extra_vol(DEFAULT_FILTER.have_extra_vol);
     onChange(DEFAULT_FILTER);
@@ -144,8 +122,7 @@ const Filters = ({
 
   const handleSetFilter = () => {
     setChangePrice_min(2);
-    setChangePrice_max(6);
-    onChange({ changePrice_min: 2, changePrice_max: 6 });
+    onChange({ changePrice_min: 2 });
   };
 
   const handleChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
@@ -177,7 +154,31 @@ const Filters = ({
     <Drawer
       title={
         <div className="width-100 flex" style={{ justifyContent: 'flex-end' }}>
-          <Button size="small" onClick={onUpdateWatchlist}>
+          <DatePicker
+            size="small"
+            onChange={handleChangeDate}
+            defaultValue={DEFAULT_DATE}
+            format={DATE_FORMAT}
+          />
+          <Button
+            style={{ marginLeft: '8px' }}
+            size="small"
+            onClick={() => setPlaying(!isPlaying)}
+          >
+            {isPlaying ? 'Stop Interval' : 'Start Interval'}
+          </Button>
+          <InputNumber
+            size="small"
+            style={{ marginLeft: '8px' }}
+            disabled={isPlaying}
+            value={delay}
+            onChange={(value: any) => setDelay(value)}
+          />
+          <Button
+            style={{ marginLeft: '8px' }}
+            size="small"
+            onClick={onUpdateWatchlist}
+          >
             Update watchlist
           </Button>
         </div>
@@ -192,38 +193,15 @@ const Filters = ({
         className="flex height-100"
         style={{ justifyContent: 'space-between' }}
       >
-        <div
-          className="flex flex-1"
-          style={{ justifyContent: 'space-between', flexDirection: 'column' }}
-        >
+        <div className="flex flex-1" style={{ flexDirection: 'column' }}>
           <div className="flex">
             <Dropdown overlay={menu} trigger={['hover']}>
               <Button size="small" style={{ marginRight: '8px' }}>
                 {currentWatchlist?.name || 'Select watchlist'}
               </Button>
             </Dropdown>
-            <div style={{ marginLeft: '8px' }}>
-              <Button size="small" onClick={() => setPlaying(!isPlaying)}>
-                {isPlaying ? 'Stop Interval' : 'Start Interval'}
-              </Button>
-              <InputNumber
-                size="small"
-                style={{ marginLeft: '8px' }}
-                disabled={isPlaying}
-                value={delay}
-                onChange={(value: any) => setDelay(value)}
-              />
-            </div>
           </div>
-          <div className="flex">
-            <DatePicker
-              onChange={handleChangeDate}
-              defaultValue={DEFAULT_DATE}
-              format={DATE_FORMAT}
-            />
-          </div>
-
-          <div className="flex">
+          <div style={{ marginTop: '20px' }}>
             <InputNumber
               size="small"
               addonBefore="totalValue_last20_min"
@@ -234,7 +212,7 @@ const Filters = ({
               }}
             />
           </div>
-          <div className="flex" style={{ marginTop: '10px' }}>
+          <div style={{ marginTop: '20px' }}>
             <InputNumber
               size="small"
               addonBefore="changePrice_min"
@@ -244,18 +222,8 @@ const Filters = ({
                 onChange({ changePrice_min: value });
               }}
             />
-            <InputNumber
-              size="small"
-              style={{ marginLeft: '10px' }}
-              addonBefore="changePrice_max"
-              value={changePrice_max}
-              onChange={(value: any) => {
-                setChangePrice_max(value);
-                onChange({ changePrice_max: value });
-              }}
-            />
           </div>
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: '20px' }}>
             <Switch
               checkedChildren="have_base_in_5_day"
               unCheckedChildren="have_base_in_5_day"
@@ -265,40 +233,8 @@ const Filters = ({
                 onChange({ have_base_in_5_day: !have_base_in_5_day });
               }}
             />
-
-            <Switch
-              checkedChildren="have_base_in_10_day"
-              unCheckedChildren="have_base_in_10_day"
-              checked={have_base_in_10_day}
-              onChange={() => {
-                setHave_base_in_10_day(!have_base_in_10_day);
-                onChange({ have_base_in_10_day: !have_base_in_10_day });
-              }}
-            />
           </div>
-          <div className="flex" style={{ marginTop: '10px' }}>
-            <InputNumber
-              size="small"
-              addonBefore="count_10_day_buy_min"
-              value={count_10_day_buy_min}
-              onChange={(value: any) => {
-                setCount_10_day_buy_min(value);
-                onChange({ count_10_day_buy_min: value });
-              }}
-            />
-          </div>
-          <div className="flex" style={{ marginTop: '10px' }}>
-            <InputNumber
-              size="small"
-              addonBefore="count_10_day_sell_min"
-              value={count_10_day_sell_min}
-              onChange={(value: any) => {
-                setCount_10_day_sell_min(value);
-                onChange({ count_10_day_sell_min: value });
-              }}
-            />
-          </div>
-          <div className="flex" style={{ marginTop: '10px' }}>
+          <div style={{ marginTop: '20px' }}>
             <InputNumber
               size="small"
               addonBefore="estimated_vol_change_min"
@@ -309,7 +245,7 @@ const Filters = ({
               }}
             />
           </div>
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: '20px' }}>
             <Switch
               checkedChildren="have_extra_vol"
               unCheckedChildren="have_extra_vol"
@@ -319,6 +255,8 @@ const Filters = ({
                 onChange({ have_extra_vol: !have_extra_vol });
               }}
             />
+          </div>
+          <div style={{ marginTop: '20px' }}>
             <Switch
               checkedChildren="only_buy_sell"
               unCheckedChildren="only_buy_sell"
@@ -329,7 +267,7 @@ const Filters = ({
               }}
             />
           </div>
-          <div style={{ marginTop: '8px' }}>
+          <div style={{ marginTop: '20px' }}>
             <Popover
               placement="leftTop"
               content={
@@ -366,7 +304,6 @@ const Filters = ({
                 <ReactMarkdown
                   children={`
                 - changePrice_min: 2
-                - changePrice_max: 6
               `}
                 />
               </div>
