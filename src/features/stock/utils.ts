@@ -92,41 +92,32 @@ export const mapHistoricalQuote = (
 export const getListBase = (data: BackTestSymbol[]): Base[] => {
   if (!data || !data.length || data.length < 6) return [];
   let listBase: Base[] = [];
-  // let nextIndex = 0;
+  let nextIndex: number = 6;
 
   data.forEach((_: BackTestSymbol, index: number) => {
-    if (index === 0 || index > data.length - 5) return;
-    // nextIndex += 1;
-    // if (index < nextIndex) return;
+    if (index !== nextIndex) return;
+
+    nextIndex = nextIndex + 1;
 
     const startBaseIndex = index;
-    const endBaseIndex = index + 4;
-    const list = [
-      data[index],
-      data[index + 1],
-      data[index + 2],
-      data[index + 3],
-      data[index + 4],
-    ];
+    let endBaseIndex = index + 5;
+    const list = data.slice(startBaseIndex, endBaseIndex);
     const { base_min, base_max } = getBase_min_max(list);
     if (!base_max || !base_min) return;
 
     const percent = (100 * (base_max - base_min)) / base_min;
     if (percent < 14) {
       let buyIndex = index - 1;
-
       const averageVolume = meanBy(list, 'totalVolume');
       const change_t0_vol =
         (100 * (data[buyIndex].totalVolume - averageVolume)) / averageVolume;
       const change_t0 =
         (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
         list[0].priceClose;
-
       const change_buyPrice = BACKTEST_FILTER.change_buyPrice;
       const num_high_vol_than_t0 = list.filter(
         (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
       ).length;
-
       let change_t3 = null;
 
       if (data[index - 4]) {
@@ -137,6 +128,21 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
 
         change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
       }
+
+      let stop = false;
+
+      data.slice(endBaseIndex).forEach((m: BackTestSymbol, index2: number) => {
+        if (stop) return;
+        const new_min = base_min > m.priceClose ? m.priceClose : base_min;
+        const new_max = base_max < m.priceClose ? m.priceClose : base_max;
+        const new_percent = (100 * (new_max - new_min)) / new_min;
+        if (new_percent < 14) {
+          list.push(m);
+          endBaseIndex = endBaseIndex + 1;
+        } else {
+          stop = true;
+        }
+      });
 
       listBase.push({
         buyIndex,
@@ -150,7 +156,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         base_max,
         base_min,
       });
-      // nextIndex = nextIndex + list.length - 1;
+      nextIndex = nextIndex + endBaseIndex - startBaseIndex - 1;
     }
   });
 
@@ -399,22 +405,35 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   if (!data || data.length === 0 || data.length < 6) return null;
   const buyIndex = 0;
   const startBaseIndex = 1;
-  const endBaseIndex = 6;
+  let endBaseIndex = 6;
   const list = data.slice(startBaseIndex, endBaseIndex);
-
   const { base_min, base_max } = getBase_min_max(list);
+
   if (base_min && base_max) {
     const percent = (100 * (base_max - base_min)) / base_min;
+
     if (percent < 14) {
       const averageVolume = meanBy(list, 'totalVolume');
-
       let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
       let num_high_vol_than_t0 = 0;
-
       const change_t0_vol =
         (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
       const change_t0 =
         (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
+      let stop = false;
+
+      data.forEach((i: BackTestSymbol, index: number) => {
+        if (index < 6 || stop) return;
+        const new_min = base_min > i.priceClose ? i.priceClose : base_min;
+        const new_max = base_max < i.priceClose ? i.priceClose : base_max;
+        const new_percent = (100 * (new_max - new_min)) / new_min;
+        if (new_percent < 14) {
+          list.push(i);
+          endBaseIndex = index;
+        } else {
+          stop = true;
+        }
+      });
 
       return {
         buyIndex,
