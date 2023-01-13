@@ -535,22 +535,18 @@ export const LIST_ALL_SYMBOLS = [
 
 export const getAction = ({
   changePrice,
-  count_5_day_within_base,
+  latestBase,
   estimated_vol_change,
   extraData,
 }: {
   changePrice: number;
-  count_5_day_within_base: Base[];
+  latestBase: Base | null;
   estimated_vol_change: number;
   extraData: ExtraData;
 }): ActionType => {
   let action: ActionType = 'unknown';
 
-  if (
-    changePrice > 2 &&
-    count_5_day_within_base.length === 1 &&
-    estimated_vol_change > 20
-  ) {
+  if (changePrice > 2 && latestBase && estimated_vol_change > 20) {
     action = 'buy';
   }
 
@@ -599,7 +595,7 @@ export const getEstimatedVol = (data: HistoricalQuote) => {
   return estimated_vol;
 };
 
-export const getBase_min_max = (data: BackTestSymbol[], index: number) => {
+export const getBase_min_max = (data: BackTestSymbol[]) => {
   return {
     base_min: minBy(data, 'priceLow')?.priceLow,
     base_max: maxBy(data, 'priceHigh')?.priceHigh,

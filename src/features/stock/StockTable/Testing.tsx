@@ -128,6 +128,7 @@ const Testing = ({
         console.log(flattenData);
         const newDataSource: any = getMapBackTestData(
           flattenData,
+          dataSource,
           fullDataSource
         );
         cbSetDataSource && cbSetDataSource(newDataSource);

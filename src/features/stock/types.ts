@@ -92,7 +92,7 @@ export interface BuySellSignals {
   averageVolume_last5: number;
   changeVolume_last5: number;
   changePrice: number;
-  count_5_day_within_base: Base[];
+  latestBase: Base | null;
   estimated_vol_change: number;
   extra_vol: number;
   action: ActionType;
@@ -107,15 +107,16 @@ export interface ExtraData {
 export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
-  list: BackTestSymbol[];
-  buyIndex: number | null;
-  change_t0_vol: number | null;
-  change_t0: number | null;
-  change_t3: number | null;
-  change_buyPrice: number | null;
-  num_high_vol_than_t0: number | null;
-  base_max: number | null;
-  base_min: number | null;
+  buyIndex: number;
+  startBaseIndex: number;
+  endBaseIndex: number;
+  change_t0_vol: number;
+  change_t0: number;
+  change_buyPrice: number;
+  num_high_vol_than_t0: number;
+  base_max: number;
+  base_min: number;
+  change_t3?: number | null;
 }
 
 export interface CustomSymbol {

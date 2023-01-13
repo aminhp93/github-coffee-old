@@ -144,7 +144,11 @@ export default function StockTable() {
         mappedData = res.data;
       }
 
-      const newFullDataSource = getMapBackTestData(mappedData, fullDataSource);
+      const newFullDataSource = getMapBackTestData(
+        mappedData,
+        dataSource,
+        fullDataSource
+      );
       const newData = getDataSource(newFullDataSource, filters);
 
       setFullDataSource(newFullDataSource);
@@ -253,7 +257,7 @@ export default function StockTable() {
     );
   };
 
-  console.log(dataSource, 'dataSource');
+  console.log(dataSource, 'dataSource', fullDataSource, 'fullDataSource');
 
   return (
     <div className="StockTable height-100 flex">

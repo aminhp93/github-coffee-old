@@ -40,10 +40,7 @@ export const mapHistoricalQuote = (
     (100 * (last_data.priceClose - last_2_data.priceClose)) /
     last_2_data.priceClose;
 
-  const count_5_day_within_base = getListBase({
-    data: data.slice(1, 6),
-    limit: 1,
-  });
+  const latestBase = getLatestBase(data);
 
   const estimated_vol = getEstimatedVol(last_data);
 
@@ -55,7 +52,7 @@ export const mapHistoricalQuote = (
 
   const action = getAction({
     changePrice,
-    count_5_day_within_base,
+    latestBase,
     estimated_vol_change,
     extraData,
   });
@@ -83,7 +80,7 @@ export const mapHistoricalQuote = (
       averageVolume_last5,
       changeVolume_last5,
       changePrice,
-      count_5_day_within_base,
+      latestBase,
       estimated_vol_change,
       extra_vol,
       action,
@@ -92,27 +89,18 @@ export const mapHistoricalQuote = (
   };
 };
 
-export const getListBase = ({
-  data,
-  limit,
-}: {
-  data: BackTestSymbol[];
-  limit?: number;
-}): Base[] => {
+export const getListBase = (data: BackTestSymbol[]): Base[] => {
+  if (!data || !data.length || data.length < 6) return [];
   let listBase: Base[] = [];
   // let nextIndex = 0;
 
   data.forEach((_: BackTestSymbol, index: number) => {
+    if (index === 0 || index > data.length - 5) return;
     // nextIndex += 1;
     // if (index < nextIndex) return;
-    if (
-      !data[index + 1] ||
-      !data[index + 2] ||
-      !data[index + 3] ||
-      !data[index + 4]
-    )
-      return;
-    if (limit && listBase.length === limit) return;
+
+    const startBaseIndex = index;
+    const endBaseIndex = index + 4;
     const list = [
       data[index],
       data[index + 1],
@@ -120,72 +108,40 @@ export const getListBase = ({
       data[index + 3],
       data[index + 4],
     ];
-    const { base_min, base_max } = getBase_min_max(list, index);
+    const { base_min, base_max } = getBase_min_max(list);
     if (!base_max || !base_min) return;
 
     const percent = (100 * (base_max - base_min)) / base_min;
     if (percent < 14) {
-      let buyIndex: number | null = null;
+      let buyIndex = index - 1;
 
       const averageVolume = meanBy(list, 'totalVolume');
-      let change_t0_vol = null;
-      let change_t0 = null;
+      const change_t0_vol =
+        (100 * (data[buyIndex].totalVolume - averageVolume)) / averageVolume;
+      const change_t0 =
+        (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
+        list[0].priceClose;
+
+      const change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      const num_high_vol_than_t0 = list.filter(
+        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+      ).length;
+
       let change_t3 = null;
-      let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
-      let num_high_vol_than_t0 = 0;
 
-      if (data[index - 1] && data[index - 4]) {
-        buyIndex = index - 1;
-        change_t0_vol =
-          (100 * (data[buyIndex].totalVolume - averageVolume)) / averageVolume;
-        change_t0 =
-          (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
-          list[0].priceClose;
-
+      if (data[index - 4]) {
         const t3Price = data[index - 4].priceClose;
         const buyPrice =
           data[buyIndex].priceClose *
           (1 + BACKTEST_FILTER.change_buyPrice / 100);
 
         change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
-        num_high_vol_than_t0 = list.filter(
-          (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
-        ).length;
-        // if (
-        //   data[index + 5].priceOpen > base_min &&
-        //   data[index + 5].priceClose < base_max
-        // ) {
-        //   list.push(data[index + 5]);
-        //   if (
-        //     data[index + 6].priceOpen > base_min &&
-        //     data[index + 6].priceClose < base_max
-        //   ) {
-        //     list.push(data[index + 6]);
-        //     if (
-        //       data[index + 7].priceOpen > base_min &&
-        //       data[index + 7].priceClose < base_max
-        //     ) {
-        //       list.push(data[index + 7]);
-        //       if (
-        //         data[index + 8].priceOpen > base_min &&
-        //         data[index + 8].priceClose < base_max
-        //       ) {
-        //         list.push(data[index + 8]);
-        //         if (
-        //           data[index + 9].priceOpen > base_min &&
-        //           data[index + 9].priceClose < base_max
-        //         ) {
-        //           list.push(data[index + 9]);
-        //         }
-        //       }
-        //     }
-        //   }
-        // }
       }
 
       listBase.push({
-        list,
         buyIndex,
+        startBaseIndex,
+        endBaseIndex,
         change_t0_vol,
         change_t0,
         change_t3,
@@ -203,12 +159,15 @@ export const getListBase = ({
 
 export const getMapBackTestData = (
   res: BackTestSymbol[],
+  dataSource: CustomSymbol[],
   fullDataSource: CustomSymbol[]
 ) => {
   const flattenRes = res;
-  const newDataSource = [...fullDataSource];
-  newDataSource.forEach((i: CustomSymbol) => {
-    // get data with selected symbol
+  const newDataSource = fullDataSource.map((i: CustomSymbol) => {
+    const newItem = { ...i };
+    const isIncluded = dataSource.map((j) => j.symbol).includes(i.symbol);
+    if (!isIncluded) return newItem;
+
     const filterRes: BackTestSymbol[] = flattenRes
       .filter((j: BackTestSymbol) => j.symbol === i.symbol)
       .sort((a: BackTestSymbol, b: BackTestSymbol) =>
@@ -216,14 +175,15 @@ export const getMapBackTestData = (
       );
 
     if (filterRes.length) {
-      const listBase = getListBase({ data: filterRes });
-
-      i.backtest = getBackTest(filterRes, listBase, {
+      const listBase = getListBase(filterRes);
+      newItem.backtest = getBackTest(filterRes, listBase, {
         change_t0: BACKTEST_FILTER.change_t0,
         change_t0_vol: BACKTEST_FILTER.change_t0_vol,
         num_high_vol_than_t0: BACKTEST_FILTER.num_high_vol_than_t0,
       });
     }
+
+    return newItem;
   });
 
   return newDataSource;
@@ -433,4 +393,41 @@ export const getSeriesMarkPoint = ({
     },
     data: seriesMarkPointData,
   };
+};
+
+export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
+  if (!data || data.length === 0 || data.length < 6) return null;
+  const buyIndex = 0;
+  const startBaseIndex = 1;
+  const endBaseIndex = 6;
+  const list = data.slice(startBaseIndex, endBaseIndex);
+
+  const { base_min, base_max } = getBase_min_max(list);
+  if (base_min && base_max) {
+    const percent = (100 * (base_max - base_min)) / base_min;
+    if (percent < 14) {
+      const averageVolume = meanBy(list, 'totalVolume');
+
+      let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      let num_high_vol_than_t0 = 0;
+
+      const change_t0_vol =
+        (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
+      const change_t0 =
+        (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
+
+      return {
+        buyIndex,
+        startBaseIndex,
+        endBaseIndex,
+        change_t0_vol,
+        change_t0,
+        change_buyPrice,
+        num_high_vol_than_t0,
+        base_max,
+        base_min,
+      };
+    }
+  }
+  return null;
 };

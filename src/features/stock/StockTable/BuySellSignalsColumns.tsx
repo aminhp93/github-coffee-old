@@ -2,7 +2,7 @@ import { Tooltip } from 'antd';
 import { UNIT_BILLION, BUY_SELL_SIGNNAL_KEYS } from '../constants';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import InfoListBackTest from './InfoListBackTest';
-import { Base, CustomSymbol } from '../types';
+import { CustomSymbol } from '../types';
 
 const BuySellSignalsColumns = () => {
   return [
@@ -100,35 +100,14 @@ const BuySellSignalsColumns = () => {
       },
       align: 'right',
       render: (data: CustomSymbol) => {
-        const listBase = data.buySellSignals?.count_5_day_within_base || [];
-        const buyIndex = listBase.length === 1 ? listBase[0].buyIndex : null;
-        const className =
-          listBase.length === BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base
-            ? 'green'
-            : 'red';
+        const latestBase = data.buySellSignals?.latestBase;
+        const className = latestBase ? 'green' : 'red';
 
         return (
-          <Tooltip
-            title={
-              <div>
-                {listBase.map((i: Base, index: number) => {
-                  if (!i.buyIndex) return '';
-                  return (
-                    <div key={index}>
-                      {/* {moment(i.fullData[i.buyIndex].date).format(DATE_FORMAT)} */}
-                    </div>
-                  );
-                })}
-              </div>
-            }
-          >
+          <Tooltip title={<div></div>}>
             <div className={className}>
-              {listBase.length ===
-              BUY_SELL_SIGNNAL_KEYS.count_5_day_within_base ? (
-                <>
-                  <CheckCircleOutlined style={{ marginRight: '4px' }} />
-                  {buyIndex}
-                </>
+              {latestBase ? (
+                <CheckCircleOutlined style={{ marginRight: '4px' }} />
               ) : (
                 <CloseCircleOutlined />
               )}
