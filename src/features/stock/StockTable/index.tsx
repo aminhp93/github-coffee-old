@@ -7,105 +7,43 @@ import {
   SettingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import {
-  Button,
-  Checkbox,
-  Dropdown,
-  InputNumber,
-  Menu,
-  notification,
-  Popover,
-  Statistic,
-  Table,
-} from 'antd';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
-import type { CheckboxValueType } from 'antd/es/checkbox/Group';
+import { Button, notification, Statistic, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useInterval } from 'libs/hooks';
 import StockService from '../service';
-import { Watchlist } from 'libs/types';
 import { keyBy } from 'lodash';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   DEFAULT_FILTER,
   DEFAULT_SETTINGS,
-  DEFAULT_TYPE_INDICATOR_OPTIONS,
-  DELAY_TIME,
-  TYPE_INDICATOR_OPTIONS,
-  NO_DATA_COLUMN,
-  HISTORICAL_QUOTE_COLUMN,
-  FUNDAMENTAL_COLUMN,
-  FINANCIAL_INDICATORS_COLUMN,
+  DEFAULT_COLUMNS,
   DATE_FORMAT,
   DEFAULT_DATE,
+  getListAllSymbols,
 } from '../constants';
 import {
-  getFilterData,
-  // getFinancialIndicator,
-  mapBuySell,
   mapHistoricalQuote,
-  // mapFundamentals,
   getMapBackTestData,
+  getDataSource,
 } from '../utils';
-import BuySellSignalsColumns from './BuySellSignalsColumns';
 import Filters from './Filters';
-import InDayReviewColumns from './InDayReviewColumns';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import config from 'libs/config';
-import request from 'libs/request';
-
-const baseUrl = config.apiUrl;
-const CheckboxGroup = Checkbox.Group;
-
-console.log('DEFAULT_DATE', DEFAULT_DATE);
+import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
-  const [listWatchlist, setListWatchlist] = useState([]);
-  const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
-    null
-  );
-  const [dataSource, setDataSource] = useState([]);
+  const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
+  const [fullDataSource, setFullDataSource] = useState<CustomSymbol[]>([]);
+  const [dataSource, setDataSource] = useState<CustomSymbol[]>([]);
   const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
   const [loading, setLoading] = useState(false);
-  const [columns, setColumns] = useState<ColumnsType<any>>([]);
+  const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
-    DEFAULT_TYPE_INDICATOR_OPTIONS
-  );
-  const [indeterminate, setIndeterminate] = useState(true);
-  const [checkAll, setCheckAll] = useState(false);
-  const [isPlaying, setPlaying] = useState<boolean>(false);
-  const [delay, setDelay] = useState<number>(DELAY_TIME);
-  const [date, setDate] = useState<any>(DEFAULT_DATE);
-
-  useInterval(
-    async () => {
-      const res = await handleGetData();
-      const filteredRes = getFilterData(res, filters);
-      const symbols = filteredRes.map((item: any) => item.symbol);
-      handleUpdateWatchlist(symbols);
-    },
-    isPlaying ? delay : null
-  );
-
-  const handleClickMenuWatchlist = (e: any) => {
-    setCurrentWatchlist(listWatchlistObj[e.key]);
-    const mapData: any = (listWatchlistObj[e.key] as Watchlist).symbols.map(
-      (symbol: string) => {
-        return {
-          key: symbol,
-          symbol,
-        };
-      }
-    );
-    setDataSource(mapData);
-  };
+  const [date, setDate] = useState<moment.Moment>(DEFAULT_DATE);
 
   const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
@@ -117,7 +55,9 @@ export default function StockTable() {
 
       const updateData = {
         ...watchlistObj,
-        symbols: symbols ? symbols : filteredData.map((i: any) => i.symbol),
+        symbols: symbols
+          ? symbols
+          : dataSource.map((i: CustomSymbol) => i.symbol),
       };
 
       await StockService.updateWatchlist(watchlistObj, updateData);
@@ -127,32 +67,18 @@ export default function StockTable() {
     }
   };
 
-  const onChange = (list: CheckboxValueType[]) => {
-    setCheckedList(list);
-    setIndeterminate(
-      !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
-    );
-    setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
-  };
-
-  const onCheckAllChange = (e: CheckboxChangeEvent) => {
-    setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
-    setIndeterminate(false);
-    setCheckAll(e.target.checked);
-  };
-
   const handleGetData = () => {
+    const listAllSymbols = getListAllSymbols(listWatchlist);
     const listPromises: any = [];
-    const thanh_khoan_vua_wl: any =
+    const thanh_khoan_vua_wl: Watchlist =
       listWatchlistObj && listWatchlistObj[737544];
 
-    const watching_wl: any = listWatchlistObj && listWatchlistObj[75482];
+    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
 
     if (!thanh_khoan_vua_wl) return;
 
-    thanh_khoan_vua_wl.symbols.forEach((j: any) => {
+    listAllSymbols.forEach((j: string) => {
       const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-      // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
       const endDate = date.format(DATE_FORMAT);
       listPromises.push(
         StockService.getHistoricalQuotes(
@@ -161,40 +87,22 @@ export default function StockTable() {
           {
             key: j,
             symbol: j,
+            inWatchingWatchList: watching_wl?.symbols.includes(j),
           }
         )
       );
-      // listPromises.push(
-      //   StockService.getFundamentals({ symbol: j }, mapFundamentals, {
-      //     key: j,
-      //     symbol: j,
-      //   })
-      // );
-      // listPromises.push(getFinancialIndicator(j));
     });
 
     setLoading(true);
     return Promise.all(listPromises)
-      .then((res: any) => {
-        setLoading(false);
-        const newDataSource: any = thanh_khoan_vua_wl?.symbols.map((i: any) => {
-          const filterRes = res.filter((j: any) => j.symbol === i);
-          let newItem = { key: i, symbol: i };
-          if (filterRes.length > 0) {
-            filterRes.forEach((j: any) => {
-              newItem = {
-                ...newItem,
-                ...j,
-                inWatchingWatchList: watching_wl?.symbols.includes(i),
-              };
-            });
-          }
-          return newItem;
-        });
+      .then((res: CustomSymbol[]) => {
+        const newData = getDataSource(res, filters);
 
-        setDataSource(newDataSource);
+        setLoading(false);
+        setFullDataSource(res);
+        setDataSource(newData);
         notification.success({ message: 'success' });
-        return newDataSource;
+        return res;
       })
       .catch((e) => {
         setLoading(false);
@@ -202,111 +110,58 @@ export default function StockTable() {
       });
   };
 
-  const getBackTestDataOffline = async () => {
+  const getBackTestDataOffline = async (database?: 'supabase' | 'heroku') => {
     try {
-      const symbols = filteredData
-        .filter((i: any) => i.action === 'buy' || i.action === 'sell')
-        .map((i: any) => i.symbol);
+      const symbols = dataSource
+        .filter(
+          (i: CustomSymbol) =>
+            i.buySellSignals.action === 'buy' ||
+            i.buySellSignals.action === 'sell'
+        )
+        .map((i: CustomSymbol) => i.symbol);
 
       setLoading(true);
-      const res = await request({
-        url: `${baseUrl}/api/stocks/`,
-        method: 'GET',
-        params: {
-          symbols: symbols.join(','),
-        },
-      });
-      setLoading(false);
-      const mappedData = res.data.map((i: any) => {
-        const item: any = {};
-        item.date = i.d;
-        item.dealVolume = i.v;
-        item.priceClose = i.c;
-        item.priceHigh = i.h;
-        item.priceLow = i.l;
-        item.priceOpen = i.o;
-        item.totalVolume = i.v2;
-        item.symbol = i.s;
-        return item;
-      });
-      console.log(mappedData);
 
-      const newDataSource: any = getMapBackTestData(mappedData, dataSource);
-      setDataSource(newDataSource);
+      const res = await StockService.getBackTestData({ symbols, database });
+
+      setLoading(false);
+      let mappedData: any;
+
+      if (database === 'heroku') {
+        mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
+          return {
+            date: i.d,
+            dealVolume: i.v,
+            priceClose: i.c,
+            priceHigh: i.h,
+            priceLow: i.l,
+            priceOpen: i.o,
+            totalVolume: i.v2,
+            symbol: i.s,
+          };
+        });
+      } else {
+        mappedData = res.data;
+      }
+
+      const newFullDataSource = getMapBackTestData(
+        mappedData,
+        dataSource,
+        fullDataSource
+      );
+      const newData = getDataSource(newFullDataSource, filters);
+
+      setFullDataSource(newFullDataSource);
+      setDataSource(newData);
     } catch (e) {
       setLoading(false);
-      console.log(e);
     }
   };
 
-  const filteredData = useMemo(
-    () => mapBuySell(getFilterData(dataSource, filters)),
-    [dataSource, filters]
-  );
-
   useEffect(() => {
     handleGetData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWatchlist]);
-
-  useEffect(() => {
-    handleGetData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
-
-  useEffect(() => {
-    const columns: any = [
-      {
-        title: 'Symbol',
-        dataIndex: 'symbol',
-        key: 'symbol',
-        sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
-      },
-    ];
-    if (checkedList.includes('HistoricalQuote')) {
-      columns.push({
-        title: 'Historical Quotes',
-        children: HISTORICAL_QUOTE_COLUMN,
-      });
-    }
-
-    if (checkedList.includes('Fundamental')) {
-      columns.push({
-        title: 'Fundamentals',
-        children: FUNDAMENTAL_COLUMN,
-      });
-    }
-
-    if (checkedList.includes('FinancialIndicators')) {
-      columns.push({
-        title: 'FinancialIndicators',
-        children: FINANCIAL_INDICATORS_COLUMN,
-      });
-    }
-
-    if (checkedList.includes('BuySellSignals')) {
-      columns.push({
-        title: 'BuySellSignals',
-        children: BuySellSignalsColumns(),
-      });
-    }
-
-    if (checkedList.includes('NoData')) {
-      columns.push({
-        title: 'NoData',
-        children: NO_DATA_COLUMN,
-      });
-    }
-
-    if (checkedList.includes('InDayReview')) {
-      columns.push({
-        title: 'InDayReview',
-        children: InDayReviewColumns,
-      });
-    }
-
-    setColumns(columns);
-  }, [checkedList, dataSource]);
+  }, [date, listWatchlist]);
 
   useEffect(() => {
     (async () => {
@@ -317,109 +172,65 @@ export default function StockTable() {
     })();
   }, []);
 
-  const menu = (
-    <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
-      {listWatchlist.map((i: any) => {
-        return (
-          <Menu.Item disabled={i.name === 'all'} key={i.watchlistID}>
-            {i.name}
-          </Menu.Item>
-        );
-      })}
-    </Menu>
-  );
-
   const renderHeader = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="flex">
-          <Dropdown overlay={menu} trigger={['hover']}>
-            <Button size="small" style={{ marginRight: '8px' }}>
-              {currentWatchlist?.name || 'Select watchlist'}
-            </Button>
-          </Dropdown>
           <Button
             size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
             onClick={handleGetData}
           />
-          <div style={{ marginLeft: '8px' }}>
-            <Button size="small" onClick={() => setPlaying(!isPlaying)}>
-              {isPlaying ? 'Stop Interval' : 'Start Interval'}
-            </Button>
-            <InputNumber
-              size="small"
-              style={{ marginLeft: '8px' }}
-              disabled={isPlaying}
-              value={delay}
-              onChange={(value: any) => setDelay(value)}
-            />
-          </div>
+
           <Button
             size="small"
-            onClick={getBackTestDataOffline}
+            onClick={() => getBackTestDataOffline('supabase')}
             style={{ marginLeft: '8px' }}
           >
-            Backtest offline
+            Backtest offline supabase
+          </Button>
+          <Button
+            size="small"
+            onClick={() => getBackTestDataOffline('heroku')}
+            style={{ marginLeft: '8px' }}
+          >
+            Backtest offline heroku
           </Button>
         </div>
         <div className={'flex'}>
           <Statistic
-            // title="Buy > 2%"
             value={_filter_3.length}
             valueStyle={{ color: 'green' }}
             prefix={<ArrowUpOutlined />}
           />
+          <Statistic value={_filter_2.length} style={{ margin: '0 10px' }} />
           <Statistic
-            // title="Normal"
-            value={_filter_2.length}
-            style={{ margin: '0 10px' }}
-          />
-          <Statistic
-            // title="Sell < -2%"
             value={_filter_1.length}
             valueStyle={{ color: 'red' }}
             prefix={<ArrowDownOutlined />}
           />
         </div>
-        <Popover
-          placement="leftTop"
-          content={
-            <div>
-              <Checkbox
-                indeterminate={indeterminate}
-                onChange={onCheckAllChange}
-                checked={checkAll}
-              >
-                All
-              </Checkbox>
-              <CheckboxGroup
-                options={TYPE_INDICATOR_OPTIONS}
-                value={checkedList}
-                onChange={onChange}
-              />
-            </div>
-          }
-        >
-          <Button size="small" type="primary">
-            Hover me
-          </Button>
-        </Popover>
       </div>
     );
   };
 
-  const _filter_1 = dataSource.filter((i: any) => i.changePrice < -0.02);
-  const _filter_2 = dataSource.filter(
-    (i: any) => i.changePrice >= -0.02 && i.changePrice <= 0.02
+  const _filter_1 = dataSource.filter(
+    (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
   );
-  const _filter_3 = dataSource.filter((i: any) => i.changePrice > 0.02);
+  const _filter_2 = dataSource.filter(
+    (i: CustomSymbol) =>
+      i.buySellSignals.changePrice >= -0.02 &&
+      i.buySellSignals.changePrice <= 0.02
+  );
+  const _filter_3 = dataSource.filter(
+    (i: CustomSymbol) => i.buySellSignals.changePrice > 0.02
+  );
 
   const footer = () => {
     return (
       <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div>{String(filteredData.length)}</div>
+        <div>{String(dataSource.length)}</div>
         <div>
           <Button
             size="small"
@@ -446,21 +257,24 @@ export default function StockTable() {
     );
   };
 
+  console.log(dataSource, 'dataSource', fullDataSource, 'fullDataSource');
+
   return (
-    <div className="StockTable">
-      <div>
-        {renderHeader()}
-        <Table
-          {...settings}
-          loading={loading}
-          columns={columns}
-          dataSource={filteredData}
-          footer={footer}
-        />
-      </div>
-      <Testing
+    <div className="StockTable height-100 flex">
+      {renderHeader()}
+      <Table
+        style={{
+          flex: 1,
+        }}
+        {...settings}
+        loading={loading}
+        columns={columns}
         dataSource={dataSource}
-        filteredData={filteredData}
+        footer={footer}
+      />
+      <Testing
+        fullDataSource={fullDataSource}
+        dataSource={dataSource}
         cbSetLoading={setLoading}
         cbSetDataSource={setDataSource}
         listWatchlistObj={listWatchlistObj}
@@ -469,9 +283,14 @@ export default function StockTable() {
       />
       <Filters
         open={openDrawerFilter}
+        listWatchlist={listWatchlist}
         onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDate: any) => setDate(newDate)}
+        onDateChange={(newDate: moment.Moment) => setDate(newDate)}
         onUpdateWatchlist={handleUpdateWatchlist}
+        onGetData={() => {
+          // console.log('onGetData');
+        }}
+        onColumnChange={(newColumns: any) => setColumns(newColumns)}
         onClose={() => setOpenDrawerFilter(false)}
       />
       <Settings

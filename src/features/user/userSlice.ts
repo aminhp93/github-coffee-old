@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { RootState } from 'libs/app/store';
-import { IUser } from 'libs/types';
+import { RootState } from '@/store';
+import { IUser } from './types';
 
 const userSlice = createSlice({
   name: 'user',

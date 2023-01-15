@@ -1,9 +1,9 @@
-import request from 'libs/request';
-import config from 'libs/config';
+import request from '@/services/request';
+import config from '@/config';
 
 const baseUrl = config.apiUrl;
 
-export const PostUrls = {
+const PostUrls = {
   createPost: `${baseUrl}/api/posts/create/`,
   listPost: `${baseUrl}/api/posts/`,
   detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
@@ -11,7 +11,7 @@ export const PostUrls = {
   deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
 };
 
-export const PostService = {
+const PostService = {
   createPost(data: any) {
     return request({
       method: 'POST',
@@ -45,3 +45,5 @@ export const PostService = {
     });
   },
 };
+
+export default PostService;

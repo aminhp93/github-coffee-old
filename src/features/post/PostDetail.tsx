@@ -5,11 +5,12 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Typography } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { PostService } from 'libs/services';
+import PostService from './service';
 import { memo, useEffect, useState, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import { useDebounce } from 'libs/hooks';
+import { useDebounce } from '@/hooks';
+import './index.less';
 
 const { Paragraph } = Typography;
 

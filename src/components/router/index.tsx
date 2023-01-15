@@ -10,7 +10,7 @@ import TaskManager from 'features/taskManager';
 import Test from 'features/test';
 import Work from 'features/work';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { useAuth } from 'libs/context/FirebaseContext';
+import { useAuth } from '@/context/FirebaseContext';
 
 const Router = () => {
   const { authUser }: any = useAuth();

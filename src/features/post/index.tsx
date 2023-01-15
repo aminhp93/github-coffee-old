@@ -1,12 +1,12 @@
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
-import { PostService } from 'libs/services';
-import { IPost } from 'libs/types';
 import { useCallback, useEffect, useState } from 'react';
 import './index.less';
 import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
+import PostService from './service';
+import { IPost } from './types';
 
 type ModeType = 'list' | 'create';
 

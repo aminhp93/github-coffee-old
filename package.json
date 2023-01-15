@@ -9,6 +9,7 @@
     "@faker-js/faker": "^7.3.0",
     "@octokit/rest": "^19.0.3",
     "@reduxjs/toolkit": "^1.8.1",
+    "@supabase/supabase-js": "^2.4.0",
     "@udecode/plate": "^16.9.0",
     "@udecode/plate-juice": "^16.8.0",
     "@udecode/plate-test-utils": "^13.4.0",

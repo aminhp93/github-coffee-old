@@ -1,20 +1,21 @@
+import { useDebounce } from '@/hooks';
+import PushNotificationService from '@/services/pushNotification';
 import {
+  CloseCircleOutlined,
   DeleteOutlined,
   FieldTimeOutlined,
   PauseOutlined,
   SettingOutlined,
-  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { useDebounce } from 'libs/hooks';
-import { PushNotificationService, TodoService } from 'libs/services';
-import { ITodo } from 'libs/types';
 import moment from 'moment';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { v4 as uuidv4 } from 'uuid';
-import './TodoListItem.less';
+import './index.less';
+import TodoService from './service';
+import { ITodo } from './types';
 
 const format = 'HH:mm';
 
@@ -41,12 +42,12 @@ const renderer = (props: any) => {
     );
   }
 };
-interface IProps {
+interface Props {
   todoItem: ITodo;
   onDeleteSuccess?: (todoId: number) => void;
 }
 
-function TodoListItem({ todoItem, onDeleteSuccess }: IProps) {
+function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [plateId, setPlateId] = useState(null as any);
   const [value, setValue] = useState(JSON.parse(todoItem.body));
   const [isDone, setIsDone] = useState(todoItem.isDone);

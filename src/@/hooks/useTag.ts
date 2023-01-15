@@ -1,4 +1,4 @@
-import request from 'libs/request';
+import request from '@/services/request';
 import { useEffect } from 'react';
 
 export function useTag() {

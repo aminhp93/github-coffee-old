@@ -1,12 +1,13 @@
 import { Divider } from 'antd';
-import { IUser } from 'libs/types';
+import { IUser } from 'features/user/types';
 import { v4 as uuidv4 } from 'uuid';
+import './index.less';
 
-interface IProps {
+interface Props {
   users: IUser[];
 }
 
-const ChatListUsers = ({ users }: IProps) => {
+const ChatListUsers = ({ users }: Props) => {
   return (
     <div className="ChatListUsers">
       <div>All online users</div>

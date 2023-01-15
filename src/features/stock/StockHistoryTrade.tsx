@@ -2,14 +2,10 @@ import { Button, notification, Table } from 'antd';
 import { sum, uniqBy } from 'lodash';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-
-import { fetchOrdersHistory, postAuthToken } from 'libs/reducers/account';
+import { AccountService } from 'features/stock/service';
 
 interface TProps {
   onClose?: any;
-  postAuthToken?: any;
-  fetchOrdersHistory?: any;
 }
 
 function StockHistoryTrade(props: TProps) {
@@ -190,11 +186,11 @@ function StockHistoryTrade(props: TProps) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await props.postAuthToken({
+        const res = await AccountService.postAuthToken({
           username: 'username',
           password: 'password',
         });
-        const res2 = await props.fetchOrdersHistory(
+        const res2 = await AccountService.fetchOrdersHistory(
           res.data.token,
           filterObj.startDate,
           filterObj.endDate
@@ -309,9 +305,4 @@ function StockHistoryTrade(props: TProps) {
   );
 }
 
-const mapDispatchToProps = {
-  postAuthToken,
-  fetchOrdersHistory,
-};
-
-export default connect(null, mapDispatchToProps)(StockHistoryTrade);
+export default StockHistoryTrade;

@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import config from 'libs/config';
+import config from '@/config';
 import { getAuth, getIdToken as getIdTokenFirebase } from 'firebase/auth';
 
 import qs from 'qs';

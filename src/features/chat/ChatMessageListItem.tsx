@@ -1,13 +1,13 @@
 import { Divider } from 'antd';
-import { IChat } from 'libs/types';
 import moment from 'moment';
-import './ChatMessageListItem.less';
+import './index.less';
+import { IChat } from './types';
 
-interface IProps {
+interface Props {
   chat: IChat;
 }
 
-const ChatMessageListItem = ({ chat }: IProps) => {
+const ChatMessageListItem = ({ chat }: Props) => {
   return (
     <>
       <div className="flex" style={{ margin: '8px 0' }}>

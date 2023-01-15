@@ -1,9 +1,22 @@
 import axios from 'axios';
 import moment from 'moment';
-import { DATE_FORMAT } from './constants';
-import { HistoricalQuoteParams, FundamentalsParams } from './types';
+import { DATE_FORMAT, UNIT_BILLION } from './constants';
+import {
+  HistoricalQuoteParams,
+  FundamentalsParams,
+  HistoricalQuote,
+  ExtraData,
+} from './types';
+import request from '@/services/request';
+import config from '@/config';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
+const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const domain = 'https://restv2.fireant.vn';
+const baseUrl = config.apiUrl;
 
 const headers = {
   Authorization:
@@ -20,7 +33,7 @@ const StockService = {
       limit = 20,
       returnRequest = false,
     }: HistoricalQuoteParams,
-    callback?: any,
+    callback?: (data: HistoricalQuote[], extraData: ExtraData) => void,
     extraDataCb?: any
   ) {
     if (!symbol) return;
@@ -113,6 +126,249 @@ const StockService = {
       data: updateData,
     });
   },
+  async getFinancialIndicator(symbol: string) {
+    if (!symbol) return;
+
+    const res = await axios({
+      method: 'GET',
+      headers,
+      url: `https://restv2.fireant.vn/symbols/${symbol}/financial-indicators`,
+    });
+    if (res.data) {
+      const newData: any = {};
+      res.data.map((i: any) => {
+        newData[i.name] = i.value;
+        return i;
+      });
+      return { ...newData, symbol, key: symbol };
+    }
+    return null;
+  },
+  async getDailyTransaction(symbol: string) {
+    if (!symbol) return;
+    const res = await axios({
+      method: 'GET',
+      url: `https://svr9.fireant.vn/api/Data/Markets/IntradayQuotes?symbol=${symbol}`,
+    });
+
+    if (res.data) {
+      // const transaction_upto_1_bil: any = [];
+      // const transaction_above_1_bil: any = [];
+      // let total_buy_vol = 0;
+      // let total_sell_vol = 0;
+      // let buy_count = 0;
+      // let sell_count = 0;
+
+      const buy_summary = {
+        key: 'buy',
+        _filter_1: 0,
+        _filter_2: 0,
+        _filter_3: 0,
+        _filter_4: 0,
+        _filter_5: 0,
+      };
+
+      const sell_summary = {
+        key: 'sell',
+        _filter_1: 0,
+        _filter_2: 0,
+        _filter_3: 0,
+        _filter_4: 0,
+        _filter_5: 0,
+      };
+
+      res.data.forEach((item: any) => {
+        const newItem = { ...item };
+        // remove properties ID, Symbol, TotalVolume
+        delete newItem.ID;
+        delete newItem.Symbol;
+        delete newItem.TotalVolume;
+
+        // if (newItem.Volume * newItem.Price > UNIT_BILLION) {
+        //   transaction_above_1_bil.push(newItem);
+        // } else {
+        //   transaction_upto_1_bil.push(newItem);
+        // }
+
+        // if (newItem.Side === 'B') {
+        //   total_buy_vol += newItem.Volume;
+        //   buy_count += 1;
+        // }
+        // if (newItem.Side === 'S') {
+        //   total_sell_vol += newItem.Volume;
+        //   sell_count += 1;
+        // }
+
+        const total = (newItem.Volume * newItem.Price) / UNIT_BILLION;
+
+        if (newItem.Side === 'B') {
+          if (total < 0.1) {
+            buy_summary._filter_1 += 1;
+          } else if (0.1 <= total && total < 0.5) {
+            buy_summary._filter_2 += 1;
+          } else if (0.5 <= total && total < 1) {
+            buy_summary._filter_3 += 1;
+          } else if (1 <= total && total < 2) {
+            buy_summary._filter_4 += 1;
+          } else {
+            buy_summary._filter_5 += 1;
+          }
+        }
+
+        if (newItem.Side === 'S') {
+          if (total < 0.1) {
+            sell_summary._filter_1 += 1;
+          } else if (0.1 <= total && total < 0.5) {
+            sell_summary._filter_2 += 1;
+          } else if (0.5 <= total && total < 1) {
+            sell_summary._filter_3 += 1;
+          } else if (1 <= total && total < 2) {
+            sell_summary._filter_4 += 1;
+          } else {
+            sell_summary._filter_5 += 1;
+          }
+        }
+      });
+
+      // const transaction_summary = [buy_summary, sell_summary];
+
+      // const buy_sell_vol = {
+      //   total_buy_vol,
+      //   total_sell_vol,
+      //   buy_count,
+      //   sell_count,
+      //   buy_sell_count_ratio: Number((buy_count / sell_count).toFixed(1)),
+      //   buy_sell_total_ratio: Number((total_buy_vol / total_sell_vol).toFixed(1)),
+      // };
+
+      return {
+        // transaction_summary,
+        // transaction_above_1_bil,
+        // transaction_upto_1_bil,
+        // buy_sell_vol,
+        // symbol,
+        // key: symbol,
+        data: res.data,
+      };
+    }
+    return null;
+  },
+  getBackTestData: ({
+    database = 'supabase',
+    symbols,
+  }: {
+    database?: 'supabase' | 'heroku';
+    symbols: string[];
+  }) => {
+    if (database === 'supabase') {
+      return supabase
+        .from('stock')
+        .select(
+          'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume'
+        )
+        .in('symbol', symbols);
+    }
+
+    return request({
+      url: `${baseUrl}/api/stocks/`,
+      method: 'GET',
+      params: {
+        symbols: symbols.join(','),
+      },
+    });
+  },
+  getListStockJobs: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/list-stock-jobs/`,
+      method: 'GET',
+    });
+  },
+  startDailyImportStockJob: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/start-daily-import-stock-job/`,
+      method: 'POST',
+    });
+  },
+  cancelDailyImportStockJob: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/cancel-daily-import-stock-job/`,
+      method: 'POST',
+    });
+  },
+  forceDailyImportStockJob: (data: any) => {
+    return request({
+      url: `${baseUrl}/api/stocks/force-daily-import-stock-job/`,
+      method: 'POST',
+      data,
+    });
+  },
 };
 
 export default StockService;
+
+const AccountUrls = {
+  postAuthToken: 'https://auth-api.vndirect.com.vn/v3/auth',
+  fetchAccount: 'https://trade-api.vndirect.com.vn/accounts/0001069456',
+  fetchAccountPortfolio:
+    'https://trade-api.vndirect.com.vn/accounts/v3/0001069456/portfolio',
+  fetchAccountAssets:
+    'https://trade-api.vndirect.com.vn/accounts/v2/0001069456/assets',
+  fetchAccountStocks:
+    'https://trade-api.vndirect.com.vn/accounts/v3/0001069456/stocks',
+  fetchOrdersHistory: (fromDate: string, toDate: string) =>
+    `https://trade-report-api.vndirect.com.vn/accounts/0001069456/orders_history/?fromDate=${fromDate}&toDate=${toDate}&pageSize=1000`,
+  fetchCashStatement: (index: number) =>
+    `https://trade-report-api.vndirect.com.vn/accounts/0001069456/cashStatement?fromDate=2017-01-01&index=${index}&offset=50&types=`,
+};
+
+export const AccountService = {
+  postAuthToken(data: any) {
+    return request({
+      method: 'POST',
+      url: AccountUrls.postAuthToken,
+      data,
+    });
+  },
+  fetchAccount(headers: any) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchAccount,
+    });
+  },
+  fetchAccountPortfolio(headers: any) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchAccountPortfolio,
+    });
+  },
+  fetchAccountAssets(headers: any) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchAccountAssets,
+    });
+  },
+  fetchAccountStocks(headers: any) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchAccountStocks,
+    });
+  },
+  fetchOrdersHistory(headers: any, fromDate: string, toDate: string) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchOrdersHistory(fromDate, toDate),
+    });
+  },
+  fetchCashStatement(headers: any, index: number) {
+    return request({
+      headers,
+      method: 'GET',
+      url: AccountUrls.fetchCashStatement(index),
+    });
+  },
+};

@@ -17,21 +17,6 @@ const color = [
 const upColor = '#14b143';
 const downColor = '#ef232a';
 
-const grid = [
-  {
-    left: 20,
-    right: 20,
-    top: 0,
-    height: '60%',
-  },
-  {
-    left: 20,
-    right: 20,
-    height: '30%',
-    bottom: 0,
-  },
-];
-
 const visualMap = {
   show: false,
   seriesIndex: 1,
@@ -77,12 +62,13 @@ interface Props {
     prices: number[];
     volumes: number[];
     seriesMarkPoint: any;
+    grid: any;
+    markLine: any;
   };
 }
 
 const BackTestChart = ({ data }: Props) => {
-  // console.log(data);
-  const { dates, prices, volumes, seriesMarkPoint } = data;
+  const { dates, prices, volumes, seriesMarkPoint, grid, markLine } = data;
   //   const dates = [
   //     '2016-03-29',
   //     '2016-03-30',
@@ -165,6 +151,7 @@ const BackTestChart = ({ data }: Props) => {
         },
       },
       markPoint: seriesMarkPoint,
+      markLine,
     },
     {
       name: 'Volume',
@@ -183,6 +170,35 @@ const BackTestChart = ({ data }: Props) => {
     },
   ];
 
+  const tooltip = {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'cross',
+    },
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    textStyle: {
+      color: '#000',
+    },
+    position: function (
+      pos: number[],
+      params: any,
+      el: any,
+      elRect: any,
+      size: { viewSize: number[] }
+    ) {
+      const obj: any = {
+        top: 10,
+      };
+      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+      return obj;
+    },
+    // extraCssText: 'width: 170px'
+  };
+
+  console.log(199);
+
   const option = {
     color,
     xAxis,
@@ -190,6 +206,8 @@ const BackTestChart = ({ data }: Props) => {
     series,
     grid,
     visualMap,
+    markLine,
+    tooltip,
   };
 
   return (

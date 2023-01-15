@@ -1,7 +1,10 @@
 /* eslint-disable no-loop-func */
 import axios from 'axios';
-import config from 'libs/config';
-import request, { CustomTradingViewUrls, RedirectUrls } from 'libs/request';
+import config from '@/config';
+import request, {
+  CustomTradingViewUrls,
+  RedirectUrls,
+} from '@/services/request';
 
 /*
 	This class implements interaction with UDF-compatible datafeed.

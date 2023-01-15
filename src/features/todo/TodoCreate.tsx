@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import { TodoService } from 'libs/services';
+import TodoService from './service';
 import * as React from 'react';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
