@@ -277,6 +277,31 @@ const StockService = {
       },
     });
   },
+  getListStockJobs: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/list-stock-jobs/`,
+      method: 'GET',
+    });
+  },
+  startDailyImportStockJob: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/start-daily-import-stock-job/`,
+      method: 'POST',
+    });
+  },
+  cancelDailyImportStockJob: () => {
+    return request({
+      url: `${baseUrl}/api/stocks/cancel-daily-import-stock-job/`,
+      method: 'POST',
+    });
+  },
+  forceDailyImportStockJob: (data: any) => {
+    return request({
+      url: `${baseUrl}/api/stocks/force-daily-import-stock-job/`,
+      method: 'POST',
+      data,
+    });
+  },
 };
 
 export default StockService;

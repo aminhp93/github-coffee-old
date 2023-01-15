@@ -1,4 +1,4 @@
-import { Drawer, Button, notification } from 'antd';
+import { Drawer, Button, notification, Table, DatePicker } from 'antd';
 import {
   BACKTEST_COUNT,
   DATE_FORMAT,
@@ -11,12 +11,46 @@ import StockService from '../service';
 import moment from 'moment';
 import { getMapBackTestData } from '../utils';
 
+import type { DatePickerProps } from 'antd';
+
 import config from '@/config';
+import { useEffect, useState } from 'react';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 const baseUrl = config.apiUrl;
 
 const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
 const endDate = DEFAULT_DATE.add(-1, 'days').format(DATE_FORMAT);
+
+const columns = [
+  {
+    title: 'id',
+    dataIndex: 'id',
+    key: 'id',
+  },
+  {
+    title: 'date',
+    dataIndex: 'date',
+    key: 'date',
+    render: (data: any) => {
+      console.log(data);
+      return moment(data).format(DATE_FORMAT);
+    },
+  },
+  {
+    title: 'status',
+    dataIndex: 'status',
+    key: 'status',
+    render: (data: any) => {
+      console.log(data);
+      return data ? (
+        <CheckCircleOutlined style={{ marginRight: '4px', color: 'green' }} />
+      ) : (
+        <CloseCircleOutlined style={{ color: 'red' }} />
+      );
+    },
+  },
+];
 
 const Testing = ({
   onChange,
@@ -28,6 +62,10 @@ const Testing = ({
   fullDataSource,
   dataSource,
 }: any) => {
+  const [stockScheduleManager, setStockScheduleManager] = useState<any>([]);
+  const [listJobs, setListJobs] = useState<any>([]);
+  const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+
   const getListPromise = async (data: any) => {
     const listPromise: any = [];
     data.forEach((i: any) => {
@@ -138,24 +176,109 @@ const Testing = ({
       });
   };
 
+  const getListStockJobs = async () => {
+    try {
+      const res = await StockService.getListStockJobs();
+      setStockScheduleManager(res.data.stockScheduleManager);
+      setListJobs(res.data.listJobs);
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  };
+
+  const startDailyImportStockJob = async () => {
+    try {
+      StockService.startDailyImportStockJob();
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  };
+
+  const cancelDailyImportStockJob = () => {
+    try {
+      StockService.cancelDailyImportStockJob();
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  };
+
+  const forceDailyImportStockJob = () => {
+    try {
+      const requestData: any = {};
+      if (selectedDate) {
+        requestData['date'] = selectedDate.format(DATE_FORMAT);
+      }
+      StockService.forceDailyImportStockJob(requestData);
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  };
+
+  const onChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
+    console.log(date, dateString);
+    setSelectedDate(date);
+  };
+
+  useEffect(() => {
+    getListStockJobs();
+  }, []);
+
   return (
-    <Drawer title="Testing" placement="bottom" onClose={onClose} open={open}>
-      <div
-        className="height-100"
-        style={
-          {
-            // display: 'flex',
-            // justifyContent: 'space-between',
-            // flexDirection: 'column',
-          }
-        }
-      >
-        <Button disabled={disabled} size="small" onClick={createBackTestData}>
-          Create backtest
-        </Button>
-        <Button size="small" onClick={getBackTestData}>
-          Backtest online
-        </Button>
+    <Drawer
+      title={
+        <div className="flex" style={{ justifyContent: 'space-between' }}>
+          <div>Testing</div>
+          <div>
+            <Button
+              disabled={disabled}
+              size="small"
+              onClick={createBackTestData}
+            >
+              Create backtest
+            </Button>
+            <Button size="small" onClick={getBackTestData}>
+              Backtest online
+            </Button>
+            <Button size="small" onClick={getListStockJobs}>
+              Refresh
+            </Button>
+            <Button size="small" onClick={startDailyImportStockJob}>
+              start_daily_import_stock_job
+            </Button>
+            <Button size="small" onClick={cancelDailyImportStockJob}>
+              cancel_daily_import_stock_job
+            </Button>
+            <div>
+              <Button size="small" onClick={forceDailyImportStockJob}>
+                force_daily_import_stock_job
+              </Button>
+              <DatePicker onChange={onChangeDate} />
+            </div>
+          </div>
+        </div>
+      }
+      placement="bottom"
+      onClose={onClose}
+      open={open}
+    >
+      <div className="height-100 flex">
+        <div className="flex-1">
+          {listJobs.map((i: any) => {
+            return <div>{i}</div>;
+          })}
+        </div>
+        <div className="flex-1">
+          <Table
+            size="small"
+            dataSource={stockScheduleManager}
+            columns={columns}
+            pagination={false}
+          />
+        </div>
       </div>
     </Drawer>
   );
