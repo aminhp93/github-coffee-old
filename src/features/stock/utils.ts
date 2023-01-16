@@ -180,6 +180,11 @@ export const getMapBackTestData = (
         b.date.localeCompare(a.date)
       );
 
+    // replace first item by latest data
+    filterRes[0] = dataSource.find(
+      (j) => j.symbol === i.symbol
+    )!.last20HistoricalQuote[0];
+
     if (filterRes.length) {
       const listBase = getListBase(filterRes);
       newItem.backtest = getBackTest(filterRes, listBase, {

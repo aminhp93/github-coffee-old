@@ -20,7 +20,7 @@ import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 const baseUrl = config.apiUrl;
 
 const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-const endDate = DEFAULT_DATE.add(-1, 'days').format(DATE_FORMAT);
+const endDate = DEFAULT_DATE.format(DATE_FORMAT);
 
 const columns = [
   {

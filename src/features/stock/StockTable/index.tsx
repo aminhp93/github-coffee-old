@@ -45,6 +45,8 @@ export default function StockTable() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [date, setDate] = useState<moment.Moment>(DEFAULT_DATE);
 
+  console.log(DEFAULT_DATE);
+
   const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
       const watchlistObj = {

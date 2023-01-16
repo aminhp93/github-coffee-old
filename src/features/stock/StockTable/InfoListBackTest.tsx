@@ -3,15 +3,35 @@ import { Button, Drawer, Table, InputNumber } from 'antd';
 import { AlignType } from 'rc-table/lib/interface';
 import moment from 'moment';
 import BackTestChart from './BackTestChart';
-import {
-  getDataChart,
-  mapHistoricalQuote,
-  getBackTest,
-  getSeriesMarkPoint,
-} from '../utils';
-import { BackTest, Base, CustomSymbol, FilterBackTest } from '../types';
-import { DATE_FORMAT, DEFAULT_DATE, BACKTEST_FILTER } from '../constants';
-import StockService from '../service';
+import { getDataChart, getBackTest, getSeriesMarkPoint } from '../utils';
+import { BackTest, Base, FilterBackTest } from '../types';
+import { DATE_FORMAT, BACKTEST_FILTER } from '../constants';
+
+const getCurrentDataChart = (backTestData: BackTest | null) => {
+  if (!backTestData) return null;
+  const list = backTestData.fullData.slice(0, 60);
+
+  const grid = [
+    {
+      left: 20,
+      right: 20,
+      top: 20,
+      height: '70%',
+    },
+    {
+      left: 20,
+      right: 20,
+      height: '20%',
+      bottom: 0,
+    },
+  ];
+
+  const newDataChart = getDataChart({
+    data: list,
+    grid,
+  });
+  return newDataChart;
+};
 
 interface Props {
   symbol: string;
@@ -20,6 +40,7 @@ interface Props {
 }
 
 const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
+  console.log(backTestData);
   const [backTest, setBackTest] = useState<BackTest | null>(backTestData);
   const [open, setOpen] = useState(false);
   const [dataChart, setDataChart] = useState<any>(null);
@@ -29,6 +50,9 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   );
   const [num_high_vol_than_t0, setNum_high_vol_than_t0] = useState<number>(
     BACKTEST_FILTER.num_high_vol_than_t0
+  );
+  const [currentDataChart, setCurrentDataChart] = useState<any>(
+    getCurrentDataChart(backTestData)
   );
 
   const columns = [
@@ -210,7 +234,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       seriesMarkPoint,
       markLine,
     });
-    console.log(newDataChart);
     setDataChart(newDataChart);
   };
 
@@ -239,6 +262,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   useEffect(() => {
     if (backTestData) {
       setBackTest(backTestData);
+      setCurrentDataChart(getCurrentDataChart(backTestData));
     }
   }, [backTestData]);
 
@@ -297,7 +321,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
             }}
           >
             <div style={{ height: '100%', width: '100%' }}>
-              <CurrentChart symbol={symbol} />
+              {currentDataChart && <BackTestChart data={currentDataChart} />}
             </div>
             <div style={{ height: '100%', width: '100%' }}>
               {dataChart && <BackTestChart data={dataChart} />}
@@ -321,44 +345,3 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
 };
 
 export default InfoListBackTest;
-
-interface CurrentChartProps {
-  symbol: string;
-}
-
-const CurrentChart = ({ symbol }: CurrentChartProps) => {
-  const [currentDataChart, setCurrentDataChart] = useState<any>(null);
-
-  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-  const endDate = DEFAULT_DATE.format(DATE_FORMAT);
-
-  const getData = () => {
-    const listPromises: any = [];
-
-    [0, 20, 40].forEach((i: number) => {
-      listPromises.push(
-        StockService.getHistoricalQuotes(
-          { symbol, startDate, endDate, offset: i },
-          mapHistoricalQuote
-        )
-      );
-    });
-    Promise.all(listPromises)
-      .then((res: CustomSymbol[]) => {
-        const data = res.map((item) => item.last20HistoricalQuote).flat();
-        const dataChart = getDataChart({ data });
-        console.log(dataChart);
-        setCurrentDataChart(dataChart);
-      })
-      .catch((err: any) => {
-        console.log(err);
-      });
-  };
-
-  useEffect(() => {
-    getData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  return currentDataChart && <BackTestChart data={currentDataChart as any} />;
-};
