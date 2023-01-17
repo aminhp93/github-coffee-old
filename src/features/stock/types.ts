@@ -117,6 +117,8 @@ export interface Base {
   base_max: number;
   base_min: number;
   change_t3?: number | null;
+  base_percent: number;
+  diff_previous_base?: number;
 }
 
 export interface CustomSymbol {

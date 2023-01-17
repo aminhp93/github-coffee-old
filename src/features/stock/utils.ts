@@ -102,7 +102,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
     const startBaseIndex = index;
     let endBaseIndex = index + 5;
     const list = data.slice(startBaseIndex, endBaseIndex);
-    const { base_min, base_max } = getBase_min_max(list);
+    let { base_min, base_max } = getBase_min_max(list);
     if (!base_max || !base_min) return;
 
     const percent = (100 * (base_max - base_min)) / base_min;
@@ -131,18 +131,26 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
 
       let stop = false;
 
-      data.slice(endBaseIndex).forEach((m: BackTestSymbol, index2: number) => {
+      data.slice(endBaseIndex).forEach((m: BackTestSymbol) => {
         if (stop) return;
-        const new_min = base_min > m.priceClose ? m.priceClose : base_min;
-        const new_max = base_max < m.priceClose ? m.priceClose : base_max;
+        const new_min = base_min! > m.priceClose ? m.priceClose : base_min!;
+        const new_max = base_max! < m.priceClose ? m.priceClose : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(m);
           endBaseIndex = endBaseIndex + 1;
+          base_min = new_min;
+          base_max = new_max;
         } else {
           stop = true;
         }
       });
+
+      const base_percent = (100 * (base_max - base_min)) / base_min;
+
+      if (buyIndex === 95) {
+        console.log(153);
+      }
 
       listBase.push({
         buyIndex,
@@ -155,9 +163,19 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         num_high_vol_than_t0,
         base_max,
         base_min,
+        base_percent,
       });
       nextIndex = nextIndex + endBaseIndex - startBaseIndex - 1;
     }
+  });
+
+  listBase = listBase.map((i: Base, index: number) => {
+    if (listBase[index + 1]) {
+      const previous_base_min = listBase[index + 1].base_min;
+      i.diff_previous_base =
+        (100 * (previous_base_min - i.base_max)) / i.base_max;
+    }
+    return i;
   });
 
   return listBase;
@@ -426,6 +444,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
       const change_t0 =
         (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
       let stop = false;
+      let base_percent = (100 * (base_max - base_min)) / base_min;
 
       data.forEach((i: BackTestSymbol, index: number) => {
         if (index < 6 || stop) return;
@@ -450,6 +469,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         num_high_vol_than_t0,
         base_max,
         base_min,
+        base_percent,
       };
     }
   }

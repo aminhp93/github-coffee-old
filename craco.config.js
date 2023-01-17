@@ -27,15 +27,15 @@ module.exports = {
     output: {
       filename: '[name].bundle.js',
     },
-    plugins: {
-      add: [
-        new ProvidePlugin({
-          process: 'process/browser.js',
-        }),
-        new DefinePlugin({
-          'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-        }),
-      ],
-    },
+    // plugins: {
+    //   add: [
+    //     new ProvidePlugin({
+    //       process: 'process/browser.js',
+    //     }),
+    //     new DefinePlugin({
+    //       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    //     }),
+    //   ],
+    // },
   },
 };

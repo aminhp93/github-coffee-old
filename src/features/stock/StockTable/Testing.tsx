@@ -33,7 +33,6 @@ const columns = [
     dataIndex: 'date',
     key: 'date',
     render: (data: any) => {
-      console.log(data);
       return moment(data).format(DATE_FORMAT);
     },
   },
@@ -42,7 +41,6 @@ const columns = [
     dataIndex: 'status',
     key: 'status',
     render: (data: any) => {
-      console.log(data);
       return data ? (
         <CheckCircleOutlined style={{ marginRight: '4px', color: 'green' }} />
       ) : (

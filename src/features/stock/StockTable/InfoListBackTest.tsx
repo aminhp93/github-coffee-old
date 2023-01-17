@@ -59,6 +59,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
     {
       title: 'buyDate',
       width: 100,
+
       render: (data: Base) => {
         if (!data.buyIndex || !backTestData) return '';
         const buyDate = backTestData.fullData[data.buyIndex]?.date;
@@ -79,11 +80,9 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
           : 0,
       render: (data: Base) => {
         if (!data.change_t0_vol) return '';
-
         return data.change_t0_vol.toFixed(0);
       },
     },
-
     {
       title: 'change_t0 (%)',
       width: 100,
@@ -108,6 +107,23 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       },
     },
     {
+      title: 'base_percent (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      render: (data: Base) => {
+        return data.base_percent.toFixed(0);
+      },
+    },
+    {
+      title: 'diff_previous_base (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      render: (data: Base) => {
+        if (!data.diff_previous_base) return;
+        return data.diff_previous_base.toFixed(0);
+      },
+    },
+    {
       title: 'other',
       render: (data: Base) => {
         return '';
@@ -129,7 +145,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
           data: list,
           seriesMarkPoint,
         });
-
         return (
           <div style={{ width: '150px', height: '50px' }}>
             <BackTestChart data={dataChart as any} />
@@ -137,7 +152,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         );
       },
     },
-
     {
       title: 'change_t3 (%)',
       width: 100,
@@ -163,7 +177,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
     if (!record.buyIndex || !backTestData) return;
     const list = backTestData.fullData.slice(
       record.buyIndex - 10,
-      record.buyIndex + 40
+      record.buyIndex + 50
     );
 
     const buyItem = { ...backTestData.fullData[record.buyIndex] };
@@ -330,7 +344,10 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
           {backTest && (
             <Table
               style={{ flex: 1, marginTop: '20px', overflow: 'auto' }}
-              dataSource={backTest.filteredBase}
+              dataSource={backTest.filteredBase.map((i: any) => {
+                i.key = i.buyIndex;
+                return i;
+              })}
               columns={columns}
               bordered
               size="small"

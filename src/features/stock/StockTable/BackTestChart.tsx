@@ -197,8 +197,6 @@ const BackTestChart = ({ data }: Props) => {
     // extraCssText: 'width: 170px'
   };
 
-  console.log(199);
-
   const option = {
     color,
     xAxis,

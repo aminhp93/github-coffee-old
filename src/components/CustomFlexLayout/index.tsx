@@ -14,8 +14,9 @@ import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
 
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
+import { v4 as uuidv4 } from 'uuid';
 
-import * as React from 'react';
+import { RefObject, createRef, useState } from 'react';
 
 interface IProps {
   layoutName: string;
@@ -24,12 +25,12 @@ interface IProps {
 }
 
 function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
-  // const [layoutFile, setLayoutFile] = React.useState(null);
-  // const [model, setModel] = React.useState(null);
-  // const [adding, setAdding] = React.useState(false);
-  // const [fontSize, setFontSize] = React.useState('medium');
-  // const [realtimeResize, setRealtimeResize] = React.useState(false);
-  const [openDrawer, setOpenDrawer] = React.useState(false);
+  // const [layoutFile, setLayoutFile] = useState(null);
+  // const [model, setModel] = useState(null);
+  // const [adding, setAdding] = useState(false);
+  // const [fontSize, setFontSize] = useState('medium');
+  // const [realtimeResize, setRealtimeResize] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   const savedLayout = localStorage.getItem(layoutName);
   let json = defaultJson;
@@ -39,7 +40,7 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
   }
   const model = Model.fromJson(json);
   if (!model) return null;
-  let layoutRef: React.RefObject<Layout> = React.createRef();
+  let layoutRef: RefObject<Layout> = createRef();
 
   const handleClickMenu = (e: any, node: TabSetNode | BorderNode) => {
     onAddFromTabSetButton(node, e.key);
@@ -67,7 +68,7 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
     );
 
     renderValues.stickyButtons.push(
-      <Dropdown overlay={menu} trigger={['click']}>
+      <Dropdown key={uuidv4()} overlay={menu} trigger={['click']}>
         <PlusOutlined />
       </Dropdown>
     );
