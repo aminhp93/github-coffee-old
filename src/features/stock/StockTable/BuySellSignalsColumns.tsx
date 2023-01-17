@@ -66,7 +66,7 @@ const BuySellSignalsColumns = () => {
       render: (data: CustomSymbol) => {
         const changePrice = data.buySellSignals?.changePrice || 0;
         const formattedChangePrice = Number(
-          Number((changePrice * 100) / 1).toFixed(0)
+          changePrice.toFixed(1)
         ).toLocaleString();
         let className = 'blur';
         if (changePrice * 100 > BUY_SELL_SIGNNAL_KEYS.changePrice_buy) {

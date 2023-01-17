@@ -9,7 +9,7 @@ import { DATE_FORMAT, BACKTEST_FILTER } from '../constants';
 
 const getCurrentDataChart = (backTestData: BackTest | null) => {
   if (!backTestData) return null;
-  const list = backTestData.fullData.slice(0, 60);
+  const list = backTestData.fullData.slice(0, 100);
 
   const grid = [
     {
@@ -61,7 +61,8 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       width: 100,
 
       render: (data: Base) => {
-        if (!data.buyIndex || !backTestData) return '';
+        if ((data.buyIndex !== 0 && !data.buyIndex) || !backTestData) return '';
+
         const buyDate = backTestData.fullData[data.buyIndex]?.date;
         return (
           <Button onClick={() => handleClickRow(data)}>
@@ -115,14 +116,28 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       },
     },
     {
-      title: 'diff_previous_base (%)',
+      title: 'closestUpperBaseIndex (%)',
       width: 100,
       align: 'right' as AlignType,
       render: (data: Base) => {
-        if (!data.diff_previous_base) return;
-        return data.diff_previous_base.toFixed(0);
+        if (!data.closestUpperBaseIndex || !data.upperPercent) return;
+        return (
+          data.closestUpperBaseIndex + ' (' + data.upperPercent.toFixed(0) + ')'
+        );
       },
     },
+    {
+      title: 'closestLowerBaseIndex (%)',
+      width: 100,
+      align: 'right' as AlignType,
+      render: (data: Base) => {
+        if (!data.closestLowerBaseIndex || !data.lowerPercent) return;
+        return (
+          data.closestLowerBaseIndex + ' (' + data.lowerPercent.toFixed(0) + ')'
+        );
+      },
+    },
+
     {
       title: 'other',
       render: (data: Base) => {
@@ -174,11 +189,14 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   };
 
   const handleClickRow = (record: Base) => {
-    if (!record.buyIndex || !backTestData) return;
+    if ((record.buyIndex !== 0 && !record.buyIndex) || !backTestData) return;
+
     const list = backTestData.fullData.slice(
-      record.buyIndex - 10,
-      record.buyIndex + 50
+      record.buyIndex > 9 ? record.buyIndex - 10 : record.buyIndex,
+      record.buyIndex + 90
     );
+    let upperBase;
+    let lowerBase;
 
     const buyItem = { ...backTestData.fullData[record.buyIndex] };
     const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
@@ -202,51 +220,155 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       sellItem,
       offset: 20,
     });
+    const base_length = record.endBaseIndex - record.startBaseIndex;
 
-    const markLine = {
-      data: [
-        [
-          {
-            name: '',
-            symbol: 'none',
-
-            coord: [
-              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
-              record.base_min,
-            ],
+    const dataMarkLine = [
+      // current base
+      [
+        {
+          name: '',
+          symbol: 'none',
+          label: {
+            show: false,
           },
-          {
-            coord: [
-              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
-              record.base_min,
-            ],
-          },
-        ],
-        [
-          {
-            name: '',
-            symbol: 'none',
-
-            coord: [
-              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
-              record.base_max,
-            ],
-          },
-          {
-            coord: [
-              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
-              record.base_max,
-            ],
-          },
-        ],
+          coord: [
+            moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
+            record.base_min,
+          ],
+        },
+        {
+          coord: [
+            moment(buyItem.date).add(-base_length, 'days').format(DATE_FORMAT),
+            record.base_min,
+          ],
+        },
       ],
-    };
+      [
+        {
+          name: '',
+          symbol: 'none',
+
+          coord: [
+            moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
+            record.base_max,
+          ],
+        },
+        {
+          coord: [
+            moment(buyItem.date).add(-base_length, 'days').format(DATE_FORMAT),
+            record.base_max,
+          ],
+        },
+      ],
+    ];
+
+    if (record.closestUpperBaseIndex) {
+      upperBase = {
+        ...backTestData.fullData[
+          backTestData.listBase[record.closestUpperBaseIndex].startBaseIndex
+        ],
+      };
+      const base_length_upperBase =
+        backTestData.listBase[record.closestUpperBaseIndex].endBaseIndex -
+        backTestData.listBase[record.closestUpperBaseIndex].startBaseIndex;
+      dataMarkLine.push([
+        {
+          name: '',
+          symbol: 'none',
+
+          coord: [
+            moment(upperBase.date).add(0, 'days').format(DATE_FORMAT),
+            backTestData.listBase[record.closestUpperBaseIndex].base_min,
+          ],
+        },
+        {
+          coord: [
+            moment(upperBase.date)
+              .add(-base_length_upperBase, 'days')
+              .format(DATE_FORMAT),
+            backTestData.listBase[record.closestUpperBaseIndex].base_min,
+          ],
+        },
+      ]);
+      dataMarkLine.push([
+        {
+          name: '',
+          symbol: 'none',
+
+          coord: [
+            moment(upperBase.date).add(0, 'days').format(DATE_FORMAT),
+            backTestData.listBase[record.closestUpperBaseIndex].base_max,
+          ],
+        },
+        {
+          coord: [
+            moment(upperBase.date)
+              .add(-base_length_upperBase, 'days')
+              .format(DATE_FORMAT),
+            backTestData.listBase[record.closestUpperBaseIndex].base_max,
+          ],
+        },
+      ]);
+    }
+
+    if (record.closestLowerBaseIndex) {
+      lowerBase = {
+        ...backTestData.fullData[
+          backTestData.listBase[record.closestLowerBaseIndex].startBaseIndex
+        ],
+      };
+      const base_length_lowerBase =
+        backTestData.listBase[record.closestLowerBaseIndex].endBaseIndex -
+        backTestData.listBase[record.closestLowerBaseIndex].startBaseIndex;
+      dataMarkLine.push([
+        {
+          name: '',
+          symbol: 'none',
+
+          coord: [
+            moment(lowerBase.date).add(0, 'days').format(DATE_FORMAT),
+            backTestData.listBase[record.closestLowerBaseIndex].base_min,
+          ],
+        },
+        {
+          coord: [
+            moment(lowerBase.date)
+              .add(-base_length_lowerBase, 'days')
+              .format(DATE_FORMAT),
+            backTestData.listBase[record.closestLowerBaseIndex].base_min,
+          ],
+        },
+      ]);
+      dataMarkLine.push([
+        {
+          name: '',
+          symbol: 'none',
+
+          coord: [
+            moment(lowerBase.date).add(0, 'days').format(DATE_FORMAT),
+            backTestData.listBase[record.closestLowerBaseIndex].base_max,
+          ],
+        },
+        {
+          coord: [
+            moment(lowerBase.date)
+              .add(-base_length_lowerBase, 'days')
+              .format(DATE_FORMAT),
+            backTestData.listBase[record.closestLowerBaseIndex].base_max,
+          ],
+        },
+      ]);
+    }
+
+    console.log(363, dataMarkLine, seriesMarkPoint, list);
 
     const newDataChart = getDataChart({
       data: list,
       grid,
       seriesMarkPoint,
-      markLine,
+      markLine: {
+        data: dataMarkLine,
+      },
     });
     setDataChart(newDataChart);
   };
@@ -263,6 +385,8 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       backTestData.listBase,
       filter
     );
+
+    console.log(newBackTest, 'newBackTest');
 
     setBackTest(newBackTest);
   };

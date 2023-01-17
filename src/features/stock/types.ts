@@ -118,7 +118,10 @@ export interface Base {
   base_min: number;
   change_t3?: number | null;
   base_percent: number;
-  diff_previous_base?: number;
+  closestUpperBaseIndex?: number;
+  upperPercent?: number;
+  closestLowerBaseIndex?: number;
+  lowerPercent?: number;
 }
 
 export interface CustomSymbol {

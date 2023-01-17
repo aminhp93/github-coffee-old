@@ -60,7 +60,7 @@ export const mapHistoricalQuote = (
   const last20HistoricalQuote: BackTestSymbol[] = data.map(
     (i: HistoricalQuote) => {
       return {
-        date: i.date,
+        date: i.date.replace('T00:00:00', ''),
         dealVolume: i.dealVolume,
         priceClose: i.priceClose,
         priceHigh: i.priceHigh,
@@ -92,10 +92,13 @@ export const mapHistoricalQuote = (
 export const getListBase = (data: BackTestSymbol[]): Base[] => {
   if (!data || !data.length || data.length < 6) return [];
   let listBase: Base[] = [];
-  let nextIndex: number = 6;
+  let nextIndex: number = 1;
 
   data.forEach((_: BackTestSymbol, index: number) => {
     if (index !== nextIndex) return;
+    if (data[index].symbol === 'TCB') {
+      console.log('TCB');
+    }
 
     nextIndex = nextIndex + 1;
 
@@ -148,10 +151,6 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
 
       const base_percent = (100 * (base_max - base_min)) / base_min;
 
-      if (buyIndex === 95) {
-        console.log(153);
-      }
-
       listBase.push({
         buyIndex,
         startBaseIndex,
@@ -170,11 +169,43 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
   });
 
   listBase = listBase.map((i: Base, index: number) => {
-    if (listBase[index + 1]) {
-      const previous_base_min = listBase[index + 1].base_min;
-      i.diff_previous_base =
-        (100 * (previous_base_min - i.base_max)) / i.base_max;
+    let closestUpperBaseIndex;
+    let closestLowerBaseIndex;
+
+    let stop1 = false;
+    for (let j = index + 1; j < listBase.length; j++) {
+      if (!stop1) {
+        if (listBase[j].base_min > i.base_min) {
+          closestUpperBaseIndex = j;
+          stop1 = true;
+        }
+      }
     }
+
+    let stop2 = false;
+    for (let k = index + 1; k < listBase.length; k++) {
+      if (!stop2) {
+        if (listBase[k].base_max < i.base_max) {
+          closestLowerBaseIndex = k;
+          stop2 = true;
+        }
+      }
+    }
+
+    if (closestUpperBaseIndex) {
+      i.closestUpperBaseIndex = closestUpperBaseIndex;
+      i.upperPercent =
+        (100 * (listBase[closestUpperBaseIndex].base_min - i.base_max)) /
+        i.base_max;
+    }
+
+    if (closestLowerBaseIndex) {
+      i.closestLowerBaseIndex = closestLowerBaseIndex;
+      i.lowerPercent =
+        (100 * (i.base_min - listBase[closestLowerBaseIndex].base_max)) /
+        listBase[closestLowerBaseIndex].base_max;
+    }
+
     return i;
   });
 
@@ -199,9 +230,18 @@ export const getMapBackTestData = (
       );
 
     // replace first item by latest data
-    filterRes[0] = dataSource.find(
-      (j) => j.symbol === i.symbol
-    )!.last20HistoricalQuote[0];
+
+    if (
+      filterRes[0].date ===
+      dataSource.find((j) => j.symbol === i.symbol)!.last20HistoricalQuote[0]
+        .date
+    ) {
+      //  do nothing
+    } else {
+      filterRes.unshift(
+        dataSource.find((j) => j.symbol === i.symbol)!.last20HistoricalQuote[0]
+      );
+    }
 
     if (filterRes.length) {
       const listBase = getListBase(filterRes);
@@ -359,12 +399,25 @@ export const getBackTest = (
   listBase: Base[],
   filterCondition: FilterBackTest
 ) => {
-  const filteredBase = listBase.filter(
-    (j: Base) =>
-      j.change_t0! > filterCondition.change_t0 &&
-      j.change_t0_vol! > filterCondition.change_t0_vol &&
-      j.num_high_vol_than_t0! === filterCondition.num_high_vol_than_t0
-  );
+  console.log('filterCondition', filterCondition);
+  const filteredBase = listBase.filter((j: Base) => {
+    if (filterCondition.change_t0 && j.change_t0! < filterCondition.change_t0) {
+      return false;
+    }
+    if (
+      filterCondition.change_t0_vol &&
+      j.change_t0_vol! < filterCondition.change_t0_vol
+    ) {
+      return false;
+    }
+    if (
+      filterCondition.num_high_vol_than_t0 &&
+      j.num_high_vol_than_t0! < filterCondition.num_high_vol_than_t0
+    ) {
+      return false;
+    }
+    return true;
+  });
   const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
   const winRate = Number(((100 * winCount) / filteredBase.length).toFixed(2));
 
