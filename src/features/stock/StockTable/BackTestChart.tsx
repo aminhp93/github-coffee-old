@@ -191,7 +191,7 @@ const BackTestChart = ({ data }: Props) => {
       const obj: any = {
         top: 10,
       };
-      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+      obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 80;
       return obj;
     },
     // extraCssText: 'width: 170px'
