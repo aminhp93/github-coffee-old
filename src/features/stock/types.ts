@@ -118,6 +118,7 @@ export interface Base {
   base_min: number;
   change_t3?: number | null;
   base_percent: number;
+  t0_over_base_max: number;
   closestUpperBaseIndex?: number;
   upperPercent?: number;
   closestLowerBaseIndex?: number;

@@ -16,6 +16,7 @@ import {
   BackTestSymbol,
   Base,
   FilterBackTest,
+  BackTest,
 } from './types';
 
 export const mapHistoricalQuote = (
@@ -96,12 +97,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
 
   data.forEach((_: BackTestSymbol, index: number) => {
     if (index !== nextIndex) return;
-    if (data[index].symbol === 'TCB') {
-      console.log('TCB');
-    }
-
     nextIndex = nextIndex + 1;
-
     const startBaseIndex = index;
     let endBaseIndex = index + 5;
     const list = data.slice(startBaseIndex, endBaseIndex);
@@ -150,6 +146,8 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
       });
 
       const base_percent = (100 * (base_max - base_min)) / base_min;
+      const t0_over_base_max =
+        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
 
       listBase.push({
         buyIndex,
@@ -163,6 +161,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         base_max,
         base_min,
         base_percent,
+        t0_over_base_max,
       });
       nextIndex = nextIndex + endBaseIndex - startBaseIndex - 1;
     }
@@ -483,7 +482,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   const startBaseIndex = 1;
   let endBaseIndex = 6;
   const list = data.slice(startBaseIndex, endBaseIndex);
-  const { base_min, base_max } = getBase_min_max(list);
+  let { base_min, base_max } = getBase_min_max(list);
 
   if (base_min && base_max) {
     const percent = (100 * (base_max - base_min)) / base_min;
@@ -497,20 +496,25 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
       const change_t0 =
         (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
       let stop = false;
-      let base_percent = (100 * (base_max - base_min)) / base_min;
 
       data.forEach((i: BackTestSymbol, index: number) => {
         if (index < 6 || stop) return;
-        const new_min = base_min > i.priceClose ? i.priceClose : base_min;
-        const new_max = base_max < i.priceClose ? i.priceClose : base_max;
+        const new_min = base_min! > i.priceClose ? i.priceClose : base_min!;
+        const new_max = base_max! < i.priceClose ? i.priceClose : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(i);
           endBaseIndex = index;
+          base_min = new_min;
+          base_max = new_max;
         } else {
           stop = true;
         }
       });
+
+      const base_percent = (100 * (base_max - base_min)) / base_min;
+      const t0_over_base_max =
+        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
 
       return {
         buyIndex,
@@ -523,8 +527,197 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         base_max,
         base_min,
         base_percent,
+        t0_over_base_max,
       };
     }
   }
   return null;
+};
+
+export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
+  if ((record.buyIndex !== 0 && !record.buyIndex) || !backTestData) return;
+
+  const list = backTestData.fullData.slice(
+    record.buyIndex > 9 ? record.buyIndex - 10 : record.buyIndex,
+    record.buyIndex + 90
+  );
+  let upperBase;
+  let lowerBase;
+
+  const baseStartItem = { ...backTestData.fullData[record.startBaseIndex] };
+  const buyItem = { ...backTestData.fullData[record.buyIndex] };
+  const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
+  const grid = [
+    {
+      left: 20,
+      right: 20,
+      top: 20,
+      height: '70%',
+    },
+    {
+      left: 20,
+      right: 20,
+      height: '20%',
+      bottom: 0,
+    },
+  ];
+
+  const seriesMarkPoint = getSeriesMarkPoint({
+    buyItem,
+    sellItem,
+    offset: 20,
+  });
+  const base_length = record.endBaseIndex - record.startBaseIndex;
+
+  const dataMarkLine = [
+    // current base
+    [
+      {
+        name: '',
+        symbol: 'none',
+        label: {
+          show: false,
+        },
+        coord: [
+          moment(baseStartItem.date).add(0, 'days').format(DATE_FORMAT),
+          record.base_min,
+        ],
+      },
+      {
+        coord: [
+          moment(baseStartItem.date)
+            .add(-base_length, 'days')
+            .format(DATE_FORMAT),
+          record.base_min,
+        ],
+      },
+    ],
+    [
+      {
+        name: '',
+        symbol: 'none',
+
+        coord: [
+          moment(baseStartItem.date).add(0, 'days').format(DATE_FORMAT),
+          record.base_max,
+        ],
+      },
+      {
+        coord: [
+          moment(baseStartItem.date)
+            .add(-base_length, 'days')
+            .format(DATE_FORMAT),
+          record.base_max,
+        ],
+      },
+    ],
+  ];
+
+  if (record.closestUpperBaseIndex) {
+    upperBase = {
+      ...backTestData.fullData[
+        backTestData.listBase[record.closestUpperBaseIndex].startBaseIndex
+      ],
+    };
+    const base_length_upperBase =
+      backTestData.listBase[record.closestUpperBaseIndex].endBaseIndex -
+      backTestData.listBase[record.closestUpperBaseIndex].startBaseIndex;
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+
+        coord: [
+          moment(upperBase.date).add(0, 'days').format(DATE_FORMAT),
+          backTestData.listBase[record.closestUpperBaseIndex].base_min,
+        ],
+      },
+      {
+        coord: [
+          moment(upperBase.date)
+            .add(-base_length_upperBase, 'days')
+            .format(DATE_FORMAT),
+          backTestData.listBase[record.closestUpperBaseIndex].base_min,
+        ],
+      },
+    ]);
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+
+        coord: [
+          moment(upperBase.date).add(0, 'days').format(DATE_FORMAT),
+          backTestData.listBase[record.closestUpperBaseIndex].base_max,
+        ],
+      },
+      {
+        coord: [
+          moment(upperBase.date)
+            .add(-base_length_upperBase, 'days')
+            .format(DATE_FORMAT),
+          backTestData.listBase[record.closestUpperBaseIndex].base_max,
+        ],
+      },
+    ]);
+  }
+
+  if (record.closestLowerBaseIndex) {
+    lowerBase = {
+      ...backTestData.fullData[
+        backTestData.listBase[record.closestLowerBaseIndex].startBaseIndex
+      ],
+    };
+    const base_length_lowerBase =
+      backTestData.listBase[record.closestLowerBaseIndex].endBaseIndex -
+      backTestData.listBase[record.closestLowerBaseIndex].startBaseIndex;
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+
+        coord: [
+          moment(lowerBase.date).add(0, 'days').format(DATE_FORMAT),
+          backTestData.listBase[record.closestLowerBaseIndex].base_min,
+        ],
+      },
+      {
+        coord: [
+          moment(lowerBase.date)
+            .add(-base_length_lowerBase, 'days')
+            .format(DATE_FORMAT),
+          backTestData.listBase[record.closestLowerBaseIndex].base_min,
+        ],
+      },
+    ]);
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+
+        coord: [
+          moment(lowerBase.date).add(0, 'days').format(DATE_FORMAT),
+          backTestData.listBase[record.closestLowerBaseIndex].base_max,
+        ],
+      },
+      {
+        coord: [
+          moment(lowerBase.date)
+            .add(-base_length_lowerBase, 'days')
+            .format(DATE_FORMAT),
+          backTestData.listBase[record.closestLowerBaseIndex].base_max,
+        ],
+      },
+    ]);
+  }
+
+  const newDataChart = getDataChart({
+    data: list,
+    grid,
+    seriesMarkPoint,
+    markLine: {
+      data: dataMarkLine,
+    },
+  });
+  return newDataChart;
 };
