@@ -302,6 +302,23 @@ const StockService = {
       data,
     });
   },
+  getLastUpdated: () => {
+    return supabase.from('stock_info').select('*');
+  },
+  insertStockData: (data: any) => {
+    return supabase.from('stock').insert(data);
+  },
+  deleteStockData: ({ column, value }: any) => {
+    return supabase.from('stock').delete().eq(column, value);
+  },
+  updateLastUpdated: ({ column, value }: any) => {
+    console.log('updateLastUpdated', column, value);
+    return supabase
+      .from('stock_info')
+      .update({ [column]: value })
+      .eq('id', 1)
+      .select();
+  },
 };
 
 export default StockService;
