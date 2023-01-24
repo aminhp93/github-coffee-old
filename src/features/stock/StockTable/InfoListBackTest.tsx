@@ -1,36 +1,16 @@
 import { useState, ReactNode, useEffect } from 'react';
 import { Button, Drawer, Table, InputNumber } from 'antd';
-import { AlignType } from 'rc-table/lib/interface';
-import moment from 'moment';
 import BackTestChart from './BackTestChart';
-import { getDataChart, getBackTest, getSeriesMarkPoint } from '../utils';
+import { getBackTest, mapDataChart } from '../utils';
 import { BackTest, Base, FilterBackTest } from '../types';
-import { DATE_FORMAT, BACKTEST_FILTER } from '../constants';
+import { BACKTEST_FILTER } from '../constants';
+import InfoListBackTestColumns from './InfoListBackTestColumns';
 
 const getCurrentDataChart = (backTestData: BackTest | null) => {
   if (!backTestData) return null;
-  const list = backTestData.fullData.slice(0, 60);
+  const record = backTestData.listBase[0];
 
-  const grid = [
-    {
-      left: 20,
-      right: 20,
-      top: 20,
-      height: '70%',
-    },
-    {
-      left: 20,
-      right: 20,
-      height: '20%',
-      bottom: 0,
-    },
-  ];
-
-  const newDataChart = getDataChart({
-    data: list,
-    grid,
-  });
-  return newDataChart;
+  return mapDataChart(backTestData, record);
 };
 
 interface Props {
@@ -55,116 +35,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
     getCurrentDataChart(backTestData)
   );
 
-  const columns = [
-    {
-      title: 'buyDate',
-      width: 100,
-
-      render: (data: Base) => {
-        if (!data.buyIndex || !backTestData) return '';
-        const buyDate = backTestData.fullData[data.buyIndex]?.date;
-        return (
-          <Button onClick={() => handleClickRow(data)}>
-            {moment(buyDate).format(DATE_FORMAT)}
-          </Button>
-        );
-      },
-    },
-    {
-      title: 'change_t0_vol (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) =>
-        a.change_t0_vol && b.change_t0_vol
-          ? a.change_t0_vol - b.change_t0_vol
-          : 0,
-      render: (data: Base) => {
-        if (!data.change_t0_vol) return '';
-        return data.change_t0_vol.toFixed(0);
-      },
-    },
-    {
-      title: 'change_t0 (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) =>
-        a.change_t0 && b.change_t0 ? a.change_t0 - b.change_t0 : 0,
-      render: (data: Base) => {
-        if (!data.change_t0) return '';
-        return data.change_t0.toFixed(2);
-      },
-    },
-    {
-      title: 'num_high_vol_than_t0 (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) =>
-        a.num_high_vol_than_t0 && b.num_high_vol_than_t0
-          ? a.num_high_vol_than_t0 - b.num_high_vol_than_t0
-          : 0,
-      render: (data: Base) => {
-        return data.num_high_vol_than_t0;
-      },
-    },
-    {
-      title: 'base_percent (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      render: (data: Base) => {
-        return data.base_percent.toFixed(0);
-      },
-    },
-    {
-      title: 'diff_previous_base (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      render: (data: Base) => {
-        if (!data.diff_previous_base) return;
-        return data.diff_previous_base.toFixed(0);
-      },
-    },
-    {
-      title: 'other',
-      render: (data: Base) => {
-        return '';
-      },
-    },
-    {
-      title: 'chart',
-      width: 150,
-      render: (data: Base) => {
-        // get data in data.fullData from data.buyIndex to next 5 items
-        if (!data.buyIndex || !backTestData) return '';
-        const list = backTestData.fullData.slice(
-          data.buyIndex - 3,
-          data.buyIndex + 5
-        );
-        const buyItem = backTestData.fullData[data.buyIndex];
-        const seriesMarkPoint = getSeriesMarkPoint({ buyItem });
-        const dataChart = getDataChart({
-          data: list,
-          seriesMarkPoint,
-        });
-        return (
-          <div style={{ width: '150px', height: '50px' }}>
-            <BackTestChart data={dataChart as any} />
-          </div>
-        );
-      },
-    },
-    {
-      title: 'change_t3 (%)',
-      width: 100,
-      align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) =>
-        a.change_t3 && b.change_t3 ? a.change_t3 - b.change_t3 : 0,
-      render: (data: Base) => {
-        if (!data.change_t3) return '';
-        return data.change_t3.toFixed(2);
-      },
-    },
-  ];
-
   const showDrawer = () => {
     setOpen(true);
   };
@@ -174,81 +44,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   };
 
   const handleClickRow = (record: Base) => {
-    if (!record.buyIndex || !backTestData) return;
-    const list = backTestData.fullData.slice(
-      record.buyIndex - 10,
-      record.buyIndex + 50
-    );
-
-    const buyItem = { ...backTestData.fullData[record.buyIndex] };
-    const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
-    const grid = [
-      {
-        left: 20,
-        right: 20,
-        top: 20,
-        height: '70%',
-      },
-      {
-        left: 20,
-        right: 20,
-        height: '20%',
-        bottom: 0,
-      },
-    ];
-
-    const seriesMarkPoint = getSeriesMarkPoint({
-      buyItem,
-      sellItem,
-      offset: 20,
-    });
-
-    const markLine = {
-      data: [
-        [
-          {
-            name: '',
-            symbol: 'none',
-
-            coord: [
-              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
-              record.base_min,
-            ],
-          },
-          {
-            coord: [
-              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
-              record.base_min,
-            ],
-          },
-        ],
-        [
-          {
-            name: '',
-            symbol: 'none',
-
-            coord: [
-              moment(buyItem.date).add(0, 'days').format(DATE_FORMAT),
-              record.base_max,
-            ],
-          },
-          {
-            coord: [
-              moment(buyItem.date).add(-50, 'days').format(DATE_FORMAT),
-              record.base_max,
-            ],
-          },
-        ],
-      ],
-    };
-
-    const newDataChart = getDataChart({
-      data: list,
-      grid,
-      seriesMarkPoint,
-      markLine,
-    });
-    setDataChart(newDataChart);
+    setDataChart(mapDataChart(backTestData, record));
   };
 
   const handleRetest = async () => {
@@ -264,7 +60,21 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       filter
     );
 
+    console.log(newBackTest, 'newBackTest');
+
     setBackTest(newBackTest);
+  };
+
+  const handleReset = () => {
+    setChange_t0(0);
+    setChange_t0_vol(0);
+    setNum_high_vol_than_t0(0);
+  };
+
+  const handleDefault = () => {
+    setChange_t0(BACKTEST_FILTER.change_t0);
+    setChange_t0_vol(BACKTEST_FILTER.change_t0_vol);
+    setNum_high_vol_than_t0(BACKTEST_FILTER.num_high_vol_than_t0);
   };
 
   useEffect(() => {
@@ -314,6 +124,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
                 onChange={(value) => setNum_high_vol_than_t0(value as number)}
                 value={num_high_vol_than_t0}
               />
+              <Button size="small" onClick={handleReset}>
+                reset
+              </Button>
+              <Button size="small" onClick={handleDefault}>
+                default
+              </Button>
             </div>
             {backTest && (
               <div>{`${backTest.winRate.toFixed(0)}% - ${backTest.winCount}/${
@@ -348,7 +164,10 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
                 i.key = i.buyIndex;
                 return i;
               })}
-              columns={columns}
+              columns={InfoListBackTestColumns({
+                handleClickRow,
+                backTestData,
+              })}
               bordered
               size="small"
               pagination={false}

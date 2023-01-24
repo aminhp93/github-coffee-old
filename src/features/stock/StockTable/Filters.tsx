@@ -183,8 +183,8 @@ const Filters = ({
           </Button>
         </div>
       }
-      placement="right"
-      width={'100%'}
+      placement="bottom"
+      // width={'100%'}
       className="StockTableFilterDrawer"
       onClose={onClose}
       open={open}

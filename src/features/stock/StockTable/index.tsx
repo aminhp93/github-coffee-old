@@ -10,7 +10,7 @@ import {
 import { Button, notification, Statistic, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import StockService from '../service';
-import { keyBy } from 'lodash';
+import { groupBy, keyBy } from 'lodash';
 import { useEffect, useState } from 'react';
 import {
   DEFAULT_FILTER,
@@ -30,6 +30,11 @@ import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
 import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
+const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -67,7 +72,43 @@ export default function StockTable() {
     }
   };
 
+  const handleGetData2 = async () => {
+    const res = await supabase
+      .from('stock')
+      .select(
+        // 'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume'
+        '*'
+      )
+      .in('symbol', getListAllSymbols())
+      .gt('date', '2022-12-01')
+      .order('date', { ascending: false });
+
+    console.log(84, res, groupBy(res.data, 'symbol'));
+    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
+
+    const listObj: any = groupBy(res.data, 'symbol');
+    const result: any = [];
+    Object.keys(listObj).forEach((i: string) => {
+      result.push(
+        mapHistoricalQuote(listObj[i], {
+          key: i,
+          symbol: i,
+          inWatchingWatchList: watching_wl?.symbols.includes(i),
+        })
+      );
+    });
+    console.log(95, result);
+    const newData = getDataSource(result, filters);
+
+    setLoading(false);
+    setFullDataSource(result);
+    setDataSource(newData);
+  };
+
   const handleGetData = () => {
+    handleGetData2();
+    return;
+
     const listAllSymbols = getListAllSymbols(listWatchlist);
     const listPromises: any = [];
     const thanh_khoan_vua_wl: Watchlist =
@@ -96,6 +137,7 @@ export default function StockTable() {
     setLoading(true);
     return Promise.all(listPromises)
       .then((res: CustomSymbol[]) => {
+        console.log(119, res);
         const newData = getDataSource(res, filters);
 
         setLoading(false);
