@@ -80,7 +80,9 @@ export default function StockTable() {
         '*'
       )
       .in('symbol', getListAllSymbols())
-      .gt('date', '2022-12-01');
+      .gt('date', '2022-12-01')
+      .order('date', { ascending: false });
+
     console.log(84, res, groupBy(res.data, 'symbol'));
     const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
 

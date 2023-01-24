@@ -7,9 +7,7 @@ const Layout = () => {
       className="height-100"
       style={{ display: 'flex', flexDirection: 'column' }}
     >
-      <div style={{ height: '40px' }}>
-        <Header />
-      </div>
+      <Header />
       <div className="flex-1">
         <Outlet />
       </div>

@@ -1,4 +1,4 @@
-import { Drawer, Button, notification, Table, DatePicker } from 'antd';
+import { Drawer, Button, notification, Table, DatePicker, Divider } from 'antd';
 import {
   BACKTEST_COUNT,
   DATE_FORMAT,
@@ -6,7 +6,7 @@ import {
   getListAllSymbols,
 } from '../constants';
 import request from '@/services/request';
-import { chunk } from 'lodash';
+import { chunk, groupBy } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
 import { getMapBackTestData } from '../utils';
@@ -60,9 +60,9 @@ const Testing = ({
   fullDataSource,
   dataSource,
 }: any) => {
-  const [stockScheduleManager, setStockScheduleManager] = useState<any>([]);
-  const [listJobs, setListJobs] = useState<any>([]);
+  const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string>('');
 
   const getListPromise = async (data: any) => {
     const listPromise: any = [];
@@ -174,29 +174,12 @@ const Testing = ({
       });
   };
 
-  const getListStockJobs = async () => {
+  const getLastUpdated = async () => {
     try {
-      const res = await StockService.getListStockJobs();
-      setStockScheduleManager(res.data.stockScheduleManager);
-      setListJobs(res.data.listJobs);
-    } catch (e) {
-      console.log(e);
-      notification.error({ message: 'error' });
-    }
-  };
-
-  const startDailyImportStockJob = async () => {
-    try {
-      StockService.startDailyImportStockJob();
-    } catch (e) {
-      console.log(e);
-      notification.error({ message: 'error' });
-    }
-  };
-
-  const cancelDailyImportStockJob = () => {
-    try {
-      StockService.cancelDailyImportStockJob();
+      const res: any = await StockService.getLastUpdated();
+      if (res.data && res.data.length && res.data.length === 1) {
+        setLastUpdated(res.data[0].last_updated);
+      }
     } catch (e) {
       console.log(e);
       notification.error({ message: 'error' });
@@ -221,8 +204,111 @@ const Testing = ({
     setSelectedDate(date);
   };
 
+  const updateData = async () => {
+    if (selectedDate) {
+      // if have selected date, update only selected date and no udpate selected date
+      updateDataWithDate(
+        selectedDate.format(DATE_FORMAT),
+        selectedDate.format(DATE_FORMAT),
+        0
+      );
+    } else {
+      // if no selected date, update from last updated date to today, update selected date
+      let nextCall = true;
+      let offset = 0;
+      while (nextCall) {
+        const res = await updateDataWithDate(
+          moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+          moment().format(DATE_FORMAT),
+          offset
+        );
+        offset += 20;
+        if (res && res.length && res[0].length < 20) {
+          nextCall = false;
+        }
+      }
+      try {
+        const res = await StockService.updateLastUpdated({
+          column: 'last_updated',
+          value: endDate,
+        });
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
+  const updateDataWithDate = async (
+    startDate: string,
+    endDate: string,
+    offset: number
+  ) => {
+    // get data
+    const listPromises: any = [];
+    getListAllSymbols().forEach((symbol: string) => {
+      listPromises.push(
+        StockService.getHistoricalQuotes({
+          symbol,
+          startDate,
+          endDate,
+          offset,
+        })
+      );
+    });
+
+    const resListPromises = await Promise.all(listPromises);
+    if (resListPromises) {
+      let listPromiseUpdate: any = [];
+      const flattenData = resListPromises.flat();
+      const objData: any = groupBy(flattenData, 'date');
+      console.log('objData', objData);
+      for (const key in objData) {
+        if (Object.prototype.hasOwnProperty.call(objData, key)) {
+          const element = objData[key];
+          objData[key] = element.map((i: any) => {
+            i.key = `${i.symbol}_${i.date}`;
+            i.date = moment(i.date).format(DATE_FORMAT);
+            return i;
+          });
+          console.log(261, key);
+          listPromiseUpdate.push(
+            deleteAndInsertStockData(moment(key).format(DATE_FORMAT), element)
+          );
+        }
+      }
+      const res2 = await Promise.all(listPromiseUpdate);
+      console.log(res2);
+      setListUpdateStatus(res2);
+    }
+    return resListPromises;
+  };
+
+  const deleteAndInsertStockData = (date: string, data: any) => {
+    console.log(date, data);
+    // return a promise
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log('deleteAndInsertStockData', date);
+        // Delete all old data with selected date
+        await StockService.deleteStockData({
+          column: 'date',
+          value: date,
+        });
+
+        // Insert new data with selected date
+        await StockService.insertStockData(data);
+        resolve({ status: 'success', date });
+      } catch (e) {
+        console.log(e);
+        reject({ status: 'error', date });
+      }
+    });
+  };
+
   useEffect(() => {
-    getListStockJobs();
+    getLastUpdated();
   }, []);
 
   return (
@@ -230,33 +316,7 @@ const Testing = ({
       title={
         <div className="flex" style={{ justifyContent: 'space-between' }}>
           <div>Testing</div>
-          <div>
-            <Button
-              disabled={disabled}
-              size="small"
-              onClick={createBackTestData}
-            >
-              Create backtest
-            </Button>
-            <Button size="small" onClick={getBackTestData}>
-              Backtest online
-            </Button>
-            <Button size="small" onClick={getListStockJobs}>
-              Refresh
-            </Button>
-            <Button size="small" onClick={startDailyImportStockJob}>
-              start_daily_import_stock_job
-            </Button>
-            <Button size="small" onClick={cancelDailyImportStockJob}>
-              cancel_daily_import_stock_job
-            </Button>
-            <div>
-              <Button size="small" onClick={forceDailyImportStockJob}>
-                force_daily_import_stock_job
-              </Button>
-              <DatePicker onChange={onChangeDate} />
-            </div>
-          </div>
+          <div>Last updated: {lastUpdated}</div>
         </div>
       }
       placement="bottom"
@@ -265,14 +325,28 @@ const Testing = ({
     >
       <div className="height-100 flex">
         <div className="flex-1">
-          {listJobs.map((i: any) => {
-            return <div>{i}</div>;
-          })}
+          <Button disabled={disabled} size="small" onClick={createBackTestData}>
+            Create backtest
+          </Button>
+          <Divider />
+          <Button size="small" onClick={getBackTestData}>
+            Backtest online
+          </Button>
+          <Divider />
+          <div>
+            <Button size="small" onClick={forceDailyImportStockJob}>
+              force_daily_import_stock_job
+            </Button>{' '}
+            <Button size="small" onClick={updateData}>
+              Update data
+            </Button>
+            <DatePicker onChange={onChangeDate} />
+          </div>
         </div>
         <div className="flex-1">
           <Table
             size="small"
-            dataSource={stockScheduleManager}
+            dataSource={listUpdateStatus}
             columns={columns}
             pagination={false}
           />
