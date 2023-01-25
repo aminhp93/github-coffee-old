@@ -30,11 +30,6 @@ import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
 import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
-const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function StockTable() {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -72,16 +67,9 @@ export default function StockTable() {
     }
   };
 
-  const handleGetData2 = async () => {
-    const res = await supabase
-      .from('stock')
-      .select(
-        // 'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume'
-        '*'
-      )
-      .in('symbol', getListAllSymbols())
-      .gt('date', '2022-12-01')
-      .order('date', { ascending: false });
+  const handleGetDataFromSupabase = async () => {
+    const fromDate = moment().add(-30, 'days').format(DATE_FORMAT);
+    const res = await StockService.getStockDataFromSupabase(fromDate);
 
     console.log(84, res, groupBy(res.data, 'symbol'));
     const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
@@ -105,10 +93,7 @@ export default function StockTable() {
     setDataSource(newData);
   };
 
-  const handleGetData = () => {
-    handleGetData2();
-    return;
-
+  const handleGetDataFromFireant = () => {
     const listAllSymbols = getListAllSymbols(listWatchlist);
     const listPromises: any = [];
     const thanh_khoan_vua_wl: Watchlist =
@@ -119,7 +104,7 @@ export default function StockTable() {
     if (!thanh_khoan_vua_wl) return;
 
     listAllSymbols.forEach((j: string) => {
-      const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+      const startDate = moment().add(-30, 'days').format(DATE_FORMAT);
       const endDate = date.format(DATE_FORMAT);
       listPromises.push(
         StockService.getHistoricalQuotes(
@@ -205,7 +190,7 @@ export default function StockTable() {
   };
 
   useEffect(() => {
-    handleGetData();
+    handleGetDataFromSupabase();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, listWatchlist]);
 
@@ -226,7 +211,7 @@ export default function StockTable() {
             size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
-            onClick={handleGetData}
+            onClick={handleGetDataFromSupabase}
           />
 
           <Button
@@ -319,12 +304,12 @@ export default function StockTable() {
         footer={footer}
       />
       <Testing
-        fullDataSource={fullDataSource}
         dataSource={dataSource}
-        cbSetLoading={setLoading}
-        cbSetDataSource={setDataSource}
-        listWatchlistObj={listWatchlistObj}
+        fullDataSource={fullDataSource}
         open={openDrawerTesting}
+        cbSetLoading={(data) => setLoading(data)}
+        cbSetDataSource={(data) => setDataSource(data)}
+        cbGetDataFromFireant={handleGetDataFromFireant}
         onClose={() => setOpenDrawerTesting(false)}
       />
       <Filters

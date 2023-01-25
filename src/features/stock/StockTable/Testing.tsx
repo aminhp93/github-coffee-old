@@ -10,6 +10,7 @@ import { chunk, groupBy } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
 import { getMapBackTestData } from '../utils';
+import { CustomSymbol } from '../types';
 
 import type { DatePickerProps } from 'antd';
 
@@ -50,16 +51,25 @@ const columns = [
   },
 ];
 
+interface Props {
+  dataSource: CustomSymbol[];
+  fullDataSource: CustomSymbol[];
+  open: boolean;
+  cbSetLoading: (data: boolean) => void;
+  cbSetDataSource: (data: CustomSymbol[]) => void;
+  cbGetDataFromFireant: () => void;
+  onClose: () => void;
+}
+
 const Testing = ({
-  onChange,
-  onClose,
+  dataSource,
+  fullDataSource,
   open,
-  listWatchlistObj,
   cbSetLoading,
   cbSetDataSource,
-  fullDataSource,
-  dataSource,
-}: any) => {
+  cbGetDataFromFireant,
+  onClose,
+}: Props) => {
   const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -331,6 +341,10 @@ const Testing = ({
           <Divider />
           <Button size="small" onClick={getBackTestData}>
             Backtest online
+          </Button>
+          <Divider />
+          <Button size="small" onClick={cbGetDataFromFireant}>
+            handleGetDataFromFireant
           </Button>
           <Divider />
           <div>

@@ -26,6 +26,7 @@ const Header = () => {
             width: '4px',
             top: 0,
             right: 0,
+            zIndex: 1,
           }}
         />
       </Space>
