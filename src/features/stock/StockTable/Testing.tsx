@@ -58,6 +58,8 @@ interface Props {
   cbSetLoading: (data: boolean) => void;
   cbSetDataSource: (data: CustomSymbol[]) => void;
   cbGetDataFromFireant: () => void;
+  cbBackTestSupabase: () => void;
+  cbBackTestHeroku: () => void;
   onClose: () => void;
 }
 
@@ -68,6 +70,8 @@ const Testing = ({
   cbSetLoading,
   cbSetDataSource,
   cbGetDataFromFireant,
+  cbBackTestSupabase,
+  cbBackTestHeroku,
   onClose,
 }: Props) => {
   const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
@@ -344,7 +348,15 @@ const Testing = ({
           </Button>
           <Divider />
           <Button size="small" onClick={cbGetDataFromFireant}>
-            handleGetDataFromFireant
+            Get data from fireant
+          </Button>
+          <Divider />
+          <Button size="small" onClick={cbBackTestSupabase}>
+            Backtest supabase
+          </Button>
+          <Divider />
+          <Button size="small" onClick={cbBackTestHeroku}>
+            Backtest heroku
           </Button>
           <Divider />
           <div>

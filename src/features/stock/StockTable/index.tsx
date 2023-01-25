@@ -10,7 +10,6 @@ import {
 import { Button, notification, Statistic, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import StockService from '../service';
-import { groupBy, keyBy } from 'lodash';
 import { useEffect, useState } from 'react';
 import {
   DEFAULT_FILTER,
@@ -18,12 +17,12 @@ import {
   DEFAULT_COLUMNS,
   DATE_FORMAT,
   DEFAULT_DATE,
-  getListAllSymbols,
 } from '../constants';
 import {
-  mapHistoricalQuote,
   getMapBackTestData,
   getDataSource,
+  getDataFromSupabase,
+  getDataFromFireant,
 } from '../utils';
 import Filters from './Filters';
 import './index.less';
@@ -31,14 +30,13 @@ import Settings from './Settings';
 import Testing from './Testing';
 import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
 
-export default function StockTable() {
+const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
   const [fullDataSource, setFullDataSource] = useState<CustomSymbol[]>([]);
   const [dataSource, setDataSource] = useState<CustomSymbol[]>([]);
-  const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
   const [loading, setLoading] = useState(false);
   const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
@@ -67,132 +65,91 @@ export default function StockTable() {
     }
   };
 
-  const handleGetDataFromSupabase = async () => {
-    const fromDate = moment().add(-30, 'days').format(DATE_FORMAT);
-    const res = await StockService.getStockDataFromSupabase(fromDate);
-
-    console.log(84, res, groupBy(res.data, 'symbol'));
-    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
-
-    const listObj: any = groupBy(res.data, 'symbol');
-    const result: any = [];
-    Object.keys(listObj).forEach((i: string) => {
-      result.push(
-        mapHistoricalQuote(listObj[i], {
-          key: i,
-          symbol: i,
-          inWatchingWatchList: watching_wl?.symbols.includes(i),
-        })
-      );
-    });
-    console.log(95, result);
-    const newData = getDataSource(result, filters);
-
-    setLoading(false);
-    setFullDataSource(result);
-    setDataSource(newData);
-  };
-
-  const handleGetDataFromFireant = () => {
-    const listAllSymbols = getListAllSymbols(listWatchlist);
-    const listPromises: any = [];
-    const thanh_khoan_vua_wl: Watchlist =
-      listWatchlistObj && listWatchlistObj[737544];
-
-    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
-
-    if (!thanh_khoan_vua_wl) return;
-
-    listAllSymbols.forEach((j: string) => {
+  const getData = async (source: 'supabase' | 'fireant') => {
+    try {
+      let res: any;
       const startDate = moment().add(-30, 'days').format(DATE_FORMAT);
       const endDate = date.format(DATE_FORMAT);
-      listPromises.push(
-        StockService.getHistoricalQuotes(
-          { symbol: j, startDate, endDate },
-          mapHistoricalQuote,
-          {
-            key: j,
-            symbol: j,
-            inWatchingWatchList: watching_wl?.symbols.includes(j),
-          }
-        )
-      );
-    });
-
-    setLoading(true);
-    return Promise.all(listPromises)
-      .then((res: CustomSymbol[]) => {
-        console.log(119, res);
-        const newData = getDataSource(res, filters);
-
-        setLoading(false);
-        setFullDataSource(res);
-        setDataSource(newData);
-        notification.success({ message: 'success' });
-        return res;
-      })
-      .catch((e) => {
-        console.log(e);
-        setLoading(false);
-        notification.error({ message: 'error' });
-      });
-  };
-
-  const getBackTestDataOffline = async (database?: 'supabase' | 'heroku') => {
-    try {
-      const symbols = dataSource
-        .filter(
-          (i: CustomSymbol) =>
-            i.buySellSignals.action === 'buy' ||
-            i.buySellSignals.action === 'sell'
-        )
-        .map((i: CustomSymbol) => i.symbol);
-
       setLoading(true);
+      if (source === 'supabase') {
+        res = await getDataFromSupabase(startDate);
+      } else if (source === 'fireant') {
+        res = await getDataFromFireant({ startDate, endDate });
+      }
+      const newData = getDataSource(res, filters);
 
-      const res = await StockService.getBackTestData({ symbols, database });
+      const resBackTest = await getBackTestDataOffline({
+        database: 'supabase',
+        dataSource: newData,
+        fullDataSource: res,
+      });
 
       setLoading(false);
-      let mappedData: any;
-
-      if (database === 'heroku') {
-        mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
-          return {
-            date: i.d,
-            dealVolume: i.v,
-            priceClose: i.c,
-            priceHigh: i.h,
-            priceLow: i.l,
-            priceOpen: i.o,
-            totalVolume: i.v2,
-            symbol: i.s,
-          };
-        });
-      } else {
-        mappedData = res.data;
-      }
-
-      const newFullDataSource = getMapBackTestData(
-        mappedData,
-        dataSource,
-        fullDataSource
-      );
-      const newData = getDataSource(newFullDataSource, filters);
-
-      setFullDataSource(newFullDataSource);
-      setDataSource(newData);
+      setFullDataSource(resBackTest.fullDataSource);
+      setDataSource(resBackTest.newData);
+      notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
-      notification.error({ message: 'error' });
-
       setLoading(false);
+      notification.error({ message: 'error' });
     }
   };
 
+  const getBackTestDataOffline = async ({
+    database,
+    dataSource,
+    fullDataSource,
+  }: {
+    database: 'supabase' | 'heroku';
+    dataSource: CustomSymbol[];
+    fullDataSource: CustomSymbol[];
+  }) => {
+    const symbols = dataSource
+      .filter(
+        (i: CustomSymbol) =>
+          i.buySellSignals.action === 'buy' ||
+          i.buySellSignals.action === 'sell'
+      )
+      .map((i: CustomSymbol) => i.symbol);
+
+    const res = await StockService.getBackTestData({ symbols, database });
+
+    let mappedData: any;
+
+    if (database === 'heroku') {
+      mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
+        return {
+          date: i.d,
+          dealVolume: i.v,
+          priceClose: i.c,
+          priceHigh: i.h,
+          priceLow: i.l,
+          priceOpen: i.o,
+          totalVolume: i.v2,
+          symbol: i.s,
+        };
+      });
+    } else {
+      mappedData = res.data;
+    }
+
+    const newFullDataSource = getMapBackTestData(
+      mappedData,
+      dataSource,
+      fullDataSource
+    );
+    const newData = getDataSource(newFullDataSource, filters);
+
+    return {
+      fullDataSource: newFullDataSource,
+      newData,
+    };
+  };
+
   useEffect(() => {
-    handleGetDataFromSupabase();
+    getData('supabase');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, listWatchlist]);
+  }, [date]);
 
   useEffect(() => {
     (async () => {
@@ -211,23 +168,8 @@ export default function StockTable() {
             size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
-            onClick={handleGetDataFromSupabase}
+            onClick={() => getData('supabase')}
           />
-
-          <Button
-            size="small"
-            onClick={() => getBackTestDataOffline('supabase')}
-            style={{ marginLeft: '8px' }}
-          >
-            Backtest offline supabase
-          </Button>
-          <Button
-            size="small"
-            onClick={() => getBackTestDataOffline('heroku')}
-            style={{ marginLeft: '8px' }}
-          >
-            Backtest offline heroku
-          </Button>
         </div>
         <div className={'flex'}>
           <Statistic
@@ -309,7 +251,21 @@ export default function StockTable() {
         open={openDrawerTesting}
         cbSetLoading={(data) => setLoading(data)}
         cbSetDataSource={(data) => setDataSource(data)}
-        cbGetDataFromFireant={handleGetDataFromFireant}
+        cbGetDataFromFireant={() => getData('fireant')}
+        cbBackTestHeroku={() =>
+          getBackTestDataOffline({
+            database: 'heroku',
+            dataSource,
+            fullDataSource,
+          })
+        }
+        cbBackTestSupabase={() =>
+          getBackTestDataOffline({
+            database: 'supabase',
+            dataSource,
+            fullDataSource,
+          })
+        }
         onClose={() => setOpenDrawerTesting(false)}
       />
       <Filters
@@ -331,4 +287,6 @@ export default function StockTable() {
       />
     </div>
   );
-}
+};
+
+export default StockTable;

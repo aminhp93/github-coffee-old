@@ -1,4 +1,4 @@
-import { meanBy, cloneDeep } from 'lodash';
+import { meanBy, cloneDeep, groupBy } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
@@ -7,6 +7,7 @@ import {
   getAction,
   getEstimatedVol,
   getBase_min_max,
+  getListAllSymbols,
 } from './constants';
 import {
   HistoricalQuote,
@@ -18,6 +19,7 @@ import {
   FilterBackTest,
   BackTest,
 } from './types';
+import StockService from './service';
 
 export const mapHistoricalQuote = (
   data: HistoricalQuote[],
@@ -634,4 +636,48 @@ export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
   });
 
   return newDataChart;
+};
+
+export const getDataFromSupabase = async (startDate: string) => {
+  const res = await StockService.getStockDataFromSupabase(startDate);
+
+  const listObj: any = groupBy(res.data, 'symbol');
+  const result: any = [];
+  Object.keys(listObj).forEach((i: string) => {
+    result.push(
+      mapHistoricalQuote(listObj[i], {
+        key: i,
+        symbol: i,
+      })
+    );
+  });
+  console.log('getDataFromSupabase', result);
+  return result;
+};
+
+export const getDataFromFireant = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) => {
+  const listPromises: any = [];
+
+  getListAllSymbols().forEach((j: string) => {
+    listPromises.push(
+      StockService.getHistoricalQuotes(
+        { symbol: j, startDate, endDate },
+        mapHistoricalQuote,
+        {
+          key: j,
+          symbol: j,
+        }
+      )
+    );
+  });
+
+  const res = await Promise.all(listPromises);
+  console.log('getDataFromFireant', res);
+  return res;
 };

@@ -101,7 +101,7 @@ export interface BuySellSignals {
 export interface ExtraData {
   key: string;
   symbol: string;
-  inWatchingWatchList: boolean;
+  inWatchingWatchList?: boolean;
 }
 
 export type ActionType = 'buy' | 'sell' | 'unknown';
@@ -127,7 +127,7 @@ export interface Base {
 
 export interface CustomSymbol {
   buySellSignals: BuySellSignals;
-  inWatchingWatchList: boolean;
+  inWatchingWatchList?: boolean;
   key: string;
   symbol: string;
   last20HistoricalQuote: BackTestSymbol[]; // last 20 days
