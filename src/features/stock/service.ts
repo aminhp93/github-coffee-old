@@ -319,15 +319,22 @@ const StockService = {
       .eq('id', 1)
       .select();
   },
-  getStockDataFromSupabase: (fromDate: string) => {
+  getStockDataFromSupabase: ({
+    startDate,
+    endDate,
+  }: {
+    startDate: string;
+    endDate: string;
+  }) => {
     return supabase
       .from('stock')
       .select(
-        'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume'
+        'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume,totalValue'
         // '*'
       )
       .in('symbol', getListAllSymbols())
-      .gt('date', fromDate)
+      .gte('date', startDate)
+      .lte('date', endDate)
       .order('date', { ascending: false });
   },
 };

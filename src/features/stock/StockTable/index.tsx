@@ -16,10 +16,11 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_COLUMNS,
   DATE_FORMAT,
-  DEFAULT_DATE,
+  DEFAULT_START_DATE,
+  DEFAULT_END_DATE,
 } from '../constants';
 import {
-  getMapBackTestData,
+  getBackTestDataOffline,
   getDataSource,
   getDataFromSupabase,
   getDataFromFireant,
@@ -28,7 +29,7 @@ import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
+import { CustomSymbol, Watchlist } from '../types';
 
 const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -41,7 +42,10 @@ const StockTable = () => {
   const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [date, setDate] = useState<moment.Moment>(DEFAULT_DATE);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
+    DEFAULT_START_DATE,
+    DEFAULT_END_DATE,
+  ]);
 
   const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
@@ -68,11 +72,11 @@ const StockTable = () => {
   const getData = async (source: 'supabase' | 'fireant') => {
     try {
       let res: any;
-      const startDate = moment().add(-30, 'days').format(DATE_FORMAT);
-      const endDate = date.format(DATE_FORMAT);
+      const startDate = dates[0].format(DATE_FORMAT);
+      const endDate = dates[1].format(DATE_FORMAT);
       setLoading(true);
       if (source === 'supabase') {
-        res = await getDataFromSupabase(startDate);
+        res = await getDataFromSupabase({ startDate, endDate });
       } else if (source === 'fireant') {
         res = await getDataFromFireant({ startDate, endDate });
       }
@@ -82,11 +86,12 @@ const StockTable = () => {
         database: 'supabase',
         dataSource: newData,
         fullDataSource: res,
+        filters,
       });
 
       setLoading(false);
       setFullDataSource(resBackTest.fullDataSource);
-      setDataSource(resBackTest.newData);
+      setDataSource(resBackTest.dataSource);
       notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
@@ -95,61 +100,10 @@ const StockTable = () => {
     }
   };
 
-  const getBackTestDataOffline = async ({
-    database,
-    dataSource,
-    fullDataSource,
-  }: {
-    database: 'supabase' | 'heroku';
-    dataSource: CustomSymbol[];
-    fullDataSource: CustomSymbol[];
-  }) => {
-    const symbols = dataSource
-      .filter(
-        (i: CustomSymbol) =>
-          i.buySellSignals.action === 'buy' ||
-          i.buySellSignals.action === 'sell'
-      )
-      .map((i: CustomSymbol) => i.symbol);
-
-    const res = await StockService.getBackTestData({ symbols, database });
-
-    let mappedData: any;
-
-    if (database === 'heroku') {
-      mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
-        return {
-          date: i.d,
-          dealVolume: i.v,
-          priceClose: i.c,
-          priceHigh: i.h,
-          priceLow: i.l,
-          priceOpen: i.o,
-          totalVolume: i.v2,
-          symbol: i.s,
-        };
-      });
-    } else {
-      mappedData = res.data;
-    }
-
-    const newFullDataSource = getMapBackTestData(
-      mappedData,
-      dataSource,
-      fullDataSource
-    );
-    const newData = getDataSource(newFullDataSource, filters);
-
-    return {
-      fullDataSource: newFullDataSource,
-      newData,
-    };
-  };
-
   useEffect(() => {
     getData('supabase');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+  }, [dates]);
 
   useEffect(() => {
     (async () => {
@@ -246,33 +200,16 @@ const StockTable = () => {
         footer={footer}
       />
       <Testing
-        dataSource={dataSource}
-        fullDataSource={fullDataSource}
         open={openDrawerTesting}
-        cbSetLoading={(data) => setLoading(data)}
-        cbSetDataSource={(data) => setDataSource(data)}
-        cbGetDataFromFireant={() => getData('fireant')}
-        cbBackTestHeroku={() =>
-          getBackTestDataOffline({
-            database: 'heroku',
-            dataSource,
-            fullDataSource,
-          })
-        }
-        cbBackTestSupabase={() =>
-          getBackTestDataOffline({
-            database: 'supabase',
-            dataSource,
-            fullDataSource,
-          })
-        }
         onClose={() => setOpenDrawerTesting(false)}
       />
       <Filters
         open={openDrawerFilter}
         listWatchlist={listWatchlist}
         onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDate: moment.Moment) => setDate(newDate)}
+        onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
+          setDates(newDates)
+        }
         onUpdateWatchlist={handleUpdateWatchlist}
         onGetData={() => {
           // console.log('onGetData');

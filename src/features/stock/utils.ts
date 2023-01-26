@@ -8,6 +8,7 @@ import {
   getEstimatedVol,
   getBase_min_max,
   getListAllSymbols,
+  DEFAULT_FILTER,
 } from './constants';
 import {
   HistoricalQuote,
@@ -18,6 +19,7 @@ import {
   Base,
   FilterBackTest,
   BackTest,
+  SimplifiedBackTestSymbol,
 } from './types';
 import StockService from './service';
 
@@ -51,7 +53,8 @@ export const mapHistoricalQuote = (
     (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
 
   const extra_vol =
-    (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
+    (100 * (last_data.totalVolume - last_data.dealVolume)) /
+    (last_data.dealVolume || 1);
 
   const action = getAction({
     changePrice,
@@ -638,8 +641,17 @@ export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
   return newDataChart;
 };
 
-export const getDataFromSupabase = async (startDate: string) => {
-  const res = await StockService.getStockDataFromSupabase(startDate);
+export const getDataFromSupabase = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) => {
+  const res = await StockService.getStockDataFromSupabase({
+    startDate,
+    endDate,
+  });
 
   const listObj: any = groupBy(res.data, 'symbol');
   const result: any = [];
@@ -680,4 +692,56 @@ export const getDataFromFireant = async ({
   const res = await Promise.all(listPromises);
   console.log('getDataFromFireant', res);
   return res;
+};
+
+export const getBackTestDataOffline = async ({
+  database,
+  dataSource,
+  fullDataSource,
+  filters = DEFAULT_FILTER,
+}: {
+  database: 'supabase' | 'heroku';
+  dataSource: CustomSymbol[];
+  fullDataSource: CustomSymbol[];
+  filters?: Filter;
+}) => {
+  const symbols = dataSource
+    .filter(
+      (i: CustomSymbol) =>
+        i.buySellSignals.action === 'buy' || i.buySellSignals.action === 'sell'
+    )
+    .map((i: CustomSymbol) => i.symbol);
+
+  const res = await StockService.getBackTestData({ symbols, database });
+
+  let mappedData: any;
+
+  if (database === 'heroku') {
+    mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
+      return {
+        date: i.d,
+        dealVolume: i.v,
+        priceClose: i.c,
+        priceHigh: i.h,
+        priceLow: i.l,
+        priceOpen: i.o,
+        totalVolume: i.v2,
+        symbol: i.s,
+      };
+    });
+  } else {
+    mappedData = res.data;
+  }
+
+  const newFullDataSource = getMapBackTestData(
+    mappedData,
+    dataSource,
+    fullDataSource
+  );
+  const newData = getDataSource(newFullDataSource, filters);
+
+  return {
+    fullDataSource: newFullDataSource,
+    dataSource: newData,
+  };
 };

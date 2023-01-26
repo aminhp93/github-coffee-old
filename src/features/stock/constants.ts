@@ -27,6 +27,8 @@ export const MAX_CHANGE = 1000;
 const DEFAULT_OFFSET = 20;
 export const BACKTEST_COUNT = (50 * DEFAULT_OFFSET) / DEFAULT_OFFSET; // change number to change number of fetching days
 export const DEFAULT_DATE = moment();
+export const DEFAULT_START_DATE = moment().add(-30, 'days');
+export const DEFAULT_END_DATE = moment();
 
 export const FinancialIndicatorsKeys = [
   'P/E',

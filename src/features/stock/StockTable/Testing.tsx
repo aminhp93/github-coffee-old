@@ -4,13 +4,20 @@ import {
   DATE_FORMAT,
   DEFAULT_DATE,
   getListAllSymbols,
+  DEFAULT_FILTER,
+  DEFAULT_START_DATE,
+  DEFAULT_END_DATE,
 } from '../constants';
 import request from '@/services/request';
 import { chunk, groupBy } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
-import { getMapBackTestData } from '../utils';
-import { CustomSymbol } from '../types';
+import {
+  getDataFromSupabase,
+  getDataFromFireant,
+  getBackTestDataOffline,
+  getDataSource,
+} from '../utils';
 
 import type { DatePickerProps } from 'antd';
 
@@ -23,7 +30,7 @@ const baseUrl = config.apiUrl;
 const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
 const endDate = DEFAULT_DATE.format(DATE_FORMAT);
 
-const columns = [
+const UPDATE_STATUS_COLUMNS = [
   {
     title: 'id',
     dataIndex: 'id',
@@ -52,31 +59,17 @@ const columns = [
 ];
 
 interface Props {
-  dataSource: CustomSymbol[];
-  fullDataSource: CustomSymbol[];
   open: boolean;
-  cbSetLoading: (data: boolean) => void;
-  cbSetDataSource: (data: CustomSymbol[]) => void;
-  cbGetDataFromFireant: () => void;
-  cbBackTestSupabase: () => void;
-  cbBackTestHeroku: () => void;
   onClose: () => void;
 }
 
-const Testing = ({
-  dataSource,
-  fullDataSource,
-  open,
-  cbSetLoading,
-  cbSetDataSource,
-  cbGetDataFromFireant,
-  cbBackTestSupabase,
-  cbBackTestHeroku,
-  onClose,
-}: Props) => {
+const Testing = ({ open, onClose }: Props) => {
   const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [dataFromSupabase, setDataFromSupabase] = useState<any>([]);
+  const [dataFromFireant, setDataFromFireant] = useState<any>([]);
+  const [columns, setColumns] = useState<any>([]);
 
   const getListPromise = async (data: any) => {
     const listPromise: any = [];
@@ -149,64 +142,12 @@ const Testing = ({
     notification.success({ message: 'success' });
   };
 
-  // disable if production env
-  const disabled = process.env.NODE_ENV === 'production';
-  const getBackTestData = () => {
-    // Get data to backtest within 1 year from buy, sell symbol
-    const listPromises: any = [];
-    // const endDate = moment().add(0, 'days').format(DATE_FORMAT);
-    dataSource
-      .filter((i: any) => i.action === 'buy' || i.action === 'sell')
-      .forEach((j: any) => {
-        for (let i = 1; i <= BACKTEST_COUNT; i++) {
-          listPromises.push(
-            StockService.getHistoricalQuotes({
-              symbol: j.symbol,
-              startDate,
-              endDate,
-              offset: i * 20,
-            })
-          );
-        }
-      });
-    cbSetLoading && cbSetLoading(true);
-
-    Promise.all(listPromises)
-      .then((res: any) => {
-        cbSetLoading && cbSetLoading(false);
-        const flattenData = res.flat();
-        console.log(flattenData);
-        const newDataSource: any = getMapBackTestData(
-          flattenData,
-          dataSource,
-          fullDataSource
-        );
-        cbSetDataSource && cbSetDataSource(newDataSource);
-      })
-      .catch((e) => {
-        cbSetLoading && cbSetLoading(false);
-      });
-  };
-
   const getLastUpdated = async () => {
     try {
       const res: any = await StockService.getLastUpdated();
       if (res.data && res.data.length && res.data.length === 1) {
         setLastUpdated(res.data[0].last_updated);
       }
-    } catch (e) {
-      console.log(e);
-      notification.error({ message: 'error' });
-    }
-  };
-
-  const forceDailyImportStockJob = () => {
-    try {
-      const requestData: any = {};
-      if (selectedDate) {
-        requestData['date'] = selectedDate.format(DATE_FORMAT);
-      }
-      StockService.forceDailyImportStockJob(requestData);
     } catch (e) {
       console.log(e);
       notification.error({ message: 'error' });
@@ -294,6 +235,7 @@ const Testing = ({
       const res2 = await Promise.all(listPromiseUpdate);
       console.log(res2);
       setListUpdateStatus(res2);
+      setColumns(UPDATE_STATUS_COLUMNS);
     }
     return resListPromises;
   };
@@ -321,6 +263,30 @@ const Testing = ({
     });
   };
 
+  const handleTest = async () => {
+    const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
+    const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
+    const supabaseData = await getDataFromSupabase({ startDate, endDate });
+    const fireantData = await getDataFromFireant({ startDate, endDate });
+
+    const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
+    const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
+
+    const supabaseDataBacktest = await getBackTestDataOffline({
+      database: 'supabase',
+      dataSource: newDataSupabase,
+      fullDataSource: supabaseData,
+    });
+    const fireantDataBacktest = await getBackTestDataOffline({
+      database: 'supabase',
+      dataSource: newDataFireant,
+      fullDataSource: fireantData,
+    });
+    console.log(supabaseDataBacktest, fireantDataBacktest);
+    setDataFromSupabase(supabaseDataBacktest);
+    setDataFromFireant(fireantDataBacktest);
+  };
+
   useEffect(() => {
     getLastUpdated();
   }, []);
@@ -339,43 +305,50 @@ const Testing = ({
     >
       <div className="height-100 flex">
         <div className="flex-1">
-          <Button disabled={disabled} size="small" onClick={createBackTestData}>
-            Create backtest
-          </Button>
-          <Divider />
-          <Button size="small" onClick={getBackTestData}>
-            Backtest online
-          </Button>
-          <Divider />
-          <Button size="small" onClick={cbGetDataFromFireant}>
-            Get data from fireant
-          </Button>
-          <Divider />
-          <Button size="small" onClick={cbBackTestSupabase}>
-            Backtest supabase
-          </Button>
-          <Divider />
-          <Button size="small" onClick={cbBackTestHeroku}>
-            Backtest heroku
-          </Button>
-          <Divider />
           <div>
-            <Button size="small" onClick={forceDailyImportStockJob}>
-              force_daily_import_stock_job
-            </Button>{' '}
             <Button size="small" onClick={updateData}>
               Update data
             </Button>
-            <DatePicker onChange={onChangeDate} />
+            <DatePicker size="small" onChange={onChangeDate} />
           </div>
+          <Divider />
+          <Button
+            disabled
+            size="small"
+            onClick={createBackTestData}
+            style={{ marginTop: '20px' }}
+          >
+            Create backtest
+          </Button>
+
+          <Divider />
+          <Button
+            size="small"
+            onClick={handleTest}
+            style={{ marginTop: '20px' }}
+          >
+            Test data from fireant vs supabase
+          </Button>
+
+          <Divider />
         </div>
         <div className="flex-1">
-          <Table
-            size="small"
-            dataSource={listUpdateStatus}
-            columns={columns}
-            pagination={false}
-          />
+          {listUpdateStatus && listUpdateStatus.length && (
+            <Table
+              size="small"
+              dataSource={listUpdateStatus}
+              columns={columns}
+              pagination={false}
+            />
+          )}
+          <div>
+            <div>Supabase</div>
+            <div>{dataFromSupabase.dataSource?.length}</div>
+            <div>{dataFromSupabase.fullDataSource?.length}</div>
+            <div>Fireant</div>
+            <div>{dataFromFireant.dataSource?.length}</div>
+            <div>{dataFromFireant.fullDataSource?.length}</div>
+          </div>
         </div>
       </div>
     </Drawer>
