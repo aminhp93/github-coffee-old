@@ -183,7 +183,8 @@ export interface SimplifiedBackTestSymbol {
 }
 
 export interface FilterBackTest {
-  change_t0: number;
-  change_t0_vol: number;
-  num_high_vol_than_t0: number;
+  change_t0?: number | null;
+  change_t0_vol?: number | null;
+  num_high_vol_than_t0?: number | null;
+  t0_over_base_max?: number | null;
 }

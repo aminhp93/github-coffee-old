@@ -24,12 +24,17 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   const [backTest, setBackTest] = useState<BackTest | null>(backTestData);
   const [open, setOpen] = useState(false);
   const [dataChart, setDataChart] = useState<any>(null);
-  const [change_t0, setChange_t0] = useState<number>(BACKTEST_FILTER.change_t0);
-  const [change_t0_vol, setChange_t0_vol] = useState<number>(
+  const [change_t0, setChange_t0] = useState<number | null>(
+    BACKTEST_FILTER.change_t0
+  );
+  const [change_t0_vol, setChange_t0_vol] = useState<number | null>(
     BACKTEST_FILTER.change_t0_vol
   );
-  const [num_high_vol_than_t0, setNum_high_vol_than_t0] = useState<number>(
-    BACKTEST_FILTER.num_high_vol_than_t0
+  const [num_high_vol_than_t0, setNum_high_vol_than_t0] = useState<
+    number | null
+  >(BACKTEST_FILTER.num_high_vol_than_t0);
+  const [t0_over_base_max, setT0_over_base_max] = useState<number | null>(
+    BACKTEST_FILTER.t0_over_base_max
   );
   const [currentDataChart, setCurrentDataChart] = useState<any>(
     getCurrentDataChart(backTestData)
@@ -53,6 +58,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       change_t0,
       change_t0_vol,
       num_high_vol_than_t0,
+      t0_over_base_max,
     };
     const newBackTest = getBackTest(
       backTestData.fullData,
@@ -66,22 +72,24 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   };
 
   const handleReset = () => {
-    setChange_t0(0);
-    setChange_t0_vol(0);
-    setNum_high_vol_than_t0(0);
+    setChange_t0(null);
+    setChange_t0_vol(null);
+    setNum_high_vol_than_t0(null);
+    setT0_over_base_max(null);
   };
 
   const handleDefault = () => {
     setChange_t0(BACKTEST_FILTER.change_t0);
     setChange_t0_vol(BACKTEST_FILTER.change_t0_vol);
     setNum_high_vol_than_t0(BACKTEST_FILTER.num_high_vol_than_t0);
+    setT0_over_base_max(BACKTEST_FILTER.t0_over_base_max);
   };
 
   useEffect(() => {
     handleRetest();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [change_t0, change_t0_vol]);
+  }, [change_t0, change_t0_vol, num_high_vol_than_t0, t0_over_base_max]);
 
   useEffect(() => {
     if (backTestData) {
@@ -102,6 +110,7 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
       </Button>
 
       <Drawer
+        className="InfoListBackTestDrawer"
         title={
           <div className="flex" style={{ justifyContent: 'space-between' }}>
             <div>{symbol}</div>
@@ -123,6 +132,12 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
                 addonBefore="num_high_vol_than_t0"
                 onChange={(value) => setNum_high_vol_than_t0(value as number)}
                 value={num_high_vol_than_t0}
+              />
+              <InputNumber
+                size="small"
+                addonBefore="t0_over_base_max"
+                onChange={(value) => setT0_over_base_max(value as number)}
+                value={t0_over_base_max}
               />
               <Button size="small" onClick={handleReset}>
                 reset

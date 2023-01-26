@@ -16,7 +16,6 @@ const InfoListBackTestColumns = ({ backTestData, handleClickRow }: Props) => {
     {
       title: 'buyDate',
       width: 100,
-
       render: (data: Base) => {
         if ((data.buyIndex !== 0 && !data.buyIndex) || !backTestData) return '';
 
@@ -94,6 +93,7 @@ const InfoListBackTestColumns = ({ backTestData, handleClickRow }: Props) => {
       title: 't0_over_base_max (%)',
       width: 100,
       align: 'right' as AlignType,
+      sorter: (a: Base, b: Base) => a?.t0_over_base_max - b?.t0_over_base_max,
       render: (data: Base) => {
         if (!data.t0_over_base_max) return;
         return data.t0_over_base_max.toFixed(0) + '%';

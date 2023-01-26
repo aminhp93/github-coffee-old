@@ -118,7 +118,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
       const change_t0 =
         (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
         list[0].priceClose;
-      const change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      const change_buyPrice = DEFAULT_FILTER.changePrice_min;
       const num_high_vol_than_t0 = list.filter(
         (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
       ).length;
@@ -128,7 +128,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         const t3Price = data[index - 4].priceClose;
         const buyPrice =
           data[buyIndex].priceClose *
-          (1 + BACKTEST_FILTER.change_buyPrice / 100);
+          (1 + DEFAULT_FILTER.changePrice_min / 100);
 
         change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
       }
@@ -251,11 +251,7 @@ export const getMapBackTestData = (
 
     if (filterRes.length) {
       const listBase = getListBase(filterRes);
-      newItem.backtest = getBackTest(filterRes, listBase, {
-        change_t0: BACKTEST_FILTER.change_t0,
-        change_t0_vol: BACKTEST_FILTER.change_t0_vol,
-        num_high_vol_than_t0: BACKTEST_FILTER.num_high_vol_than_t0,
-      });
+      newItem.backtest = getBackTest(filterRes, listBase, BACKTEST_FILTER);
     }
 
     return newItem;
@@ -406,21 +402,34 @@ export const getBackTest = (
   filterCondition: FilterBackTest
 ) => {
   const filteredBase = listBase.filter((j: Base) => {
-    if (filterCondition.change_t0 && j.change_t0! < filterCondition.change_t0) {
-      return false;
-    }
     if (
-      filterCondition.change_t0_vol &&
-      j.change_t0_vol! < filterCondition.change_t0_vol
+      (filterCondition.change_t0 || filterCondition.change_t0 === 0) &&
+      j.change_t0 < filterCondition.change_t0
     ) {
       return false;
     }
     if (
-      filterCondition.num_high_vol_than_t0 &&
-      j.num_high_vol_than_t0! < filterCondition.num_high_vol_than_t0
+      (filterCondition.change_t0_vol || filterCondition.change_t0_vol === 0) &&
+      j.change_t0_vol < filterCondition.change_t0_vol
     ) {
       return false;
     }
+    if (
+      (filterCondition.num_high_vol_than_t0 ||
+        filterCondition.num_high_vol_than_t0 === 0) &&
+      j.num_high_vol_than_t0 < filterCondition.num_high_vol_than_t0
+    ) {
+      return false;
+    }
+
+    if (
+      (filterCondition.t0_over_base_max ||
+        filterCondition.t0_over_base_max === 0) &&
+      j.t0_over_base_max < filterCondition.t0_over_base_max
+    ) {
+      return false;
+    }
+
     return true;
   });
   const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
@@ -495,7 +504,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 
     if (percent < 14) {
       const averageVolume = meanBy(list, 'totalVolume');
-      let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      let change_buyPrice = DEFAULT_FILTER.changePrice_min;
       let num_high_vol_than_t0 = 0;
       const change_t0_vol =
         (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
