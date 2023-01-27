@@ -140,8 +140,8 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
 
       data.slice(endBaseIndex).forEach((m: BackTestSymbol) => {
         if (stop) return;
-        const new_min = base_min! > m.priceClose ? m.priceClose : base_min!;
-        const new_max = base_max! < m.priceClose ? m.priceClose : base_max!;
+        const new_min = base_min! > m.priceLow ? m.priceLow : base_min!;
+        const new_max = base_max! < m.priceHigh ? m.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(m);
@@ -517,8 +517,8 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 
       data.forEach((i: BackTestSymbol, index: number) => {
         if (index < 6 || stop) return;
-        const new_min = base_min! > i.priceClose ? i.priceClose : base_min!;
-        const new_max = base_max! < i.priceClose ? i.priceClose : base_max!;
+        const new_min = base_min! > i.priceLow ? i.priceLow : base_min!;
+        const new_max = base_max! < i.priceHigh ? i.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(i);
@@ -557,7 +557,7 @@ export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
 
   const list = backTestData.fullData.slice(
     record.buyIndex > 9 ? record.buyIndex - 10 : record.buyIndex,
-    record.buyIndex + 90
+    record.buyIndex + 122
   );
 
   const buyItem = { ...backTestData.fullData[record.buyIndex] };
