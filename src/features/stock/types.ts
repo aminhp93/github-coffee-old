@@ -150,7 +150,7 @@ export interface Watchlist {
   watchlistID: number;
 }
 
-export interface Filter {
+export interface BaseFilter {
   currentWatchlist: Watchlist | null;
   totalValue_last20_min: number;
   changePrice_min: number;
@@ -158,6 +158,7 @@ export interface Filter {
   estimated_vol_change_min: number;
   have_extra_vol: boolean;
   only_buy_sell: boolean;
+  t0_over_base_max: number;
 }
 
 export interface BackTestSymbol {

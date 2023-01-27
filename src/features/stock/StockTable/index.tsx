@@ -69,17 +69,21 @@ const StockTable = () => {
     }
   };
 
-  const getData = async (source: 'supabase' | 'fireant') => {
+  const getData = async (source: 'supabase') => {
     try {
       let res: any;
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
       setLoading(true);
-      if (source === 'supabase') {
+      if (moment().format('HH:mm') < '15:00') {
+        res = await getDataFromFireant({
+          startDate,
+          endDate: moment().format(DATE_FORMAT),
+        });
+      } else {
         res = await getDataFromSupabase({ startDate, endDate });
-      } else if (source === 'fireant') {
-        res = await getDataFromFireant({ startDate, endDate });
       }
+
       const newData = getDataSource(res, filters);
 
       const resBackTest = await getBackTestDataOffline({

@@ -14,7 +14,7 @@ import {
   HistoricalQuote,
   ExtraData,
   CustomSymbol,
-  Filter,
+  BaseFilter,
   BackTestSymbol,
   Base,
   FilterBackTest,
@@ -72,7 +72,10 @@ export const mapHistoricalQuote = (
         priceHigh: i.priceHigh,
         priceLow: i.priceLow,
         priceOpen: i.priceOpen,
-        totalVolume: i.totalVolume,
+        totalVolume:
+          i.date.replace('T00:00:00', '') === moment().format(DATE_FORMAT)
+            ? estimated_vol
+            : i.totalVolume,
         symbol: i.symbol,
       };
     }
@@ -319,7 +322,7 @@ export const getDataChart = ({
   };
 };
 
-export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
+export const getDataSource = (data: CustomSymbol[], filter: BaseFilter) => {
   const {
     currentWatchlist,
     totalValue_last20_min,
@@ -414,13 +417,13 @@ export const getBackTest = (
     ) {
       return false;
     }
-    if (
-      (filterCondition.num_high_vol_than_t0 ||
-        filterCondition.num_high_vol_than_t0 === 0) &&
-      j.num_high_vol_than_t0 < filterCondition.num_high_vol_than_t0
-    ) {
-      return false;
-    }
+    // if (
+    //   (filterCondition.num_high_vol_than_t0 ||
+    //     filterCondition.num_high_vol_than_t0 === 0) &&
+    //   j.num_high_vol_than_t0 < filterCondition.num_high_vol_than_t0
+    // ) {
+    //   return false;
+    // }
 
     if (
       (filterCondition.t0_over_base_max ||
@@ -712,7 +715,7 @@ export const getBackTestDataOffline = async ({
   database: 'supabase' | 'heroku';
   dataSource: CustomSymbol[];
   fullDataSource: CustomSymbol[];
-  filters?: Filter;
+  filters?: BaseFilter;
 }) => {
   const symbols = dataSource
     .filter(
