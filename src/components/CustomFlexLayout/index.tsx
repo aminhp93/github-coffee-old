@@ -183,7 +183,7 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
       </Drawer>
       <Button
         size="small"
-        style={{ position: 'absolute', bottom: '2px', right: '2px', zIndex: 1 }}
+        style={{ position: 'fixed', bottom: '7px', left: '50px', zIndex: 1 }}
         icon={<SettingOutlined />}
         onClick={() => showDrawer()}
       />

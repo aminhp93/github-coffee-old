@@ -124,16 +124,12 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
         list[0].priceClose;
       const change_buyPrice = DEFAULT_FILTER.changePrice_min;
-      const num_high_vol_than_t0 = list.filter(
-        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
-      ).length;
-      let change_t3 = null;
 
+      let change_t3 = null;
+      const buyPrice =
+        data[buyIndex].priceOpen * (1 + DEFAULT_FILTER.changePrice_min / 100);
       if (data[index - 4]) {
         const t3Price = data[index - 4].priceClose;
-        const buyPrice =
-          data[buyIndex].priceClose *
-          (1 + DEFAULT_FILTER.changePrice_min / 100);
 
         change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
       }
@@ -155,6 +151,45 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         }
       });
 
+      let max_in_20_days_without_break_base = buyPrice;
+      let min_in_20_days_without_break_base = buyPrice;
+      let max_in_20_days_without_break_base_index = 1;
+      let min_in_20_days_without_break_base_index = 1;
+      let stop_max = false;
+      let stop_min = false;
+
+      for (let i = 1; i < 20; i++) {
+        const nextDay = data[buyIndex - i];
+        if (nextDay) {
+          // find the max value in the next 20 days
+          if (nextDay.priceLow < base_min) {
+            stop_max = true;
+            stop_min = true;
+          }
+          if (!stop_max) {
+            if (nextDay.priceHigh > max_in_20_days_without_break_base) {
+              max_in_20_days_without_break_base = nextDay.priceHigh;
+              max_in_20_days_without_break_base_index = i;
+            }
+          }
+          if (!stop_min) {
+            if (nextDay.priceLow < min_in_20_days_without_break_base) {
+              min_in_20_days_without_break_base = nextDay.priceLow;
+              min_in_20_days_without_break_base_index = i;
+            }
+          }
+        }
+      }
+
+      const max_change_in_20_days =
+        (100 * (max_in_20_days_without_break_base - buyPrice)) / buyPrice;
+
+      const min_change_in_20_days =
+        (100 * (min_in_20_days_without_break_base - buyPrice)) / buyPrice;
+
+      const num_high_vol_than_t0 = list.filter(
+        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+      ).length;
       const base_percent = (100 * (base_max - base_min)) / base_min;
       const t0_over_base_max =
         (100 * (data[buyIndex].priceClose - base_max)) / base_max;
@@ -172,6 +207,10 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         base_min,
         base_percent,
         t0_over_base_max,
+        max_change_in_20_days,
+        min_change_in_20_days,
+        max_in_20_days_without_break_base_index,
+        min_in_20_days_without_break_base_index,
       });
       nextIndex = nextIndex + endBaseIndex - startBaseIndex - 1;
     }
@@ -558,8 +597,8 @@ export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
   if ((record.buyIndex !== 0 && !record.buyIndex) || !backTestData) return;
 
   const list = backTestData.fullData.slice(
-    record.buyIndex > 9 ? record.buyIndex - 10 : record.buyIndex,
-    record.buyIndex + 122
+    record.buyIndex > 20 ? record.buyIndex - 20 : record.buyIndex,
+    record.buyIndex + 112
   );
 
   const buyItem = { ...backTestData.fullData[record.buyIndex] };

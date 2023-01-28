@@ -196,6 +196,7 @@ const Filters = ({
       }
       placement="bottom"
       // width={'100%'}
+      height="500px"
       className="StockTableFilterDrawer"
       onClose={onClose}
       open={open}
@@ -280,6 +281,7 @@ const Filters = ({
           </div>
           <div style={{ marginTop: '20px' }}>
             <Radio.Group
+              size="small"
               value={sourceData}
               onChange={(e: any) => {
                 setSourceData(e.target.value);

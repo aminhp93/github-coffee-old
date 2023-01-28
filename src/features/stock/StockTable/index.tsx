@@ -183,15 +183,15 @@ const StockTable = () => {
     );
   };
 
-  const _filter_1 = dataSource.filter(
+  const _filter_1 = fullDataSource.filter(
     (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
   );
-  const _filter_2 = dataSource.filter(
+  const _filter_2 = fullDataSource.filter(
     (i: CustomSymbol) =>
       i.buySellSignals.changePrice >= -0.02 &&
       i.buySellSignals.changePrice <= 0.02
   );
-  const _filter_3 = dataSource.filter(
+  const _filter_3 = fullDataSource.filter(
     (i: CustomSymbol) => i.buySellSignals.changePrice > 0.02
   );
 

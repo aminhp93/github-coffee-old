@@ -19,38 +19,7 @@ const defaultJson: IJsonModel = {
     tabSetMinHeight: 100,
     borderMinSize: 100,
   },
-  borders: [
-    {
-      type: 'border',
-      location: 'right',
-      children: [
-        {
-          type: 'tab',
-          id: '#Chat',
-          name: 'Chat',
-          component: 'Chat',
-        },
-        {
-          type: 'tab',
-          id: '#Todos',
-          name: 'Todos',
-          component: 'Todos',
-        },
-        {
-          type: 'tab',
-          id: '#Snippet',
-          name: 'Snippet',
-          component: 'Snippet',
-        },
-        {
-          type: 'tab',
-          id: '#Post',
-          name: 'Post',
-          component: 'Post',
-        },
-      ],
-    },
-  ],
+
   layout: {
     type: 'row',
     id: rowId,
