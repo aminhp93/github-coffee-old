@@ -24,6 +24,7 @@ import {
   getDataSource,
   getDataFromSupabase,
   getDataFromFireant,
+  updateDataWithDate,
 } from '../utils';
 import Filters from './Filters';
 import './index.less';
@@ -69,13 +70,49 @@ const StockTable = () => {
     }
   };
 
-  const getData = async (source: 'supabase') => {
+  const updateData = async () => {
+    const res: any = await StockService.getLastUpdated();
+
+    if (res.data && res.data.length && res.data.length === 1) {
+      const lastUpdated = res.data[0].last_updated;
+      if (lastUpdated === moment().format(DATE_FORMAT)) return;
+      let nextCall = true;
+      let offset = 0;
+      while (nextCall) {
+        const res = await updateDataWithDate(
+          moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+          moment().format(DATE_FORMAT),
+          offset
+        );
+        offset += 20;
+        if (res && res.length && res[0].length < 20) {
+          nextCall = false;
+        }
+      }
+      try {
+        const res = await StockService.updateLastUpdated({
+          column: 'last_updated',
+          value: moment().format(DATE_FORMAT),
+        });
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
+  const getData = async () => {
     try {
+      await updateData();
+
       let res: any;
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
       setLoading(true);
-      if (moment().format('HH:mm') < '15:00') {
+      if (
+        localStorage.getItem('sourceData') !== 'supabase' &&
+        moment().format('HH:mm') < '15:00'
+      ) {
         res = await getDataFromFireant({
           startDate,
           endDate: moment().format(DATE_FORMAT),
@@ -105,7 +142,7 @@ const StockTable = () => {
   };
 
   useEffect(() => {
-    getData('supabase');
+    getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dates]);
 
@@ -126,7 +163,7 @@ const StockTable = () => {
             size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
-            onClick={() => getData('supabase')}
+            onClick={getData}
           />
         </div>
         <div className={'flex'}>

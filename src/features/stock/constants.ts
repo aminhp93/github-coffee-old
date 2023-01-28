@@ -172,7 +172,7 @@ export const BUY_SELL_SIGNNAL_KEYS = {
 
 export const DEFAULT_FILTER: BaseFilter = {
   currentWatchlist: null,
-  totalValue_last20_min: 1,
+  totalValue_last20_min: 5,
   changePrice_min: 2,
   have_base_in_5_day: false,
   estimated_vol_change_min: 20,
@@ -195,7 +195,7 @@ export const DEFAULT_SETTINGS: any = {
   showSorterTooltip: false,
   pagination: {
     position: ['bottomRight'],
-    pageSizeOptions: ['10', '20', '30'],
+    pageSizeOptions: ['10', '20', '100'],
     showSizeChanger: true,
   },
 };
@@ -573,7 +573,7 @@ export const getAction = ({
 };
 
 export const getEstimatedVol = (data: HistoricalQuote) => {
-  if (data.date !== moment().format(DATE_FORMAT)) {
+  if (data.date === moment().format(DATE_FORMAT)) {
     // from 9:00 to 11:30
     const morning_time = 60 * 2.5;
 

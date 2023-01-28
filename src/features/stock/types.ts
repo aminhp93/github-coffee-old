@@ -90,7 +90,6 @@ export interface FundamentalsParams {
 export interface BuySellSignals {
   totalValue_last20_min: number;
   averageVolume_last5: number;
-  changeVolume_last5: number;
   changePrice: number;
   latestBase: Base | null;
   estimated_vol_change: number;

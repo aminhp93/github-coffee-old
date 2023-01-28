@@ -8,6 +8,7 @@ import {
   Checkbox,
   Dropdown,
   Menu,
+  Radio,
 } from 'antd';
 import { useState } from 'react';
 import {
@@ -82,6 +83,9 @@ const Filters = ({
 
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
+  const [sourceData, setSourceData] = useState<'fireant' | 'supabase' | string>(
+    localStorage.getItem('sourceData') || 'fireant'
+  );
 
   const menu = (
     <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
@@ -273,6 +277,18 @@ const Filters = ({
                 onChange({ only_buy_sell: !only_buy_sell });
               }}
             />
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <Radio.Group
+              value={sourceData}
+              onChange={(e: any) => {
+                setSourceData(e.target.value);
+                localStorage.setItem('sourceData', e.target.value);
+              }}
+            >
+              <Radio.Button value="fireant">Fireant</Radio.Button>
+              <Radio.Button value="supabase">Supabase</Radio.Button>
+            </Radio.Group>
           </div>
           <div style={{ marginTop: '20px' }}>
             <Popover

@@ -1,15 +1,10 @@
 import { Drawer, Button, notification, Table, DatePicker, Divider } from 'antd';
 import {
-  BACKTEST_COUNT,
   DATE_FORMAT,
-  DEFAULT_DATE,
-  getListAllSymbols,
   DEFAULT_FILTER,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
 } from '../constants';
-import request from '@/services/request';
-import { chunk, groupBy } from 'lodash';
 import StockService from '../service';
 import moment from 'moment';
 import {
@@ -17,18 +12,14 @@ import {
   getDataFromFireant,
   getBackTestDataOffline,
   getDataSource,
+  createBackTestData,
+  updateDataWithDate,
 } from '../utils';
 
 import type { DatePickerProps } from 'antd';
 
-import config from '@/config';
 import { useEffect, useState } from 'react';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-
-const baseUrl = config.apiUrl;
-
-const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-const endDate = DEFAULT_DATE.format(DATE_FORMAT);
 
 const UPDATE_STATUS_COLUMNS = [
   {
@@ -71,77 +62,6 @@ const Testing = ({ open, onClose }: Props) => {
   const [dataFromFireant, setDataFromFireant] = useState<any>([]);
   const [columns, setColumns] = useState<any>([]);
 
-  const getListPromise = async (data: any) => {
-    const listPromise: any = [];
-    data.forEach((i: any) => {
-      listPromise.push(
-        StockService.getHistoricalQuotes({
-          symbol: i.symbol,
-          startDate,
-          endDate,
-          offset: i.offset * 20,
-          returnRequest: true,
-        })
-      );
-    });
-
-    return Promise.all(listPromise);
-  };
-
-  const createBackTestData = async () => {
-    // Get data to backtest within 1 year from buy, sell symbol
-    const listPromises: any = [];
-    getListAllSymbols().forEach((j: any) => {
-      for (let i = 0; i <= BACKTEST_COUNT; i++) {
-        listPromises.push({
-          symbol: j,
-          offset: i,
-        });
-      }
-    });
-
-    const chunkedPromise = chunk(listPromises, 200);
-    console.log(chunkedPromise);
-
-    await request({
-      url: `${baseUrl}/api/stocks/delete/`,
-      method: 'POST',
-    });
-
-    for (let i = 0; i < chunkedPromise.length; i++) {
-      // delay 2s
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-      const res = await getListPromise(chunkedPromise[i]);
-      const mappedRes = res
-        .map((i: any) => i.data)
-        .flat()
-        .map((i: any) => {
-          i.key = `${i.symbol}_${i.date}`;
-          i.date = moment(i.date).format(DATE_FORMAT);
-          return i;
-        });
-      // const res2 = await request({
-      //   url: `${baseUrl}/api/stocks/delete/`,
-      //   method: 'POST',
-      // });
-      const res2 = await request({
-        url: `${baseUrl}/api/stocks/create/`,
-        method: 'POST',
-        data: mappedRes,
-        // data: datafail,
-      });
-      console.log(i, chunkedPromise.length, mappedRes);
-
-      if (res2?.status !== 200) {
-        notification.error({ message: 'error' });
-        // break for loop
-        return;
-      }
-    }
-
-    notification.success({ message: 'success' });
-  };
-
   const getLastUpdated = async () => {
     try {
       const res: any = await StockService.getLastUpdated();
@@ -177,6 +97,7 @@ const Testing = ({ open, onClose }: Props) => {
           moment().format(DATE_FORMAT),
           offset
         );
+        console.log(res);
         offset += 20;
         if (res && res.length && res[0].length < 20) {
           nextCall = false;
@@ -185,82 +106,13 @@ const Testing = ({ open, onClose }: Props) => {
       try {
         const res = await StockService.updateLastUpdated({
           column: 'last_updated',
-          value: endDate,
+          value: moment().format(DATE_FORMAT),
         });
         console.log(res);
       } catch (e) {
         console.log(e);
       }
     }
-  };
-
-  const updateDataWithDate = async (
-    startDate: string,
-    endDate: string,
-    offset: number
-  ) => {
-    // get data
-    const listPromises: any = [];
-    getListAllSymbols().forEach((symbol: string) => {
-      listPromises.push(
-        StockService.getHistoricalQuotes({
-          symbol,
-          startDate,
-          endDate,
-          offset,
-        })
-      );
-    });
-
-    const resListPromises = await Promise.all(listPromises);
-    if (resListPromises) {
-      let listPromiseUpdate: any = [];
-      const flattenData = resListPromises.flat();
-      const objData: any = groupBy(flattenData, 'date');
-      console.log('objData', objData);
-      for (const key in objData) {
-        if (Object.prototype.hasOwnProperty.call(objData, key)) {
-          const element = objData[key];
-          objData[key] = element.map((i: any) => {
-            i.key = `${i.symbol}_${i.date}`;
-            i.date = moment(i.date).format(DATE_FORMAT);
-            return i;
-          });
-          console.log(261, key);
-          listPromiseUpdate.push(
-            deleteAndInsertStockData(moment(key).format(DATE_FORMAT), element)
-          );
-        }
-      }
-      const res2 = await Promise.all(listPromiseUpdate);
-      console.log(res2);
-      setListUpdateStatus(res2);
-      setColumns(UPDATE_STATUS_COLUMNS);
-    }
-    return resListPromises;
-  };
-
-  const deleteAndInsertStockData = (date: string, data: any) => {
-    console.log(date, data);
-    // return a promise
-
-    return new Promise(async (resolve, reject) => {
-      try {
-        console.log('deleteAndInsertStockData', date);
-        // Delete all old data with selected date
-        await StockService.deleteStockData({
-          column: 'date',
-          value: date,
-        });
-
-        // Insert new data with selected date
-        await StockService.insertStockData(data);
-        resolve({ status: 'success', date });
-      } catch (e) {
-        console.log(e);
-        reject({ status: 'error', date });
-      }
-    });
   };
 
   const handleTest = async () => {

@@ -17,12 +17,12 @@ interface Props {
   symbol: string;
   children: ReactNode;
   backTestData: BackTest | null;
+  cbClose: () => void;
 }
 
-const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
+const InfoListBackTest = ({ backTestData, symbol, cbClose }: Props) => {
   console.log(backTestData);
   const [backTest, setBackTest] = useState<BackTest | null>(backTestData);
-  const [open, setOpen] = useState(false);
   const [dataChart, setDataChart] = useState<any>(null);
   const [change_t0, setChange_t0] = useState<number | null>(
     BACKTEST_FILTER.change_t0
@@ -39,14 +39,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   const [currentDataChart, setCurrentDataChart] = useState<any>(
     getCurrentDataChart(backTestData)
   );
-
-  const showDrawer = () => {
-    setOpen(true);
-  };
-
-  const onClose = () => {
-    setOpen(false);
-  };
 
   const handleClickRow = (record: Base) => {
     setDataChart(mapDataChart(backTestData, record));
@@ -100,15 +92,6 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
 
   return (
     <>
-      <Button
-        size="small"
-        type="primary"
-        onClick={() => (backTest ? showDrawer() : null)}
-        style={{ background: 'transparent', border: 'none' }}
-      >
-        {children}
-      </Button>
-
       <Drawer
         className="InfoListBackTestDrawer"
         title={
@@ -155,8 +138,8 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
         }
         placement="right"
         width={'100%'}
-        onClose={onClose}
-        open={open}
+        onClose={() => cbClose()}
+        open={true}
       >
         <div className="flex height-100" style={{ flexDirection: 'column' }}>
           <div
@@ -195,4 +178,28 @@ const InfoListBackTest = ({ backTestData, children, symbol }: Props) => {
   );
 };
 
-export default InfoListBackTest;
+interface InfoListBackTestWrapperProps {
+  symbol: string;
+  children: ReactNode;
+  backTestData: BackTest | null;
+}
+
+const InfoListBackTestWrapper = (props: InfoListBackTestWrapperProps) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button
+        size="small"
+        type="primary"
+        onClick={() => setOpen(true)}
+        style={{ background: 'transparent', border: 'none' }}
+      >
+        {props.children}
+      </Button>
+      {open && <InfoListBackTest {...props} cbClose={() => setOpen(false)} />}
+    </>
+  );
+};
+
+export default InfoListBackTestWrapper;
