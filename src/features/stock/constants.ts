@@ -6,7 +6,7 @@ import {
   HistoricalQuote,
   ExtraData,
   ActionType,
-  Filter,
+  BaseFilter,
   BackTestSymbol,
   Base,
   Watchlist,
@@ -27,6 +27,9 @@ export const MAX_CHANGE = 1000;
 const DEFAULT_OFFSET = 20;
 export const BACKTEST_COUNT = (50 * DEFAULT_OFFSET) / DEFAULT_OFFSET; // change number to change number of fetching days
 export const DEFAULT_DATE = moment();
+export const DEFAULT_START_DATE = moment().add(-40, 'days');
+export const DEFAULT_END_DATE =
+  moment().format('HH:mm') > '15:00' ? moment() : moment().add(-1, 'days');
 
 export const FinancialIndicatorsKeys = [
   'P/E',
@@ -167,22 +170,22 @@ export const BUY_SELL_SIGNNAL_KEYS = {
   buy_sell_vol__sell: 0.7,
 };
 
-export const DEFAULT_FILTER: Filter = {
+export const DEFAULT_FILTER: BaseFilter = {
   currentWatchlist: null,
-  totalValue_last20_min: 1,
+  totalValue_last20_min: 5,
   changePrice_min: 2,
   have_base_in_5_day: false,
   estimated_vol_change_min: 20,
   have_extra_vol: false,
   only_buy_sell: true,
+  t0_over_base_max: 0,
 };
 
 export const BACKTEST_FILTER = {
   change_t0: DEFAULT_FILTER.changePrice_min,
-  change_t3: 0,
   change_t0_vol: DEFAULT_FILTER.estimated_vol_change_min,
-  change_buyPrice: 2,
   num_high_vol_than_t0: 0,
+  t0_over_base_max: 0,
 };
 
 export const DEFAULT_SETTINGS: any = {
@@ -192,7 +195,7 @@ export const DEFAULT_SETTINGS: any = {
   showSorterTooltip: false,
   pagination: {
     position: ['bottomRight'],
-    pageSizeOptions: ['10', '20', '30'],
+    pageSizeOptions: ['10', '20', '100'],
     showSizeChanger: true,
   },
 };
@@ -546,7 +549,12 @@ export const getAction = ({
 }): ActionType => {
   let action: ActionType = 'unknown';
 
-  if (changePrice > 2 && latestBase && estimated_vol_change > 20) {
+  if (
+    changePrice > DEFAULT_FILTER.changePrice_min &&
+    estimated_vol_change > DEFAULT_FILTER.estimated_vol_change_min &&
+    latestBase &&
+    latestBase.t0_over_base_max > DEFAULT_FILTER.t0_over_base_max
+  ) {
     action = 'buy';
   }
 
@@ -565,34 +573,41 @@ export const getAction = ({
 };
 
 export const getEstimatedVol = (data: HistoricalQuote) => {
-  const start_time = moment().set('hour', 9).set('minute', 0);
-  const default_end_time = moment().set('hour', 14).set('minute', 45);
-  const default_diff_time = default_end_time.diff(start_time, 'minute') - 90;
+  if (data.date === moment().format(DATE_FORMAT)) {
+    // from 9:00 to 11:30
+    const morning_time = 60 * 2.5;
 
-  const end_time = moment();
-  let diff_time = 0;
-  if (end_time.isBefore(moment('11:30', 'HH:mm'))) {
-    diff_time = end_time.diff(start_time, 'minute');
-  } else if (
-    end_time.isAfter(moment('13:00', 'HH:mm')) &&
-    end_time.isBefore(moment('14:45', 'HH:mm'))
-  ) {
-    diff_time = end_time.diff(start_time, 'minute') - 90;
-  } else {
-    diff_time =
-      end_time.diff(start_time, 'minute') -
-      end_time.diff(moment('11:30', 'HH:mm'), 'minute');
-  }
-  let estimated_vol = (data.dealVolume * default_diff_time) / diff_time;
-  if (
-    moment(data.date).format(DATE_FORMAT) !== moment().format(DATE_FORMAT) ||
-    (moment(data.date).format(DATE_FORMAT) !== moment().format(DATE_FORMAT) &&
-      end_time.isAfter(moment('15:00', 'HH:mm')))
-  ) {
-    estimated_vol = data.dealVolume;
+    // from 13:00 to 14:45
+    const afternoon_time = 60 * 1.75;
+
+    const total_time = morning_time + afternoon_time;
+    const current_time = moment().format('HH:mm');
+    let estimated_vol;
+
+    if (current_time < '09:00') {
+      estimated_vol = 0;
+    } else if (current_time >= '09:00' && current_time <= '11:30') {
+      const diff_time = moment(current_time, 'HH:mm').diff(
+        moment('09:00', 'HH:mm'),
+        'minute'
+      );
+      estimated_vol = data.totalVolume * (total_time / diff_time);
+    } else if (current_time >= '11:31' && current_time <= '12:59') {
+      estimated_vol = data.totalVolume * (total_time / morning_time);
+    } else if (current_time >= '13:00' && current_time <= '14:45') {
+      const diff_time = moment(current_time, 'HH:mm').diff(
+        moment('13:00', 'HH:mm'),
+        'minute'
+      );
+      estimated_vol =
+        data.totalVolume * (total_time / (morning_time + diff_time));
+    } else {
+      estimated_vol = data.totalVolume;
+    }
+    return estimated_vol;
   }
 
-  return estimated_vol;
+  return data.totalVolume;
 };
 
 export const getBase_min_max = (data: BackTestSymbol[]) => {

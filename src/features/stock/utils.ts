@@ -1,4 +1,4 @@
-import { meanBy, cloneDeep } from 'lodash';
+import { meanBy, cloneDeep, groupBy, chunk } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
@@ -7,16 +7,27 @@ import {
   getAction,
   getEstimatedVol,
   getBase_min_max,
+  getListAllSymbols,
+  DEFAULT_FILTER,
+  BACKTEST_COUNT,
 } from './constants';
 import {
   HistoricalQuote,
   ExtraData,
   CustomSymbol,
-  Filter,
+  BaseFilter,
   BackTestSymbol,
   Base,
   FilterBackTest,
+  BackTest,
+  SimplifiedBackTestSymbol,
 } from './types';
+import StockService from './service';
+import request from '@/services/request';
+import { notification } from 'antd';
+import config from '@/config';
+
+const baseUrl = config.apiUrl;
 
 export const mapHistoricalQuote = (
   data: HistoricalQuote[],
@@ -33,9 +44,6 @@ export const mapHistoricalQuote = (
       .slice(1, 6)
       .reduce((a: number, b: HistoricalQuote) => a + b.totalVolume, 0) / 5;
 
-  const changeVolume_last5 =
-    (data[0].totalVolume - averageVolume_last5) / averageVolume_last5;
-
   const changePrice =
     (100 * (last_data.priceClose - last_2_data.priceClose)) /
     last_2_data.priceClose;
@@ -48,7 +56,8 @@ export const mapHistoricalQuote = (
     (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
 
   const extra_vol =
-    (100 * last_data.putthroughVolume) / (last_data.dealVolume || 1);
+    (100 * (last_data.totalVolume - last_data.dealVolume)) /
+    (last_data.dealVolume || 1);
 
   const action = getAction({
     changePrice,
@@ -60,13 +69,16 @@ export const mapHistoricalQuote = (
   const last20HistoricalQuote: BackTestSymbol[] = data.map(
     (i: HistoricalQuote) => {
       return {
-        date: i.date,
+        date: i.date.replace('T00:00:00', ''),
         dealVolume: i.dealVolume,
         priceClose: i.priceClose,
         priceHigh: i.priceHigh,
         priceLow: i.priceLow,
         priceOpen: i.priceOpen,
-        totalVolume: i.totalVolume,
+        totalVolume:
+          i.date.replace('T00:00:00', '') === moment().format(DATE_FORMAT)
+            ? estimated_vol
+            : i.totalVolume,
         symbol: i.symbol,
       };
     }
@@ -78,7 +90,6 @@ export const mapHistoricalQuote = (
     buySellSignals: {
       totalValue_last20_min,
       averageVolume_last5,
-      changeVolume_last5,
       changePrice,
       latestBase,
       estimated_vol_change,
@@ -92,17 +103,15 @@ export const mapHistoricalQuote = (
 export const getListBase = (data: BackTestSymbol[]): Base[] => {
   if (!data || !data.length || data.length < 6) return [];
   let listBase: Base[] = [];
-  let nextIndex: number = 6;
+  let nextIndex: number = 1;
 
   data.forEach((_: BackTestSymbol, index: number) => {
     if (index !== nextIndex) return;
-
-    nextIndex = nextIndex + 1;
-
+    nextIndex = index + 1;
     const startBaseIndex = index;
     let endBaseIndex = index + 5;
     const list = data.slice(startBaseIndex, endBaseIndex);
-    const { base_min, base_max } = getBase_min_max(list);
+    let { base_min, base_max } = getBase_min_max(list);
     if (!base_max || !base_min) return;
 
     const percent = (100 * (base_max - base_min)) / base_min;
@@ -114,35 +123,76 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
       const change_t0 =
         (100 * (data[buyIndex].priceClose - list[0].priceClose)) /
         list[0].priceClose;
-      const change_buyPrice = BACKTEST_FILTER.change_buyPrice;
-      const num_high_vol_than_t0 = list.filter(
-        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
-      ).length;
-      let change_t3 = null;
+      const change_buyPrice = DEFAULT_FILTER.changePrice_min;
 
+      let change_t3 = null;
+      const buyPrice =
+        data[buyIndex].priceOpen * (1 + DEFAULT_FILTER.changePrice_min / 100);
       if (data[index - 4]) {
         const t3Price = data[index - 4].priceClose;
-        const buyPrice =
-          data[buyIndex].priceClose *
-          (1 + BACKTEST_FILTER.change_buyPrice / 100);
 
         change_t3 = (100 * (t3Price - buyPrice)) / buyPrice;
       }
 
       let stop = false;
 
-      data.slice(endBaseIndex).forEach((m: BackTestSymbol, index2: number) => {
+      data.slice(endBaseIndex).forEach((m: BackTestSymbol) => {
         if (stop) return;
-        const new_min = base_min > m.priceClose ? m.priceClose : base_min;
-        const new_max = base_max < m.priceClose ? m.priceClose : base_max;
+        const new_min = base_min! > m.priceLow ? m.priceLow : base_min!;
+        const new_max = base_max! < m.priceHigh ? m.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(m);
           endBaseIndex = endBaseIndex + 1;
+          base_min = new_min;
+          base_max = new_max;
         } else {
           stop = true;
         }
       });
+
+      let max_in_20_days_without_break_base = buyPrice;
+      let min_in_20_days_without_break_base = buyPrice;
+      let max_in_20_days_without_break_base_index = 1;
+      let min_in_20_days_without_break_base_index = 1;
+      let stop_max = false;
+      let stop_min = false;
+
+      for (let i = 1; i < 20; i++) {
+        const nextDay = data[buyIndex - i];
+        if (nextDay) {
+          // find the max value in the next 20 days
+          if (nextDay.priceLow < base_min) {
+            stop_max = true;
+            stop_min = true;
+          }
+          if (!stop_max) {
+            if (nextDay.priceHigh > max_in_20_days_without_break_base) {
+              max_in_20_days_without_break_base = nextDay.priceHigh;
+              max_in_20_days_without_break_base_index = i;
+            }
+          }
+          if (!stop_min) {
+            if (nextDay.priceLow < min_in_20_days_without_break_base) {
+              min_in_20_days_without_break_base = nextDay.priceLow;
+              min_in_20_days_without_break_base_index = i;
+            }
+          }
+        }
+      }
+
+      const max_change_in_20_days =
+        (100 * (max_in_20_days_without_break_base - buyPrice)) / buyPrice;
+
+      const min_change_in_20_days =
+        (100 * (min_in_20_days_without_break_base - buyPrice)) / buyPrice;
+
+      const num_high_vol_than_t0 = list.filter(
+        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+      ).length;
+      const base_percent = (100 * (base_max - base_min)) / base_min;
+      const t0_over_base_max =
+        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
 
       listBase.push({
         buyIndex,
@@ -155,9 +205,56 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         num_high_vol_than_t0,
         base_max,
         base_min,
+        base_percent,
+        t0_over_base_max,
+        max_change_in_20_days,
+        min_change_in_20_days,
+        max_in_20_days_without_break_base_index,
+        min_in_20_days_without_break_base_index,
       });
       nextIndex = nextIndex + endBaseIndex - startBaseIndex - 1;
     }
+  });
+
+  listBase = listBase.map((i: Base, index: number) => {
+    let closestUpperBaseIndex;
+    let closestLowerBaseIndex;
+
+    let stop1 = false;
+    for (let j = index + 1; j < listBase.length; j++) {
+      if (!stop1) {
+        if (listBase[j].base_min > i.base_min) {
+          closestUpperBaseIndex = j;
+          stop1 = true;
+        }
+      }
+    }
+
+    let stop2 = false;
+    for (let k = index + 1; k < listBase.length; k++) {
+      if (!stop2) {
+        if (listBase[k].base_max < i.base_max) {
+          closestLowerBaseIndex = k;
+          stop2 = true;
+        }
+      }
+    }
+
+    if (closestUpperBaseIndex) {
+      i.closestUpperBaseIndex = closestUpperBaseIndex;
+      i.upperPercent =
+        (100 * (listBase[closestUpperBaseIndex].base_min - i.base_max)) /
+        i.base_max;
+    }
+
+    if (closestLowerBaseIndex) {
+      i.closestLowerBaseIndex = closestLowerBaseIndex;
+      i.lowerPercent =
+        (100 * (i.base_min - listBase[closestLowerBaseIndex].base_max)) /
+        listBase[closestLowerBaseIndex].base_max;
+    }
+
+    return i;
   });
 
   return listBase;
@@ -180,13 +277,25 @@ export const getMapBackTestData = (
         b.date.localeCompare(a.date)
       );
 
+    // replace first item by latest data
+    if (
+      filterRes[0].date ===
+        dataSource.find((j) => j.symbol === i.symbol)!.last20HistoricalQuote[0]
+          .date ||
+      filterRes[0].date >
+        dataSource.find((j) => j.symbol === i.symbol)!.last20HistoricalQuote[0]
+          .date
+    ) {
+      //  do nothing
+    } else {
+      filterRes.unshift(
+        dataSource.find((j) => j.symbol === i.symbol)!.last20HistoricalQuote[0]
+      );
+    }
+
     if (filterRes.length) {
       const listBase = getListBase(filterRes);
-      newItem.backtest = getBackTest(filterRes, listBase, {
-        change_t0: BACKTEST_FILTER.change_t0,
-        change_t0_vol: BACKTEST_FILTER.change_t0_vol,
-        num_high_vol_than_t0: BACKTEST_FILTER.num_high_vol_than_t0,
-      });
+      newItem.backtest = getBackTest(filterRes, listBase, BACKTEST_FILTER);
     }
 
     return newItem;
@@ -254,7 +363,7 @@ export const getDataChart = ({
   };
 };
 
-export const getDataSource = (data: CustomSymbol[], filter: Filter) => {
+export const getDataSource = (data: CustomSymbol[], filter: BaseFilter) => {
   const {
     currentWatchlist,
     totalValue_last20_min,
@@ -336,12 +445,37 @@ export const getBackTest = (
   listBase: Base[],
   filterCondition: FilterBackTest
 ) => {
-  const filteredBase = listBase.filter(
-    (j: Base) =>
-      j.change_t0! > filterCondition.change_t0 &&
-      j.change_t0_vol! > filterCondition.change_t0_vol &&
-      j.num_high_vol_than_t0! === filterCondition.num_high_vol_than_t0
-  );
+  const filteredBase = listBase.filter((j: Base) => {
+    if (
+      (filterCondition.change_t0 || filterCondition.change_t0 === 0) &&
+      j.change_t0 < filterCondition.change_t0
+    ) {
+      return false;
+    }
+    if (
+      (filterCondition.change_t0_vol || filterCondition.change_t0_vol === 0) &&
+      j.change_t0_vol < filterCondition.change_t0_vol
+    ) {
+      return false;
+    }
+    // if (
+    //   (filterCondition.num_high_vol_than_t0 ||
+    //     filterCondition.num_high_vol_than_t0 === 0) &&
+    //   j.num_high_vol_than_t0 < filterCondition.num_high_vol_than_t0
+    // ) {
+    //   return false;
+    // }
+
+    if (
+      (filterCondition.t0_over_base_max ||
+        filterCondition.t0_over_base_max === 0) &&
+      j.t0_over_base_max < filterCondition.t0_over_base_max
+    ) {
+      return false;
+    }
+
+    return true;
+  });
   const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
   const winRate = Number(((100 * winCount) / filteredBase.length).toFixed(2));
 
@@ -407,14 +541,14 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   const startBaseIndex = 1;
   let endBaseIndex = 6;
   const list = data.slice(startBaseIndex, endBaseIndex);
-  const { base_min, base_max } = getBase_min_max(list);
+  let { base_min, base_max } = getBase_min_max(list);
 
   if (base_min && base_max) {
     const percent = (100 * (base_max - base_min)) / base_min;
 
     if (percent < 14) {
       const averageVolume = meanBy(list, 'totalVolume');
-      let change_buyPrice = BACKTEST_FILTER.change_buyPrice;
+      let change_buyPrice = DEFAULT_FILTER.changePrice_min;
       let num_high_vol_than_t0 = 0;
       const change_t0_vol =
         (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
@@ -424,16 +558,22 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 
       data.forEach((i: BackTestSymbol, index: number) => {
         if (index < 6 || stop) return;
-        const new_min = base_min > i.priceClose ? i.priceClose : base_min;
-        const new_max = base_max < i.priceClose ? i.priceClose : base_max;
+        const new_min = base_min! > i.priceLow ? i.priceLow : base_min!;
+        const new_max = base_max! < i.priceHigh ? i.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
         if (new_percent < 14) {
           list.push(i);
           endBaseIndex = index;
+          base_min = new_min;
+          base_max = new_max;
         } else {
           stop = true;
         }
       });
+
+      const base_percent = (100 * (base_max - base_min)) / base_min;
+      const t0_over_base_max =
+        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
 
       return {
         buyIndex,
@@ -445,8 +585,358 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         num_high_vol_than_t0,
         base_max,
         base_min,
+        base_percent,
+        t0_over_base_max,
       };
     }
   }
   return null;
+};
+
+export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
+  if ((record.buyIndex !== 0 && !record.buyIndex) || !backTestData) return;
+
+  const list = backTestData.fullData.slice(
+    record.buyIndex > 20 ? record.buyIndex - 20 : record.buyIndex,
+    record.buyIndex + 112
+  );
+
+  const buyItem = { ...backTestData.fullData[record.buyIndex] };
+  const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
+  const grid = [
+    {
+      left: 20,
+      right: 20,
+      top: 20,
+      height: '70%',
+    },
+    {
+      left: 20,
+      right: 20,
+      height: '20%',
+      bottom: 0,
+    },
+  ];
+
+  const seriesMarkPoint = getSeriesMarkPoint({
+    buyItem,
+    sellItem,
+    offset: 20,
+  });
+
+  const dataMarkLine: any = [];
+
+  const filterBase = [record];
+  if (record.closestUpperBaseIndex) {
+    filterBase.push(backTestData.listBase[record.closestUpperBaseIndex]);
+  }
+  if (record.closestLowerBaseIndex) {
+    filterBase.push(backTestData.listBase[record.closestLowerBaseIndex]);
+  }
+
+  filterBase.forEach((baseItem: Base, index) => {
+    const baseStartData = {
+      ...backTestData.fullData[baseItem.startBaseIndex],
+    };
+    const baseEndData = {
+      ...backTestData.fullData[baseItem.endBaseIndex],
+    };
+
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+        lineStyle: {
+          color: 'purple',
+        },
+        coord: [
+          moment(baseStartData.date).format(DATE_FORMAT),
+          baseItem.base_min,
+        ],
+      },
+      {
+        coord: [
+          moment(baseEndData.date).format(DATE_FORMAT),
+          baseItem.base_min,
+        ],
+      },
+    ]);
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+        lineStyle: {
+          color: 'purple',
+        },
+        coord: [
+          moment(baseStartData.date).format(DATE_FORMAT),
+          baseItem.base_max,
+        ],
+      },
+      {
+        coord: [
+          moment(baseEndData.date).format(DATE_FORMAT),
+          baseItem.base_max,
+        ],
+      },
+    ]);
+  });
+
+  const newDataChart = getDataChart({
+    data: list,
+    grid,
+    seriesMarkPoint,
+    markLine: {
+      data: dataMarkLine,
+    },
+  });
+
+  return newDataChart;
+};
+
+export const getDataFromSupabase = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) => {
+  const res = await StockService.getStockDataFromSupabase({
+    startDate,
+    endDate,
+  });
+
+  const listObj: any = groupBy(res.data, 'symbol');
+  const result: any = [];
+  Object.keys(listObj).forEach((i: string) => {
+    result.push(
+      mapHistoricalQuote(listObj[i], {
+        key: i,
+        symbol: i,
+      })
+    );
+  });
+  console.log('getDataFromSupabase', result);
+  return result;
+};
+
+export const getDataFromFireant = async ({
+  startDate,
+  endDate,
+}: {
+  startDate: string;
+  endDate: string;
+}) => {
+  const listPromises: any = [];
+
+  getListAllSymbols().forEach((j: string) => {
+    listPromises.push(
+      StockService.getHistoricalQuotes(
+        { symbol: j, startDate, endDate },
+        mapHistoricalQuote,
+        {
+          key: j,
+          symbol: j,
+        }
+      )
+    );
+  });
+
+  const res = await Promise.all(listPromises);
+  console.log('getDataFromFireant', res);
+  return res;
+};
+
+export const getBackTestDataOffline = async ({
+  database,
+  dataSource,
+  fullDataSource,
+  filters = DEFAULT_FILTER,
+}: {
+  database: 'supabase' | 'heroku';
+  dataSource: CustomSymbol[];
+  fullDataSource: CustomSymbol[];
+  filters?: BaseFilter;
+}) => {
+  const symbols = dataSource
+    .filter(
+      (i: CustomSymbol) =>
+        i.buySellSignals.action === 'buy' || i.buySellSignals.action === 'sell'
+    )
+    .map((i: CustomSymbol) => i.symbol);
+
+  const res = await StockService.getBackTestData({ symbols, database });
+
+  let mappedData: any;
+
+  if (database === 'heroku') {
+    mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
+      return {
+        date: i.d,
+        dealVolume: i.v,
+        priceClose: i.c,
+        priceHigh: i.h,
+        priceLow: i.l,
+        priceOpen: i.o,
+        totalVolume: i.v2,
+        symbol: i.s,
+      };
+    });
+  } else {
+    mappedData = res.data;
+  }
+
+  const newFullDataSource = getMapBackTestData(
+    mappedData,
+    dataSource,
+    fullDataSource
+  );
+  const newData = getDataSource(newFullDataSource, filters);
+
+  return {
+    fullDataSource: newFullDataSource,
+    dataSource: newData,
+  };
+};
+
+export const deleteAndInsertStockData = (date: string, data: any) => {
+  console.log(date, data);
+  // return a promise
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log('deleteAndInsertStockData', date);
+      // Delete all old data with selected date
+      await StockService.deleteStockData({
+        column: 'date',
+        value: date,
+      });
+
+      // Insert new data with selected date
+      await StockService.insertStockData(data);
+      resolve({ status: 'success', date });
+    } catch (e) {
+      console.log(e);
+      reject({ status: 'error', date });
+    }
+  });
+};
+
+const getListPromise = async (data: any) => {
+  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
+  const endDate = moment().format(DATE_FORMAT);
+  const listPromise: any = [];
+  data.forEach((i: any) => {
+    listPromise.push(
+      StockService.getHistoricalQuotes({
+        symbol: i.symbol,
+        startDate,
+        endDate,
+        offset: i.offset * 20,
+        returnRequest: true,
+      })
+    );
+  });
+
+  return Promise.all(listPromise);
+};
+
+export const createBackTestData = async () => {
+  // Get data to backtest within 1 year from buy, sell symbol
+  const listPromises: any = [];
+  getListAllSymbols().forEach((j: any) => {
+    for (let i = 0; i <= BACKTEST_COUNT; i++) {
+      listPromises.push({
+        symbol: j,
+        offset: i,
+      });
+    }
+  });
+
+  const chunkedPromise = chunk(listPromises, 200);
+  console.log(chunkedPromise);
+
+  await request({
+    url: `${baseUrl}/api/stocks/delete/`,
+    method: 'POST',
+  });
+
+  for (let i = 0; i < chunkedPromise.length; i++) {
+    // delay 2s
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    const res = await getListPromise(chunkedPromise[i]);
+    const mappedRes = res
+      .map((i: any) => i.data)
+      .flat()
+      .map((i: any) => {
+        i.key = `${i.symbol}_${i.date}`;
+        i.date = moment(i.date).format(DATE_FORMAT);
+        return i;
+      });
+    // const res2 = await request({
+    //   url: `${baseUrl}/api/stocks/delete/`,
+    //   method: 'POST',
+    // });
+    const res2 = await request({
+      url: `${baseUrl}/api/stocks/create/`,
+      method: 'POST',
+      data: mappedRes,
+      // data: datafail,
+    });
+    console.log(i, chunkedPromise.length, mappedRes);
+
+    if (res2?.status !== 200) {
+      notification.error({ message: 'error' });
+      // break for loop
+      return;
+    }
+  }
+
+  notification.success({ message: 'success' });
+};
+
+export const updateDataWithDate = async (
+  startDate: string,
+  endDate: string,
+  offset: number
+) => {
+  // get data
+  const listPromises: any = [];
+  getListAllSymbols().forEach((symbol: string) => {
+    listPromises.push(
+      StockService.getHistoricalQuotes({
+        symbol,
+        startDate,
+        endDate,
+        offset,
+      })
+    );
+  });
+
+  const resListPromises = await Promise.all(listPromises);
+  if (resListPromises) {
+    let listPromiseUpdate: any = [];
+    const flattenData = resListPromises.flat();
+    const objData: any = groupBy(flattenData, 'date');
+    console.log('objData', objData);
+    for (const key in objData) {
+      if (Object.prototype.hasOwnProperty.call(objData, key)) {
+        const element = objData[key];
+        objData[key] = element.map((i: any) => {
+          i.key = `${i.symbol}_${i.date}`;
+          i.date = moment(i.date).format(DATE_FORMAT);
+          return i;
+        });
+        console.log(261, key);
+        listPromiseUpdate.push(
+          deleteAndInsertStockData(moment(key).format(DATE_FORMAT), element)
+        );
+      }
+    }
+    const res2 = await Promise.all(listPromiseUpdate);
+    console.log(res2);
+    // setListUpdateStatus(res2);
+    // setColumns(UPDATE_STATUS_COLUMNS);
+  }
+  return resListPromises;
 };

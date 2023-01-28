@@ -1,6 +1,6 @@
 import axios from 'axios';
 import moment from 'moment';
-import { DATE_FORMAT, UNIT_BILLION } from './constants';
+import { DATE_FORMAT, UNIT_BILLION, getListAllSymbols } from './constants';
 import {
   HistoricalQuoteParams,
   FundamentalsParams,
@@ -301,6 +301,41 @@ const StockService = {
       method: 'POST',
       data,
     });
+  },
+  getLastUpdated: () => {
+    return supabase.from('stock_info').select('*');
+  },
+  insertStockData: (data: any) => {
+    return supabase.from('stock').insert(data);
+  },
+  deleteStockData: ({ column, value }: any) => {
+    return supabase.from('stock').delete().eq(column, value);
+  },
+  updateLastUpdated: ({ column, value }: any) => {
+    console.log('updateLastUpdated', column, value);
+    return supabase
+      .from('stock_info')
+      .update({ [column]: value })
+      .eq('id', 1)
+      .select();
+  },
+  getStockDataFromSupabase: ({
+    startDate,
+    endDate,
+  }: {
+    startDate: string;
+    endDate: string;
+  }) => {
+    return supabase
+      .from('stock')
+      .select(
+        'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume,totalValue'
+        // '*'
+      )
+      .in('symbol', getListAllSymbols())
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: false });
   },
 };
 

@@ -8,20 +8,21 @@ import {
   Checkbox,
   Dropdown,
   Menu,
+  Radio,
 } from 'antd';
 import { useState } from 'react';
 import {
   DATE_FORMAT,
-  DEFAULT_DATE,
   DEFAULT_FILTER,
   TYPE_INDICATOR_OPTIONS,
   DEFAULT_TYPE_INDICATOR_OPTIONS,
   DELAY_TIME,
   getColumns,
+  DEFAULT_START_DATE,
+  DEFAULT_END_DATE,
 } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
-import type { DatePickerProps } from 'antd';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { keyBy } from 'lodash';
@@ -29,6 +30,7 @@ import { Watchlist } from '../types';
 import { useInterval } from '@/hooks';
 
 const CheckboxGroup = Checkbox.Group;
+const { RangePicker } = DatePicker;
 
 const Filters = ({
   listWatchlist,
@@ -81,6 +83,9 @@ const Filters = ({
 
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
+  const [sourceData, setSourceData] = useState<'fireant' | 'supabase' | string>(
+    localStorage.getItem('sourceData') || 'fireant'
+  );
 
   const menu = (
     <Menu onClick={(e: any) => handleClickMenuWatchlist(e)}>
@@ -125,9 +130,9 @@ const Filters = ({
     onChange({ changePrice_min: 2 });
   };
 
-  const handleChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
-    if (date && onDateChange) {
-      onDateChange(date);
+  const handleChangeDate = (dates: any) => {
+    if (dates && onDateChange) {
+      onDateChange(dates);
     }
   };
 
@@ -153,38 +158,45 @@ const Filters = ({
   return (
     <Drawer
       title={
-        <div className="width-100 flex" style={{ justifyContent: 'flex-end' }}>
-          <DatePicker
-            size="small"
-            onChange={handleChangeDate}
-            defaultValue={DEFAULT_DATE}
-            format={DATE_FORMAT}
-          />
-          <Button
-            style={{ marginLeft: '8px' }}
-            size="small"
-            onClick={() => setPlaying(!isPlaying)}
-          >
-            {isPlaying ? 'Stop Interval' : 'Start Interval'}
-          </Button>
-          <InputNumber
-            size="small"
-            style={{ marginLeft: '8px' }}
-            disabled={isPlaying}
-            value={delay}
-            onChange={(value: any) => setDelay(value)}
-          />
-          <Button
-            style={{ marginLeft: '8px' }}
-            size="small"
-            onClick={onUpdateWatchlist}
-          >
-            Update watchlist
-          </Button>
+        <div
+          className="width-100 flex"
+          style={{ justifyContent: 'space-between' }}
+        >
+          <div>Filter</div>
+          <div>
+            <RangePicker
+              size="small"
+              onChange={handleChangeDate}
+              defaultValue={[DEFAULT_START_DATE, DEFAULT_END_DATE]}
+              format={DATE_FORMAT}
+            />
+            <Button
+              style={{ marginLeft: '8px' }}
+              size="small"
+              onClick={() => setPlaying(!isPlaying)}
+            >
+              {isPlaying ? 'Stop Interval' : 'Start Interval'}
+            </Button>
+            <InputNumber
+              size="small"
+              style={{ marginLeft: '8px' }}
+              disabled={isPlaying}
+              value={delay}
+              onChange={(value: any) => setDelay(value)}
+            />
+            <Button
+              style={{ marginLeft: '8px' }}
+              size="small"
+              onClick={onUpdateWatchlist}
+            >
+              Update watchlist
+            </Button>
+          </div>
         </div>
       }
-      placement="right"
-      width={'100%'}
+      placement="bottom"
+      // width={'100%'}
+      height="500px"
       className="StockTableFilterDrawer"
       onClose={onClose}
       open={open}
@@ -266,6 +278,19 @@ const Filters = ({
                 onChange({ only_buy_sell: !only_buy_sell });
               }}
             />
+          </div>
+          <div style={{ marginTop: '20px' }}>
+            <Radio.Group
+              size="small"
+              value={sourceData}
+              onChange={(e: any) => {
+                setSourceData(e.target.value);
+                localStorage.setItem('sourceData', e.target.value);
+              }}
+            >
+              <Radio.Button value="fireant">Fireant</Radio.Button>
+              <Radio.Button value="supabase">Supabase</Radio.Button>
+            </Radio.Group>
           </div>
           <div style={{ marginTop: '20px' }}>
             <Popover

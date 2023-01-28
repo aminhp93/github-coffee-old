@@ -10,40 +10,43 @@ import {
 import { Button, notification, Statistic, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import StockService from '../service';
-import { keyBy } from 'lodash';
 import { useEffect, useState } from 'react';
 import {
   DEFAULT_FILTER,
   DEFAULT_SETTINGS,
   DEFAULT_COLUMNS,
   DATE_FORMAT,
-  DEFAULT_DATE,
-  getListAllSymbols,
+  DEFAULT_START_DATE,
+  DEFAULT_END_DATE,
 } from '../constants';
 import {
-  mapHistoricalQuote,
-  getMapBackTestData,
+  getBackTestDataOffline,
   getDataSource,
+  getDataFromSupabase,
+  getDataFromFireant,
+  updateDataWithDate,
 } from '../utils';
 import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import { CustomSymbol, Watchlist, SimplifiedBackTestSymbol } from '../types';
+import { CustomSymbol, Watchlist } from '../types';
 
-export default function StockTable() {
+const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
   const [fullDataSource, setFullDataSource] = useState<CustomSymbol[]>([]);
   const [dataSource, setDataSource] = useState<CustomSymbol[]>([]);
-  const listWatchlistObj = keyBy(listWatchlist, 'watchlistID');
   const [loading, setLoading] = useState(false);
   const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [date, setDate] = useState<moment.Moment>(DEFAULT_DATE);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
+    DEFAULT_START_DATE,
+    DEFAULT_END_DATE,
+  ]);
 
   const handleUpdateWatchlist = async (symbols?: string[]) => {
     try {
@@ -67,101 +70,81 @@ export default function StockTable() {
     }
   };
 
-  const handleGetData = () => {
-    const listAllSymbols = getListAllSymbols(listWatchlist);
-    const listPromises: any = [];
-    const thanh_khoan_vua_wl: Watchlist =
-      listWatchlistObj && listWatchlistObj[737544];
+  const updateData = async () => {
+    const res: any = await StockService.getLastUpdated();
 
-    const watching_wl: Watchlist = listWatchlistObj && listWatchlistObj[75482];
-
-    if (!thanh_khoan_vua_wl) return;
-
-    listAllSymbols.forEach((j: string) => {
-      const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-      const endDate = date.format(DATE_FORMAT);
-      listPromises.push(
-        StockService.getHistoricalQuotes(
-          { symbol: j, startDate, endDate },
-          mapHistoricalQuote,
-          {
-            key: j,
-            symbol: j,
-            inWatchingWatchList: watching_wl?.symbols.includes(j),
-          }
-        )
-      );
-    });
-
-    setLoading(true);
-    return Promise.all(listPromises)
-      .then((res: CustomSymbol[]) => {
-        const newData = getDataSource(res, filters);
-
-        setLoading(false);
-        setFullDataSource(res);
-        setDataSource(newData);
-        notification.success({ message: 'success' });
-        return res;
-      })
-      .catch((e) => {
-        setLoading(false);
-        notification.error({ message: 'error' });
-      });
+    if (res.data && res.data.length && res.data.length === 1) {
+      const lastUpdated = res.data[0].last_updated;
+      if (lastUpdated === moment().format(DATE_FORMAT)) return;
+      let nextCall = true;
+      let offset = 0;
+      while (nextCall) {
+        const res = await updateDataWithDate(
+          moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+          moment().format(DATE_FORMAT),
+          offset
+        );
+        offset += 20;
+        if (res && res.length && res[0].length < 20) {
+          nextCall = false;
+        }
+      }
+      try {
+        const res = await StockService.updateLastUpdated({
+          column: 'last_updated',
+          value: moment().format(DATE_FORMAT),
+        });
+        console.log(res);
+      } catch (e) {
+        console.log(e);
+      }
+    }
   };
 
-  const getBackTestDataOffline = async (database?: 'supabase' | 'heroku') => {
+  const getData = async () => {
     try {
-      const symbols = dataSource
-        .filter(
-          (i: CustomSymbol) =>
-            i.buySellSignals.action === 'buy' ||
-            i.buySellSignals.action === 'sell'
-        )
-        .map((i: CustomSymbol) => i.symbol);
+      await updateData();
 
+      let res: any;
+      const startDate = dates[0].format(DATE_FORMAT);
+      const endDate = dates[1].format(DATE_FORMAT);
       setLoading(true);
-
-      const res = await StockService.getBackTestData({ symbols, database });
-
-      setLoading(false);
-      let mappedData: any;
-
-      if (database === 'heroku') {
-        mappedData = res.data.map((i: SimplifiedBackTestSymbol) => {
-          return {
-            date: i.d,
-            dealVolume: i.v,
-            priceClose: i.c,
-            priceHigh: i.h,
-            priceLow: i.l,
-            priceOpen: i.o,
-            totalVolume: i.v2,
-            symbol: i.s,
-          };
+      if (
+        localStorage.getItem('sourceData') !== 'supabase' &&
+        moment().format('HH:mm') < '15:00'
+      ) {
+        res = await getDataFromFireant({
+          startDate,
+          endDate: moment().format(DATE_FORMAT),
         });
       } else {
-        mappedData = res.data;
+        res = await getDataFromSupabase({ startDate, endDate });
       }
 
-      const newFullDataSource = getMapBackTestData(
-        mappedData,
-        dataSource,
-        fullDataSource
-      );
-      const newData = getDataSource(newFullDataSource, filters);
+      const newData = getDataSource(res, filters);
 
-      setFullDataSource(newFullDataSource);
-      setDataSource(newData);
-    } catch (e) {
+      const resBackTest = await getBackTestDataOffline({
+        database: 'supabase',
+        dataSource: newData,
+        fullDataSource: res,
+        filters,
+      });
+
       setLoading(false);
+      setFullDataSource(resBackTest.fullDataSource);
+      setDataSource(resBackTest.dataSource);
+      notification.success({ message: 'success' });
+    } catch (e) {
+      console.log(e);
+      setLoading(false);
+      notification.error({ message: 'error' });
     }
   };
 
   useEffect(() => {
-    handleGetData();
+    getData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, listWatchlist]);
+  }, [dates]);
 
   useEffect(() => {
     (async () => {
@@ -180,23 +163,8 @@ export default function StockTable() {
             size="small"
             icon={<CheckCircleOutlined />}
             disabled={loading}
-            onClick={handleGetData}
+            onClick={getData}
           />
-
-          <Button
-            size="small"
-            onClick={() => getBackTestDataOffline('supabase')}
-            style={{ marginLeft: '8px' }}
-          >
-            Backtest offline supabase
-          </Button>
-          <Button
-            size="small"
-            onClick={() => getBackTestDataOffline('heroku')}
-            style={{ marginLeft: '8px' }}
-          >
-            Backtest offline heroku
-          </Button>
         </div>
         <div className={'flex'}>
           <Statistic
@@ -215,15 +183,15 @@ export default function StockTable() {
     );
   };
 
-  const _filter_1 = dataSource.filter(
+  const _filter_1 = fullDataSource.filter(
     (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
   );
-  const _filter_2 = dataSource.filter(
+  const _filter_2 = fullDataSource.filter(
     (i: CustomSymbol) =>
       i.buySellSignals.changePrice >= -0.02 &&
       i.buySellSignals.changePrice <= 0.02
   );
-  const _filter_3 = dataSource.filter(
+  const _filter_3 = fullDataSource.filter(
     (i: CustomSymbol) => i.buySellSignals.changePrice > 0.02
   );
 
@@ -273,11 +241,6 @@ export default function StockTable() {
         footer={footer}
       />
       <Testing
-        fullDataSource={fullDataSource}
-        dataSource={dataSource}
-        cbSetLoading={setLoading}
-        cbSetDataSource={setDataSource}
-        listWatchlistObj={listWatchlistObj}
         open={openDrawerTesting}
         onClose={() => setOpenDrawerTesting(false)}
       />
@@ -285,7 +248,9 @@ export default function StockTable() {
         open={openDrawerFilter}
         listWatchlist={listWatchlist}
         onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDate: moment.Moment) => setDate(newDate)}
+        onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
+          setDates(newDates)
+        }
         onUpdateWatchlist={handleUpdateWatchlist}
         onGetData={() => {
           // console.log('onGetData');
@@ -300,4 +265,6 @@ export default function StockTable() {
       />
     </div>
   );
-}
+};
+
+export default StockTable;

@@ -90,7 +90,6 @@ export interface FundamentalsParams {
 export interface BuySellSignals {
   totalValue_last20_min: number;
   averageVolume_last5: number;
-  changeVolume_last5: number;
   changePrice: number;
   latestBase: Base | null;
   estimated_vol_change: number;
@@ -101,7 +100,7 @@ export interface BuySellSignals {
 export interface ExtraData {
   key: string;
   symbol: string;
-  inWatchingWatchList: boolean;
+  inWatchingWatchList?: boolean;
 }
 
 export type ActionType = 'buy' | 'sell' | 'unknown';
@@ -117,11 +116,21 @@ export interface Base {
   base_max: number;
   base_min: number;
   change_t3?: number | null;
+  base_percent: number;
+  t0_over_base_max: number;
+  closestUpperBaseIndex?: number;
+  upperPercent?: number;
+  closestLowerBaseIndex?: number;
+  lowerPercent?: number;
+  min_change_in_20_days?: number;
+  min_in_20_days_without_break_base_index?: number;
+  max_change_in_20_days?: number;
+  max_in_20_days_without_break_base_index?: number;
 }
 
 export interface CustomSymbol {
   buySellSignals: BuySellSignals;
-  inWatchingWatchList: boolean;
+  inWatchingWatchList?: boolean;
   key: string;
   symbol: string;
   last20HistoricalQuote: BackTestSymbol[]; // last 20 days
@@ -144,7 +153,7 @@ export interface Watchlist {
   watchlistID: number;
 }
 
-export interface Filter {
+export interface BaseFilter {
   currentWatchlist: Watchlist | null;
   totalValue_last20_min: number;
   changePrice_min: number;
@@ -152,6 +161,7 @@ export interface Filter {
   estimated_vol_change_min: number;
   have_extra_vol: boolean;
   only_buy_sell: boolean;
+  t0_over_base_max: number;
 }
 
 export interface BackTestSymbol {
@@ -177,7 +187,8 @@ export interface SimplifiedBackTestSymbol {
 }
 
 export interface FilterBackTest {
-  change_t0: number;
-  change_t0_vol: number;
-  num_high_vol_than_t0: number;
+  change_t0?: number | null;
+  change_t0_vol?: number | null;
+  num_high_vol_than_t0?: number | null;
+  t0_over_base_max?: number | null;
 }
