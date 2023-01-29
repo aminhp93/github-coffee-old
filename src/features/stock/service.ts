@@ -322,9 +322,11 @@ const StockService = {
   getStockDataFromSupabase: ({
     startDate,
     endDate,
+    listSymbols = getListAllSymbols(),
   }: {
     startDate: string;
     endDate: string;
+    listSymbols?: string[];
   }) => {
     return supabase
       .from('stock')
@@ -332,7 +334,7 @@ const StockService = {
         'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume,totalValue'
         // '*'
       )
-      .in('symbol', getListAllSymbols())
+      .in('symbol', listSymbols)
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: false });

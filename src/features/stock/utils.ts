@@ -940,3 +940,110 @@ export const updateDataWithDate = async (
   }
   return resListPromises;
 };
+
+export const mapDataChart2 = (fullData: any, data: any) => {
+  console.log('mapDataChart2', fullData, data);
+
+  // find index of buy date
+  const buyIndex = fullData.findIndex((i: any) => i.date === data.date);
+  if (buyIndex === -1) return {};
+
+  const list = fullData.slice(
+    buyIndex > 20 ? buyIndex - 20 : buyIndex,
+    buyIndex + 112
+  );
+
+  const buyItem = { ...fullData[data.buyIndex] };
+  const sellItem = { ...fullData[data.buyIndex - 3] };
+  const grid = [
+    {
+      left: 20,
+      right: 20,
+      top: 20,
+      height: '70%',
+    },
+    {
+      left: 20,
+      right: 20,
+      height: '20%',
+      bottom: 0,
+    },
+  ];
+
+  // const seriesMarkPoint = getSeriesMarkPoint({
+  //   buyItem,
+  //   sellItem,
+  //   offset: 20,
+  // });
+
+  const dataMarkLine: any = [];
+
+  // const filterBase = [record];
+  // if (record.closestUpperBaseIndex) {
+  //   filterBase.push(backTestData.listBase[record.closestUpperBaseIndex]);
+  // }
+  // if (record.closestLowerBaseIndex) {
+  //   filterBase.push(backTestData.listBase[record.closestLowerBaseIndex]);
+  // }
+
+  // filterBase.forEach((baseItem: Base, index) => {
+  //   const baseStartData = {
+  //     ...backTestData.fullData[baseItem.startBaseIndex],
+  //   };
+  //   const baseEndData = {
+  //     ...backTestData.fullData[baseItem.endBaseIndex],
+  //   };
+
+  //   dataMarkLine.push([
+  //     {
+  //       name: '',
+  //       symbol: 'none',
+  //       lineStyle: {
+  //         color: 'purple',
+  //       },
+  //       coord: [
+  //         moment(baseStartData.date).format(DATE_FORMAT),
+  //         baseItem.base_min,
+  //       ],
+  //     },
+  //     {
+  //       coord: [
+  //         moment(baseEndData.date).format(DATE_FORMAT),
+  //         baseItem.base_min,
+  //       ],
+  //     },
+  //   ]);
+  //   dataMarkLine.push([
+  //     {
+  //       name: '',
+  //       symbol: 'none',
+  //       lineStyle: {
+  //         color: 'purple',
+  //       },
+  //       coord: [
+  //         moment(baseStartData.date).format(DATE_FORMAT),
+  //         baseItem.base_max,
+  //       ],
+  //     },
+  //     {
+  //       coord: [
+  //         moment(baseEndData.date).format(DATE_FORMAT),
+  //         baseItem.base_max,
+  //       ],
+  //     },
+  //   ]);
+  // });
+
+  const newDataChart = getDataChart({
+    data: list,
+    grid,
+    // seriesMarkPoint,
+    // markLine: {
+    //   data: dataMarkLine,
+    // },
+  });
+
+  console.log(newDataChart, 'newDataChart');
+
+  return newDataChart;
+};

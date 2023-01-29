@@ -14,12 +14,20 @@ import {
   getDataSource,
   createBackTestData,
   updateDataWithDate,
+  mapDataChart2,
 } from '../utils';
+import { getRealResult } from '../tests';
+import BackTestChart from './BackTestChart';
 
 import type { DatePickerProps } from 'antd';
 
 import { useEffect, useState } from 'react';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+
+import { AgGridReact } from 'ag-grid-react';
+
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 const UPDATE_STATUS_COLUMNS = [
   {
@@ -49,6 +57,55 @@ const UPDATE_STATUS_COLUMNS = [
   },
 ];
 
+const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
+  {
+    headerName: 'Date',
+    field: 'date',
+    width: 120,
+    onCellClicked: (data: any) => {
+      console.log(data);
+      handleClickRow(data);
+    },
+    cellRenderer: (data: any) => {
+      if (!data.data.date) return;
+      return moment(data.data.date).format(DATE_FORMAT);
+    },
+  },
+  {
+    headerName: 'change_t0',
+    field: 'change_t0',
+    filter: 'agNumberColumnFilter',
+    width: 100,
+    align: 'right',
+    cellRenderer: (data: any) => {
+      if (!data.data.change_t0) return;
+      return data.data.change_t0.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 'base_percent',
+    width: 100,
+    align: 'right',
+    headerName: 'base_percent',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.latestBase) return;
+      return data.data.latestBase.base_percent.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 't0_over_base_max',
+    width: 100,
+    align: 'right',
+    headerName: 't0_over_base_max',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.latestBase) return;
+      return data.data.latestBase.t0_over_base_max.toFixed(1) + '%';
+    },
+  },
+];
+
 interface Props {
   onClose: () => void;
 }
@@ -60,6 +117,9 @@ const Testing = ({ onClose }: Props) => {
   const [dataFromSupabase, setDataFromSupabase] = useState<any>([]);
   const [dataFromFireant, setDataFromFireant] = useState<any>([]);
   const [columns, setColumns] = useState<any>([]);
+  const [listRealResult, setListRealResult] = useState<any>([]);
+  const [dataChart, setDataChart] = useState<any>(null);
+  const [fullData, setFullData] = useState<any>([]);
 
   const getLastUpdated = async () => {
     try {
@@ -138,9 +198,26 @@ const Testing = ({ onClose }: Props) => {
     setDataFromFireant(fireantDataBacktest);
   };
 
+  const handleGetResult = async (symbol: string) => {
+    try {
+      const res = await getRealResult(symbol);
+      setListRealResult(res?.result);
+      setFullData(res?.fullData);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleClickRow = (data: any) => {
+    console.log(data);
+    setDataChart(mapDataChart2(fullData, data.data));
+  };
+
   useEffect(() => {
     getLastUpdated();
   }, []);
+
+  console.log(listRealResult, 'listRealResult', dataChart, 'dataChart');
 
   return (
     <Drawer
@@ -150,6 +227,7 @@ const Testing = ({ onClose }: Props) => {
           <div>Last updated: {lastUpdated}</div>
         </div>
       }
+      height="80%"
       placement="bottom"
       onClose={onClose}
       open={true}
@@ -180,10 +258,29 @@ const Testing = ({ onClose }: Props) => {
           >
             Test data from fireant vs supabase
           </Button>
+          <Divider />
+          <Button onClick={() => handleGetResult('VPB')}>Test VPB</Button>
 
           <Divider />
+          <div style={{ height: '100%', width: '100%' }}>
+            {dataChart && <BackTestChart data={dataChart} />}
+          </div>
         </div>
+
         <div className="flex-1">
+          {listRealResult && listRealResult.length && (
+            <div
+              className="ag-theme-alpine"
+              style={{ height: 400, width: '100%' }}
+            >
+              <AgGridReact
+                rowData={listRealResult}
+                columnDefs={COLUMN_REAL_RESULT({
+                  handleClickRow,
+                })}
+              ></AgGridReact>
+            </div>
+          )}
           {listUpdateStatus && listUpdateStatus.length && (
             <Table
               size="small"
