@@ -188,7 +188,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         (100 * (min_in_20_days_without_break_base - buyPrice)) / buyPrice;
 
       const num_high_vol_than_t0 = list.filter(
-        (i: BackTestSymbol) => i.totalVolume > data[buyIndex!].totalVolume
+        (i: BackTestSymbol) => i.totalVolume > data[buyIndex].totalVolume
       ).length;
       const base_percent = (100 * (base_max - base_min)) / base_min;
       const t0_over_base_max =

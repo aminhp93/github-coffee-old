@@ -50,11 +50,10 @@ const UPDATE_STATUS_COLUMNS = [
 ];
 
 interface Props {
-  open: boolean;
   onClose: () => void;
 }
 
-const Testing = ({ open, onClose }: Props) => {
+const Testing = ({ onClose }: Props) => {
   const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -153,7 +152,7 @@ const Testing = ({ open, onClose }: Props) => {
       }
       placement="bottom"
       onClose={onClose}
-      open={open}
+      open={true}
     >
       <div className="height-100 flex">
         <div className="flex-1">

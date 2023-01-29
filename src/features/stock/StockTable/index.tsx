@@ -7,7 +7,7 @@ import {
   SettingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Statistic, Table } from 'antd';
+import { Button, notification, Statistic, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import StockService from '../service';
 import { useEffect, useState } from 'react';
@@ -30,7 +30,7 @@ import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
-import { CustomSymbol, Watchlist } from '../types';
+import { BaseFilter, CustomSymbol, Watchlist } from '../types';
 
 const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -198,28 +198,36 @@ const StockTable = () => {
   const footer = () => {
     return (
       <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div>{String(dataSource.length)}</div>
         <div>
-          <Button
-            size="small"
-            type="primary"
-            icon={<WarningOutlined />}
-            onClick={() => setOpenDrawerTesting(true)}
-          />
-          <Button
-            size="small"
-            type="primary"
-            style={{ marginLeft: 8 }}
-            icon={<SettingOutlined />}
-            onClick={() => setOpenDrawerSettings(true)}
-          />
-          <Button
-            size="small"
-            type="primary"
-            icon={<FilterOutlined />}
-            style={{ marginLeft: 8 }}
-            onClick={() => setOpenDrawerFilter(true)}
-          />
+          {`${String(dataSource.length)} rows`}
+          <Tooltip title="Setting">
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              icon={<SettingOutlined />}
+              onClick={() => setOpenDrawerSettings(true)}
+            />
+          </Tooltip>
+        </div>
+        <div>
+          <Tooltip title="Testing">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              onClick={() => setOpenDrawerTesting(true)}
+            />
+          </Tooltip>
+          <Tooltip title="Filter">
+            <Button
+              size="small"
+              type="primary"
+              icon={<FilterOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerFilter(true)}
+            />
+          </Tooltip>
         </div>
       </div>
     );
@@ -240,29 +248,33 @@ const StockTable = () => {
         dataSource={dataSource}
         footer={footer}
       />
-      <Testing
-        open={openDrawerTesting}
-        onClose={() => setOpenDrawerTesting(false)}
-      />
-      <Filters
-        open={openDrawerFilter}
-        listWatchlist={listWatchlist}
-        onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
-          setDates(newDates)
-        }
-        onUpdateWatchlist={handleUpdateWatchlist}
-        onGetData={() => {
-          // console.log('onGetData');
-        }}
-        onColumnChange={(newColumns: any) => setColumns(newColumns)}
-        onClose={() => setOpenDrawerFilter(false)}
-      />
-      <Settings
-        open={openDrawerSettings}
-        onChange={(data: any) => setSettings({ ...settings, ...data })}
-        onClose={() => setOpenDrawerSettings(false)}
-      />
+      {openDrawerTesting && (
+        <Testing onClose={() => setOpenDrawerTesting(false)} />
+      )}
+
+      {openDrawerFilter && (
+        <Filters
+          listWatchlist={listWatchlist}
+          onChange={(data: Partial<BaseFilter>) =>
+            setFilters({ ...filters, ...data })
+          }
+          onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
+            setDates(newDates)
+          }
+          onUpdateWatchlist={handleUpdateWatchlist}
+          onGetData={() => {
+            // console.log('onGetData');
+          }}
+          onColumnChange={(newColumns: any) => setColumns(newColumns)}
+          onClose={() => setOpenDrawerFilter(false)}
+        />
+      )}
+      {openDrawerSettings && (
+        <Settings
+          onChange={(data: any) => setSettings({ ...settings, ...data })}
+          onClose={() => setOpenDrawerSettings(false)}
+        />
+      )}
     </div>
   );
 };

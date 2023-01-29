@@ -19,7 +19,22 @@ const defaultJson: IJsonModel = {
     tabSetMinHeight: 100,
     borderMinSize: 100,
   },
-
+  borders: [
+    {
+      type: 'border',
+      size: 467,
+      location: 'bottom',
+      children: [
+        {
+          type: 'tab',
+          id: '#Todo',
+          name: 'Todo',
+          component: 'Todo',
+          enableClose: false,
+        },
+      ],
+    },
+  ],
   layout: {
     type: 'row',
     id: rowId,
@@ -51,7 +66,7 @@ const Work: React.FunctionComponent = () => {
         Post: <Post />,
         StockNews: <StockNews />,
         Chat: <Chat hideOnlineUsers />,
-        Todos: <Todo />,
+        Todo: <Todo />,
         Snippet: <Snippet />,
         Test: <Test />,
         StockTable: <StockTable />,

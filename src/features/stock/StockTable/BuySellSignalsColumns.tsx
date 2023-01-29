@@ -23,9 +23,10 @@ const BuySellSignalsColumns = () => {
                 </div>
               </div>
             }
-          >{`_min_total`}</Tooltip>
+          >{`Min total (ty)`}</Tooltip>
         );
       },
+      width: 120,
       sorter: (a: CustomSymbol, b: CustomSymbol) =>
         a.buySellSignals?.totalValue_last20_min -
         b.buySellSignals?.totalValue_last20_min,
@@ -46,7 +47,7 @@ const BuySellSignalsColumns = () => {
           <Tooltip
             title={
               <div>
-                <div>{`Price change`}</div>
+                <div>{`Change Price`}</div>
                 <div>
                   <CheckCircleOutlined style={{ color: 'green' }} />{' '}
                   {`Value > ${BUY_SELL_SIGNNAL_KEYS.changePrice_buy}`}
@@ -57,9 +58,10 @@ const BuySellSignalsColumns = () => {
                 </div>
               </div>
             }
-          >{`_%_price`}</Tooltip>
+          >{`t0`}</Tooltip>
         );
       },
+      width: 100,
       sorter: (a: CustomSymbol, b: CustomSymbol) =>
         a.buySellSignals?.changePrice - b.buySellSignals?.changePrice,
       align: 'right',
@@ -75,7 +77,12 @@ const BuySellSignalsColumns = () => {
           className = 'red';
         }
 
-        return <div className={className}>{formattedChangePrice}</div>;
+        return (
+          <div className={className}>
+            {formattedChangePrice}
+            {`%`}
+          </div>
+        );
       },
     },
     {
@@ -95,9 +102,10 @@ const BuySellSignalsColumns = () => {
                 </div>
               </div>
             }
-          >{`_5_day_base`}</Tooltip>
+          >{`latestBase`}</Tooltip>
         );
       },
+      width: 100,
       align: 'right',
       render: (data: CustomSymbol) => {
         const latestBase = data.buySellSignals?.latestBase;
@@ -130,10 +138,11 @@ const BuySellSignalsColumns = () => {
               </div>
             }
           >
-            {`_est_vol(%)`}
+            {`t0_vol`}
           </Tooltip>
         );
       },
+      width: 100,
       sorter: (a: CustomSymbol, b: CustomSymbol) =>
         a.buySellSignals?.estimated_vol_change -
         b.buySellSignals?.estimated_vol_change,
@@ -147,7 +156,10 @@ const BuySellSignalsColumns = () => {
             : 'blur';
 
         return (
-          <span className={className}>{estimated_vol_change.toFixed(0)}</span>
+          <span className={className}>
+            {estimated_vol_change.toFixed(0)}
+            {`%`}
+          </span>
         );
       },
     },
@@ -165,16 +177,17 @@ const BuySellSignalsColumns = () => {
               </div>
             }
           >
-            {`_extra_vol(%)`}
+            {`Extra vol`}
           </Tooltip>
         );
       },
+      width: 100,
       sorter: (a: CustomSymbol, b: CustomSymbol) =>
         a.buySellSignals?.extra_vol - b.buySellSignals?.extra_vol,
       align: 'right',
       render: (data: CustomSymbol) => {
         const extra_vol = data.buySellSignals?.extra_vol || 0;
-        return extra_vol.toFixed(0);
+        return extra_vol.toFixed(0) + `%`;
       },
     },
     {
@@ -191,12 +204,11 @@ const BuySellSignalsColumns = () => {
               </div>
             }
           >
-            {`_t0_over_base_max(%)`}
+            {`t0_over_base_max`}
           </Tooltip>
         );
       },
-      // sorter: (a: CustomSymbol, b: CustomSymbol) =>
-      //   a.buySellSignals?.extra_vol - b.buySellSignals?.extra_vol,
+      width: 100,
       align: 'right',
       render: (data: CustomSymbol) => {
         const t0_over_base_max =
@@ -204,13 +216,13 @@ const BuySellSignalsColumns = () => {
         if (!t0_over_base_max) {
           return null;
         }
-        return t0_over_base_max.toFixed(0);
+        return t0_over_base_max.toFixed(0) + `%`;
       },
     },
 
     {
       title: () => {
-        return <Tooltip title={''}>{`_action`}</Tooltip>;
+        return <Tooltip title={''}>{`Action`}</Tooltip>;
       },
       key: 'backtest',
       align: 'right',

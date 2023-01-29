@@ -3,7 +3,12 @@ import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import { useState } from 'react';
 import { DEFAULT_SETTINGS } from '../constants';
 
-const Settings = ({ onChange, onClose, open }: any) => {
+interface Props {
+  onChange: (settings: any) => void;
+  onClose: () => void;
+}
+
+const Settings = ({ onChange, onClose }: Props) => {
   const [bordered, setBordered] = useState(DEFAULT_SETTINGS.bordered);
   const [size, setSize] = useState<SizeType>(DEFAULT_SETTINGS.size);
   const [showHeader, setShowHeader] = useState(DEFAULT_SETTINGS.showHeader);
@@ -24,7 +29,7 @@ const Settings = ({ onChange, onClose, open }: any) => {
   };
 
   return (
-    <Drawer title="Settings" placement="bottom" onClose={onClose} open={open}>
+    <Drawer title="Settings" placement="bottom" onClose={onClose} open={true}>
       <div
         className="height-100"
         style={{

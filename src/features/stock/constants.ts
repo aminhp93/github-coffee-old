@@ -1,6 +1,5 @@
 import moment from 'moment';
 import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
-import InDayReviewColumns from './StockTable/InDayReviewColumns';
 import { minBy, maxBy } from 'lodash';
 import {
   HistoricalQuote,
@@ -205,6 +204,7 @@ export const DEFAULT_COLUMNS = [
     title: 'Symbol',
     dataIndex: 'symbol',
     key: 'symbol',
+    width: 100,
     sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
   },
   {
@@ -342,13 +342,6 @@ export const getColumns = (checkedList: any) => {
     columns.push({
       title: 'NoData',
       children: NO_DATA_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('InDayReview')) {
-    columns.push({
-      title: 'InDayReview',
-      children: InDayReviewColumns,
     });
   }
 

@@ -26,22 +26,32 @@ import ReactMarkdown from 'react-markdown';
 import type { CheckboxValueType } from 'antd/es/checkbox/Group';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { keyBy } from 'lodash';
-import { Watchlist } from '../types';
+import { BaseFilter, Watchlist } from '../types';
 import { useInterval } from '@/hooks';
 
 const CheckboxGroup = Checkbox.Group;
 const { RangePicker } = DatePicker;
+
+interface Props {
+  listWatchlist: Watchlist[];
+  // data is partial of BaseFilter type
+  onChange: (data: Partial<BaseFilter>) => void;
+  onClose: () => void;
+  onUpdateWatchlist: (symbols: string[]) => void;
+  onDateChange: (date: any) => void;
+  onGetData: () => void;
+  onColumnChange: (columns: any) => void;
+}
 
 const Filters = ({
   listWatchlist,
   onChange,
   onClose,
   onUpdateWatchlist,
-  open,
   onDateChange,
   onGetData,
   onColumnChange,
-}: any) => {
+}: Props) => {
   // totalValue_last20_min
   const [totalValue_last20_min, setTotalValue_last20_min] = useState<number>(
     DEFAULT_FILTER.totalValue_last20_min
@@ -125,11 +135,6 @@ const Filters = ({
     onChange(DEFAULT_FILTER);
   };
 
-  const handleSetFilter = () => {
-    setChangePrice_min(2);
-    onChange({ changePrice_min: 2 });
-  };
-
   const handleChangeDate = (dates: any) => {
     if (dates && onDateChange) {
       onDateChange(dates);
@@ -187,7 +192,7 @@ const Filters = ({
             <Button
               style={{ marginLeft: '8px' }}
               size="small"
-              onClick={onUpdateWatchlist}
+              // onClick={() => onUpdateWatchlist()}
             >
               Update watchlist
             </Button>
@@ -199,7 +204,7 @@ const Filters = ({
       height="500px"
       className="StockTableFilterDrawer"
       onClose={onClose}
-      open={open}
+      open={true}
     >
       <div
         className="flex height-100"
@@ -333,9 +338,6 @@ const Filters = ({
                 />
               </div>
             </div>
-            <Button size="small" onClick={handleSetFilter}>
-              Formula 1
-            </Button>
           </div>
 
           <Button size="small" danger onClick={handleClearFilter}>
