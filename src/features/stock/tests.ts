@@ -42,9 +42,10 @@ export const getRealResult = async (symbol: string) => {
       item.change_t0 = change_t0;
 
       // Check if at the break point have latest base
-      const latestBase = getLatestBase(res.data.slice(index + 1));
+      const latestBase = getLatestBase(res.data.slice(index));
       if (latestBase) {
         item.latestBase = latestBase;
+        item.t0_over_base_max = latestBase.t0_over_base_max;
         list_t0_greater_than_2_percent.push(item);
       }
     }

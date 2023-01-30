@@ -126,6 +126,9 @@ export interface Base {
   min_in_20_days_without_break_base_index?: number;
   max_change_in_20_days?: number;
   max_in_20_days_without_break_base_index?: number;
+  buyDate?: string;
+  startBaseDate?: string;
+  endBaseDate?: string;
 }
 
 export interface CustomSymbol {

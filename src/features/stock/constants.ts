@@ -23,6 +23,7 @@ export const MIN_TOTAL_VALUE = UNIT_BILLION * 5;
 export const MIN_MEDIUM_TOTOL_VALUE = UNIT_BILLION * 5;
 export const MIN_CHANGE = -1000;
 export const MAX_CHANGE = 1000;
+export const MAX_PERCENT_BASE = 10;
 const DEFAULT_OFFSET = 20;
 export const BACKTEST_COUNT = (50 * DEFAULT_OFFSET) / DEFAULT_OFFSET; // change number to change number of fetching days
 export const DEFAULT_DATE = moment();

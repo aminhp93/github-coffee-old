@@ -21,7 +21,7 @@ import BackTestChart from './BackTestChart';
 
 import type { DatePickerProps } from 'antd';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 import { AgGridReact } from 'ag-grid-react';
@@ -63,7 +63,6 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
     field: 'date',
     width: 120,
     onCellClicked: (data: any) => {
-      console.log(data);
       handleClickRow(data);
     },
     cellRenderer: (data: any) => {
@@ -75,7 +74,7 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
     headerName: 'change_t0',
     field: 'change_t0',
     filter: 'agNumberColumnFilter',
-    width: 100,
+    // width: 120,
     align: 'right',
     cellRenderer: (data: any) => {
       if (!data.data.change_t0) return;
@@ -84,7 +83,7 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   },
   {
     field: 'base_percent',
-    width: 100,
+    // width: 120,
     align: 'right',
     headerName: 'base_percent',
     filter: 'agNumberColumnFilter',
@@ -95,13 +94,14 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   },
   {
     field: 't0_over_base_max',
-    width: 100,
+    // width: 120,
     align: 'right',
+    suppressMenu: true,
     headerName: 't0_over_base_max',
     filter: 'agNumberColumnFilter',
     cellRenderer: (data: any) => {
-      if (!data.data.latestBase) return;
-      return data.data.latestBase.t0_over_base_max.toFixed(1) + '%';
+      if (!data.data.t0_over_base_max) return;
+      return data.data.t0_over_base_max.toFixed(1) + '%';
     },
   },
 ];
@@ -111,6 +111,7 @@ interface Props {
 }
 
 const Testing = ({ onClose }: Props) => {
+  const gridRef: any = useRef();
   const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
   const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string>('');
@@ -213,9 +214,29 @@ const Testing = ({ onClose }: Props) => {
     setDataChart(mapDataChart2(fullData, data.data));
   };
 
+  const applyFilters = useCallback(() => {
+    const ageFilterComponent =
+      gridRef.current.api.getFilterInstance('t0_over_base_max');
+    ageFilterComponent.setModel({
+      type: 'greaterThan',
+      filter: 0,
+      filterTo: null,
+    });
+    gridRef.current.api.onFilterChanged();
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    gridRef.current.api.setFilterModel(null);
+  }, []);
+
   useEffect(() => {
     getLastUpdated();
   }, []);
+
+  useEffect(() => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    applyFilters();
+  }, [listRealResult]);
 
   console.log(listRealResult, 'listRealResult', dataChart, 'dataChart');
 
@@ -260,9 +281,10 @@ const Testing = ({ onClose }: Props) => {
           </Button>
           <Divider />
           <Button onClick={() => handleGetResult('VPB')}>Test VPB</Button>
-
+          <Button onClick={() => applyFilters()}>applyFilters</Button>
+          <Button onClick={() => clearAllFilters()}>clearAllFilters</Button>
           <Divider />
-          <div style={{ height: '100%', width: '100%' }}>
+          <div style={{ height: '400px', width: '100%' }}>
             {dataChart && <BackTestChart data={dataChart} />}
           </div>
         </div>
@@ -271,14 +293,22 @@ const Testing = ({ onClose }: Props) => {
           {listRealResult && listRealResult.length && (
             <div
               className="ag-theme-alpine"
-              style={{ height: 400, width: '100%' }}
+              style={{ height: '100%', width: '100%' }}
             >
               <AgGridReact
                 rowData={listRealResult}
                 columnDefs={COLUMN_REAL_RESULT({
                   handleClickRow,
                 })}
-              ></AgGridReact>
+                ref={gridRef}
+                // onGridReady={onGridReady}
+                defaultColDef={{
+                  minWidth: 150,
+                  filter: true,
+                  sortable: true,
+                  floatingFilter: true,
+                }}
+              />
             </div>
           )}
           {listUpdateStatus && listUpdateStatus.length && (
@@ -289,14 +319,14 @@ const Testing = ({ onClose }: Props) => {
               pagination={false}
             />
           )}
-          <div>
+          {/* <div>
             <div>Supabase</div>
             <div>{dataFromSupabase.dataSource?.length}</div>
             <div>{dataFromSupabase.fullDataSource?.length}</div>
             <div>Fireant</div>
             <div>{dataFromFireant.dataSource?.length}</div>
             <div>{dataFromFireant.fullDataSource?.length}</div>
-          </div>
+          </div> */}
         </div>
       </div>
     </Drawer>

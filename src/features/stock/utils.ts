@@ -10,6 +10,7 @@ import {
   getListAllSymbols,
   DEFAULT_FILTER,
   BACKTEST_COUNT,
+  MAX_PERCENT_BASE,
 } from './constants';
 import {
   HistoricalQuote,
@@ -115,7 +116,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
     if (!base_max || !base_min) return;
 
     const percent = (100 * (base_max - base_min)) / base_min;
-    if (percent < 14) {
+    if (percent < MAX_PERCENT_BASE) {
       let buyIndex = index - 1;
       const averageVolume = meanBy(list, 'totalVolume');
       const change_t0_vol =
@@ -141,7 +142,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         const new_min = base_min! > m.priceLow ? m.priceLow : base_min!;
         const new_max = base_max! < m.priceHigh ? m.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
-        if (new_percent < 14) {
+        if (new_percent < MAX_PERCENT_BASE) {
           list.push(m);
           endBaseIndex = endBaseIndex + 1;
           base_min = new_min;
@@ -192,7 +193,7 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
       ).length;
       const base_percent = (100 * (base_max - base_min)) / base_min;
       const t0_over_base_max =
-        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
+        (100 * (data[buyIndex].priceHigh - base_max)) / base_max;
 
       listBase.push({
         buyIndex,
@@ -491,10 +492,12 @@ export const getBackTest = (
 export const getSeriesMarkPoint = ({
   buyItem,
   sellItem,
+  listMarkPoint,
   offset = 10,
 }: {
   buyItem?: BackTestSymbol;
   sellItem?: BackTestSymbol;
+  listMarkPoint?: BackTestSymbol[];
   offset?: number;
 }) => {
   const seriesMarkPointData = [];
@@ -523,6 +526,20 @@ export const getSeriesMarkPoint = ({
     });
   }
 
+  if (listMarkPoint) {
+    listMarkPoint.forEach((i: BackTestSymbol) => {
+      seriesMarkPointData.push({
+        name: 'Buy',
+        coord: [moment(i.date).format(DATE_FORMAT), i.priceOpen],
+        value: i.priceOpen,
+        itemStyle: {
+          color: '#e700ff',
+        },
+        symbolOffset: [0, offset],
+      });
+    });
+  }
+
   return {
     symbol: 'arrow',
     symbolSize: 10,
@@ -546,7 +563,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   if (base_min && base_max) {
     const percent = (100 * (base_max - base_min)) / base_min;
 
-    if (percent < 14) {
+    if (percent < MAX_PERCENT_BASE) {
       const averageVolume = meanBy(list, 'totalVolume');
       let change_buyPrice = DEFAULT_FILTER.changePrice_min;
       let num_high_vol_than_t0 = 0;
@@ -561,7 +578,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         const new_min = base_min! > i.priceLow ? i.priceLow : base_min!;
         const new_max = base_max! < i.priceHigh ? i.priceHigh : base_max!;
         const new_percent = (100 * (new_max - new_min)) / new_min;
-        if (new_percent < 14) {
+        if (new_percent < MAX_PERCENT_BASE) {
           list.push(i);
           endBaseIndex = index;
           base_min = new_min;
@@ -573,7 +590,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 
       const base_percent = (100 * (base_max - base_min)) / base_min;
       const t0_over_base_max =
-        (100 * (data[buyIndex].priceClose - base_max)) / base_max;
+        (100 * (data[buyIndex].priceHigh - base_max)) / base_max;
 
       return {
         buyIndex,
@@ -587,6 +604,9 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         base_min,
         base_percent,
         t0_over_base_max,
+        buyDate: data[buyIndex].date,
+        startBaseDate: data[startBaseIndex]?.date,
+        endBaseDate: data[endBaseIndex]?.date,
       };
     }
   }
@@ -948,13 +968,7 @@ export const mapDataChart2 = (fullData: any, data: any) => {
   const buyIndex = fullData.findIndex((i: any) => i.date === data.date);
   if (buyIndex === -1) return {};
 
-  const list = fullData.slice(
-    buyIndex > 20 ? buyIndex - 20 : buyIndex,
-    buyIndex + 112
-  );
-
-  const buyItem = { ...fullData[data.buyIndex] };
-  const sellItem = { ...fullData[data.buyIndex - 3] };
+  const buyItem = { ...fullData[buyIndex] };
   const grid = [
     {
       left: 20,
@@ -969,78 +983,63 @@ export const mapDataChart2 = (fullData: any, data: any) => {
       bottom: 0,
     },
   ];
+  console.log('buyItem', buyItem);
 
-  // const seriesMarkPoint = getSeriesMarkPoint({
-  //   buyItem,
-  //   sellItem,
-  //   offset: 20,
-  // });
+  const seriesMarkPoint = getSeriesMarkPoint({
+    listMarkPoint: fullData.filter(
+      (i: any) => i.latestBase && i.latestBase.t0_over_base_max > 0
+    ),
+    offset: 20,
+  });
 
   const dataMarkLine: any = [];
 
-  // const filterBase = [record];
-  // if (record.closestUpperBaseIndex) {
-  //   filterBase.push(backTestData.listBase[record.closestUpperBaseIndex]);
-  // }
-  // if (record.closestLowerBaseIndex) {
-  //   filterBase.push(backTestData.listBase[record.closestLowerBaseIndex]);
-  // }
-
-  // filterBase.forEach((baseItem: Base, index) => {
-  //   const baseStartData = {
-  //     ...backTestData.fullData[baseItem.startBaseIndex],
-  //   };
-  //   const baseEndData = {
-  //     ...backTestData.fullData[baseItem.endBaseIndex],
-  //   };
-
-  //   dataMarkLine.push([
-  //     {
-  //       name: '',
-  //       symbol: 'none',
-  //       lineStyle: {
-  //         color: 'purple',
-  //       },
-  //       coord: [
-  //         moment(baseStartData.date).format(DATE_FORMAT),
-  //         baseItem.base_min,
-  //       ],
-  //     },
-  //     {
-  //       coord: [
-  //         moment(baseEndData.date).format(DATE_FORMAT),
-  //         baseItem.base_min,
-  //       ],
-  //     },
-  //   ]);
-  //   dataMarkLine.push([
-  //     {
-  //       name: '',
-  //       symbol: 'none',
-  //       lineStyle: {
-  //         color: 'purple',
-  //       },
-  //       coord: [
-  //         moment(baseStartData.date).format(DATE_FORMAT),
-  //         baseItem.base_max,
-  //       ],
-  //     },
-  //     {
-  //       coord: [
-  //         moment(baseEndData.date).format(DATE_FORMAT),
-  //         baseItem.base_max,
-  //       ],
-  //     },
-  //   ]);
-  // });
+  dataMarkLine.push([
+    {
+      name: '',
+      symbol: 'none',
+      lineStyle: {
+        color: 'purple',
+      },
+      coord: [
+        moment(data.latestBase.startBaseDate).format(DATE_FORMAT),
+        data.latestBase.base_min,
+      ],
+    },
+    {
+      coord: [
+        moment(data.latestBase.endBaseDate).format(DATE_FORMAT),
+        data.latestBase.base_min,
+      ],
+    },
+  ]);
+  dataMarkLine.push([
+    {
+      name: '',
+      symbol: 'none',
+      lineStyle: {
+        color: 'purple',
+      },
+      coord: [
+        moment(data.latestBase.startBaseDate).format(DATE_FORMAT),
+        data.latestBase.base_max,
+      ],
+    },
+    {
+      coord: [
+        moment(data.latestBase.endBaseDate).format(DATE_FORMAT),
+        data.latestBase.base_max,
+      ],
+    },
+  ]);
 
   const newDataChart = getDataChart({
-    data: list,
+    data: fullData,
     grid,
-    // seriesMarkPoint,
-    // markLine: {
-    //   data: dataMarkLine,
-    // },
+    seriesMarkPoint,
+    markLine: {
+      data: dataMarkLine,
+    },
   });
 
   console.log(newDataChart, 'newDataChart');
