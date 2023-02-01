@@ -1,9 +1,18 @@
-import { Drawer, Button, notification, Table, DatePicker, Divider } from 'antd';
+import {
+  Drawer,
+  Button,
+  notification,
+  Table,
+  DatePicker,
+  Divider,
+  Select,
+} from 'antd';
 import {
   DATE_FORMAT,
   DEFAULT_FILTER,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
+  LIST_ALL_SYMBOLS,
 } from '../constants';
 import StockService from '../service';
 import moment from 'moment';
@@ -74,10 +83,14 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
     headerName: 'diff_closet_upper_base',
     filter: 'agNumberColumnFilter',
     cellRenderer: (data: any) => {
-      if (!data.data.closetUpperBase) return;
+      if (!data.data.closetUpperBase || !data.data.latestBase) return;
       return (
-        data.data.closetUpperBase.startBaseDate +
-        data.data.closetUpperBase.endBaseDate
+        (
+          (100 *
+            (data.data.closetUpperBase.base_max -
+              data.data.latestBase.base_max)) /
+          data.data.latestBase.base_max
+        ).toFixed(2) + '%'
       );
     },
   },
@@ -302,6 +315,16 @@ const Testing = ({ onClose }: Props) => {
             Test data from fireant vs supabase
           </Button>
           <Divider />
+          <Select
+            defaultValue="VPB"
+            style={{ width: 120 }}
+            onChange={(value: string) => {
+              handleGetResult(value);
+            }}
+            options={LIST_ALL_SYMBOLS.map((i) => {
+              return { value: i, label: i };
+            })}
+          />
           <Button onClick={() => handleGetResult('VPB')}>Test VPB</Button>
           <Button onClick={() => applyFilters()}>applyFilters</Button>
           <Button onClick={() => clearAllFilters()}>clearAllFilters</Button>
