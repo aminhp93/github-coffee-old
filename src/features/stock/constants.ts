@@ -546,8 +546,8 @@ export const getAction = ({
   if (
     changePrice > DEFAULT_FILTER.changePrice_min &&
     estimated_vol_change > DEFAULT_FILTER.estimated_vol_change_min &&
-    latestBase &&
-    latestBase.t0_over_base_max > DEFAULT_FILTER.t0_over_base_max
+    latestBase
+    //  &&latestBase.t0_over_base_max > DEFAULT_FILTER.t0_over_base_max
   ) {
     action = 'buy';
   }

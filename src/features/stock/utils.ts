@@ -192,11 +192,8 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         (i: BackTestSymbol) => i.totalVolume > data[buyIndex].totalVolume
       ).length;
       const base_percent = (100 * (base_max - base_min)) / base_min;
-      const t0_over_base_max =
-        (100 * (data[buyIndex].priceHigh - base_max)) / base_max;
 
       listBase.push({
-        buyIndex,
         startBaseIndex,
         endBaseIndex,
         change_t0_vol,
@@ -207,7 +204,6 @@ export const getListBase = (data: BackTestSymbol[]): Base[] => {
         base_max,
         base_min,
         base_percent,
-        t0_over_base_max,
         max_change_in_20_days,
         min_change_in_20_days,
         max_in_20_days_without_break_base_index,
@@ -467,13 +463,13 @@ export const getBackTest = (
     //   return false;
     // }
 
-    if (
-      (filterCondition.t0_over_base_max ||
-        filterCondition.t0_over_base_max === 0) &&
-      j.t0_over_base_max < filterCondition.t0_over_base_max
-    ) {
-      return false;
-    }
+    // if (
+    //   (filterCondition.t0_over_base_max ||
+    //     filterCondition.t0_over_base_max === 0) &&
+    //   j.t0_over_base_max < filterCondition.t0_over_base_max
+    // ) {
+    //   return false;
+    // }
 
     return true;
   });
@@ -492,12 +488,12 @@ export const getBackTest = (
 export const getSeriesMarkPoint = ({
   buyItem,
   sellItem,
-  listMarkPoint,
+  listMarkPoints,
   offset = 10,
 }: {
   buyItem?: BackTestSymbol;
   sellItem?: BackTestSymbol;
-  listMarkPoint?: BackTestSymbol[];
+  listMarkPoints?: BackTestSymbol[];
   offset?: number;
 }) => {
   const seriesMarkPointData = [];
@@ -526,8 +522,8 @@ export const getSeriesMarkPoint = ({
     });
   }
 
-  if (listMarkPoint) {
-    listMarkPoint.forEach((i: BackTestSymbol) => {
+  if (listMarkPoints) {
+    listMarkPoints.forEach((i: BackTestSymbol) => {
       seriesMarkPointData.push({
         name: 'Buy',
         coord: [moment(i.date).format(DATE_FORMAT), i.priceOpen],
@@ -554,9 +550,8 @@ export const getSeriesMarkPoint = ({
 
 export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   if (!data || data.length === 0 || data.length < 6) return null;
-  const buyIndex = 0;
-  const startBaseIndex = 1;
-  let endBaseIndex = 6;
+  const startBaseIndex = 0;
+  let endBaseIndex = 5;
   const list = data.slice(startBaseIndex, endBaseIndex);
   let { base_min, base_max } = getBase_min_max(list);
 
@@ -589,11 +584,8 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
       });
 
       const base_percent = (100 * (base_max - base_min)) / base_min;
-      const t0_over_base_max =
-        (100 * (data[buyIndex].priceHigh - base_max)) / base_max;
 
       return {
-        buyIndex,
         startBaseIndex,
         endBaseIndex,
         change_t0_vol,
@@ -603,8 +595,6 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         base_max,
         base_min,
         base_percent,
-        t0_over_base_max,
-        buyDate: data[buyIndex].date,
         startBaseDate: data[startBaseIndex]?.date,
         endBaseDate: data[endBaseIndex]?.date,
       };
@@ -614,15 +604,18 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 };
 
 export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
-  if ((record.buyIndex !== 0 && !record.buyIndex) || !backTestData) return;
+  if ((record.startBaseIndex !== 0 && !record.startBaseIndex) || !backTestData)
+    return;
 
   const list = backTestData.fullData.slice(
-    record.buyIndex > 20 ? record.buyIndex - 20 : record.buyIndex,
-    record.buyIndex + 112
+    record.startBaseIndex > 20
+      ? record.startBaseIndex - 20
+      : record.startBaseIndex,
+    record.startBaseIndex + 112
   );
 
-  const buyItem = { ...backTestData.fullData[record.buyIndex] };
-  const sellItem = { ...backTestData.fullData[record.buyIndex - 3] };
+  const buyItem = { ...backTestData.fullData[record.startBaseIndex] };
+  const sellItem = { ...backTestData.fullData[record.startBaseIndex - 3] };
   const grid = [
     {
       left: 20,
@@ -961,77 +954,54 @@ export const updateDataWithDate = async (
   return resListPromises;
 };
 
-export const mapDataChart2 = (fullData: any, data: any) => {
-  console.log('mapDataChart2', fullData, data);
+export const mapDataChart2 = ({
+  fullData,
+  listMarkPoints = [],
+  listMarkLines = [],
+}: {
+  fullData: any;
+  listMarkPoints?: any;
+  listMarkLines?: any;
+}) => {
+  console.log('mapDataChart2', fullData);
 
-  // find index of buy date
-  const buyIndex = fullData.findIndex((i: any) => i.date === data.date);
-  if (buyIndex === -1) return {};
-
-  const buyItem = { ...fullData[buyIndex] };
   const grid = [
     {
       left: 20,
       right: 20,
-      top: 20,
-      height: '70%',
+      // top: 20,
+      height: '90%',
     },
     {
       left: 20,
       right: 20,
-      height: '20%',
+      height: '10%',
       bottom: 0,
     },
   ];
-  console.log('buyItem', buyItem);
 
   const seriesMarkPoint = getSeriesMarkPoint({
-    listMarkPoint: fullData.filter(
-      (i: any) => i.latestBase && i.latestBase.t0_over_base_max > 0
-    ),
+    listMarkPoints,
     offset: 20,
   });
 
   const dataMarkLine: any = [];
 
-  dataMarkLine.push([
-    {
-      name: '',
-      symbol: 'none',
-      lineStyle: {
-        color: 'purple',
+  listMarkLines.forEach((i: any) => {
+    dataMarkLine.push([
+      {
+        name: '',
+        symbol: 'none',
+        lineStyle: {
+          color: 'purple',
+        },
+        coord: i[0].coord,
       },
-      coord: [
-        moment(data.latestBase.startBaseDate).format(DATE_FORMAT),
-        data.latestBase.base_min,
-      ],
-    },
-    {
-      coord: [
-        moment(data.latestBase.endBaseDate).format(DATE_FORMAT),
-        data.latestBase.base_min,
-      ],
-    },
-  ]);
-  dataMarkLine.push([
-    {
-      name: '',
-      symbol: 'none',
-      lineStyle: {
-        color: 'purple',
+      {
+        coord: i[1].coord,
       },
-      coord: [
-        moment(data.latestBase.startBaseDate).format(DATE_FORMAT),
-        data.latestBase.base_max,
-      ],
-    },
-    {
-      coord: [
-        moment(data.latestBase.endBaseDate).format(DATE_FORMAT),
-        data.latestBase.base_max,
-      ],
-    },
-  ]);
+    ]);
+  });
 
   const newDataChart = getDataChart({
     data: fullData,
@@ -1045,4 +1015,30 @@ export const mapDataChart2 = (fullData: any, data: any) => {
   console.log(newDataChart, 'newDataChart');
 
   return newDataChart;
+};
+
+export const getClosestUpperBase = (
+  data: BackTestSymbol[],
+  latestBase: Base
+): Base | null => {
+  const indexLastBase = data.findIndex(
+    (i) => i.date === latestBase.endBaseDate
+  );
+  let closetUpperBase = null;
+  let stop = false;
+
+  for (let i = indexLastBase; i < data.length; i++) {
+    if (stop) break;
+    const item = data[i];
+
+    // check if first point greater than base_max
+    if (item.priceHigh > latestBase.base_max) {
+      closetUpperBase = getLatestBase(data.slice(i));
+      if (closetUpperBase) {
+        console.log('closetUpperBase', closetUpperBase, item);
+        stop = true;
+      }
+    }
+  }
+  return closetUpperBase;
 };

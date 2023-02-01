@@ -22,46 +22,16 @@ import BackTestChart from './BackTestChart';
 import type { DatePickerProps } from 'antd';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 import { AgGridReact } from 'ag-grid-react';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
-const UPDATE_STATUS_COLUMNS = [
-  {
-    title: 'id',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'date',
-    dataIndex: 'date',
-    key: 'date',
-    render: (data: any) => {
-      return moment(data).format(DATE_FORMAT);
-    },
-  },
-  {
-    title: 'status',
-    dataIndex: 'status',
-    key: 'status',
-    render: (data: any) => {
-      return data ? (
-        <CheckCircleOutlined style={{ marginRight: '4px', color: 'green' }} />
-      ) : (
-        <CloseCircleOutlined style={{ color: 'red' }} />
-      );
-    },
-  },
-];
-
 const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   {
     headerName: 'Date',
     field: 'date',
-    width: 120,
     onCellClicked: (data: any) => {
       handleClickRow(data);
     },
@@ -74,8 +44,6 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
     headerName: 'change_t0',
     field: 'change_t0',
     filter: 'agNumberColumnFilter',
-    // width: 120,
-    align: 'right',
     cellRenderer: (data: any) => {
       if (!data.data.change_t0) return;
       return data.data.change_t0.toFixed(1) + '%';
@@ -83,8 +51,6 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   },
   {
     field: 'base_percent',
-    // width: 120,
-    align: 'right',
     headerName: 'base_percent',
     filter: 'agNumberColumnFilter',
     cellRenderer: (data: any) => {
@@ -94,14 +60,25 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   },
   {
     field: 't0_over_base_max',
-    // width: 120,
-    align: 'right',
     suppressMenu: true,
     headerName: 't0_over_base_max',
     filter: 'agNumberColumnFilter',
     cellRenderer: (data: any) => {
       if (!data.data.t0_over_base_max) return;
       return data.data.t0_over_base_max.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 'diff_closet_upper_base',
+    suppressMenu: true,
+    headerName: 'diff_closet_upper_base',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.closetUpperBase) return;
+      return (
+        data.data.closetUpperBase.startBaseDate +
+        data.data.closetUpperBase.endBaseDate
+      );
     },
   },
 ];
@@ -211,7 +188,44 @@ const Testing = ({ onClose }: Props) => {
 
   const handleClickRow = (data: any) => {
     console.log(data);
-    setDataChart(mapDataChart2(fullData, data.data));
+    const latestBase = data.data.latestBase;
+    const closetUpperBase = data.data.closetUpperBase;
+    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
+    const listMarkLines = [
+      [
+        {
+          coord: [latestBase.startBaseDate, latestBase.base_min],
+        },
+        {
+          coord: [latestBase.endBaseDate, latestBase.base_min],
+        },
+      ],
+      [
+        {
+          coord: [latestBase.startBaseDate, latestBase.base_max],
+        },
+        {
+          coord: [latestBase.endBaseDate, latestBase.base_max],
+        },
+      ],
+      [
+        {
+          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
+        },
+        {
+          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
+        },
+      ],
+      [
+        {
+          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
+        },
+        {
+          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
+        },
+      ],
+    ];
+    setDataChart(mapDataChart2({ fullData, listMarkPoints, listMarkLines }));
   };
 
   const applyFilters = useCallback(() => {
@@ -236,9 +250,17 @@ const Testing = ({ onClose }: Props) => {
   useEffect(() => {
     if (!gridRef.current || !gridRef.current.api) return;
     applyFilters();
+    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
+    setDataChart(mapDataChart2({ fullData, listMarkPoints }));
   }, [listRealResult]);
 
-  console.log(listRealResult, 'listRealResult', dataChart, 'dataChart');
+  console.log(
+    listRealResult,
+    'listRealResult',
+    dataChart,
+    'dataChart',
+    gridRef.current
+  );
 
   return (
     <Drawer
@@ -248,13 +270,13 @@ const Testing = ({ onClose }: Props) => {
           <div>Last updated: {lastUpdated}</div>
         </div>
       }
-      height="80%"
+      height="90%"
       placement="bottom"
       onClose={onClose}
       open={true}
     >
-      <div className="height-100 flex">
-        <div className="flex-1">
+      <div className="height-100 flex" style={{ flexDirection: 'column' }}>
+        <div>
           <div>
             <Button size="small" onClick={updateData}>
               Update data
@@ -284,33 +306,31 @@ const Testing = ({ onClose }: Props) => {
           <Button onClick={() => applyFilters()}>applyFilters</Button>
           <Button onClick={() => clearAllFilters()}>clearAllFilters</Button>
           <Divider />
-          <div style={{ height: '400px', width: '100%' }}>
-            {dataChart && <BackTestChart data={dataChart} />}
-          </div>
         </div>
+        <div style={{ height: '600px', width: '100%' }}>
+          {dataChart && <BackTestChart data={dataChart} />}
+        </div>
+        <div style={{ height: '400px', width: '100%', marginTop: '20px' }}>
+          <div
+            className="ag-theme-alpine"
+            style={{ height: '100%', width: '100%' }}
+          >
+            <AgGridReact
+              rowData={listRealResult}
+              columnDefs={COLUMN_REAL_RESULT({
+                handleClickRow,
+              })}
+              ref={gridRef}
+              // onGridReady={onGridReady}
+              defaultColDef={{
+                minWidth: 150,
+                filter: true,
+                sortable: true,
+                floatingFilter: true,
+              }}
+            />
+          </div>
 
-        <div className="flex-1">
-          {listRealResult && listRealResult.length && (
-            <div
-              className="ag-theme-alpine"
-              style={{ height: '100%', width: '100%' }}
-            >
-              <AgGridReact
-                rowData={listRealResult}
-                columnDefs={COLUMN_REAL_RESULT({
-                  handleClickRow,
-                })}
-                ref={gridRef}
-                // onGridReady={onGridReady}
-                defaultColDef={{
-                  minWidth: 150,
-                  filter: true,
-                  sortable: true,
-                  floatingFilter: true,
-                }}
-              />
-            </div>
-          )}
           {listUpdateStatus && listUpdateStatus.length && (
             <Table
               size="small"
@@ -319,14 +339,6 @@ const Testing = ({ onClose }: Props) => {
               pagination={false}
             />
           )}
-          {/* <div>
-            <div>Supabase</div>
-            <div>{dataFromSupabase.dataSource?.length}</div>
-            <div>{dataFromSupabase.fullDataSource?.length}</div>
-            <div>Fireant</div>
-            <div>{dataFromFireant.dataSource?.length}</div>
-            <div>{dataFromFireant.fullDataSource?.length}</div>
-          </div> */}
         </div>
       </div>
     </Drawer>

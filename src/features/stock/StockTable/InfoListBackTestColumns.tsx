@@ -15,9 +15,13 @@ const InfoListBackTestColumns = ({ backTestData, handleClickRow }: Props) => {
       title: 'buyDate',
       width: 100,
       render: (data: Base) => {
-        if ((data.buyIndex !== 0 && !data.buyIndex) || !backTestData) return '';
+        if (
+          (data.startBaseIndex !== 0 && !data.startBaseIndex) ||
+          !backTestData
+        )
+          return '';
 
-        const buyDate = backTestData.fullData[data.buyIndex]?.date;
+        const buyDate = backTestData.fullData[data.startBaseIndex]?.date;
         return (
           <Button size="small" onClick={() => handleClickRow(data)}>
             {moment(buyDate).format(DATE_FORMAT)}
@@ -106,11 +110,11 @@ const InfoListBackTestColumns = ({ backTestData, handleClickRow }: Props) => {
       title: 't0_over_base_max',
       width: 80,
       align: 'right' as AlignType,
-      sorter: (a: Base, b: Base) => a?.t0_over_base_max - b?.t0_over_base_max,
-      render: (data: Base) => {
-        if (!data.t0_over_base_max) return;
-        return data.t0_over_base_max.toFixed(0) + '%';
-      },
+      // sorter: (a: Base, b: Base) => a?.t0_over_base_max - b?.t0_over_base_max,
+      // render: (data: Base) => {
+      //   if (!data.t0_over_base_max) return;
+      //   return data.t0_over_base_max.toFixed(0) + '%';
+      // },
     },
     {
       title: 'max',

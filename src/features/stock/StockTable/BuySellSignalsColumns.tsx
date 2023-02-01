@@ -210,14 +210,14 @@ const BuySellSignalsColumns = () => {
       },
       width: 100,
       align: 'right',
-      render: (data: CustomSymbol) => {
-        const t0_over_base_max =
-          data.buySellSignals?.latestBase?.t0_over_base_max;
-        if (!t0_over_base_max) {
-          return null;
-        }
-        return t0_over_base_max.toFixed(0) + `%`;
-      },
+      // render: (data: CustomSymbol) => {
+      //   const t0_over_base_max =
+      //     data.buySellSignals?.latestBase?.t0_over_base_max;
+      //   if (!t0_over_base_max) {
+      //     return null;
+      //   }
+      //   return t0_over_base_max.toFixed(0) + `%`;
+      // },
     },
 
     {

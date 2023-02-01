@@ -92,6 +92,7 @@ export interface BuySellSignals {
   averageVolume_last5: number;
   changePrice: number;
   latestBase: Base | null;
+  closestUpperBase?: Base | null;
   estimated_vol_change: number;
   extra_vol: number;
   action: ActionType;
@@ -106,7 +107,6 @@ export interface ExtraData {
 export type ActionType = 'buy' | 'sell' | 'unknown';
 
 export interface Base {
-  buyIndex: number;
   startBaseIndex: number;
   endBaseIndex: number;
   change_t0_vol: number;
@@ -117,7 +117,6 @@ export interface Base {
   base_min: number;
   change_t3?: number | null;
   base_percent: number;
-  t0_over_base_max: number;
   closestUpperBaseIndex?: number;
   upperPercent?: number;
   closestLowerBaseIndex?: number;
@@ -126,7 +125,6 @@ export interface Base {
   min_in_20_days_without_break_base_index?: number;
   max_change_in_20_days?: number;
   max_in_20_days_without_break_base_index?: number;
-  buyDate?: string;
   startBaseDate?: string;
   endBaseDate?: string;
 }

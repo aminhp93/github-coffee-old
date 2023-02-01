@@ -1,4 +1,4 @@
-import { getLatestBase } from './utils';
+import { getLatestBase, getClosestUpperBase } from './utils';
 import StockService from './service';
 
 export const expectedResult = () => {
@@ -42,10 +42,12 @@ export const getRealResult = async (symbol: string) => {
       item.change_t0 = change_t0;
 
       // Check if at the break point have latest base
-      const latestBase = getLatestBase(res.data.slice(index));
+      const latestBase = getLatestBase(res.data.slice(index + 1));
       if (latestBase) {
         item.latestBase = latestBase;
-        item.t0_over_base_max = latestBase.t0_over_base_max;
+        item.t0_over_base_max =
+          (100 * (item.priceHigh - latestBase.base_max)) / latestBase.base_max;
+        item.closetUpperBase = getClosestUpperBase(res.data, latestBase);
         list_t0_greater_than_2_percent.push(item);
       }
     }
@@ -54,7 +56,7 @@ export const getRealResult = async (symbol: string) => {
   // Check if at the break point have gap
 
   const result = list_t0_greater_than_2_percent;
-  console.log(result);
+  console.log('list_t0_greater_than_2_percent', result);
   return {
     result,
     fullData: res.data,
