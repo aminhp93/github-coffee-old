@@ -27,77 +27,17 @@ import StockService from './service';
 import request from '@/services/request';
 import { notification } from 'antd';
 import config from '@/config';
+import { getBacktestData, getBasicData } from './tests';
 
 const baseUrl = config.apiUrl;
 
-export const mapHistoricalQuote = (
-  data: HistoricalQuote[],
-  extraData: ExtraData
-): CustomSymbol => {
-  const last_data = data[0];
-  const last_2_data = data[1];
-  const totalValue_last20_min = Math.min(
-    ...data.map((item: HistoricalQuote) => item.totalValue)
-  );
-
-  const averageVolume_last5 =
-    data
-      .slice(1, 6)
-      .reduce((a: number, b: HistoricalQuote) => a + b.totalVolume, 0) / 5;
-
-  const changePrice =
-    (100 * (last_data.priceClose - last_2_data.priceClose)) /
-    last_2_data.priceClose;
-
-  const latestBase = getLatestBase(data);
-
-  const estimated_vol = getEstimatedVol(last_data);
-
-  const estimated_vol_change =
-    (100 * (estimated_vol - averageVolume_last5)) / averageVolume_last5;
-
-  const extra_vol =
-    (100 * (last_data.totalVolume - last_data.dealVolume)) /
-    (last_data.dealVolume || 1);
-
-  const action = getAction({
-    changePrice,
-    latestBase,
-    estimated_vol_change,
-    extraData,
-  });
-
-  const last20HistoricalQuote: BackTestSymbol[] = data.map(
-    (i: HistoricalQuote) => {
-      return {
-        date: i.date.replace('T00:00:00', ''),
-        dealVolume: i.dealVolume,
-        priceClose: i.priceClose,
-        priceHigh: i.priceHigh,
-        priceLow: i.priceLow,
-        priceOpen: i.priceOpen,
-        totalVolume:
-          i.date.replace('T00:00:00', '') === moment().format(DATE_FORMAT)
-            ? estimated_vol
-            : i.totalVolume,
-        symbol: i.symbol,
-      };
-    }
-  );
+export const mapHistoricalQuote = (data: HistoricalQuote[]): any => {
+  const backtestData = getBacktestData(data);
+  const basicData = getBasicData(data);
 
   return {
-    ...extraData,
-    last20HistoricalQuote,
-    buySellSignals: {
-      totalValue_last20_min,
-      averageVolume_last5,
-      changePrice,
-      latestBase,
-      estimated_vol_change,
-      extra_vol,
-      action,
-    },
-    backtest: null,
+    ...basicData,
+    backtestData,
   };
 };
 
@@ -720,14 +660,11 @@ export const getDataFromSupabase = async ({
   });
 
   const listObj: any = groupBy(res.data, 'symbol');
+
+  console.log('listObj', listObj);
   const result: any = [];
   Object.keys(listObj).forEach((i: string) => {
-    result.push(
-      mapHistoricalQuote(listObj[i], {
-        key: i,
-        symbol: i,
-      })
-    );
+    result.push(mapHistoricalQuote(listObj[i]));
   });
   console.log('getDataFromSupabase', result);
   return result;

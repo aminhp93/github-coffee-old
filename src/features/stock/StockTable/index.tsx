@@ -10,7 +10,7 @@ import {
 import { Button, notification, Statistic, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import StockService from '../service';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   DEFAULT_FILTER,
   DEFAULT_SETTINGS,
@@ -18,6 +18,7 @@ import {
   DATE_FORMAT,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
+  LIST_ALL_SYMBOLS,
 } from '../constants';
 import {
   getBackTestDataOffline,
@@ -30,12 +31,90 @@ import Filters from './Filters';
 import './index.less';
 import Settings from './Settings';
 import Testing from './Testing';
+import TestSupabaseData from './TestSupabaseData';
 import { BaseFilter, CustomSymbol, Watchlist } from '../types';
+import { AgGridReact } from 'ag-grid-react';
+
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
+  {
+    headerName: 'Date',
+    field: 'date',
+    onCellClicked: (data: any) => {
+      handleClickRow(data);
+    },
+    cellRenderer: (data: any) => {
+      if (!data.data.date) return;
+      return moment(data.data.date).format(DATE_FORMAT);
+    },
+  },
+  {
+    headerName: 'change_t0',
+    field: 'change_t0',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.change_t0) return;
+      return data.data.change_t0.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 'base_percent',
+    headerName: 'base_percent',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.latestBase) return;
+      return data.data.latestBase.base_percent.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 't0_over_base_max',
+    suppressMenu: true,
+    headerName: 't0_over_base_max',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.t0_over_base_max) return;
+      return data.data.t0_over_base_max.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 'estimated_vol_change',
+    suppressMenu: true,
+    headerName: 'estimated_vol_change',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.estimated_vol_change) return;
+      return data.data.estimated_vol_change.toFixed(1) + '%';
+    },
+  },
+  {
+    field: 'diff_closet_upper_base',
+    suppressMenu: true,
+    headerName: 'diff_closet_upper_base',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.closetUpperBase || !data.data.latestBase) return;
+      return (
+        (
+          (100 *
+            (data.data.closetUpperBase.base_max -
+              data.data.latestBase.base_max)) /
+          data.data.latestBase.base_max
+        ).toFixed(2) + '%'
+      );
+    },
+  },
+];
 
 const StockTable = () => {
+  const gridRef: any = useRef();
+
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
+  const [openDrawerTestSupabaseData, setOpenDrawerTestSupabaseData] =
+    useState(false);
   const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
   const [fullDataSource, setFullDataSource] = useState<CustomSymbol[]>([]);
   const [dataSource, setDataSource] = useState<CustomSymbol[]>([]);
@@ -109,30 +188,45 @@ const StockTable = () => {
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
       setLoading(true);
-      if (
-        localStorage.getItem('sourceData') !== 'supabase' &&
-        moment().format('HH:mm') < '15:00'
-      ) {
-        res = await getDataFromFireant({
-          startDate,
-          endDate: moment().format(DATE_FORMAT),
-        });
-      } else {
-        res = await getDataFromSupabase({ startDate, endDate });
-      }
 
-      const newData = getDataSource(res, filters);
-
-      const resBackTest = await getBackTestDataOffline({
-        database: 'supabase',
-        dataSource: newData,
-        fullDataSource: res,
-        filters,
+      // origin data
+      // if (
+      //   localStorage.getItem('sourceData') !== 'supabase' &&
+      //   moment().format('HH:mm') < '15:00'
+      // ) {
+      //   res = await getDataFromFireant({
+      //     startDate,
+      //     endDate: moment().format(DATE_FORMAT),
+      //   });
+      // } else {
+      //   // res = await getDataFromSupabase({ startDate, endDate });
+      //   await StockService.getStockDataFromSupabase({
+      //     startDate,
+      //     endDate,
+      //     listSymbols: LIST_ALL_SYMBOLS,
+      //   });
+      // }
+      res = await getDataFromSupabase({
+        startDate,
+        endDate,
       });
 
-      setLoading(false);
-      setFullDataSource(resBackTest.fullDataSource);
-      setDataSource(resBackTest.dataSource);
+      console.log('res', res);
+
+      // // filter data
+      // const newData = getDataSource(res.data, filters);
+      // console.log(newData);
+
+      // const resBackTest = await getBackTestDataOffline({
+      //   database: 'supabase',
+      //   dataSource: newData,
+      //   fullDataSource: res,
+      //   filters,
+      // });
+
+      // setLoading(false);
+      // setFullDataSource(resBackTest.fullDataSource);
+      // setDataSource(resBackTest.dataSource);
       notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
@@ -183,6 +277,8 @@ const StockTable = () => {
     );
   };
 
+  const handleClickRow = () => {};
+
   const _filter_1 = fullDataSource.filter(
     (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
   );
@@ -211,11 +307,20 @@ const StockTable = () => {
           </Tooltip>
         </div>
         <div>
+          <Tooltip title="TestSupabaseData">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              onClick={() => setOpenDrawerTestSupabaseData(true)}
+            />
+          </Tooltip>
           <Tooltip title="Testing">
             <Button
               size="small"
               type="primary"
               icon={<WarningOutlined />}
+              style={{ marginLeft: 8 }}
               onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
@@ -238,7 +343,26 @@ const StockTable = () => {
   return (
     <div className="StockTable height-100 flex">
       {renderHeader()}
-      <Table
+      <div
+        className="ag-theme-alpine"
+        style={{ height: '100%', width: '100%' }}
+      >
+        <AgGridReact
+          rowData={dataSource}
+          columnDefs={COLUMN_REAL_RESULT({
+            handleClickRow,
+          })}
+          ref={gridRef}
+          // onGridReady={onGridReady}
+          defaultColDef={{
+            minWidth: 150,
+            filter: true,
+            sortable: true,
+            floatingFilter: true,
+          }}
+        />
+      </div>
+      {/* <Table
         style={{
           flex: 1,
         }}
@@ -247,7 +371,13 @@ const StockTable = () => {
         columns={columns}
         dataSource={dataSource}
         footer={footer}
-      />
+      /> */}
+      {openDrawerTestSupabaseData && (
+        <TestSupabaseData
+          onClose={() => setOpenDrawerTestSupabaseData(false)}
+        />
+      )}
+
       {openDrawerTesting && (
         <Testing onClose={() => setOpenDrawerTesting(false)} />
       )}

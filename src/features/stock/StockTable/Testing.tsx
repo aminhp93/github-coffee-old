@@ -25,7 +25,7 @@ import {
   updateDataWithDate,
   mapDataChart2,
 } from '../utils';
-import { getRealResult } from '../tests';
+import { getBacktestData } from '../tests';
 import BackTestChart from './BackTestChart';
 
 import type { DatePickerProps } from 'antd';
@@ -36,6 +36,8 @@ import { AgGridReact } from 'ag-grid-react';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+const { RangePicker } = DatePicker;
 
 const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
   {
@@ -78,6 +80,16 @@ const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
     },
   },
   {
+    field: 'estimated_vol_change',
+    suppressMenu: true,
+    headerName: 'estimated_vol_change',
+    filter: 'agNumberColumnFilter',
+    cellRenderer: (data: any) => {
+      if (!data.data.estimated_vol_change) return;
+      return data.data.estimated_vol_change.toFixed(1) + '%';
+    },
+  },
+  {
     field: 'diff_closet_upper_base',
     suppressMenu: true,
     headerName: 'diff_closet_upper_base',
@@ -111,6 +123,14 @@ const Testing = ({ onClose }: Props) => {
   const [listRealResult, setListRealResult] = useState<any>([]);
   const [dataChart, setDataChart] = useState<any>(null);
   const [fullData, setFullData] = useState<any>([]);
+  const [dates, setDates] = useState<any>([
+    moment('2022-01-01'),
+    moment('2022-12-31'),
+  ]);
+
+  const handleChangeDate = (dates: any) => {
+    setDates(dates);
+  };
 
   const getLastUpdated = async () => {
     try {
@@ -191,9 +211,29 @@ const Testing = ({ onClose }: Props) => {
 
   const handleGetResult = async (symbol: string) => {
     try {
-      const res = await getRealResult(symbol);
-      setListRealResult(res?.result);
-      setFullData(res?.fullData);
+      const startDate = dates[0].format(DATE_FORMAT);
+      const endDate = dates[1].format(DATE_FORMAT);
+
+      // fetch data from supabase
+      const res = await StockService.getStockDataFromSupabase({
+        startDate,
+        endDate,
+        listSymbols: [symbol],
+      });
+
+      // const res = await StockService.getHistoricalQuotes({
+      //   symbol,
+      //   startDate,
+      //   endDate,
+      // });
+      // console.log(res);
+
+      //  map data
+
+      const mappedData = getBacktestData(res.data);
+
+      setListRealResult(mappedData.result);
+      setFullData(mappedData.fullData);
     } catch (e) {
       console.log(e);
     }
@@ -315,6 +355,12 @@ const Testing = ({ onClose }: Props) => {
             Test data from fireant vs supabase
           </Button>
           <Divider />
+          <RangePicker
+            size="small"
+            onChange={handleChangeDate}
+            defaultValue={dates}
+            format={DATE_FORMAT}
+          />
           <Select
             defaultValue="VPB"
             style={{ width: 120 }}
