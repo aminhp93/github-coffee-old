@@ -1,13 +1,34 @@
 import { getLatestBase, getClosestUpperBase } from './utils';
 import { getEstimatedVol } from './constants';
-import { HistoricalQuote, StockData } from './types';
+import {
+  StockData,
+  StockCoreData,
+  StockBasicData,
+  BacktestData,
+  ResultBacktestData,
+} from './types';
 
-export const getBacktestData = (data: any) => {
+export const getStockData = (data: StockCoreData[]): StockData | undefined => {
+  const basicData = getStockBasicData(data);
+
+  if (!basicData) return undefined;
+
+  return {
+    ...basicData,
+    backtestData: getBacktestData(data),
+  };
+};
+
+export const getBacktestData = (
+  data: StockCoreData[]
+): BacktestData | undefined => {
+  if (data.length < 2) return undefined;
+
   // Filter list with change t0 > 2%
-  const list_t0_greater_than_2_percent: any = [];
-  data.forEach((_: any, index: number) => {
+  const list_t0_greater_than_2_percent: ResultBacktestData[] = [];
+  data.forEach((_, index: number) => {
     if (index + 1 === data.length) return;
-    const basicData = getBasicData(data.slice(index + 1));
+    const basicData = getStockBasicData(data.slice(index + 1));
     if (!basicData) return;
     const { change_t0, latestBase } = basicData;
     if (change_t0 > 2 && latestBase) {
@@ -29,7 +50,9 @@ export const getBacktestData = (data: any) => {
   };
 };
 
-export const getBasicData = (data: HistoricalQuote[]): StockData | null => {
+export const getStockBasicData = (
+  data: StockCoreData[]
+): StockBasicData | null => {
   if (data.length < 2) return null;
   const last_data = data[0];
   const today_close_price = last_data.priceClose;

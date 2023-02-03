@@ -13,18 +13,22 @@ import StockService from '../service';
 import { useEffect, useState, useRef } from 'react';
 import {
   DEFAULT_FILTER,
-  DEFAULT_SETTINGS,
+  DEFAULT_SETTING,
   DATE_FORMAT,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
 } from '../constants';
-import { filterData, updateDataWithDate, mapDataFromSupabase } from '../utils';
-import Filters from './Filters';
+import {
+  filterData,
+  updateDataWithDate,
+  getStockDataFromSupabase,
+} from '../utils';
+import Filters from './Filter';
 import './index.less';
-import Settings from './Settings';
+import Settings from './Setting';
 import Backtest from './Backtest';
 import Testing from './Testing';
-import { BaseFilter, Watchlist, SupabaseData, StockData } from '../types';
+import { Filter, SupabaseData, StockData } from '../types';
 import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -39,36 +43,15 @@ const StockTable = () => {
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
-  const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
     DEFAULT_START_DATE,
     DEFAULT_END_DATE,
   ]);
-
-  const handleUpdateWatchlist = async (symbols?: string[]) => {
-    try {
-      const watchlistObj = {
-        watchlistID: 2279542,
-        name: 'daily_test_watchlist',
-        userName: 'minhpn.org.ec1@gmail.com',
-      };
-
-      const updateData = {
-        ...watchlistObj,
-        symbols: symbols ? symbols : listStocks.map((i: StockData) => i.symbol),
-      };
-
-      await StockService.updateWatchlist(watchlistObj, updateData);
-      notification.success({ message: 'Update wl success' });
-    } catch (e) {
-      notification.error({ message: 'Update wl success' });
-    }
-  };
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -120,7 +103,7 @@ const StockTable = () => {
       });
       console.log('res', res);
 
-      const mappedData = mapDataFromSupabase(res.data as SupabaseData[]);
+      const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
       console.log('mappedData', mappedData);
 
       const filterdData = filterData(mappedData, filters);
@@ -140,16 +123,7 @@ const StockTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dates]);
 
-  useEffect(() => {
-    (async () => {
-      const res = await StockService.getWatchlist();
-      if (res && res.data) {
-        setListWatchlist(res.data);
-      }
-    })();
-  }, []);
-
-  const renderHeader = () => {
+  const header = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="flex">
@@ -248,7 +222,7 @@ const StockTable = () => {
 
   return (
     <div className="StockTable height-100 flex">
-      {renderHeader()}
+      {header()}
       <div
         className="ag-theme-alpine"
         style={{ height: '100%', width: '100%' }}
@@ -282,18 +256,7 @@ const StockTable = () => {
 
       {openDrawerFilter && (
         <Filters
-          listWatchlist={listWatchlist}
-          onChange={(data: Partial<BaseFilter>) =>
-            setFilters({ ...filters, ...data })
-          }
-          onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
-            setDates(newDates)
-          }
-          onUpdateWatchlist={handleUpdateWatchlist}
-          onGetData={() => {
-            // console.log('onGetData');
-          }}
-          onColumnChange={(newColumns: any) => {}}
+          onChange={(data: Filter) => setFilters({ ...filters, ...data })}
           onClose={() => setOpenDrawerFilter(false)}
         />
       )}

@@ -1,12 +1,7 @@
 import axios from 'axios';
 import moment from 'moment';
 import { DATE_FORMAT, UNIT_BILLION, getListAllSymbols } from './constants';
-import {
-  HistoricalQuoteParams,
-  FundamentalsParams,
-  HistoricalQuote,
-  ExtraData,
-} from './types';
+import { HistoricalQuoteParams, HistoricalQuote } from './types';
 import request from '@/services/request';
 import config from '@/config';
 import { createClient } from '@supabase/supabase-js';
@@ -33,7 +28,7 @@ const StockService = {
       limit = 20,
       returnRequest = false,
     }: HistoricalQuoteParams,
-    callback?: (data: HistoricalQuote[], extraData: ExtraData) => void,
+    callback?: (data: HistoricalQuote[], extraData: any) => void,
     extraDataCb?: any
   ) {
     if (!symbol) return;
@@ -73,11 +68,7 @@ const StockService = {
       console.log(error);
     }
   },
-  async getFundamentals(
-    { symbol }: FundamentalsParams,
-    callback?: any,
-    extraDataCb?: any
-  ) {
+  async getFundamentals({ symbol }: any, callback?: any, extraDataCb?: any) {
     if (!symbol) return null;
     try {
       const res = await axios({
@@ -338,6 +329,28 @@ const StockService = {
       .gte('date', startDate)
       .lte('date', endDate)
       .order('date', { ascending: false });
+  },
+  deleteAndInsertStockData: (date: string, data: any) => {
+    console.log(date, data);
+    // return a promise
+
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log('deleteAndInsertStockData', date);
+        // Delete all old data with selected date
+        await StockService.deleteStockData({
+          column: 'date',
+          value: date,
+        });
+
+        // Insert new data with selected date
+        await StockService.insertStockData(data);
+        resolve({ status: 'success', date });
+      } catch (e) {
+        console.log(e);
+        reject({ status: 'error', date });
+      }
+    });
   },
 };
 

@@ -9,9 +9,9 @@ import {
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import StockService from '../service';
 import moment from 'moment';
-import { mapDataChart2, mapDataFromSupabase } from '../utils';
+import { mapDataChart, getStockDataFromSupabase } from '../utils';
 import BackTestChart from './BackTestChart';
-import { SupabaseData } from '../types';
+import { SupabaseData, StockCoreData, ResultBacktestData } from '../types';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
@@ -28,10 +28,12 @@ interface Props {
 
 const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   const gridRef: any = useRef();
-  const [listRealResult, setListRealResult] = useState<any>([]);
+  const [resultBacktestData, setResultBacktestData] = useState<
+    ResultBacktestData[]
+  >([]);
   const [dataChart, setDataChart] = useState<any>(null);
-  const [fullData, setFullData] = useState<any>([]);
-  const [dates, setDates] = useState<any>([
+  const [fullData, setFullData] = useState<StockCoreData[]>([]);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
     moment('2022-01-01'),
     moment('2022-12-31'),
   ]);
@@ -53,10 +55,15 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
       });
       console.log('res', res);
 
-      const mappedData = mapDataFromSupabase(res.data as SupabaseData[]);
+      const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
       console.log('mappedData', mappedData);
+
       const data = mappedData[0].backtestData;
-      setListRealResult(data.result);
+      if (!data) {
+        notification.error({ message: 'error' });
+        return;
+      }
+      setResultBacktestData(data.result);
       setFullData(data.fullData);
 
       notification.success({ message: 'success' });
@@ -66,46 +73,50 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     }
   };
 
-  const handleClickRow = (data: any) => {
+  const handleClickRow = (data: ResultBacktestData) => {
     console.log(data);
-    const latestBase = data.data.latestBase;
-    const closetUpperBase = data.data.closetUpperBase;
-    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    const listMarkLines = [
-      [
-        {
-          coord: [latestBase.startBaseDate, latestBase.base_min],
-        },
-        {
-          coord: [latestBase.endBaseDate, latestBase.base_min],
-        },
-      ],
-      [
-        {
-          coord: [latestBase.startBaseDate, latestBase.base_max],
-        },
-        {
-          coord: [latestBase.endBaseDate, latestBase.base_max],
-        },
-      ],
-      [
-        {
-          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
-        },
-        {
-          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
-        },
-      ],
-      [
-        {
-          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
-        },
-        {
-          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
-        },
-      ],
-    ];
-    setDataChart(mapDataChart2({ fullData, listMarkPoints, listMarkLines }));
+    const latestBase = data.latestBase;
+    const closetUpperBase = data.closetUpperBase;
+    const listMarkPoints = [data];
+    // .filter(
+    //   (i: StockCoreData) => i.t0_over_base_max > 0
+    // );
+    const listMarkLines = latestBase &&
+      closetUpperBase && [
+        [
+          {
+            coord: [latestBase.startBaseDate, latestBase.base_min],
+          },
+          {
+            coord: [latestBase.endBaseDate, latestBase.base_min],
+          },
+        ],
+        [
+          {
+            coord: [latestBase.startBaseDate, latestBase.base_max],
+          },
+          {
+            coord: [latestBase.endBaseDate, latestBase.base_max],
+          },
+        ],
+        [
+          {
+            coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
+          },
+          {
+            coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
+          },
+        ],
+        [
+          {
+            coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
+          },
+          {
+            coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
+          },
+        ],
+      ];
+    setDataChart(mapDataChart({ fullData, listMarkPoints, listMarkLines }));
   };
 
   const applyFilters = useCallback(() => {
@@ -127,8 +138,8 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     if (!gridRef.current || !gridRef.current.api) return;
     applyFilters();
     const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    setDataChart(mapDataChart2({ fullData, listMarkPoints }));
-  }, [listRealResult]);
+    setDataChart(mapDataChart({ fullData, listMarkPoints }));
+  }, [resultBacktestData]);
 
   useEffect(() => {
     getData(symbol);
@@ -136,8 +147,8 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   }, [dates]);
 
   console.log(
-    listRealResult,
-    'listRealResult',
+    resultBacktestData,
+    'resultBacktestData',
     dataChart,
     'dataChart',
     gridRef.current
@@ -192,7 +203,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
             style={{ height: '100%', width: '100%' }}
           >
             <AgGridReact
-              rowData={listRealResult}
+              rowData={resultBacktestData}
               columnDefs={StockTableColumns({
                 handleClickRow,
                 isBacktest: true,
