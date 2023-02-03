@@ -9,7 +9,7 @@ import {
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import StockService from '../service';
 import moment from 'moment';
-import { mapDataChart2, mapDataFromSupabase } from '../utils';
+import { mapDataChart, mapDataFromSupabase } from '../utils';
 import BackTestChart from './BackTestChart';
 import { SupabaseData } from '../types';
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -105,7 +105,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
         },
       ],
     ];
-    setDataChart(mapDataChart2({ fullData, listMarkPoints, listMarkLines }));
+    setDataChart(mapDataChart({ fullData, listMarkPoints, listMarkLines }));
   };
 
   const applyFilters = useCallback(() => {
@@ -127,7 +127,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     if (!gridRef.current || !gridRef.current.api) return;
     applyFilters();
     const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    setDataChart(mapDataChart2({ fullData, listMarkPoints }));
+    setDataChart(mapDataChart({ fullData, listMarkPoints }));
   }, [listRealResult]);
 
   useEffect(() => {

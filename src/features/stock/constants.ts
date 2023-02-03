@@ -2,11 +2,8 @@ import moment from 'moment';
 import { minBy, maxBy } from 'lodash';
 import {
   HistoricalQuote,
-  ExtraData,
-  ActionType,
   BaseFilter,
   BackTestSymbol,
-  Base,
   Watchlist,
 } from './types';
 
@@ -467,42 +464,6 @@ export const LIST_ALL_SYMBOLS = [
   'HT1',
   'BCC',
 ];
-
-export const getAction = ({
-  changePrice,
-  latestBase,
-  estimated_vol_change,
-  extraData,
-}: {
-  changePrice: number;
-  latestBase: Base | null;
-  estimated_vol_change: number;
-  extraData: ExtraData;
-}): ActionType => {
-  let action: ActionType = 'unknown';
-
-  if (
-    changePrice > DEFAULT_FILTER.changePrice_min &&
-    estimated_vol_change > DEFAULT_FILTER.estimated_vol_change_min &&
-    latestBase
-    //  &&latestBase.t0_over_base_max > DEFAULT_FILTER.t0_over_base_max
-  ) {
-    action = 'buy';
-  }
-
-  // BUY 2
-  // 1. Have base: base_count > 0
-  // 2. Price change > 2%
-
-  // SELL
-  // 1. in watching watchlist
-  // 2. Price change < -2%
-  if (changePrice < -2 && extraData?.inWatchingWatchList) {
-    action = 'sell';
-  }
-
-  return action;
-};
 
 export const getEstimatedVol = (data: HistoricalQuote) => {
   if (data.date === moment().format(DATE_FORMAT)) {

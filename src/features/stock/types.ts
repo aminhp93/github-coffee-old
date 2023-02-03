@@ -83,29 +83,6 @@ export interface HistoricalQuoteParams {
   returnRequest?: boolean;
 }
 
-export interface FundamentalsParams {
-  symbol: string;
-}
-
-export interface BuySellSignals {
-  totalValue_last20_min: number;
-  averageVolume_last5: number;
-  changePrice: number;
-  latestBase: Base | null;
-  closestUpperBase?: Base | null;
-  estimated_vol_change: number;
-  extra_vol: number;
-  action: ActionType;
-}
-
-export interface ExtraData {
-  key: string;
-  symbol: string;
-  inWatchingWatchList?: boolean;
-}
-
-export type ActionType = 'buy' | 'sell' | 'unknown';
-
 export interface Base {
   startBaseIndex: number;
   endBaseIndex: number;
@@ -127,15 +104,6 @@ export interface Base {
   max_in_20_days_without_break_base_index?: number;
   startBaseDate?: string;
   endBaseDate?: string;
-}
-
-export interface CustomSymbol {
-  buySellSignals: BuySellSignals;
-  inWatchingWatchList?: boolean;
-  key: string;
-  symbol: string;
-  last20HistoricalQuote: BackTestSymbol[]; // last 20 days
-  backtest: BackTest | null;
 }
 
 export interface BackTest {
@@ -174,17 +142,6 @@ export interface BackTestSymbol {
   priceOpen: number;
   totalVolume: number;
   symbol: string;
-}
-
-export interface SimplifiedBackTestSymbol {
-  d: string;
-  v: number;
-  c: number;
-  h: number;
-  l: number;
-  o: number;
-  v2: number;
-  s: string;
 }
 
 export interface FilterBackTest {
