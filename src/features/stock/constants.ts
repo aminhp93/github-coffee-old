@@ -1,5 +1,4 @@
 import moment from 'moment';
-import BuySellSignalsColumns from './StockTable/BuySellSignalsColumns';
 import { minBy, maxBy } from 'lodash';
 import {
   HistoricalQuote,
@@ -200,20 +199,6 @@ export const DEFAULT_SETTINGS: any = {
   },
 };
 
-export const DEFAULT_COLUMNS = [
-  {
-    title: 'Symbol',
-    dataIndex: 'symbol',
-    key: 'symbol',
-    width: 100,
-    sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
-  },
-  {
-    title: 'BuySellSignals',
-    children: BuySellSignalsColumns(),
-  },
-];
-
 export const NO_DATA_COLUMN = NoDataKeys.map((i) => {
   return {
     title: i,
@@ -301,53 +286,6 @@ export const FINANCIAL_INDICATORS_COLUMN: any = FinancialIndicatorsKeys.map(
     };
   }
 );
-
-export const getColumns = (checkedList: any) => {
-  const columns: any = [
-    {
-      title: 'Symbol',
-      dataIndex: 'symbol',
-      key: 'symbol',
-      sorter: (a: any, b: any) => a['symbol'].localeCompare(b['symbol']),
-    },
-  ];
-  if (checkedList.includes('HistoricalQuote')) {
-    columns.push({
-      title: 'Historical Quotes',
-      children: HISTORICAL_QUOTE_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('Fundamental')) {
-    columns.push({
-      title: 'Fundamentals',
-      children: FUNDAMENTAL_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('FinancialIndicators')) {
-    columns.push({
-      title: 'FinancialIndicators',
-      children: FINANCIAL_INDICATORS_COLUMN,
-    });
-  }
-
-  if (checkedList.includes('BuySellSignals')) {
-    columns.push({
-      title: 'BuySellSignals',
-      children: BuySellSignalsColumns(),
-    });
-  }
-
-  if (checkedList.includes('NoData')) {
-    columns.push({
-      title: 'NoData',
-      children: NO_DATA_COLUMN,
-    });
-  }
-
-  return columns;
-};
 
 export const LIST_ALL_SYMBOLS = [
   'HPG',

@@ -1,12 +1,14 @@
 import { getLatestBase, getClosestUpperBase } from './utils';
 import { getEstimatedVol } from './constants';
+import { HistoricalQuote, StockData } from './types';
 
 export const getBacktestData = (data: any) => {
   // Filter list with change t0 > 2%
   const list_t0_greater_than_2_percent: any = [];
-  data.forEach((item: any, index: number) => {
+  data.forEach((_: any, index: number) => {
     if (index + 1 === data.length) return;
     const basicData = getBasicData(data.slice(index + 1));
+    if (!basicData) return;
     const { change_t0, latestBase } = basicData;
     if (change_t0 > 2 && latestBase) {
       const closetUpperBase = getClosestUpperBase(data, latestBase);
@@ -27,7 +29,8 @@ export const getBacktestData = (data: any) => {
   };
 };
 
-export const getBasicData = (data: any) => {
+export const getBasicData = (data: HistoricalQuote[]): StockData | null => {
+  if (data.length < 2) return null;
   const last_data = data[0];
   const today_close_price = last_data.priceClose;
   const yesterday_close_price = data[1].priceClose;

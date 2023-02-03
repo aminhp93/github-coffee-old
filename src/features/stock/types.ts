@@ -193,3 +193,31 @@ export interface FilterBackTest {
   num_high_vol_than_t0?: number | null;
   t0_over_base_max?: number | null;
 }
+
+export interface SupabaseData {
+  date: string;
+  dealVolume: number;
+  priceClose: number;
+  priceHigh: number;
+  priceLow: number;
+  priceOpen: number;
+  symbol: string;
+  totalValue: number;
+  totalVolume: number;
+}
+
+export interface StockData {
+  symbol: string;
+  date: string;
+  change_t0: number;
+  priceClose: number;
+  priceOpen: number;
+  priceHigh: number;
+  priceLow: number;
+  totalVolume: number;
+  dealVolume: number;
+  totalValue: number;
+  t0_over_base_max: number | undefined;
+  estimated_vol_change: number;
+  latestBase: Base | null;
+}

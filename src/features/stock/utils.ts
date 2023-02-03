@@ -2,10 +2,7 @@ import { meanBy, cloneDeep, groupBy, chunk } from 'lodash';
 import moment from 'moment';
 import {
   DATE_FORMAT,
-  UNIT_BILLION,
   BACKTEST_FILTER,
-  getAction,
-  getEstimatedVol,
   getBase_min_max,
   getListAllSymbols,
   DEFAULT_FILTER,
@@ -14,7 +11,6 @@ import {
 } from './constants';
 import {
   HistoricalQuote,
-  ExtraData,
   CustomSymbol,
   BaseFilter,
   BackTestSymbol,
@@ -22,6 +18,8 @@ import {
   FilterBackTest,
   BackTest,
   SimplifiedBackTestSymbol,
+  SupabaseData,
+  StockData,
 } from './types';
 import StockService from './service';
 import request from '@/services/request';
@@ -32,12 +30,11 @@ import { getBacktestData, getBasicData } from './tests';
 const baseUrl = config.apiUrl;
 
 export const mapHistoricalQuote = (data: HistoricalQuote[]): any => {
-  const backtestData = getBacktestData(data);
   const basicData = getBasicData(data);
 
   return {
     ...basicData,
-    backtestData,
+    backtestData: getBacktestData(data),
   };
 };
 
@@ -300,78 +297,22 @@ export const getDataChart = ({
   };
 };
 
-export const getDataSource = (data: CustomSymbol[], filter: BaseFilter) => {
-  const {
-    currentWatchlist,
-    totalValue_last20_min,
-    changePrice_min,
-    only_buy_sell,
-    estimated_vol_change_min,
-  } = filter;
+export const filterData = (data: StockData[], filter: BaseFilter) => {
+  const { changePrice_min, estimated_vol_change_min } = filter;
 
-  const newData = cloneDeep(data);
-
-  const result = newData.filter((i: CustomSymbol) => {
-    if (
-      currentWatchlist &&
-      currentWatchlist.symbols &&
-      !currentWatchlist.symbols.includes(i.symbol)
-    ) {
-      return false;
-    }
-
-    if (
-      i.buySellSignals?.totalValue_last20_min <
-      totalValue_last20_min * UNIT_BILLION
-    ) {
-      return false;
-    }
-
-    if (i.buySellSignals?.changePrice < changePrice_min) {
-      return false;
-    }
-
-    if (only_buy_sell && i.buySellSignals?.action === 'unknown') {
+  const result = data.filter((i: StockData) => {
+    if (i.change_t0 < changePrice_min) {
       return false;
     }
 
     if (
       estimated_vol_change_min &&
-      i.buySellSignals?.estimated_vol_change < estimated_vol_change_min
+      i.estimated_vol_change < estimated_vol_change_min
     ) {
       return false;
     }
 
     return true;
-  });
-
-  result.sort((a: CustomSymbol, b: CustomSymbol) => {
-    if (
-      a.buySellSignals?.action === 'sell' &&
-      b.buySellSignals?.action === 'unknown'
-    )
-      return -1;
-    if (
-      a.buySellSignals?.action === 'sell' &&
-      b.buySellSignals?.action === 'buy'
-    )
-      return -1;
-    if (
-      a.buySellSignals?.action === 'buy' &&
-      b.buySellSignals?.action === 'unknown'
-    )
-      return -1;
-    // next sort by backtest winrate desc
-    if (
-      a.buySellSignals?.action === 'buy' &&
-      b.buySellSignals?.action === 'buy' &&
-      a.backtest &&
-      b.backtest
-    ) {
-      if (a.backtest.winRate > b.backtest.winRate) return -1;
-    }
-
-    return 0;
   });
 
   return result;
@@ -647,24 +588,13 @@ export const mapDataChart = (backTestData: BackTest | null, record: Base) => {
   return newDataChart;
 };
 
-export const getDataFromSupabase = async ({
-  startDate,
-  endDate,
-}: {
-  startDate: string;
-  endDate: string;
-}) => {
-  const res = await StockService.getStockDataFromSupabase({
-    startDate,
-    endDate,
-  });
-
-  const listObj: any = groupBy(res.data, 'symbol');
-
+export const mapDataFromSupabase = (data: SupabaseData[]) => {
+  const listObj: any = groupBy(data, 'symbol');
   console.log('listObj', listObj);
   const result: any = [];
   Object.keys(listObj).forEach((i: string) => {
-    result.push(mapHistoricalQuote(listObj[i]));
+    const item = cloneDeep(listObj[i]);
+    result.push(mapHistoricalQuote(item));
   });
   console.log('getDataFromSupabase', result);
   return result;
@@ -741,7 +671,7 @@ export const getBackTestDataOffline = async ({
     dataSource,
     fullDataSource
   );
-  const newData = getDataSource(newFullDataSource, filters);
+  const newData = filterData(newFullDataSource as any, filters);
 
   return {
     fullDataSource: newFullDataSource,

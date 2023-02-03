@@ -1,136 +1,26 @@
+import { useState, useEffect } from 'react';
 import {
   Drawer,
-  Button,
-  notification,
-  Table,
-  DatePicker,
-  Divider,
   Select,
+  Button,
+  DatePicker,
+  notification,
+  Divider,
 } from 'antd';
-import {
-  DATE_FORMAT,
-  DEFAULT_FILTER,
-  DEFAULT_START_DATE,
-  DEFAULT_END_DATE,
-  LIST_ALL_SYMBOLS,
-} from '../constants';
 import StockService from '../service';
+import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import moment from 'moment';
-import {
-  getDataFromSupabase,
-  getDataFromFireant,
-  getBackTestDataOffline,
-  getDataSource,
-  createBackTestData,
-  updateDataWithDate,
-  mapDataChart2,
-} from '../utils';
-import { getBacktestData } from '../tests';
-import BackTestChart from './BackTestChart';
-
-import type { DatePickerProps } from 'antd';
-
-import { useEffect, useState, useRef, useCallback } from 'react';
-
-import { AgGridReact } from 'ag-grid-react';
-
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { updateDataWithDate, createBackTestData } from '../utils';
 
 const { RangePicker } = DatePicker;
-
-const COLUMN_REAL_RESULT = ({ handleClickRow }: any) => [
-  {
-    headerName: 'Date',
-    field: 'date',
-    onCellClicked: (data: any) => {
-      handleClickRow(data);
-    },
-    cellRenderer: (data: any) => {
-      if (!data.data.date) return;
-      return moment(data.data.date).format(DATE_FORMAT);
-    },
-  },
-  {
-    headerName: 'change_t0',
-    field: 'change_t0',
-    filter: 'agNumberColumnFilter',
-    cellRenderer: (data: any) => {
-      if (!data.data.change_t0) return;
-      return data.data.change_t0.toFixed(1) + '%';
-    },
-  },
-  {
-    field: 'base_percent',
-    headerName: 'base_percent',
-    filter: 'agNumberColumnFilter',
-    cellRenderer: (data: any) => {
-      if (!data.data.latestBase) return;
-      return data.data.latestBase.base_percent.toFixed(1) + '%';
-    },
-  },
-  {
-    field: 't0_over_base_max',
-    suppressMenu: true,
-    headerName: 't0_over_base_max',
-    filter: 'agNumberColumnFilter',
-    cellRenderer: (data: any) => {
-      if (!data.data.t0_over_base_max) return;
-      return data.data.t0_over_base_max.toFixed(1) + '%';
-    },
-  },
-  {
-    field: 'estimated_vol_change',
-    suppressMenu: true,
-    headerName: 'estimated_vol_change',
-    filter: 'agNumberColumnFilter',
-    cellRenderer: (data: any) => {
-      if (!data.data.estimated_vol_change) return;
-      return data.data.estimated_vol_change.toFixed(1) + '%';
-    },
-  },
-  {
-    field: 'diff_closet_upper_base',
-    suppressMenu: true,
-    headerName: 'diff_closet_upper_base',
-    filter: 'agNumberColumnFilter',
-    cellRenderer: (data: any) => {
-      if (!data.data.closetUpperBase || !data.data.latestBase) return;
-      return (
-        (
-          (100 *
-            (data.data.closetUpperBase.base_max -
-              data.data.latestBase.base_max)) /
-          data.data.latestBase.base_max
-        ).toFixed(2) + '%'
-      );
-    },
-  },
-];
 
 interface Props {
   onClose: () => void;
 }
 
-const Testing = ({ onClose }: Props) => {
-  const gridRef: any = useRef();
-  const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
-  const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+const TestSupabaseData = ({ onClose }: Props) => {
+  const [dates, setDates] = useState<any>([moment(), moment()]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [dataFromSupabase, setDataFromSupabase] = useState<any>([]);
-  const [dataFromFireant, setDataFromFireant] = useState<any>([]);
-  const [columns, setColumns] = useState<any>([]);
-  const [listRealResult, setListRealResult] = useState<any>([]);
-  const [dataChart, setDataChart] = useState<any>(null);
-  const [fullData, setFullData] = useState<any>([]);
-  const [dates, setDates] = useState<any>([
-    moment('2022-01-01'),
-    moment('2022-12-31'),
-  ]);
-
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
-  };
 
   const getLastUpdated = async () => {
     try {
@@ -144,12 +34,54 @@ const Testing = ({ onClose }: Props) => {
     }
   };
 
-  const onChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
-    setSelectedDate(date);
+  const handleTest = async (symbol: string) => {
+    if (dates.length !== 2) return;
+    const startDate = dates[0].format(DATE_FORMAT);
+    const endDate = dates[1].format(DATE_FORMAT);
+    const res = await StockService.getHistoricalQuotes({
+      symbol,
+      startDate,
+      endDate,
+    });
+    const res2 = await StockService.getStockDataFromSupabase({
+      listSymbols: [symbol],
+      startDate,
+      endDate,
+    });
+    console.log(res, res2);
+    if (res && res2.data && res.length === 1 && res2.data.length === 1) {
+      const data = res[0];
+      const data2 = res2.data[0];
+      if (
+        data.dealVolume === data2.dealVolume &&
+        data.priceClose === data2.priceClose &&
+        data.priceHigh === data2.priceHigh &&
+        data.priceLow === data2.priceLow &&
+        data.priceOpen === data2.priceOpen &&
+        data.totalValue === data2.totalValue &&
+        data.totalVolume === data2.totalVolume
+      ) {
+        console.log('OK');
+      } else {
+        console.log('NOT OK');
+      }
+    }
   };
 
+  const handleTestAll = () => {
+    LIST_ALL_SYMBOLS.forEach((symbol) => {
+      handleTest(symbol);
+    });
+  };
+
+  const handleChangeDate = (dates: any) => {
+    setDates(dates);
+  };
+
+  console.log('dates', dates);
+
   const updateData = async () => {
+    const selectedDate = dates.length === 2 ? dates[1] : null;
     if (selectedDate) {
       // if have selected date, update only selected date and no udpate selected date
       updateDataWithDate(
@@ -185,233 +117,93 @@ const Testing = ({ onClose }: Props) => {
     }
   };
 
-  const handleTest = async () => {
-    const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
-    const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
-    const supabaseData = await getDataFromSupabase({ startDate, endDate });
-    const fireantData = await getDataFromFireant({ startDate, endDate });
-
-    const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
-    const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
-
-    const supabaseDataBacktest = await getBackTestDataOffline({
-      database: 'supabase',
-      dataSource: newDataSupabase,
-      fullDataSource: supabaseData,
-    });
-    const fireantDataBacktest = await getBackTestDataOffline({
-      database: 'supabase',
-      dataSource: newDataFireant,
-      fullDataSource: fireantData,
-    });
-    console.log(supabaseDataBacktest, fireantDataBacktest);
-    setDataFromSupabase(supabaseDataBacktest);
-    setDataFromFireant(fireantDataBacktest);
+  const handleTest2 = async () => {
+    // const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
+    // const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
+    // const supabaseData = await getDataFromSupabase({ startDate, endDate });
+    // const fireantData = await getDataFromFireant({ startDate, endDate });
+    // const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
+    // const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
+    // const supabaseDataBacktest = await getBackTestDataOffline({
+    //   database: 'supabase',
+    //   dataSource: newDataSupabase,
+    //   fullDataSource: supabaseData,
+    // });
+    // const fireantDataBacktest = await getBackTestDataOffline({
+    //   database: 'supabase',
+    //   dataSource: newDataFireant,
+    //   fullDataSource: fireantData,
+    // });
+    // console.log(supabaseDataBacktest, fireantDataBacktest);
+    // setDataFromSupabase(supabaseDataBacktest);
+    // setDataFromFireant(fireantDataBacktest);
   };
-
-  const handleGetResult = async (symbol: string) => {
-    try {
-      const startDate = dates[0].format(DATE_FORMAT);
-      const endDate = dates[1].format(DATE_FORMAT);
-
-      // fetch data from supabase
-      const res = await StockService.getStockDataFromSupabase({
-        startDate,
-        endDate,
-        listSymbols: [symbol],
-      });
-
-      // const res = await StockService.getHistoricalQuotes({
-      //   symbol,
-      //   startDate,
-      //   endDate,
-      // });
-      // console.log(res);
-
-      //  map data
-
-      const mappedData = getBacktestData(res.data);
-
-      setListRealResult(mappedData.result);
-      setFullData(mappedData.fullData);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  const handleClickRow = (data: any) => {
-    console.log(data);
-    const latestBase = data.data.latestBase;
-    const closetUpperBase = data.data.closetUpperBase;
-    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    const listMarkLines = [
-      [
-        {
-          coord: [latestBase.startBaseDate, latestBase.base_min],
-        },
-        {
-          coord: [latestBase.endBaseDate, latestBase.base_min],
-        },
-      ],
-      [
-        {
-          coord: [latestBase.startBaseDate, latestBase.base_max],
-        },
-        {
-          coord: [latestBase.endBaseDate, latestBase.base_max],
-        },
-      ],
-      [
-        {
-          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
-        },
-        {
-          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
-        },
-      ],
-      [
-        {
-          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
-        },
-        {
-          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
-        },
-      ],
-    ];
-    setDataChart(mapDataChart2({ fullData, listMarkPoints, listMarkLines }));
-  };
-
-  const applyFilters = useCallback(() => {
-    const ageFilterComponent =
-      gridRef.current.api.getFilterInstance('t0_over_base_max');
-    ageFilterComponent.setModel({
-      type: 'greaterThan',
-      filter: 0,
-      filterTo: null,
-    });
-    gridRef.current.api.onFilterChanged();
-  }, []);
-
-  const clearAllFilters = useCallback(() => {
-    gridRef.current.api.setFilterModel(null);
-  }, []);
 
   useEffect(() => {
     getLastUpdated();
   }, []);
-
-  useEffect(() => {
-    if (!gridRef.current || !gridRef.current.api) return;
-    applyFilters();
-    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    setDataChart(mapDataChart2({ fullData, listMarkPoints }));
-  }, [listRealResult]);
-
-  console.log(
-    listRealResult,
-    'listRealResult',
-    dataChart,
-    'dataChart',
-    gridRef.current
-  );
 
   return (
     <Drawer
       title={
         <div className="flex" style={{ justifyContent: 'space-between' }}>
           <div>Testing</div>
-          <div>Last updated: {lastUpdated}</div>
-        </div>
-      }
-      height="90%"
-      placement="bottom"
-      onClose={onClose}
-      open={true}
-    >
-      <div className="height-100 flex" style={{ flexDirection: 'column' }}>
-        <div>
-          <div>
-            <Button size="small" onClick={updateData}>
-              Update data
-            </Button>
-            <DatePicker size="small" onChange={onChangeDate} />
-          </div>
-          <Divider />
-          <Button
-            disabled
-            size="small"
-            onClick={createBackTestData}
-            style={{ marginTop: '20px' }}
-          >
-            Create backtest
-          </Button>
-
-          <Divider />
-          <Button
-            size="small"
-            onClick={handleTest}
-            style={{ marginTop: '20px' }}
-          >
-            Test data from fireant vs supabase
-          </Button>
-          <Divider />
           <RangePicker
             size="small"
             onChange={handleChangeDate}
             defaultValue={dates}
             format={DATE_FORMAT}
           />
-          <Select
-            defaultValue="VPB"
-            style={{ width: 120 }}
-            onChange={(value: string) => {
-              handleGetResult(value);
-            }}
-            options={LIST_ALL_SYMBOLS.map((i) => {
-              return { value: i, label: i };
-            })}
-          />
-          <Button onClick={() => handleGetResult('VPB')}>Test VPB</Button>
-          <Button onClick={() => applyFilters()}>applyFilters</Button>
-          <Button onClick={() => clearAllFilters()}>clearAllFilters</Button>
-          <Divider />
         </div>
-        <div style={{ height: '600px', width: '100%' }}>
-          {dataChart && <BackTestChart data={dataChart} />}
-        </div>
-        <div style={{ height: '400px', width: '100%', marginTop: '20px' }}>
-          <div
-            className="ag-theme-alpine"
-            style={{ height: '100%', width: '100%' }}
-          >
-            <AgGridReact
-              rowData={listRealResult}
-              columnDefs={COLUMN_REAL_RESULT({
-                handleClickRow,
-              })}
-              ref={gridRef}
-              // onGridReady={onGridReady}
-              defaultColDef={{
-                minWidth: 150,
-                filter: true,
-                sortable: true,
-                floatingFilter: true,
-              }}
-            />
-          </div>
+      }
+      placement="bottom"
+      onClose={onClose}
+      open={true}
+    >
+      <div
+        className="height-100"
+        style={{
+          display: 'flex',
+        }}
+      >
+        <div>Last updated: {lastUpdated}</div>
+        <Button
+          disabled
+          size="small"
+          onClick={createBackTestData}
+          style={{ marginTop: '20px' }}
+        >
+          Create backtest
+        </Button>
+        <Button
+          size="small"
+          onClick={handleTest2}
+          style={{ marginTop: '20px' }}
+        >
+          Test data from fireant vs supabase
+        </Button>
+        <Select
+          defaultValue="VPB"
+          style={{ width: 120 }}
+          onChange={(value: string) => {
+            handleTest(value);
+          }}
+          options={LIST_ALL_SYMBOLS.map((i) => {
+            return { value: i, label: i };
+          })}
+        />
+        <Button onClick={() => handleTest('VPB')}>Test VPB</Button>
+        <Button onClick={() => handleTestAll()}>Test All</Button>
 
-          {listUpdateStatus && listUpdateStatus.length && (
-            <Table
-              size="small"
-              dataSource={listUpdateStatus}
-              columns={columns}
-              pagination={false}
-            />
-          )}
+        <Divider />
+        <div>
+          <Button size="small" onClick={updateData}>
+            Update data
+          </Button>
         </div>
       </div>
     </Drawer>
   );
 };
 
-export default Testing;
+export default TestSupabaseData;

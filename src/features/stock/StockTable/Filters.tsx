@@ -4,8 +4,6 @@ import {
   InputNumber,
   Switch,
   DatePicker,
-  Popover,
-  Checkbox,
   Dropdown,
   Menu,
   Radio,
@@ -14,22 +12,16 @@ import { useState } from 'react';
 import {
   DATE_FORMAT,
   DEFAULT_FILTER,
-  TYPE_INDICATOR_OPTIONS,
-  DEFAULT_TYPE_INDICATOR_OPTIONS,
   DELAY_TIME,
-  getColumns,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
 } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
-import type { CheckboxValueType } from 'antd/es/checkbox/Group';
-import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { keyBy } from 'lodash';
 import { BaseFilter, Watchlist } from '../types';
 import { useInterval } from '@/hooks';
 
-const CheckboxGroup = Checkbox.Group;
 const { RangePicker } = DatePicker;
 
 interface Props {
@@ -79,12 +71,6 @@ const Filters = ({
   // only_buy_sell
   const [only_buy_sell, setOnly_buy_sell] = useState<boolean>(
     DEFAULT_FILTER.only_buy_sell
-  );
-
-  const [indeterminate, setIndeterminate] = useState(true);
-  const [checkAll, setCheckAll] = useState(false);
-  const [checkedList, setCheckedList] = useState<CheckboxValueType[]>(
-    DEFAULT_TYPE_INDICATOR_OPTIONS
   );
 
   const [currentWatchlist, setCurrentWatchlist] = useState<Watchlist | null>(
@@ -139,25 +125,6 @@ const Filters = ({
     if (dates && onDateChange) {
       onDateChange(dates);
     }
-  };
-
-  const handleChangeColumn = (list: CheckboxValueType[]) => {
-    setCheckedList(list);
-    setIndeterminate(
-      !!list.length && list.length < TYPE_INDICATOR_OPTIONS.length
-    );
-    setCheckAll(list.length === TYPE_INDICATOR_OPTIONS.length);
-    const newColumns = getColumns(list);
-    onColumnChange && onColumnChange(newColumns);
-  };
-
-  const handleCheckAllChange = (e: CheckboxChangeEvent) => {
-    const newCheckedList = e.target.checked ? TYPE_INDICATOR_OPTIONS : [];
-    setCheckedList(e.target.checked ? TYPE_INDICATOR_OPTIONS : []);
-    setIndeterminate(false);
-    setCheckAll(e.target.checked);
-    const newColumns = getColumns(newCheckedList);
-    onColumnChange && onColumnChange(newColumns);
   };
 
   return (
@@ -296,31 +263,6 @@ const Filters = ({
               <Radio.Button value="fireant">Fireant</Radio.Button>
               <Radio.Button value="supabase">Supabase</Radio.Button>
             </Radio.Group>
-          </div>
-          <div style={{ marginTop: '20px' }}>
-            <Popover
-              placement="leftTop"
-              content={
-                <div>
-                  <Checkbox
-                    indeterminate={indeterminate}
-                    onChange={handleCheckAllChange}
-                    checked={checkAll}
-                  >
-                    All
-                  </Checkbox>
-                  <CheckboxGroup
-                    options={TYPE_INDICATOR_OPTIONS}
-                    value={checkedList}
-                    onChange={handleChangeColumn}
-                  />
-                </div>
-              }
-            >
-              <Button size="small" type="primary">
-                Hover me
-              </Button>
-            </Popover>
           </div>
         </div>
         <div
