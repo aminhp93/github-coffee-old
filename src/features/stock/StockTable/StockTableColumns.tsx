@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { ResultBacktestData } from '../types';
+import { StockData } from '../types';
 import { DATE_FORMAT } from '../constants';
 
 const MAIN_FIELD = [
@@ -23,7 +23,7 @@ const BACKTEST_FIELD = [
 
 interface Props {
   isBacktest?: boolean;
-  handleClickRow: (record: ResultBacktestData) => void;
+  handleClickRow: (record: StockData) => void;
 }
 
 const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
@@ -37,7 +37,7 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
       field: 'date',
       onCellClicked: (data: any) => {
         if (!data.data.date) return;
-        handleClickRow(data.data as ResultBacktestData);
+        handleClickRow(data.data as StockData);
       },
       cellRenderer: (data: any) => {
         if (!data.data.date) return;

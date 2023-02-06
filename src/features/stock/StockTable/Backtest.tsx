@@ -11,7 +11,7 @@ import StockService from '../service';
 import moment from 'moment';
 import { mapDataChart, getStockDataFromSupabase } from '../utils';
 import BackTestChart from './BackTestChart';
-import { SupabaseData, StockCoreData, ResultBacktestData } from '../types';
+import { SupabaseData, StockCoreData, StockData } from '../types';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
@@ -28,14 +28,12 @@ interface Props {
 
 const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   const gridRef: any = useRef();
-  const [resultBacktestData, setResultBacktestData] = useState<
-    ResultBacktestData[]
-  >([]);
+  const [resultBacktestData, setResultBacktestData] = useState<StockData[]>([]);
   const [dataChart, setDataChart] = useState<any>(null);
   const [fullData, setFullData] = useState<StockCoreData[]>([]);
   const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
-    moment('2022-01-01'),
-    moment('2022-12-31'),
+    moment().add(-1, 'years'),
+    moment(),
   ]);
 
   const handleChangeDate = (dates: any) => {
@@ -58,13 +56,14 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
       const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
       console.log('mappedData', mappedData);
 
-      const data = mappedData[0].backtestData;
-      if (!data) {
+      const backtestData = mappedData[0].backtestData;
+      const fullData = mappedData[0].fullData;
+      if (!backtestData || !fullData) {
         notification.error({ message: 'error' });
         return;
       }
-      setResultBacktestData(data.result);
-      setFullData(data.fullData);
+      setResultBacktestData(backtestData);
+      setFullData(fullData);
 
       notification.success({ message: 'success' });
     } catch (e) {
@@ -73,7 +72,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     }
   };
 
-  const handleClickRow = (data: ResultBacktestData) => {
+  const handleClickRow = (data: StockData) => {
     console.log(data);
     const latestBase = data.latestBase;
     const closetUpperBase = data.closetUpperBase;

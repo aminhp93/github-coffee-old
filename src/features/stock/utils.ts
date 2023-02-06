@@ -128,8 +128,8 @@ export const getSeriesMarkPoint = ({
   };
 };
 
-export const getLatestBase = (data: StockCoreData[]): Base | null => {
-  if (!data || data.length === 0 || data.length < 6) return null;
+export const getLatestBase = (data: StockCoreData[]): Base | undefined => {
+  if (!data || data.length === 0 || data.length < 6) return undefined;
   const startBaseIndex = 0;
   let endBaseIndex = 5;
   const list = data.slice(startBaseIndex, endBaseIndex);
@@ -178,7 +178,7 @@ export const getLatestBase = (data: StockCoreData[]): Base | null => {
       };
     }
   }
-  return null;
+  return undefined;
 };
 
 export const getStockDataFromSupabase = (data: SupabaseData[]): StockData[] => {
@@ -322,7 +322,7 @@ export const mapDataChart = ({
       left: 20,
       right: 20,
       // top: 20,
-      height: '90%',
+      height: '80%',
     },
     {
       left: 20,
@@ -369,12 +369,14 @@ export const mapDataChart = ({
 
 export const getClosestUpperBase = (
   data: StockCoreData[],
-  latestBase: Base
-): Base | null => {
+  latestBase?: Base
+): Base | undefined => {
+  if (!latestBase) return undefined;
+
   const indexLastBase = data.findIndex(
     (i) => i.date === latestBase.endBaseDate
   );
-  let closetUpperBase = null;
+  let closetUpperBase;
   let stop = false;
 
   for (let i = indexLastBase; i < data.length; i++) {

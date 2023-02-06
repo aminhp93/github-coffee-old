@@ -126,48 +126,9 @@ export interface SupabaseData {
   totalVolume: number;
 }
 
-export type StockCoreData = Pick<
-  StockData,
-  | 'date'
-  | 'symbol'
-  | 'priceClose'
-  | 'priceOpen'
-  | 'priceLow'
-  | 'priceHigh'
-  | 'totalValue'
-  | 'totalVolume'
-  | 'dealVolume'
->;
-
-export type StockBasicData = Pick<
-  StockData,
-  | 'symbol'
-  | 'date'
-  | 'change_t0'
-  | 'priceClose'
-  | 'priceOpen'
-  | 'priceHigh'
-  | 'priceLow'
-  | 'totalVolume'
-  | 'dealVolume'
-  | 'totalValue'
-  | 't0_over_base_max'
-  | 'estimated_vol_change'
-  | 'latestBase'
->;
-
-export interface ResultBacktestData extends StockBasicData {
-  closetUpperBase: Base | null;
-}
-
-export interface BacktestData {
-  result: ResultBacktestData[];
-  fullData: StockCoreData[];
-}
-export interface StockData {
+export interface StockCoreData {
   symbol: string;
   date: string;
-  change_t0: number;
   priceClose: number;
   priceOpen: number;
   priceHigh: number;
@@ -175,8 +136,14 @@ export interface StockData {
   totalVolume: number;
   dealVolume: number;
   totalValue: number;
-  t0_over_base_max: number | undefined;
+}
+
+export interface StockData extends StockCoreData {
+  change_t0: number;
   estimated_vol_change: number;
-  latestBase: Base | null;
-  backtestData?: BacktestData | undefined;
+  t0_over_base_max?: number;
+  closetUpperBase?: Base;
+  latestBase?: Base;
+  backtestData?: StockData[];
+  fullData?: StockData[];
 }
