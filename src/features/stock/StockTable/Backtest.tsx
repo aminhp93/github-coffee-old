@@ -64,8 +64,6 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
       }
       setResultBacktestData(backtestData);
       setFullData(fullData);
-
-      notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
       notification.error({ message: 'error' });
@@ -80,41 +78,45 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     // .filter(
     //   (i: StockCoreData) => i.t0_over_base_max > 0
     // );
-    const listMarkLines = latestBase &&
-      closetUpperBase && [
-        [
-          {
-            coord: [latestBase.startBaseDate, latestBase.base_min],
-          },
-          {
-            coord: [latestBase.endBaseDate, latestBase.base_min],
-          },
-        ],
-        [
-          {
-            coord: [latestBase.startBaseDate, latestBase.base_max],
-          },
-          {
-            coord: [latestBase.endBaseDate, latestBase.base_max],
-          },
-        ],
-        [
-          {
-            coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
-          },
-          {
-            coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
-          },
-        ],
-        [
-          {
-            coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
-          },
-          {
-            coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
-          },
-        ],
-      ];
+    const listMarkLines = [];
+
+    if (latestBase) {
+      listMarkLines.push([
+        {
+          coord: [latestBase.startBaseDate, latestBase.base_min],
+        },
+        {
+          coord: [latestBase.endBaseDate, latestBase.base_min],
+        },
+      ]);
+      listMarkLines.push([
+        {
+          coord: [latestBase.startBaseDate, latestBase.base_max],
+        },
+        {
+          coord: [latestBase.endBaseDate, latestBase.base_max],
+        },
+      ]);
+    }
+    if (closetUpperBase) {
+      listMarkLines.push([
+        {
+          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_min],
+        },
+        {
+          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_min],
+        },
+      ]);
+      listMarkLines.push([
+        {
+          coord: [closetUpperBase.startBaseDate, closetUpperBase.base_max],
+        },
+        {
+          coord: [closetUpperBase.endBaseDate, closetUpperBase.base_max],
+        },
+      ]);
+    }
+
     setDataChart(mapDataChart({ fullData, listMarkPoints, listMarkLines }));
   };
 
@@ -212,10 +214,10 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
               })}
               ref={gridRef}
               defaultColDef={{
-                minWidth: 150,
+                // minWidth: 150,
                 filter: true,
                 sortable: true,
-                floatingFilter: true,
+                // floatingFilter: true,
               }}
             />
           </div>

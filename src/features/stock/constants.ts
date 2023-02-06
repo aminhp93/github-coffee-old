@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { minBy, maxBy } from 'lodash';
+import { minBy, maxBy, min, max } from 'lodash';
 import { Filter, StockCoreData, Watchlist } from './types';
 
 export const UNIT_BILLION = 1_000_000_000;
@@ -367,8 +367,14 @@ export const getEstimatedVol = (data: StockCoreData) => {
 
 export const getBase_min_max = (data: StockCoreData[]) => {
   return {
-    base_min: minBy(data, 'priceLow')?.priceLow,
-    base_max: maxBy(data, 'priceHigh')?.priceHigh,
+    base_min: min([
+      minBy(data, 'priceOpen')?.priceOpen,
+      minBy(data, 'priceClose')?.priceClose,
+    ]),
+    base_max: max([
+      maxBy(data, 'priceOpen')?.priceOpen,
+      maxBy(data, 'priceClose')?.priceClose,
+    ]),
   };
 };
 
