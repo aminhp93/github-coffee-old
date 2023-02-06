@@ -131,6 +131,7 @@ export const FundamentalKeys = [
 export const DEFAULT_FILTER: Filter = {
   change_t0: 2,
   estimated_vol_change: 20,
+  t0_over_base_max: 0.1,
 };
 
 export const DEFAULT_SETTING: any = {

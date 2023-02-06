@@ -112,7 +112,10 @@ export interface Watchlist {
   watchlistID: number;
 }
 
-export type Filter = Pick<StockData, 'change_t0' | 'estimated_vol_change'>;
+export type Filter = Pick<
+  StockData,
+  'change_t0' | 'estimated_vol_change' | 't0_over_base_max'
+>;
 
 export interface SupabaseData {
   date: string;

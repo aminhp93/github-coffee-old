@@ -82,6 +82,7 @@ export const getBacktestData = (
   backtestData: StockData[] | undefined;
   fullData: StockData[] | undefined;
 } => {
+  console.log('getBacktestData', data);
   if (data.length < 2)
     return {
       backtestData: undefined,
@@ -89,7 +90,7 @@ export const getBacktestData = (
     };
   const fullData: StockData[] = [];
   data.forEach((_, index: number) => {
-    const source = data.slice(index + 1);
+    const source = data.slice(index);
     const mappedSource = mapStockData(source);
     if (mappedSource) {
       fullData.push(mappedSource);
@@ -97,7 +98,7 @@ export const getBacktestData = (
   });
 
   const backtestData = filterData(fullData, DEFAULT_FILTER);
-
+  console.log('backtestData', backtestData, 'fullData', fullData);
   return {
     backtestData,
     fullData,

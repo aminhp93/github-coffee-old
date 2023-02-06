@@ -119,14 +119,14 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   };
 
   const applyFilters = useCallback(() => {
-    const ageFilterComponent =
-      gridRef.current.api.getFilterInstance('t0_over_base_max');
-    ageFilterComponent.setModel({
-      type: 'greaterThan',
-      filter: 0,
-      filterTo: null,
-    });
-    gridRef.current.api.onFilterChanged();
+    // const ageFilterComponent =
+    //   gridRef.current.api.getFilterInstance('t0_over_base_max');
+    // ageFilterComponent.setModel({
+    //   type: 'greaterThan',
+    //   filter: 0,
+    //   filterTo: null,
+    // });
+    // gridRef.current.api.onFilterChanged();
   }, []);
 
   const clearAllFilters = useCallback(() => {
@@ -136,8 +136,11 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   useEffect(() => {
     if (!gridRef.current || !gridRef.current.api) return;
     applyFilters();
-    const listMarkPoints = fullData.filter((i: any) => i.t0_over_base_max > 0);
-    setDataChart(mapDataChart({ fullData, listMarkPoints }));
+    setDataChart(
+      mapDataChart({ fullData, listMarkPoints: resultBacktestData })
+    );
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultBacktestData]);
 
   useEffect(() => {
@@ -217,6 +220,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
             />
           </div>
         </div>
+        {resultBacktestData.length}
       </div>
     </Drawer>
   );

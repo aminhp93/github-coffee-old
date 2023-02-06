@@ -4,6 +4,7 @@ import { DATE_FORMAT } from '../constants';
 
 const MAIN_FIELD = [
   'symbol',
+  'date',
   'change_t0',
   'base_percent',
   't0_over_base_max',

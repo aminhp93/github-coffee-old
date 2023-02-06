@@ -90,17 +90,18 @@ const StockTable = () => {
 
   const getData = async () => {
     try {
+      setLoading(true);
       await updateData();
 
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
-      setLoading(true);
 
       // get data
       const res = await StockService.getStockDataFromSupabase({
         startDate,
         endDate,
       });
+      setLoading(false);
       console.log('res', res);
 
       const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
