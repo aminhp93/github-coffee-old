@@ -14,6 +14,8 @@
     "@udecode/plate-juice": "^16.8.0",
     "@udecode/plate-test-utils": "^13.4.0",
     "@udecode/plate-ui-excalidraw": "^16.8.0",
+    "ag-grid-community": "^29.0.0",
+    "ag-grid-react": "^29.0.0",
     "antd": "4.23.5",
     "axios": "^0.27.2",
     "craco-less": "^2.0.0",

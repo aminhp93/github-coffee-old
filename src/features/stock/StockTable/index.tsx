@@ -6,68 +6,55 @@ import {
   FilterOutlined,
   SettingOutlined,
   WarningOutlined,
+  BoldOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Statistic, Table } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import { Button, notification, Statistic, DatePicker, Tooltip } from 'antd';
 import StockService from '../service';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   DEFAULT_FILTER,
-  DEFAULT_SETTINGS,
-  DEFAULT_COLUMNS,
+  DEFAULT_SETTING,
   DATE_FORMAT,
   DEFAULT_START_DATE,
   DEFAULT_END_DATE,
 } from '../constants';
 import {
-  getBackTestDataOffline,
-  getDataSource,
-  getDataFromSupabase,
-  getDataFromFireant,
+  filterData,
   updateDataWithDate,
+  getStockDataFromSupabase,
 } from '../utils';
-import Filters from './Filters';
+import Filters from './Filter';
 import './index.less';
-import Settings from './Settings';
+import Settings from './Setting';
+import Backtest from './Backtest';
 import Testing from './Testing';
-import { CustomSymbol, Watchlist } from '../types';
+import { Filter, SupabaseData, StockData } from '../types';
+import { AgGridReact } from 'ag-grid-react';
+import StockTableColumns from './StockTableColumns';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+const { RangePicker } = DatePicker;
 
 const StockTable = () => {
+  const gridRef: any = useRef();
+
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
-  const [listWatchlist, setListWatchlist] = useState<Watchlist[]>([]);
-  const [fullDataSource, setFullDataSource] = useState<CustomSymbol[]>([]);
-  const [dataSource, setDataSource] = useState<CustomSymbol[]>([]);
+  const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
+  const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [columns, setColumns] = useState<ColumnsType<any>>(DEFAULT_COLUMNS);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState(DEFAULT_SETTING);
+  const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
     DEFAULT_START_DATE,
     DEFAULT_END_DATE,
   ]);
 
-  const handleUpdateWatchlist = async (symbols?: string[]) => {
-    try {
-      const watchlistObj = {
-        watchlistID: 2279542,
-        name: 'daily_test_watchlist',
-        userName: 'minhpn.org.ec1@gmail.com',
-      };
-
-      const updateData = {
-        ...watchlistObj,
-        symbols: symbols
-          ? symbols
-          : dataSource.map((i: CustomSymbol) => i.symbol),
-      };
-
-      await StockService.updateWatchlist(watchlistObj, updateData);
-      notification.success({ message: 'Update wl success' });
-    } catch (e) {
-      notification.error({ message: 'Update wl success' });
-    }
+  const handleChangeDate = (dates: any) => {
+    setDates(dates);
   };
 
   const updateData = async () => {
@@ -103,36 +90,27 @@ const StockTable = () => {
 
   const getData = async () => {
     try {
+      setLoading(true);
       await updateData();
 
-      let res: any;
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
-      setLoading(true);
-      if (
-        localStorage.getItem('sourceData') !== 'supabase' &&
-        moment().format('HH:mm') < '15:00'
-      ) {
-        res = await getDataFromFireant({
-          startDate,
-          endDate: moment().format(DATE_FORMAT),
-        });
-      } else {
-        res = await getDataFromSupabase({ startDate, endDate });
-      }
 
-      const newData = getDataSource(res, filters);
-
-      const resBackTest = await getBackTestDataOffline({
-        database: 'supabase',
-        dataSource: newData,
-        fullDataSource: res,
-        filters,
+      // get data
+      const res = await StockService.getStockDataFromSupabase({
+        startDate,
+        endDate,
       });
-
       setLoading(false);
-      setFullDataSource(resBackTest.fullDataSource);
-      setDataSource(resBackTest.dataSource);
+      console.log('res', res);
+
+      const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
+      console.log('mappedData', mappedData);
+
+      const filterdData = filterData(mappedData, filters);
+      console.log('filterdData', filterdData);
+
+      setListStocks(filterdData);
       notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
@@ -146,16 +124,7 @@ const StockTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dates]);
 
-  useEffect(() => {
-    (async () => {
-      const res = await StockService.getWatchlist();
-      if (res && res.data) {
-        setListWatchlist(res.data);
-      }
-    })();
-  }, []);
-
-  const renderHeader = () => {
+  const header = () => {
     return (
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div className="flex">
@@ -164,6 +133,12 @@ const StockTable = () => {
             icon={<CheckCircleOutlined />}
             disabled={loading}
             onClick={getData}
+          />
+          <RangePicker
+            size="small"
+            onChange={handleChangeDate}
+            defaultValue={dates}
+            format={DATE_FORMAT}
           />
         </div>
         <div className={'flex'}>
@@ -183,86 +158,115 @@ const StockTable = () => {
     );
   };
 
-  const _filter_1 = fullDataSource.filter(
-    (i: CustomSymbol) => i.buySellSignals.changePrice < -0.02
+  const handleClickRow = (data: any) => {
+    const symbol = data.data?.symbol;
+    if (!symbol) return;
+    setOpenDrawerBacktest(true);
+    setClickedSymbol(data.data.symbol);
+  };
+
+  const _filter_1 = listStocks.filter((i: StockData) => i.change_t0 < -0.02);
+  const _filter_2 = listStocks.filter(
+    (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
   );
-  const _filter_2 = fullDataSource.filter(
-    (i: CustomSymbol) =>
-      i.buySellSignals.changePrice >= -0.02 &&
-      i.buySellSignals.changePrice <= 0.02
-  );
-  const _filter_3 = fullDataSource.filter(
-    (i: CustomSymbol) => i.buySellSignals.changePrice > 0.02
-  );
+  const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
 
   const footer = () => {
     return (
       <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div>{String(dataSource.length)}</div>
         <div>
-          <Button
-            size="small"
-            type="primary"
-            icon={<WarningOutlined />}
-            onClick={() => setOpenDrawerTesting(true)}
-          />
-          <Button
-            size="small"
-            type="primary"
-            style={{ marginLeft: 8 }}
-            icon={<SettingOutlined />}
-            onClick={() => setOpenDrawerSettings(true)}
-          />
-          <Button
-            size="small"
-            type="primary"
-            icon={<FilterOutlined />}
-            style={{ marginLeft: 8 }}
-            onClick={() => setOpenDrawerFilter(true)}
-          />
+          {`${String(listStocks.length)} rows`}
+          <Tooltip title="Setting">
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              icon={<SettingOutlined />}
+              onClick={() => setOpenDrawerSettings(true)}
+            />
+          </Tooltip>
+          <Tooltip title="Testing">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerTesting(true)}
+            />
+          </Tooltip>
+        </div>
+        <div>
+          <Tooltip title="Backtest">
+            <Button
+              size="small"
+              type="primary"
+              icon={<BoldOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerBacktest(true)}
+            />
+          </Tooltip>
+          <Tooltip title="Filter">
+            <Button
+              size="small"
+              type="primary"
+              icon={<FilterOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerFilter(true)}
+            />
+          </Tooltip>
         </div>
       </div>
     );
   };
 
-  console.log(dataSource, 'dataSource', fullDataSource, 'fullDataSource');
+  console.log(listStocks, 'listStocks');
 
   return (
     <div className="StockTable height-100 flex">
-      {renderHeader()}
-      <Table
-        style={{
-          flex: 1,
-        }}
-        {...settings}
-        loading={loading}
-        columns={columns}
-        dataSource={dataSource}
-        footer={footer}
-      />
-      <Testing
-        open={openDrawerTesting}
-        onClose={() => setOpenDrawerTesting(false)}
-      />
-      <Filters
-        open={openDrawerFilter}
-        listWatchlist={listWatchlist}
-        onChange={(data: any) => setFilters({ ...filters, ...data })}
-        onDateChange={(newDates: [moment.Moment, moment.Moment]) =>
-          setDates(newDates)
-        }
-        onUpdateWatchlist={handleUpdateWatchlist}
-        onGetData={() => {
-          // console.log('onGetData');
-        }}
-        onColumnChange={(newColumns: any) => setColumns(newColumns)}
-        onClose={() => setOpenDrawerFilter(false)}
-      />
-      <Settings
-        open={openDrawerSettings}
-        onChange={(data: any) => setSettings({ ...settings, ...data })}
-        onClose={() => setOpenDrawerSettings(false)}
-      />
+      {header()}
+      <div
+        className="ag-theme-alpine"
+        style={{ height: '100%', width: '100%' }}
+      >
+        <AgGridReact
+          rowData={listStocks}
+          columnDefs={StockTableColumns({
+            handleClickRow,
+          })}
+          ref={gridRef}
+          defaultColDef={{
+            minWidth: 150,
+            filter: true,
+            sortable: true,
+            floatingFilter: true,
+          }}
+        />
+      </div>
+      {footer()}
+
+      {openDrawerTesting && (
+        <Testing onClose={() => setOpenDrawerTesting(false)} />
+      )}
+
+      {openDrawerBacktest && (
+        <Backtest
+          symbol={clickedSymbol}
+          onClose={() => setOpenDrawerBacktest(false)}
+        />
+      )}
+
+      {openDrawerFilter && (
+        <Filters
+          onChange={(data: Filter) => setFilters({ ...filters, ...data })}
+          onClose={() => setOpenDrawerFilter(false)}
+        />
+      )}
+      {openDrawerSettings && (
+        <Settings
+          onChange={(data: any) => setSettings({ ...settings, ...data })}
+          onClose={() => setOpenDrawerSettings(false)}
+        />
+      )}
     </div>
   );
 };

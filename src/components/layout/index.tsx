@@ -7,9 +7,18 @@ const Layout = () => {
       className="height-100"
       style={{ display: 'flex', flexDirection: 'column' }}
     >
-      <Header />
       <div className="flex-1">
         <Outlet />
+      </div>
+      <div
+        style={{
+          position: 'fixed',
+          height: '36px',
+          bottom: 0,
+          right: 0,
+        }}
+      >
+        <Header />
       </div>
     </div>
   );

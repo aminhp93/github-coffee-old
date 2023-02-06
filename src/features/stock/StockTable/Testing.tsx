@@ -1,66 +1,26 @@
-import { Drawer, Button, notification, Table, DatePicker, Divider } from 'antd';
+import { useState, useEffect } from 'react';
 import {
-  DATE_FORMAT,
-  DEFAULT_FILTER,
-  DEFAULT_START_DATE,
-  DEFAULT_END_DATE,
-} from '../constants';
+  Drawer,
+  Select,
+  Button,
+  DatePicker,
+  notification,
+  Divider,
+} from 'antd';
 import StockService from '../service';
+import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import moment from 'moment';
-import {
-  getDataFromSupabase,
-  getDataFromFireant,
-  getBackTestDataOffline,
-  getDataSource,
-  createBackTestData,
-  updateDataWithDate,
-} from '../utils';
+import { updateDataWithDate, createBackTestData } from '../utils';
 
-import type { DatePickerProps } from 'antd';
-
-import { useEffect, useState } from 'react';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
-
-const UPDATE_STATUS_COLUMNS = [
-  {
-    title: 'id',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'date',
-    dataIndex: 'date',
-    key: 'date',
-    render: (data: any) => {
-      return moment(data).format(DATE_FORMAT);
-    },
-  },
-  {
-    title: 'status',
-    dataIndex: 'status',
-    key: 'status',
-    render: (data: any) => {
-      return data ? (
-        <CheckCircleOutlined style={{ marginRight: '4px', color: 'green' }} />
-      ) : (
-        <CloseCircleOutlined style={{ color: 'red' }} />
-      );
-    },
-  },
-];
+const { RangePicker } = DatePicker;
 
 interface Props {
-  open: boolean;
   onClose: () => void;
 }
 
-const Testing = ({ open, onClose }: Props) => {
-  const [listUpdateStatus, setListUpdateStatus] = useState<any>([]);
-  const [selectedDate, setSelectedDate] = useState<moment.Moment | null>(null);
+const TestSupabaseData = ({ onClose }: Props) => {
+  const [dates, setDates] = useState<any>([moment(), moment()]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
-  const [dataFromSupabase, setDataFromSupabase] = useState<any>([]);
-  const [dataFromFireant, setDataFromFireant] = useState<any>([]);
-  const [columns, setColumns] = useState<any>([]);
 
   const getLastUpdated = async () => {
     try {
@@ -74,12 +34,54 @@ const Testing = ({ open, onClose }: Props) => {
     }
   };
 
-  const onChangeDate: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
-    setSelectedDate(date);
+  const handleTest = async (symbol: string) => {
+    if (dates.length !== 2) return;
+    const startDate = dates[0].format(DATE_FORMAT);
+    const endDate = dates[1].format(DATE_FORMAT);
+    const res = await StockService.getHistoricalQuotes({
+      symbol,
+      startDate,
+      endDate,
+    });
+    const res2 = await StockService.getStockDataFromSupabase({
+      listSymbols: [symbol],
+      startDate,
+      endDate,
+    });
+    console.log(res, res2);
+    if (res && res2.data && res.length === 1 && res2.data.length === 1) {
+      const data = res[0];
+      const data2 = res2.data[0];
+      if (
+        data.dealVolume === data2.dealVolume &&
+        data.priceClose === data2.priceClose &&
+        data.priceHigh === data2.priceHigh &&
+        data.priceLow === data2.priceLow &&
+        data.priceOpen === data2.priceOpen &&
+        data.totalValue === data2.totalValue &&
+        data.totalVolume === data2.totalVolume
+      ) {
+        console.log('OK');
+      } else {
+        console.log('NOT OK');
+      }
+    }
   };
 
+  const handleTestAll = () => {
+    LIST_ALL_SYMBOLS.forEach((symbol) => {
+      handleTest(symbol);
+    });
+  };
+
+  const handleChangeDate = (dates: any) => {
+    setDates(dates);
+  };
+
+  console.log('dates', dates);
+
   const updateData = async () => {
+    const selectedDate = dates.length === 2 ? dates[1] : null;
     if (selectedDate) {
       // if have selected date, update only selected date and no udpate selected date
       updateDataWithDate(
@@ -115,28 +117,26 @@ const Testing = ({ open, onClose }: Props) => {
     }
   };
 
-  const handleTest = async () => {
-    const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
-    const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
-    const supabaseData = await getDataFromSupabase({ startDate, endDate });
-    const fireantData = await getDataFromFireant({ startDate, endDate });
-
-    const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
-    const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
-
-    const supabaseDataBacktest = await getBackTestDataOffline({
-      database: 'supabase',
-      dataSource: newDataSupabase,
-      fullDataSource: supabaseData,
-    });
-    const fireantDataBacktest = await getBackTestDataOffline({
-      database: 'supabase',
-      dataSource: newDataFireant,
-      fullDataSource: fireantData,
-    });
-    console.log(supabaseDataBacktest, fireantDataBacktest);
-    setDataFromSupabase(supabaseDataBacktest);
-    setDataFromFireant(fireantDataBacktest);
+  const handleTest2 = async () => {
+    // const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
+    // const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
+    // const supabaseData = await getDataFromSupabase({ startDate, endDate });
+    // const fireantData = await getDataFromFireant({ startDate, endDate });
+    // const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
+    // const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
+    // const supabaseDataBacktest = await getBackTestDataOffline({
+    //   database: 'supabase',
+    //   dataSource: newDataSupabase,
+    //   fullDataSource: supabaseData,
+    // });
+    // const fireantDataBacktest = await getBackTestDataOffline({
+    //   database: 'supabase',
+    //   dataSource: newDataFireant,
+    //   fullDataSource: fireantData,
+    // });
+    // console.log(supabaseDataBacktest, fireantDataBacktest);
+    // setDataFromSupabase(supabaseDataBacktest);
+    // setDataFromFireant(fireantDataBacktest);
   };
 
   useEffect(() => {
@@ -148,63 +148,62 @@ const Testing = ({ open, onClose }: Props) => {
       title={
         <div className="flex" style={{ justifyContent: 'space-between' }}>
           <div>Testing</div>
-          <div>Last updated: {lastUpdated}</div>
+          <RangePicker
+            size="small"
+            onChange={handleChangeDate}
+            defaultValue={dates}
+            format={DATE_FORMAT}
+          />
         </div>
       }
       placement="bottom"
       onClose={onClose}
-      open={open}
+      open={true}
     >
-      <div className="height-100 flex">
-        <div className="flex-1">
-          <div>
-            <Button size="small" onClick={updateData}>
-              Update data
-            </Button>
-            <DatePicker size="small" onChange={onChangeDate} />
-          </div>
-          <Divider />
-          <Button
-            disabled
-            size="small"
-            onClick={createBackTestData}
-            style={{ marginTop: '20px' }}
-          >
-            Create backtest
-          </Button>
+      <div
+        className="height-100"
+        style={{
+          display: 'flex',
+        }}
+      >
+        <div>Last updated: {lastUpdated}</div>
+        <Button
+          disabled
+          size="small"
+          onClick={createBackTestData}
+          style={{ marginTop: '20px' }}
+        >
+          Create backtest
+        </Button>
+        <Button
+          size="small"
+          onClick={handleTest2}
+          style={{ marginTop: '20px' }}
+        >
+          Test data from fireant vs supabase
+        </Button>
+        <Select
+          defaultValue="VPB"
+          style={{ width: 120 }}
+          onChange={(value: string) => {
+            handleTest(value);
+          }}
+          options={LIST_ALL_SYMBOLS.map((i) => {
+            return { value: i, label: i };
+          })}
+        />
+        <Button onClick={() => handleTest('VPB')}>Test VPB</Button>
+        <Button onClick={() => handleTestAll()}>Test All</Button>
 
-          <Divider />
-          <Button
-            size="small"
-            onClick={handleTest}
-            style={{ marginTop: '20px' }}
-          >
-            Test data from fireant vs supabase
+        <Divider />
+        <div>
+          <Button size="small" onClick={updateData}>
+            Update data
           </Button>
-
-          <Divider />
-        </div>
-        <div className="flex-1">
-          {listUpdateStatus && listUpdateStatus.length && (
-            <Table
-              size="small"
-              dataSource={listUpdateStatus}
-              columns={columns}
-              pagination={false}
-            />
-          )}
-          <div>
-            <div>Supabase</div>
-            <div>{dataFromSupabase.dataSource?.length}</div>
-            <div>{dataFromSupabase.fullDataSource?.length}</div>
-            <div>Fireant</div>
-            <div>{dataFromFireant.dataSource?.length}</div>
-            <div>{dataFromFireant.fullDataSource?.length}</div>
-          </div>
         </div>
       </div>
     </Drawer>
   );
 };
 
-export default Testing;
+export default TestSupabaseData;

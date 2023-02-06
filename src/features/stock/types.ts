@@ -83,41 +83,16 @@ export interface HistoricalQuoteParams {
   returnRequest?: boolean;
 }
 
-export interface FundamentalsParams {
-  symbol: string;
-}
-
-export interface BuySellSignals {
-  totalValue_last20_min: number;
-  averageVolume_last5: number;
-  changePrice: number;
-  latestBase: Base | null;
-  estimated_vol_change: number;
-  extra_vol: number;
-  action: ActionType;
-}
-
-export interface ExtraData {
-  key: string;
-  symbol: string;
-  inWatchingWatchList?: boolean;
-}
-
-export type ActionType = 'buy' | 'sell' | 'unknown';
-
 export interface Base {
-  buyIndex: number;
   startBaseIndex: number;
   endBaseIndex: number;
   change_t0_vol: number;
   change_t0: number;
-  change_buyPrice: number;
   num_high_vol_than_t0: number;
   base_max: number;
   base_min: number;
   change_t3?: number | null;
   base_percent: number;
-  t0_over_base_max: number;
   closestUpperBaseIndex?: number;
   upperPercent?: number;
   closestLowerBaseIndex?: number;
@@ -126,25 +101,9 @@ export interface Base {
   min_in_20_days_without_break_base_index?: number;
   max_change_in_20_days?: number;
   max_in_20_days_without_break_base_index?: number;
+  startBaseDate?: string;
+  endBaseDate?: string;
 }
-
-export interface CustomSymbol {
-  buySellSignals: BuySellSignals;
-  inWatchingWatchList?: boolean;
-  key: string;
-  symbol: string;
-  last20HistoricalQuote: BackTestSymbol[]; // last 20 days
-  backtest: BackTest | null;
-}
-
-export interface BackTest {
-  filteredBase: Base[];
-  listBase: Base[];
-  winCount: number;
-  winRate: number;
-  fullData: BackTestSymbol[];
-}
-
 export interface Watchlist {
   displayIndex: number;
   name: string;
@@ -153,42 +112,41 @@ export interface Watchlist {
   watchlistID: number;
 }
 
-export interface BaseFilter {
-  currentWatchlist: Watchlist | null;
-  totalValue_last20_min: number;
-  changePrice_min: number;
-  have_base_in_5_day: boolean;
-  estimated_vol_change_min: number;
-  have_extra_vol: boolean;
-  only_buy_sell: boolean;
-  t0_over_base_max: number;
-}
+export type Filter = Pick<
+  StockData,
+  'change_t0' | 'estimated_vol_change' | 't0_over_base_max'
+>;
 
-export interface BackTestSymbol {
+export interface SupabaseData {
   date: string;
   dealVolume: number;
   priceClose: number;
   priceHigh: number;
   priceLow: number;
   priceOpen: number;
-  totalVolume: number;
   symbol: string;
+  totalValue: number;
+  totalVolume: number;
 }
 
-export interface SimplifiedBackTestSymbol {
-  d: string;
-  v: number;
-  c: number;
-  h: number;
-  l: number;
-  o: number;
-  v2: number;
-  s: string;
+export interface StockCoreData {
+  symbol: string;
+  date: string;
+  priceClose: number;
+  priceOpen: number;
+  priceHigh: number;
+  priceLow: number;
+  totalVolume: number;
+  dealVolume: number;
+  totalValue: number;
 }
 
-export interface FilterBackTest {
-  change_t0?: number | null;
-  change_t0_vol?: number | null;
-  num_high_vol_than_t0?: number | null;
-  t0_over_base_max?: number | null;
+export interface StockData extends StockCoreData {
+  change_t0: number;
+  estimated_vol_change: number;
+  t0_over_base_max?: number;
+  closetUpperBase?: Base;
+  latestBase?: Base;
+  backtestData?: StockData[];
+  fullData?: StockData[];
 }
