@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Drawer,
-  Select,
-  Button,
-  DatePicker,
-  notification,
-  Divider,
-} from 'antd';
+import { Drawer, Select, Button, DatePicker, notification } from 'antd';
 import StockService from '../service';
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import moment from 'moment';
@@ -195,7 +188,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
         <Button onClick={() => handleTest('VPB')}>Test VPB</Button>
         <Button onClick={() => handleTestAll()}>Test All</Button>
 
-        <Divider />
         <div>
           <Button size="small" onClick={updateData}>
             Update data

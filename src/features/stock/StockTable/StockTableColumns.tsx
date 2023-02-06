@@ -6,20 +6,22 @@ const MAIN_FIELD = [
   'symbol',
   'date',
   'change_t0',
-  'base_percent',
+  'latestBase',
   't0_over_base_max',
   'estimated_vol_change',
-  'diff_closet_upper_base',
+  'closetUpperBase',
   'backtest',
+  'expectedReturn',
 ];
 
 const BACKTEST_FIELD = [
   'date',
   'change_t0',
-  'base_percent',
+  'latestBase',
   't0_over_base_max',
   'estimated_vol_change',
-  'diff_closet_upper_base',
+  'closetUpperBase',
+  'expectedReturn',
 ];
 
 interface Props {
@@ -32,70 +34,116 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
     {
       headerName: 'Symbol',
       field: 'symbol',
+      width: 120,
     },
     {
       headerName: 'Date',
       field: 'date',
+      width: 120,
       onCellClicked: (data: any) => {
-        if (!data.data.date) return;
-        handleClickRow(data.data as StockData);
+        const stockData: StockData = data.data;
+
+        if (!stockData.date) return;
+        handleClickRow(stockData as StockData);
       },
       cellRenderer: (data: any) => {
-        if (!data.data.date) return;
-        return moment(data.data.date).format(DATE_FORMAT);
+        const stockData: StockData = data.data;
+
+        if (!stockData.date) return;
+        return moment(stockData.date).format(DATE_FORMAT);
       },
     },
     {
       headerName: 'change_t0',
       field: 'change_t0',
+      type: 'rightAligned',
+      width: 120,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
-        if (!data.data.change_t0) return;
-        return data.data.change_t0.toFixed(1) + '%';
-      },
-    },
-    {
-      field: 'base_percent',
-      headerName: 'base_percent',
-      filter: 'agNumberColumnFilter',
-      cellRenderer: (data: any) => {
-        if (!data.data.latestBase) return;
-        return data.data.latestBase.base_percent.toFixed(1) + '%';
+        const stockData: StockData = data.data;
+
+        if (!stockData.change_t0) return;
+        return stockData.change_t0.toFixed(1) + '%';
       },
     },
     {
       field: 't0_over_base_max',
       suppressMenu: true,
+      width: 120,
+      type: 'rightAligned',
       headerName: 't0_over_base_max',
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
-        if (!data.data.t0_over_base_max) return;
-        return data.data.t0_over_base_max.toFixed(1) + '%';
+        const stockData: StockData = data.data;
+        if (!stockData.t0_over_base_max) return;
+
+        return stockData.t0_over_base_max.toFixed(1) + '%';
       },
     },
     {
       field: 'estimated_vol_change',
       suppressMenu: true,
+      width: 120,
+      type: 'rightAligned',
       headerName: 'estimated_vol_change',
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
-        if (!data.data.estimated_vol_change) return;
-        return data.data.estimated_vol_change.toFixed(1) + '%';
+        const stockData: StockData = data.data;
+        if (!stockData.estimated_vol_change) return;
+
+        return stockData.estimated_vol_change.toFixed(1) + '%';
       },
     },
     {
-      field: 'diff_closet_upper_base',
-      suppressMenu: true,
-      headerName: 'diff_closet_upper_base',
+      field: 'latestBase',
+      headerName: 'latestBase',
+      type: 'rightAligned',
+      width: 150,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
-        if (!data.data.closetUpperBase || !data.data.latestBase) return;
+        const stockData: StockData = data.data;
+        if (!stockData.latestBase) return;
+        return (
+          stockData.latestBase.base_percent.toFixed(1) +
+          '%' +
+          '|' +
+          stockData.latestBase.base_length
+        );
+      },
+    },
+    {
+      field: 'closetUpperBase',
+      suppressMenu: true,
+      type: 'rightAligned',
+      width: 150,
+      headerName: 'closetUpperBase',
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+        if (!stockData.closetUpperBase) return;
+        return (
+          stockData.closetUpperBase.base_percent.toFixed(1) +
+          '%' +
+          '|' +
+          stockData.closetUpperBase.base_length
+        );
+      },
+    },
+    {
+      field: 'expectedReturn',
+      type: 'rightAligned',
+      headerName: 'expectedReturn',
+      width: 120,
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+        if (!stockData.closetUpperBase || !stockData.latestBase) return;
         return (
           (
             (100 *
-              (data.data.closetUpperBase.base_max -
-                data.data.latestBase.base_max)) /
-            data.data.latestBase.base_max
+              (stockData.closetUpperBase.base_max -
+                stockData.latestBase.base_max)) /
+            stockData.latestBase.base_max
           ).toFixed(2) + '%'
         );
       },
@@ -103,6 +151,7 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
     {
       headerName: 'backtest',
       field: 'backtest',
+      width: 120,
       cellRenderer: () => {
         return 'backtest';
       },

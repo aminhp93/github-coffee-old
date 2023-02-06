@@ -1,13 +1,7 @@
-import { meanBy, cloneDeep, groupBy, chunk } from 'lodash';
+import { cloneDeep, groupBy, chunk } from 'lodash';
 import moment from 'moment';
-import {
-  DATE_FORMAT,
-  getBase_min_max,
-  getListAllSymbols,
-  BACKTEST_COUNT,
-  MAX_PERCENT_BASE,
-} from './constants';
-import { Base, SupabaseData, StockData, StockCoreData } from './types';
+import { DATE_FORMAT, getListAllSymbols, BACKTEST_COUNT } from './constants';
+import { SupabaseData, StockData, StockCoreData } from './types';
 import StockService from './service';
 import request from '@/services/request';
 import { notification } from 'antd';
@@ -18,7 +12,7 @@ const baseUrl = config.apiUrl;
 
 export const getDataChart = ({
   data,
-  volumeField = 'totalVolume',
+  volumeField = 'dealVolume',
   grid,
   seriesMarkPoint,
   markLine,
@@ -60,7 +54,7 @@ export const getDataChart = ({
     {
       left: 20,
       right: 20,
-      height: '20%',
+      height: '25%',
       bottom: 0,
     },
   ];
@@ -138,59 +132,6 @@ export const getSeriesMarkPoint = ({
     },
     data: seriesMarkPointData,
   };
-};
-
-export const getLatestBase = (data: StockCoreData[]): Base | undefined => {
-  if (!data || data.length === 0 || data.length < 6) return undefined;
-  const startBaseIndex = 0;
-  let endBaseIndex = 5;
-  const list = data.slice(startBaseIndex, endBaseIndex);
-  let { base_min, base_max } = getBase_min_max(list);
-
-  if (base_min && base_max) {
-    const percent = (100 * (base_max - base_min)) / base_min;
-
-    if (percent < MAX_PERCENT_BASE) {
-      const averageVolume = meanBy(list, 'totalVolume');
-      let num_high_vol_than_t0 = 0;
-      const change_t0_vol =
-        (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
-      const change_t0 =
-        (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
-      let stop = false;
-
-      data.forEach((i: StockCoreData, index: number) => {
-        if (index < 6 || stop) return;
-        const new_min = base_min! > i.priceLow ? i.priceLow : base_min!;
-        const new_max = base_max! < i.priceHigh ? i.priceHigh : base_max!;
-        const new_percent = (100 * (new_max - new_min)) / new_min;
-        if (new_percent < MAX_PERCENT_BASE) {
-          list.push(i);
-          endBaseIndex = index;
-          base_min = new_min;
-          base_max = new_max;
-        } else {
-          stop = true;
-        }
-      });
-
-      const base_percent = (100 * (base_max - base_min)) / base_min;
-
-      return {
-        startBaseIndex,
-        endBaseIndex,
-        change_t0_vol,
-        change_t0,
-        num_high_vol_than_t0,
-        base_max,
-        base_min,
-        base_percent,
-        startBaseDate: data[startBaseIndex]?.date,
-        endBaseDate: data[endBaseIndex]?.date,
-      };
-    }
-  }
-  return undefined;
 };
 
 export const getStockDataFromSupabase = (data: SupabaseData[]): StockData[] => {
@@ -377,31 +318,4 @@ export const mapDataChart = ({
   });
 
   return newDataChart;
-};
-
-export const getClosestUpperBase = (
-  data: StockCoreData[],
-  latestBase?: Base
-): Base | undefined => {
-  if (!latestBase) return undefined;
-
-  const indexLastBase = data.findIndex(
-    (i) => i.date === latestBase.endBaseDate
-  );
-  let closetUpperBase;
-  let stop = false;
-
-  for (let i = indexLastBase; i < data.length; i++) {
-    if (stop) break;
-    const item = data[i];
-
-    // check if first point greater than base_max
-    if (item.priceHigh > latestBase.base_max) {
-      closetUpperBase = getLatestBase(data.slice(i));
-      if (closetUpperBase) {
-        stop = true;
-      }
-    }
-  }
-  return closetUpperBase;
 };

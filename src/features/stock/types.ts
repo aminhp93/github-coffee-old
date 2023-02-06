@@ -84,25 +84,12 @@ export interface HistoricalQuoteParams {
 }
 
 export interface Base {
-  startBaseIndex: number;
-  endBaseIndex: number;
-  change_t0_vol: number;
-  change_t0: number;
-  num_high_vol_than_t0: number;
   base_max: number;
   base_min: number;
-  change_t3?: number | null;
   base_percent: number;
-  closestUpperBaseIndex?: number;
-  upperPercent?: number;
-  closestLowerBaseIndex?: number;
-  lowerPercent?: number;
-  min_change_in_20_days?: number;
-  min_in_20_days_without_break_base_index?: number;
-  max_change_in_20_days?: number;
-  max_in_20_days_without_break_base_index?: number;
-  startBaseDate?: string;
-  endBaseDate?: string;
+  base_length: number;
+  startBaseDate: string;
+  endBaseDate: string;
 }
 export interface Watchlist {
   displayIndex: number;

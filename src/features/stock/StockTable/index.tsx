@@ -44,7 +44,6 @@ const StockTable = () => {
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
@@ -90,7 +89,7 @@ const StockTable = () => {
 
   const getData = async () => {
     try {
-      setLoading(true);
+      gridRef.current.api && gridRef.current.api.showLoadingOverlay();
       await updateData();
 
       const startDate = dates[0].format(DATE_FORMAT);
@@ -101,7 +100,7 @@ const StockTable = () => {
         startDate,
         endDate,
       });
-      setLoading(false);
+      gridRef.current.api && gridRef.current.api.hideOverlay();
       console.log('res', res);
 
       const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
@@ -111,10 +110,9 @@ const StockTable = () => {
       console.log('filterdData', filterdData);
 
       setListStocks(filterdData);
-      notification.success({ message: 'success' });
     } catch (e) {
       console.log(e);
-      setLoading(false);
+      gridRef.current.api && gridRef.current.api.hideOverlay();
       notification.error({ message: 'error' });
     }
   };
@@ -131,7 +129,6 @@ const StockTable = () => {
           <Button
             size="small"
             icon={<CheckCircleOutlined />}
-            disabled={loading}
             onClick={getData}
           />
           <RangePicker
@@ -230,15 +227,16 @@ const StockTable = () => {
       >
         <AgGridReact
           rowData={listStocks}
+          overlayLoadingTemplate={
+            '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
+          }
           columnDefs={StockTableColumns({
             handleClickRow,
           })}
           ref={gridRef}
           defaultColDef={{
-            minWidth: 150,
             filter: true,
             sortable: true,
-            floatingFilter: true,
           }}
         />
       </div>

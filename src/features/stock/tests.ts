@@ -1,6 +1,12 @@
-import { getLatestBase, getClosestUpperBase, filterData } from './utils';
-import { DEFAULT_FILTER, getEstimatedVol } from './constants';
-import { StockData, StockCoreData } from './types';
+import { filterData } from './utils';
+import {
+  DEFAULT_FILTER,
+  getEstimatedVol,
+  getBase_min_max,
+  MAX_PERCENT_BASE,
+} from './constants';
+import { StockData, StockCoreData, Base } from './types';
+import { min, max } from 'lodash';
 
 export const getStockData = (data: StockCoreData[]): StockData | undefined => {
   const mappedData = mapStockData(data);
@@ -103,4 +109,73 @@ export const getBacktestData = (
     backtestData,
     fullData,
   };
+};
+
+const getLatestBase = (data: StockCoreData[]): Base | undefined => {
+  if (!data || data.length === 0 || data.length < 6) return undefined;
+  const startBaseIndex = 0;
+  let endBaseIndex = 5;
+  const list = data.slice(startBaseIndex, endBaseIndex);
+  let { base_min, base_max } = getBase_min_max(list);
+
+  if (base_min && base_max) {
+    const percent = (100 * (base_max - base_min)) / base_min;
+
+    if (percent < MAX_PERCENT_BASE) {
+      let stop = false;
+      data.forEach((i: StockCoreData, index: number) => {
+        if (index < 6 || stop) return;
+        const new_min = min([base_min, i.priceOpen, i.priceClose]);
+        const new_max = max([base_max, i.priceOpen, i.priceClose]);
+        const new_percent = (100 * (new_max! - new_min!)) / new_min!;
+        if (new_percent < MAX_PERCENT_BASE) {
+          list.push(i);
+          endBaseIndex = index;
+          base_min = new_min;
+          base_max = new_max;
+        } else {
+          stop = true;
+        }
+      });
+
+      const base_percent = (100 * (base_max - base_min)) / base_min;
+
+      return {
+        base_max,
+        base_min,
+        base_percent,
+        base_length: endBaseIndex - startBaseIndex + 1,
+        startBaseDate: data[startBaseIndex]?.date,
+        endBaseDate: data[endBaseIndex]?.date,
+      };
+    }
+  }
+  return undefined;
+};
+
+const getClosestUpperBase = (
+  data: StockCoreData[],
+  latestBase?: Base
+): Base | undefined => {
+  if (!latestBase) return undefined;
+
+  const indexLastBase = data.findIndex(
+    (i) => i.date === latestBase.endBaseDate
+  );
+  let closetUpperBase;
+  let stop = false;
+
+  for (let i = indexLastBase; i < data.length; i++) {
+    if (stop) break;
+    const item = data[i];
+
+    // check if first point greater than base_max
+    if (item.priceHigh > latestBase.base_max) {
+      closetUpperBase = getLatestBase(data.slice(i));
+      if (closetUpperBase) {
+        stop = true;
+      }
+    }
+  }
+  return closetUpperBase;
 };
