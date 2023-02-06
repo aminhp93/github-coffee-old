@@ -1,11 +1,6 @@
 import moment from 'moment';
 import { minBy, maxBy } from 'lodash';
-import {
-  HistoricalQuote,
-  BaseFilter,
-  BackTestSymbol,
-  Watchlist,
-} from './types';
+import { Filter, StockCoreData, Watchlist } from './types';
 
 export const UNIT_BILLION = 1_000_000_000;
 export const NUMBER_UNIT_REDUCED = 1000;
@@ -133,58 +128,12 @@ export const FundamentalKeys = [
   // 'symbol',
 ];
 
-export const NoDataKeys = [
-  'adjRatio', // HistoricalQuote
-  'propTradingNetDealValue', // HistoricalQuote
-  'propTradingNetPTValue', // HistoricalQuote
-  'propTradingNetValue', // HistoricalQuote
-];
-
-export const TYPE_INDICATOR_OPTIONS = [
-  'BuySellSignals',
-  'InDayReview',
-  'HistoricalQuote',
-  'Fundamental',
-  'FinancialIndicators',
-  'NoData',
-];
-
-export const DEFAULT_TYPE_INDICATOR_OPTIONS = ['BuySellSignals'];
-
-export const BUY_SELL_SIGNNAL_KEYS = {
-  totalValue_last20_min: 1,
-  changePrice_buy: 2,
-  changePrice_sell: -2,
-  count_5_day_within_base: 1,
-  count_10_day_within_base: 1,
-  count_10_day_buy: 3,
-  count_10_day_sell: 3,
+export const DEFAULT_FILTER: Filter = {
+  change_t0: 2,
   estimated_vol_change: 20,
-  buy_sell_count__buy: 1.3,
-  buy_sell_count__sell: 0.7,
-  buy_sell_vol__buy: 1.3,
-  buy_sell_vol__sell: 0.7,
 };
 
-export const DEFAULT_FILTER: BaseFilter = {
-  currentWatchlist: null,
-  totalValue_last20_min: 5,
-  changePrice_min: 2,
-  have_base_in_5_day: false,
-  estimated_vol_change_min: 20,
-  have_extra_vol: false,
-  only_buy_sell: true,
-  t0_over_base_max: 0,
-};
-
-export const BACKTEST_FILTER = {
-  change_t0: DEFAULT_FILTER.changePrice_min,
-  change_t0_vol: DEFAULT_FILTER.estimated_vol_change_min,
-  num_high_vol_than_t0: 0,
-  t0_over_base_max: 0,
-};
-
-export const DEFAULT_SETTINGS: any = {
+export const DEFAULT_SETTING: any = {
   bordered: true,
   size: 'small',
   showHeader: true,
@@ -195,94 +144,6 @@ export const DEFAULT_SETTINGS: any = {
     showSizeChanger: true,
   },
 };
-
-export const NO_DATA_COLUMN = NoDataKeys.map((i) => {
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    align: 'right',
-    sorter: (a: any, b: any) => a[i] - b[i],
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
-
-export const HISTORICAL_QUOTE_COLUMN = HistoricalQuoteKeys.map((i) => {
-  if (i === 'date') {
-    return {
-      title: 'dateeeeeeeee',
-      dataIndex: i,
-      key: i,
-      render: (text: string) => moment(text).format(DATE_FORMAT),
-    };
-  }
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    align: 'right',
-    width: 200,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
-
-export const FUNDAMENTAL_COLUMN = FundamentalKeys.map((i) => {
-  return {
-    title: i,
-    dataIndex: i,
-    key: i,
-    sorter: (a: any, b: any) => a[i] - b[i],
-    align: 'right',
-    render: (data: any) => {
-      if (typeof data === 'number') {
-        if (data > 1_000) {
-          return Number(data.toFixed(0)).toLocaleString();
-        }
-        return Number(data.toFixed(1)).toLocaleString();
-      }
-      return data;
-    },
-  };
-});
-
-export const FINANCIAL_INDICATORS_COLUMN: any = FinancialIndicatorsKeys.map(
-  (i) => {
-    return {
-      // remove all whitespace
-      title: i.replace(/\s/g, ''),
-      dataIndex: i,
-      key: i,
-      sorter: (a: any, b: any) => a[i] - b[i],
-      align: 'right',
-      render: (data: any) => {
-        if (typeof data === 'number') {
-          if (data > 1_000) {
-            return Number(data.toFixed(0)).toLocaleString();
-          }
-          return Number(data.toFixed(1)).toLocaleString();
-        }
-        return data;
-      },
-    };
-  }
-);
 
 export const LIST_ALL_SYMBOLS = [
   'HPG',
@@ -465,7 +326,7 @@ export const LIST_ALL_SYMBOLS = [
   'BCC',
 ];
 
-export const getEstimatedVol = (data: HistoricalQuote) => {
+export const getEstimatedVol = (data: StockCoreData) => {
   if (data.date === moment().format(DATE_FORMAT)) {
     // from 9:00 to 11:30
     const morning_time = 60 * 2.5;
@@ -503,7 +364,7 @@ export const getEstimatedVol = (data: HistoricalQuote) => {
   return data.totalVolume;
 };
 
-export const getBase_min_max = (data: BackTestSymbol[]) => {
+export const getBase_min_max = (data: StockCoreData[]) => {
   return {
     base_min: minBy(data, 'priceLow')?.priceLow,
     base_max: maxBy(data, 'priceHigh')?.priceHigh,

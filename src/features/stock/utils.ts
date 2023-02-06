@@ -4,35 +4,17 @@ import {
   DATE_FORMAT,
   getBase_min_max,
   getListAllSymbols,
-  DEFAULT_FILTER,
   BACKTEST_COUNT,
   MAX_PERCENT_BASE,
 } from './constants';
-import {
-  HistoricalQuote,
-  BaseFilter,
-  BackTestSymbol,
-  Base,
-  FilterBackTest,
-  SupabaseData,
-  StockData,
-} from './types';
+import { Base, SupabaseData, StockData, StockCoreData } from './types';
 import StockService from './service';
 import request from '@/services/request';
 import { notification } from 'antd';
 import config from '@/config';
-import { getBacktestData, getBasicData } from './tests';
+import { getStockData } from './tests';
 
 const baseUrl = config.apiUrl;
-
-export const mapHistoricalQuote = (data: HistoricalQuote[]): any => {
-  const basicData = getBasicData(data);
-
-  return {
-    ...basicData,
-    backtestData: getBacktestData(data),
-  };
-};
 
 export const getDataChart = ({
   data,
@@ -41,7 +23,7 @@ export const getDataChart = ({
   seriesMarkPoint,
   markLine,
 }: {
-  data: BackTestSymbol[];
+  data: StockCoreData[];
   volumeField?: 'dealVolume' | 'totalVolume';
   grid?: any;
   seriesMarkPoint?: any;
@@ -49,10 +31,10 @@ export const getDataChart = ({
 }) => {
   const newData = [...data];
   const dates = newData
-    .map((i: BackTestSymbol) => moment(i.date).format(DATE_FORMAT))
+    .map((i: StockCoreData) => moment(i.date).format(DATE_FORMAT))
     .reverse();
   const prices = newData
-    .map((i: BackTestSymbol) => [
+    .map((i: StockCoreData) => [
       i.priceOpen,
       i.priceClose,
       i.priceLow,
@@ -62,7 +44,7 @@ export const getDataChart = ({
     .reverse();
   const volumes = newData
     .reverse()
-    .map((i: BackTestSymbol, index: number) => [
+    .map((i: StockCoreData, index: number) => [
       index,
       i[volumeField],
       i.priceOpen < i.priceClose ? 1 : -1,
@@ -93,18 +75,15 @@ export const getDataChart = ({
   };
 };
 
-export const filterData = (data: StockData[], filter: BaseFilter) => {
-  const { changePrice_min, estimated_vol_change_min } = filter;
+export const filterData = (data: StockData[], filter: Partial<StockData>) => {
+  const { change_t0, estimated_vol_change } = filter;
 
   const result = data.filter((i: StockData) => {
-    if (i.change_t0 < changePrice_min) {
+    if (change_t0 && i.change_t0 < change_t0) {
       return false;
     }
 
-    if (
-      estimated_vol_change_min &&
-      i.estimated_vol_change < estimated_vol_change_min
-    ) {
+    if (estimated_vol_change && i.estimated_vol_change < estimated_vol_change) {
       return false;
     }
 
@@ -114,78 +93,17 @@ export const filterData = (data: StockData[], filter: BaseFilter) => {
   return result;
 };
 
-export const getBackTest = (
-  fullData: BackTestSymbol[],
-  listBase: Base[],
-  filterCondition: FilterBackTest
-) => {
-  const filteredBase = listBase.filter((j: Base) => {
-    if (
-      (filterCondition.change_t0 || filterCondition.change_t0 === 0) &&
-      j.change_t0 < filterCondition.change_t0
-    ) {
-      return false;
-    }
-    if (
-      (filterCondition.change_t0_vol || filterCondition.change_t0_vol === 0) &&
-      j.change_t0_vol < filterCondition.change_t0_vol
-    ) {
-      return false;
-    }
-
-    return true;
-  });
-  const winCount = filteredBase.filter((j: Base) => j.change_t3! > 0).length;
-  const winRate = Number(((100 * winCount) / filteredBase.length).toFixed(2));
-
-  return {
-    filteredBase,
-    listBase,
-    winCount,
-    winRate,
-    fullData,
-  };
-};
-
 export const getSeriesMarkPoint = ({
-  buyItem,
-  sellItem,
   listMarkPoints,
   offset = 10,
 }: {
-  buyItem?: BackTestSymbol;
-  sellItem?: BackTestSymbol;
-  listMarkPoints?: BackTestSymbol[];
+  listMarkPoints?: StockCoreData[];
   offset?: number;
 }) => {
-  const seriesMarkPointData = [];
-
-  if (buyItem) {
-    seriesMarkPointData.push({
-      name: 'Buy',
-      coord: [moment(buyItem.date).format(DATE_FORMAT), buyItem.priceOpen],
-      value: buyItem.priceOpen,
-      itemStyle: {
-        color: '#e700ff',
-      },
-      symbolOffset: [0, offset],
-    });
-  }
-  if (sellItem) {
-    seriesMarkPointData.push({
-      name: 'Sell',
-      coord: [moment(sellItem.date).format(DATE_FORMAT), sellItem.priceOpen],
-      value: sellItem.priceOpen,
-      itemStyle: {
-        color: '#0007ff',
-      },
-      symbolOffset: [0, -offset],
-      symbolRotate: 180,
-    });
-  }
+  const seriesMarkPointData: any = [];
 
   if (listMarkPoints) {
-    listMarkPoints.forEach((i: BackTestSymbol) => {
+    listMarkPoints.forEach((i: StockCoreData) => {
       seriesMarkPointData.push({
         name: 'Buy',
         coord: [moment(i.date).format(DATE_FORMAT), i.priceOpen],
@@ -210,7 +128,7 @@ export const getSeriesMarkPoint = ({
   };
 };
 
-export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
+export const getLatestBase = (data: StockCoreData[]): Base | null => {
   if (!data || data.length === 0 || data.length < 6) return null;
   const startBaseIndex = 0;
   let endBaseIndex = 5;
@@ -222,7 +140,6 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
 
     if (percent < MAX_PERCENT_BASE) {
       const averageVolume = meanBy(list, 'totalVolume');
-      let change_buyPrice = DEFAULT_FILTER.changePrice_min;
       let num_high_vol_than_t0 = 0;
       const change_t0_vol =
         (100 * (data[0].totalVolume - averageVolume)) / averageVolume;
@@ -230,7 +147,7 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         (100 * (data[0].priceClose - list[0].priceClose)) / list[0].priceClose;
       let stop = false;
 
-      data.forEach((i: BackTestSymbol, index: number) => {
+      data.forEach((i: StockCoreData, index: number) => {
         if (index < 6 || stop) return;
         const new_min = base_min! > i.priceLow ? i.priceLow : base_min!;
         const new_max = base_max! < i.priceHigh ? i.priceHigh : base_max!;
@@ -252,7 +169,6 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
         endBaseIndex,
         change_t0_vol,
         change_t0,
-        change_buyPrice,
         num_high_vol_than_t0,
         base_max,
         base_min,
@@ -265,12 +181,12 @@ export const getLatestBase = (data: BackTestSymbol[]): Base | null => {
   return null;
 };
 
-export const mapDataFromSupabase = (data: SupabaseData[]) => {
+export const getStockDataFromSupabase = (data: SupabaseData[]): StockData[] => {
   const listObj: any = groupBy(data, 'symbol');
   const result: any = [];
   Object.keys(listObj).forEach((i: string) => {
     const item = cloneDeep(listObj[i]);
-    result.push(mapHistoricalQuote(item));
+    result.push(getStockData(item));
   });
   return result;
 };
@@ -397,8 +313,8 @@ export const mapDataChart = ({
   listMarkPoints = [],
   listMarkLines = [],
 }: {
-  fullData: any;
-  listMarkPoints?: any;
+  fullData: StockCoreData[];
+  listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
 }) => {
   const grid = [
@@ -452,7 +368,7 @@ export const mapDataChart = ({
 };
 
 export const getClosestUpperBase = (
-  data: BackTestSymbol[],
+  data: StockCoreData[],
   latestBase: Base
 ): Base | null => {
   const indexLastBase = data.findIndex(

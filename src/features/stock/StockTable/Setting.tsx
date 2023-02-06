@@ -1,7 +1,7 @@
 import { Drawer, Form, Radio, RadioChangeEvent, Switch } from 'antd';
 import type { SizeType } from 'antd/es/config-provider/SizeContext';
 import { useState } from 'react';
-import { DEFAULT_SETTINGS } from '../constants';
+import { DEFAULT_SETTING } from '../constants';
 
 interface Props {
   onChange: (settings: any) => void;
@@ -9,9 +9,9 @@ interface Props {
 }
 
 const Settings = ({ onChange, onClose }: Props) => {
-  const [bordered, setBordered] = useState(DEFAULT_SETTINGS.bordered);
-  const [size, setSize] = useState<SizeType>(DEFAULT_SETTINGS.size);
-  const [showHeader, setShowHeader] = useState(DEFAULT_SETTINGS.showHeader);
+  const [bordered, setBordered] = useState(DEFAULT_SETTING.bordered);
+  const [size, setSize] = useState<SizeType>(DEFAULT_SETTING.size);
+  const [showHeader, setShowHeader] = useState(DEFAULT_SETTING.showHeader);
 
   const handleBorderChange = (enable: boolean) => {
     setBordered(enable);

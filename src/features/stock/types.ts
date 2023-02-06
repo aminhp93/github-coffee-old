@@ -88,7 +88,6 @@ export interface Base {
   endBaseIndex: number;
   change_t0_vol: number;
   change_t0: number;
-  change_buyPrice: number;
   num_high_vol_than_t0: number;
   base_max: number;
   base_min: number;
@@ -105,15 +104,6 @@ export interface Base {
   startBaseDate?: string;
   endBaseDate?: string;
 }
-
-export interface BackTest {
-  filteredBase: Base[];
-  listBase: Base[];
-  winCount: number;
-  winRate: number;
-  fullData: BackTestSymbol[];
-}
-
 export interface Watchlist {
   displayIndex: number;
   name: string;
@@ -122,34 +112,7 @@ export interface Watchlist {
   watchlistID: number;
 }
 
-export interface BaseFilter {
-  currentWatchlist: Watchlist | null;
-  totalValue_last20_min: number;
-  changePrice_min: number;
-  have_base_in_5_day: boolean;
-  estimated_vol_change_min: number;
-  have_extra_vol: boolean;
-  only_buy_sell: boolean;
-  t0_over_base_max: number;
-}
-
-export interface BackTestSymbol {
-  date: string;
-  dealVolume: number;
-  priceClose: number;
-  priceHigh: number;
-  priceLow: number;
-  priceOpen: number;
-  totalVolume: number;
-  symbol: string;
-}
-
-export interface FilterBackTest {
-  change_t0?: number | null;
-  change_t0_vol?: number | null;
-  num_high_vol_than_t0?: number | null;
-  t0_over_base_max?: number | null;
-}
+export type Filter = Pick<StockData, 'change_t0' | 'estimated_vol_change'>;
 
 export interface SupabaseData {
   date: string;
@@ -163,6 +126,44 @@ export interface SupabaseData {
   totalVolume: number;
 }
 
+export type StockCoreData = Pick<
+  StockData,
+  | 'date'
+  | 'symbol'
+  | 'priceClose'
+  | 'priceOpen'
+  | 'priceLow'
+  | 'priceHigh'
+  | 'totalValue'
+  | 'totalVolume'
+  | 'dealVolume'
+>;
+
+export type StockBasicData = Pick<
+  StockData,
+  | 'symbol'
+  | 'date'
+  | 'change_t0'
+  | 'priceClose'
+  | 'priceOpen'
+  | 'priceHigh'
+  | 'priceLow'
+  | 'totalVolume'
+  | 'dealVolume'
+  | 'totalValue'
+  | 't0_over_base_max'
+  | 'estimated_vol_change'
+  | 'latestBase'
+>;
+
+export interface ResultBacktestData extends StockBasicData {
+  closetUpperBase: Base | null;
+}
+
+export interface BacktestData {
+  result: ResultBacktestData[];
+  fullData: StockCoreData[];
+}
 export interface StockData {
   symbol: string;
   date: string;
@@ -177,4 +178,5 @@ export interface StockData {
   t0_over_base_max: number | undefined;
   estimated_vol_change: number;
   latestBase: Base | null;
+  backtestData?: BacktestData | undefined;
 }
