@@ -327,6 +327,16 @@ export const LIST_ALL_SYMBOLS = [
   'BCC',
 ];
 
+export const getMaxPercentBase = (symbol: string) => {
+  if (['MBS'].includes(symbol)) {
+    return 10;
+  } else if (['BSR'].includes(symbol)) {
+    return 15;
+  } else {
+    return 7;
+  }
+};
+
 export const getEstimatedVol = (data: StockCoreData) => {
   if (data.date === moment().format(DATE_FORMAT)) {
     // from 9:00 to 11:30

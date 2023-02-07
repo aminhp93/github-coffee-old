@@ -12,7 +12,7 @@ const baseUrl = config.apiUrl;
 
 export const getDataChart = ({
   data,
-  volumeField = 'dealVolume',
+  volumeField = 'totalVolume',
   grid,
   seriesMarkPoint,
   markLine,

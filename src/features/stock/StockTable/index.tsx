@@ -96,6 +96,45 @@ const StockTable = () => {
       const endDate = dates[1].format(DATE_FORMAT);
 
       // get data
+
+      // use latest data
+      // For now only can use data from fireant
+      const useLatestData = localStorage.getItem('useLatestData');
+      let resFireant;
+      if (useLatestData) {
+        const res = await StockService.getStockDataFromFireant({
+          startDate: moment().format(DATE_FORMAT),
+          endDate: moment().format(DATE_FORMAT),
+        });
+        resFireant = res.map((i) => {
+          const item = i.data[0];
+          const {
+            date,
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          } = item;
+          return {
+            date: moment(date).format(DATE_FORMAT),
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          };
+        });
+      }
+
+      // use old static data from supabase (updated 1 day ago)
+
       const res = await StockService.getStockDataFromSupabase({
         startDate,
         endDate,
@@ -103,7 +142,13 @@ const StockTable = () => {
       gridRef.current.api && gridRef.current.api.hideOverlay();
       console.log('res', res);
 
-      const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
+      let source: any = res.data;
+      if (resFireant) {
+        source = [...resFireant, ...source];
+      }
+      console.log('source', source);
+
+      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       console.log('mappedData', mappedData);
 
       const filterdData = filterData(mappedData, filters);

@@ -68,6 +68,29 @@ const StockService = {
       console.log(error);
     }
   },
+  async getStockDataFromFireant({
+    startDate,
+    endDate,
+    listSymbols = getListAllSymbols(),
+  }: {
+    startDate: string;
+    endDate: string;
+    listSymbols?: string[];
+  }) {
+    const listPromises: any = [];
+    listSymbols.forEach((i: any) => {
+      listPromises.push(
+        StockService.getHistoricalQuotes({
+          symbol: i,
+          startDate,
+          endDate,
+          offset: 0,
+          returnRequest: true,
+        })
+      );
+    });
+    return Promise.all(listPromises);
+  },
   async getFundamentals({ symbol }: any, callback?: any, extraDataCb?: any) {
     if (!symbol) return null;
     try {

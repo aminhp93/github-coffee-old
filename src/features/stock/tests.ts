@@ -3,7 +3,7 @@ import {
   DEFAULT_FILTER,
   getEstimatedVol,
   getBase_min_max,
-  MAX_PERCENT_BASE,
+  getMaxPercentBase,
 } from './constants';
 import { StockData, StockCoreData, Base } from './types';
 import { min, max } from 'lodash';
@@ -88,7 +88,6 @@ export const getBacktestData = (
   backtestData: StockData[] | undefined;
   fullData: StockData[] | undefined;
 } => {
-  console.log('getBacktestData', data);
   if (data.length < 2)
     return {
       backtestData: undefined,
@@ -104,7 +103,6 @@ export const getBacktestData = (
   });
 
   const backtestData = filterData(fullData, DEFAULT_FILTER);
-  console.log('backtestData', backtestData, 'fullData', fullData);
   return {
     backtestData,
     fullData,
@@ -121,14 +119,14 @@ const getLatestBase = (data: StockCoreData[]): Base | undefined => {
   if (base_min && base_max) {
     const percent = (100 * (base_max - base_min)) / base_min;
 
-    if (percent < MAX_PERCENT_BASE) {
+    if (percent < getMaxPercentBase(data[0].symbol)) {
       let stop = false;
       data.forEach((i: StockCoreData, index: number) => {
         if (index < 6 || stop) return;
         const new_min = min([base_min, i.priceOpen, i.priceClose]);
         const new_max = max([base_max, i.priceOpen, i.priceClose]);
         const new_percent = (100 * (new_max! - new_min!)) / new_min!;
-        if (new_percent < MAX_PERCENT_BASE) {
+        if (new_percent < getMaxPercentBase(data[0].symbol)) {
           list.push(i);
           endBaseIndex = index;
           base_min = new_min;

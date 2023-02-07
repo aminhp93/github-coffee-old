@@ -1,4 +1,4 @@
-import { Button, Drawer, InputNumber, Radio } from 'antd';
+import { Button, Drawer, InputNumber, Switch } from 'antd';
 import { useState } from 'react';
 import { DEFAULT_FILTER, DELAY_TIME } from '../constants';
 import './index.less';
@@ -13,8 +13,8 @@ interface Props {
 const Filters = ({ onChange, onClose }: Props) => {
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
-  const [sourceData, setSourceData] = useState<'fireant' | 'supabase' | string>(
-    localStorage.getItem('sourceData') || 'fireant'
+  const [useLatestData, setUseLatestData] = useState<boolean>(
+    localStorage.getItem('useLatestData') ? true : false
   );
 
   const [values, setValues] = useState<Filter>(DEFAULT_FILTER);
@@ -97,17 +97,20 @@ const Filters = ({ onChange, onClose }: Props) => {
           </div>
 
           <div style={{ marginTop: '20px' }}>
-            <Radio.Group
-              size="small"
-              value={sourceData}
-              onChange={(e: any) => {
-                setSourceData(e.target.value);
-                localStorage.setItem('sourceData', e.target.value);
+            <Switch
+              onChange={(e) => {
+                console.log(e);
+                setUseLatestData(e);
+                if (e) {
+                  localStorage.setItem('useLatestData', 'true');
+                } else {
+                  localStorage.removeItem('useLatestData');
+                }
               }}
-            >
-              <Radio.Button value="fireant">Fireant</Radio.Button>
-              <Radio.Button value="supabase">Supabase</Radio.Button>
-            </Radio.Group>
+              checkedChildren="useLatestData"
+              unCheckedChildren="useLatestData"
+              defaultChecked={useLatestData}
+            />
           </div>
         </div>
         <div
