@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { StockData } from '../types';
 import { DATE_FORMAT } from '../constants';
+import { calculateStockBase } from '../utils';
 
 const MAIN_FIELD = [
   'symbol',
@@ -12,6 +13,8 @@ const MAIN_FIELD = [
   // 'closetUpperBase',
   'backtest',
   // 'expectedReturn',
+  'risk',
+  'target',
 ];
 
 const BACKTEST_FIELD = [
@@ -29,6 +32,7 @@ interface Props {
   handleClickSymbol?: (record: StockData) => void;
   handleClickBacktest?: (record: StockData) => void;
   handleClickDate?: (record: StockData) => void;
+  listStockBase?: any;
 }
 
 const StockTableColumns = ({
@@ -36,6 +40,7 @@ const StockTableColumns = ({
   handleClickBacktest,
   handleClickDate,
   isBacktest,
+  listStockBase,
 }: Props) => {
   const columns = [
     {
@@ -153,6 +158,46 @@ const StockTableColumns = ({
             stockData.latestBase.base_max
           ).toFixed(2) + '%'
         );
+      },
+    },
+    {
+      headerName: 'risk',
+      field: 'risk',
+      type: 'rightAligned',
+      width: 150,
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        if (!listStockBase) return;
+
+        const stockData: StockData = data.data;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        if (!filter.length || filter.length !== 1) return;
+
+        if (!stockData.change_t0) return;
+        const { risk } = calculateStockBase(filter[0]);
+        return risk && risk.toFixed(0) + '%';
+      },
+    },
+    {
+      headerName: 'target',
+      field: 'target',
+      type: 'rightAligned',
+      width: 150,
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        if (!listStockBase) return;
+
+        const stockData: StockData = data.data;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        if (!filter.length || filter.length !== 1) return;
+
+        if (!stockData.change_t0) return;
+        const { target } = calculateStockBase(filter[0]);
+        return target && target.toFixed(0) + '%';
       },
     },
     {

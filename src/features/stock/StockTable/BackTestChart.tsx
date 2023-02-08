@@ -14,6 +14,23 @@ const color = [
   '#c4ccd3',
 ];
 
+const dataZoom = [
+  {
+    type: 'inside',
+    xAxisIndex: [0, 1],
+    start: 0,
+    end: 100,
+  },
+  {
+    show: true,
+    xAxisIndex: [0, 1],
+    type: 'slider',
+    top: '85%',
+    start: 0,
+    end: 100,
+  },
+];
+
 const upColor = '#14b143';
 const downColor = '#ef232a';
 
@@ -206,6 +223,7 @@ const BackTestChart = ({ data }: Props) => {
     visualMap,
     markLine,
     tooltip,
+    dataZoom,
   };
 
   return (

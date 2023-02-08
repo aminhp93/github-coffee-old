@@ -43,9 +43,21 @@ const StockTable = () => {
   const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
+  const [listStockBase, setListStockBase] = useState<any[]>([]);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
+  };
+
+  const getAllStockBase = async () => {
+    try {
+      const res = await StockService.getAllStockBase();
+      if (res.data && res.data.length) {
+        setListStockBase(res.data);
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
   };
 
   const updateData = async () => {
@@ -205,6 +217,7 @@ const StockTable = () => {
 
   useEffect(() => {
     updateData();
+    getAllStockBase();
   }, []);
 
   const handleClickSymbol = (data: any) => {
@@ -331,6 +344,7 @@ const StockTable = () => {
             columnDefs={StockTableColumns({
               handleClickSymbol,
               handleClickBacktest,
+              listStockBase,
             })}
             ref={gridRef}
             defaultColDef={{

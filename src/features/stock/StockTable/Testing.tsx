@@ -74,39 +74,42 @@ const TestSupabaseData = ({ onClose }: Props) => {
   console.log('dates', dates);
 
   const updateData = async () => {
-    const selectedDate = dates.length === 2 ? dates[1] : null;
-    if (selectedDate) {
-      // if have selected date, update only selected date and no udpate selected date
-      updateDataWithDate(
-        selectedDate.format(DATE_FORMAT),
-        selectedDate.format(DATE_FORMAT),
-        0
-      );
-    } else {
-      // if no selected date, update from last updated date to today, update selected date
-      let nextCall = true;
-      let offset = 0;
-      while (nextCall) {
-        const res = await updateDataWithDate(
-          moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-          moment().format(DATE_FORMAT),
-          offset
+    try {
+      const selectedDate = dates.length === 2 ? dates[1] : null;
+      if (selectedDate) {
+        // if have selected date, update only selected date and no udpate selected date
+        updateDataWithDate(
+          selectedDate.format(DATE_FORMAT),
+          selectedDate.format(DATE_FORMAT),
+          0
         );
-        console.log(res);
-        offset += 20;
-        if (res && res.length && res[0].length < 20) {
-          nextCall = false;
+      } else {
+        // if no selected date, update from last updated date to today, update selected date
+        let nextCall = true;
+        let offset = 0;
+        while (nextCall) {
+          const res = await updateDataWithDate(
+            moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+            moment().format(DATE_FORMAT),
+            offset
+          );
+          console.log(res);
+          offset += 20;
+          if (res && res.length && res[0].length < 20) {
+            nextCall = false;
+          }
         }
-      }
-      try {
+
         const res = await StockService.updateLastUpdated({
           column: 'last_updated',
           value: moment().format(DATE_FORMAT),
         });
         console.log(res);
-      } catch (e) {
-        console.log(e);
       }
+      notification.success({ message: 'success' });
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
     }
   };
 
@@ -157,40 +160,47 @@ const TestSupabaseData = ({ onClose }: Props) => {
         className="height-100"
         style={{
           display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        <div>Last updated: {lastUpdated}</div>
-        <Button
-          disabled
-          size="small"
-          onClick={createBackTestData}
-          style={{ marginTop: '20px' }}
-        >
-          Create backtest
-        </Button>
-        <Button
-          size="small"
-          onClick={handleTest2}
-          style={{ marginTop: '20px' }}
-        >
-          Test data from fireant vs supabase
-        </Button>
-        <Select
-          defaultValue="VPB"
-          style={{ width: 120 }}
-          onChange={(value: string) => {
-            handleTest(value);
-          }}
-          options={LIST_ALL_SYMBOLS.map((i) => {
-            return { value: i, label: i };
-          })}
-        />
-        <Button onClick={() => handleTest('VPB')}>Test VPB</Button>
-        <Button onClick={() => handleTestAll()}>Test All</Button>
-
         <div>
+          Last updated: {lastUpdated}
           <Button size="small" onClick={updateData}>
             Update data
+          </Button>
+        </div>
+        <div>
+          <Button
+            disabled
+            size="small"
+            onClick={createBackTestData}
+            style={{ marginTop: '20px' }}
+          >
+            Create backtest
+          </Button>
+          <Button
+            size="small"
+            onClick={handleTest2}
+            style={{ marginTop: '20px' }}
+          >
+            Test data from fireant vs supabase
+          </Button>
+          <Select
+            size="small"
+            defaultValue="VPB"
+            style={{ width: 120 }}
+            onChange={(value: string) => {
+              handleTest(value);
+            }}
+            options={LIST_ALL_SYMBOLS.map((i) => {
+              return { value: i, label: i };
+            })}
+          />
+          <Button size="small" onClick={() => handleTest('VPB')}>
+            Test VPB
+          </Button>
+          <Button size="small" onClick={() => handleTestAll()}>
+            Test All
           </Button>
         </div>
       </div>

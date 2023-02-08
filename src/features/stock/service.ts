@@ -328,6 +328,9 @@ const StockService = {
   getStockBase: (symbol: string) => {
     return supabase.from('stock_base').select('*').in('symbol', [symbol]);
   },
+  getAllStockBase: () => {
+    return supabase.from('stock_base').select('*');
+  },
   insertStockBase: (data: any) => {
     return supabase.from('stock_base').insert(data);
   },
