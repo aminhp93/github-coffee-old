@@ -1,7 +1,7 @@
 import BackTestChart from './BackTestChart';
 import moment from 'moment';
 import { DATE_FORMAT } from '../constants';
-import { mapDataChart } from '../utils';
+import { mapDataChart, calculateStockBase } from '../utils';
 import StockService from '../service';
 import { useEffect, useState } from 'react';
 import { StockData } from '../types';
@@ -132,18 +132,27 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
 
   console.log('stockBase', stockBase);
 
+  const { risk, target } = calculateStockBase(stockBase);
+
   return (
     <div
       className="flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
-      <div style={{ height: '300px' }}>
-        {symbol && <div>{symbol}</div>}
+      <div style={{ height: '200px' }}>
+        {symbol && (
+          <div>
+            {symbol}{' '}
+            <Button size="small" onClick={updateStockBase}>
+              Update
+            </Button>
+          </div>
+        )}
         <div className="flex">
           <div>
             <div>
               Support base
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <InputNumber
                   step={0.1}
                   size="small"
@@ -156,7 +165,7 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                   }}
                 />
               </div>
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <InputNumber
                   step={0.1}
                   size="small"
@@ -169,7 +178,7 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                   }}
                 />
               </div>
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <RangePicker
                   size="small"
                   onChange={(dates) => {
@@ -196,7 +205,7 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
           <div style={{ marginLeft: '20px' }}>
             <div>
               Target base
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <InputNumber
                   step={0.1}
                   size="small"
@@ -209,7 +218,7 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                   }}
                 />
               </div>
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <InputNumber
                   step={0.1}
                   size="small"
@@ -222,7 +231,7 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                   }}
                 />
               </div>
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '10px' }}>
                 <RangePicker
                   size="small"
                   onChange={(dates) => {
@@ -246,14 +255,11 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
               </div>
             </div>
           </div>
+          <div style={{ marginLeft: '20px' }}>
+            <div>Risk: {risk && risk.toFixed(0) + '%'}</div>
+            <div>target: {target && target.toFixed(0) + '%'}</div>
+          </div>
         </div>
-        <Button
-          style={{ marginTop: '20px' }}
-          size="small"
-          onClick={updateStockBase}
-        >
-          Update
-        </Button>
       </div>
       <div style={{ flex: 1 }}>
         {dataChart && <BackTestChart data={dataChart} />}{' '}

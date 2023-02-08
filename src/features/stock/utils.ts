@@ -322,3 +322,27 @@ export const mapDataChart = ({
 
   return newDataChart;
 };
+
+export const calculateStockBase = (data: any) => {
+  if (!data)
+    return {
+      risk: null,
+      target: null,
+    };
+  const { support_base, target_base } = data;
+  if (!support_base || !target_base)
+    return {
+      risk: null,
+      target: null,
+    };
+  const risk =
+    (100 * (support_base.base_max - support_base.base_min)) /
+    support_base.base_min;
+  const target =
+    (100 * (target_base.base_min - support_base.base_max)) /
+    support_base.base_max;
+  return {
+    risk,
+    target,
+  };
+};
