@@ -6,12 +6,12 @@ const MAIN_FIELD = [
   'symbol',
   'date',
   'change_t0',
-  'latestBase',
-  't0_over_base_max',
+  // 'latestBase',
+  // 't0_over_base_max',
   'estimated_vol_change',
-  'closetUpperBase',
+  // 'closetUpperBase',
   'backtest',
-  'expectedReturn',
+  // 'expectedReturn',
 ];
 
 const BACKTEST_FIELD = [
@@ -26,25 +26,32 @@ const BACKTEST_FIELD = [
 
 interface Props {
   isBacktest?: boolean;
-  handleClickRow: (record: StockData) => void;
+  handleClickSymbol?: (record: StockData) => void;
+  handleClickBacktest?: (record: StockData) => void;
+  handleClickDate?: (record: StockData) => void;
 }
 
-const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
+const StockTableColumns = ({
+  handleClickSymbol,
+  handleClickBacktest,
+  handleClickDate,
+  isBacktest,
+}: Props) => {
   const columns = [
     {
       headerName: 'Symbol',
       field: 'symbol',
       width: 120,
+      onCellClicked: (data: any) => {
+        handleClickSymbol && handleClickSymbol(data);
+      },
     },
     {
       headerName: 'Date',
       field: 'date',
       width: 120,
       onCellClicked: (data: any) => {
-        const stockData: StockData = data.data;
-
-        if (!stockData.date) return;
-        handleClickRow(stockData as StockData);
+        handleClickDate && handleClickDate(data);
       },
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -57,7 +64,7 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
       headerName: 'change_t0',
       field: 'change_t0',
       type: 'rightAligned',
-      width: 120,
+      width: 150,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -83,7 +90,7 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
     {
       field: 'estimated_vol_change',
       suppressMenu: true,
-      width: 120,
+      width: 150,
       type: 'rightAligned',
       headerName: 'estimated_vol_change',
       filter: 'agNumberColumnFilter',
@@ -156,7 +163,7 @@ const StockTableColumns = ({ handleClickRow, isBacktest }: Props) => {
         return 'backtest';
       },
       onCellClicked: (data: any) => {
-        handleClickRow(data);
+        handleClickBacktest && handleClickBacktest(data);
       },
     },
   ];

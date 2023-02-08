@@ -11,13 +11,7 @@ import {
 import { Button, notification, Statistic, DatePicker, Tooltip } from 'antd';
 import StockService from '../service';
 import { useEffect, useState, useRef } from 'react';
-import {
-  DEFAULT_FILTER,
-  DEFAULT_SETTING,
-  DATE_FORMAT,
-  DEFAULT_START_DATE,
-  DEFAULT_END_DATE,
-} from '../constants';
+import { DEFAULT_FILTER, DEFAULT_SETTING, DATE_FORMAT } from '../constants';
 import {
   filterData,
   updateDataWithDate,
@@ -33,6 +27,7 @@ import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import StockDetailChart from './StockDetailChart';
 
 const { RangePicker } = DatePicker;
 
@@ -47,53 +42,74 @@ const StockTable = () => {
   const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
-  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
-    DEFAULT_START_DATE,
-    DEFAULT_END_DATE,
-  ]);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
   };
 
   const updateData = async () => {
-    const res: any = await StockService.getLastUpdated();
+    try {
+      const res: any = await StockService.getLastUpdated();
 
-    if (res.data && res.data.length && res.data.length === 1) {
-      const lastUpdated = res.data[0].last_updated;
-      if (lastUpdated === moment().format(DATE_FORMAT)) return;
-      let nextCall = true;
-      let offset = 0;
-      while (nextCall) {
-        const res = await updateDataWithDate(
-          moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-          moment().format(DATE_FORMAT),
-          offset
-        );
-        offset += 20;
-        if (res && res.length && res[0].length < 20) {
-          nextCall = false;
+      if (res.data && res.data.length && res.data.length === 1) {
+        const lastUpdated = res.data[0].last_updated;
+        let endUpdateDate = moment().format(DATE_FORMAT);
+        // check current time before 3pm
+        if (moment().hour() < 15) {
+          endUpdateDate = moment().add(-1, 'days').format(DATE_FORMAT);
+        }
+
+        if (lastUpdated !== endUpdateDate) {
+          let nextCall = true;
+          let offset = 0;
+
+          while (nextCall) {
+            const res = await updateDataWithDate(
+              moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+              endUpdateDate,
+              offset
+            );
+            offset += 20;
+            if (res && res.length && res[0].length < 20) {
+              nextCall = false;
+            }
+          }
+        } else {
+          localStorage.removeItem('useLatestData');
+        }
+
+        await StockService.updateLastUpdated({
+          column: 'last_updated',
+          value: endUpdateDate,
+        });
+        if (localStorage.getItem('useLatestData')) {
+          setDates([moment().add(-1, 'years'), moment()]);
+        } else {
+          setDates([
+            moment(endUpdateDate).add(-1, 'years'),
+            moment(endUpdateDate),
+          ]);
         }
       }
-      try {
-        const res = await StockService.updateLastUpdated({
-          column: 'last_updated',
-          value: moment().format(DATE_FORMAT),
-        });
-        console.log(res);
-      } catch (e) {
-        console.log(e);
-      }
+      notification.success({ message: 'success' });
+    } catch (e) {
+      notification.error({ message: 'error' });
+      console.log(e);
     }
   };
 
   const getData = async () => {
     try {
+      if (!dates || dates.length !== 2) return;
+
       gridRef.current.api && gridRef.current.api.showLoadingOverlay();
-      await updateData();
 
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
+      const tempStartDate = moment(endDate)
+        .add(-1, 'months')
+        .format(DATE_FORMAT);
 
       // get data
 
@@ -136,10 +152,9 @@ const StockTable = () => {
       // use old static data from supabase (updated 1 day ago)
 
       const res = await StockService.getStockDataFromSupabase({
-        startDate,
+        startDate: tempStartDate,
         endDate,
       });
-      gridRef.current.api && gridRef.current.api.hideOverlay();
       console.log('res', res);
 
       let source: any = res.data;
@@ -154,7 +169,28 @@ const StockTable = () => {
       const filterdData = filterData(mappedData, filters);
       console.log('filterdData', filterdData);
 
-      setListStocks(filterdData);
+      const listSymbols = filterdData.map((i) => i.symbol);
+
+      const res2 = await StockService.getStockDataFromSupabase({
+        startDate,
+        endDate,
+        listSymbols,
+      });
+      gridRef.current.api && gridRef.current.api.hideOverlay();
+      console.log('res2', res2);
+
+      let source2: any = res2.data;
+      if (resFireant) {
+        const filteredResFireant = resFireant.filter((i) =>
+          listSymbols.includes(i.symbol)
+        );
+        source2 = [...filteredResFireant, ...source2];
+      }
+      console.log('source2', source2);
+
+      const mappedData2 = getStockDataFromSupabase(source2 as SupabaseData[]);
+      console.log('mappedData2', mappedData2);
+      setListStocks(mappedData2);
     } catch (e) {
       console.log(e);
       gridRef.current.api && gridRef.current.api.hideOverlay();
@@ -167,10 +203,39 @@ const StockTable = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dates]);
 
+  useEffect(() => {
+    updateData();
+  }, []);
+
+  const handleClickSymbol = (data: any) => {
+    const symbol = data.data?.symbol;
+    if (!symbol) return;
+    setClickedSymbol(data.data.symbol);
+  };
+
+  const handleClickBacktest = (data: any) => {
+    const symbol = data.data?.symbol;
+    if (!symbol) return;
+    setOpenDrawerBacktest(true);
+    setClickedSymbol(data.data.symbol);
+  };
+
+  const _filter_1 = listStocks.filter((i: StockData) => i.change_t0 < -0.02);
+  const _filter_2 = listStocks.filter(
+    (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
+  );
+  const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
+
   const header = () => {
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div className="flex">
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          height: '50px',
+        }}
+      >
+        <div className="flex" style={{ alignItems: 'center' }}>
           <Button
             size="small"
             icon={<CheckCircleOutlined />}
@@ -179,11 +244,11 @@ const StockTable = () => {
           <RangePicker
             size="small"
             onChange={handleChangeDate}
-            defaultValue={dates}
+            value={dates}
             format={DATE_FORMAT}
           />
         </div>
-        <div className={'flex'}>
+        <div className="flex" style={{ alignItems: 'center' }}>
           <Statistic
             value={_filter_3.length}
             valueStyle={{ color: 'green' }}
@@ -200,23 +265,13 @@ const StockTable = () => {
     );
   };
 
-  const handleClickRow = (data: any) => {
-    const symbol = data.data?.symbol;
-    if (!symbol) return;
-    setOpenDrawerBacktest(true);
-    setClickedSymbol(data.data.symbol);
-  };
-
-  const _filter_1 = listStocks.filter((i: StockData) => i.change_t0 < -0.02);
-  const _filter_2 = listStocks.filter(
-    (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
-  );
-  const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
-
   const footer = () => {
     return (
-      <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div>
+      <div
+        className="flex"
+        style={{ justifyContent: 'space-between', height: '50px' }}
+      >
+        <div className="flex" style={{ alignItems: 'center' }}>
           {`${String(listStocks.length)} rows`}
           <Tooltip title="Setting">
             <Button
@@ -237,7 +292,7 @@ const StockTable = () => {
             />
           </Tooltip>
         </div>
-        <div>
+        <div className="flex" style={{ alignItems: 'center' }}>
           <Tooltip title="Backtest">
             <Button
               size="small"
@@ -261,29 +316,32 @@ const StockTable = () => {
     );
   };
 
-  console.log(listStocks, 'listStocks');
+  console.log(listStocks, 'listStocks', dates);
 
   return (
     <div className="StockTable height-100 flex">
       {header()}
-      <div
-        className="ag-theme-alpine"
-        style={{ height: '100%', width: '100%' }}
-      >
-        <AgGridReact
-          rowData={listStocks}
-          overlayLoadingTemplate={
-            '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
-          }
-          columnDefs={StockTableColumns({
-            handleClickRow,
-          })}
-          ref={gridRef}
-          defaultColDef={{
-            filter: true,
-            sortable: true,
-          }}
-        />
+      <div className="flex height-100 width-100" style={{ flex: 1 }}>
+        <div className="ag-theme-alpine height-100 width-100">
+          <AgGridReact
+            rowData={listStocks}
+            overlayLoadingTemplate={
+              '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
+            }
+            columnDefs={StockTableColumns({
+              handleClickSymbol,
+              handleClickBacktest,
+            })}
+            ref={gridRef}
+            defaultColDef={{
+              filter: true,
+              sortable: true,
+            }}
+          />
+        </div>
+        <div className="height-100 width-100">
+          <StockDetailChart symbol={clickedSymbol} fullData={listStocks} />
+        </div>
       </div>
       {footer()}
 

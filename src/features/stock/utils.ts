@@ -12,7 +12,7 @@ const baseUrl = config.apiUrl;
 
 export const getDataChart = ({
   data,
-  volumeField = 'totalVolume',
+  volumeField = 'dealVolume',
   grid,
   seriesMarkPoint,
   markLine,
@@ -70,28 +70,31 @@ export const getDataChart = ({
 };
 
 export const filterData = (data: StockData[], filter: Partial<StockData>) => {
-  const { change_t0, estimated_vol_change, t0_over_base_max } = filter;
+  const {
+    change_t0,
+    // estimated_vol_change, t0_over_base_max
+  } = filter;
 
   const result = data.filter((i: StockData) => {
-    if (!i.latestBase) {
-      return false;
-    }
+    // if (!i.latestBase) {
+    //   return false;
+    // }
 
     if (change_t0 && i.change_t0 < change_t0) {
       return false;
     }
 
-    if (estimated_vol_change && i.estimated_vol_change < estimated_vol_change) {
-      return false;
-    }
+    // if (estimated_vol_change && i.estimated_vol_change < estimated_vol_change) {
+    //   return false;
+    // }
 
-    if (
-      t0_over_base_max &&
-      i.t0_over_base_max &&
-      i.t0_over_base_max < t0_over_base_max
-    ) {
-      return false;
-    }
+    // if (
+    //   t0_over_base_max &&
+    //   i.t0_over_base_max &&
+    //   i.t0_over_base_max < t0_over_base_max
+    // ) {
+    //   return false;
+    // }
 
     return true;
   });

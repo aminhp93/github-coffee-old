@@ -117,7 +117,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     }
   };
 
-  const handleClickRow = (data: StockData) => {
+  const handleClickDate = (data: StockData) => {
     console.log(data);
     const latestBase = data.latestBase;
     const closetUpperBase = data.closetUpperBase;
@@ -253,7 +253,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
             <AgGridReact
               rowData={resultBacktestData}
               columnDefs={StockTableColumns({
-                handleClickRow,
+                handleClickDate,
                 isBacktest: true,
               })}
               ref={gridRef}
