@@ -68,6 +68,29 @@ const StockService = {
       console.log(error);
     }
   },
+  async getStockDataFromFireant({
+    startDate,
+    endDate,
+    listSymbols = getListAllSymbols(),
+  }: {
+    startDate: string;
+    endDate: string;
+    listSymbols?: string[];
+  }) {
+    const listPromises: any = [];
+    listSymbols.forEach((i: any) => {
+      listPromises.push(
+        StockService.getHistoricalQuotes({
+          symbol: i,
+          startDate,
+          endDate,
+          offset: 0,
+          returnRequest: true,
+        })
+      );
+    });
+    return Promise.all(listPromises);
+  },
   async getFundamentals({ symbol }: any, callback?: any, extraDataCb?: any) {
     if (!symbol) return null;
     try {
@@ -302,13 +325,24 @@ const StockService = {
   deleteStockData: ({ column, value }: any) => {
     return supabase.from('stock').delete().eq(column, value);
   },
+  getStockBase: (symbol: string) => {
+    return supabase.from('stock_base').select('*').in('symbol', [symbol]);
+  },
+  insertStockBase: (data: any) => {
+    return supabase.from('stock_base').insert(data);
+  },
+  updateStockBase: (updatedObj: any) => {
+    return supabase
+      .from('stock_base')
+      .update(updatedObj)
+      .eq('symbol', updatedObj.symbol);
+  },
   updateLastUpdated: ({ column, value }: any) => {
     console.log('updateLastUpdated', column, value);
     return supabase
       .from('stock_info')
       .update({ [column]: value })
-      .eq('id', 1)
-      .select();
+      .eq('id', 1);
   },
   getStockDataFromSupabase: ({
     startDate,

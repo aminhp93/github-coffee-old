@@ -46,14 +46,61 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
       const endDate = dates[1].format(DATE_FORMAT);
 
       // get data
+
+      // use latest data
+      // For now only can use data from fireant
+      const useLatestData = localStorage.getItem('useLatestData');
+      let resFireant;
+      if (useLatestData) {
+        const res = await StockService.getStockDataFromFireant({
+          startDate: moment().format(DATE_FORMAT),
+          endDate: moment().format(DATE_FORMAT),
+          listSymbols: [symbol],
+        });
+        resFireant = res.map((i) => {
+          const item = i.data[0];
+          const {
+            date,
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          } = item;
+          return {
+            date: moment(date).format(DATE_FORMAT),
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          };
+        });
+      }
+
+      // use old static data from supabase (updated 1 day ago)
+
       const res = await StockService.getStockDataFromSupabase({
         startDate,
         endDate,
         listSymbols: [symbol],
       });
+      gridRef.current.api && gridRef.current.api.hideOverlay();
       console.log('res', res);
 
-      const mappedData = getStockDataFromSupabase(res.data as SupabaseData[]);
+      let source: any = res.data;
+      if (resFireant) {
+        source = [...resFireant, ...source];
+      }
+      console.log('source', source);
+
+      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       console.log('mappedData', mappedData);
 
       const backtestData = mappedData[0].backtestData;
@@ -70,14 +117,11 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
     }
   };
 
-  const handleClickRow = (data: StockData) => {
+  const handleClickDate = (data: StockData) => {
     console.log(data);
     const latestBase = data.latestBase;
     const closetUpperBase = data.closetUpperBase;
     const listMarkPoints = [data];
-    // .filter(
-    //   (i: StockCoreData) => i.t0_over_base_max > 0
-    // );
     const listMarkLines = [];
 
     if (latestBase) {
@@ -209,7 +253,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
             <AgGridReact
               rowData={resultBacktestData}
               columnDefs={StockTableColumns({
-                handleClickRow,
+                handleClickDate,
                 isBacktest: true,
               })}
               ref={gridRef}
