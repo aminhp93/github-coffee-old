@@ -1,7 +1,7 @@
-import { cloneDeep, groupBy, chunk } from 'lodash';
+import { cloneDeep, groupBy, chunk, meanBy } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, getListAllSymbols, BACKTEST_COUNT } from './constants';
-import { SupabaseData, StockData, StockCoreData } from './types';
+import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
 import request from '@/services/request';
 import { notification } from 'antd';
@@ -16,11 +16,12 @@ export const getDataChart = ({
   seriesMarkPoint,
   markLine,
 }: {
-  data: StockCoreData[];
+  data?: StockCoreData[];
   volumeField?: 'dealVolume' | 'totalVolume';
   seriesMarkPoint?: any;
   markLine?: any;
 }) => {
+  if (!data) return;
   const newData = [...data];
   const dates = newData
     .map((i: StockCoreData) => moment(i.date).format(DATE_FORMAT))
@@ -251,7 +252,7 @@ export const mapDataChart = ({
   listMarkPoints = [],
   listMarkLines = [],
 }: {
-  fullData: StockCoreData[];
+  fullData?: StockCoreData[];
   listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
 }) => {
@@ -289,27 +290,55 @@ export const mapDataChart = ({
   return newDataChart;
 };
 
-export const calculateStockBase = (data: any) => {
-  if (!data)
+export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
+  if (!stockBase || !data) {
     return {
       risk: null,
       target: null,
+      big_sell: [],
     };
-  const { support_base, target_base } = data;
-  if (!support_base || !target_base)
+  }
+
+  const { support_base, target_base } = stockBase;
+  if (!support_base || !target_base) {
     return {
       risk: null,
       target: null,
+      big_sell: [],
     };
+  }
+
   const risk =
     (100 * (support_base.base_max - support_base.base_min)) /
     support_base.base_min;
   const target =
     (100 * (target_base.base_min - support_base.base_max)) /
     support_base.base_max;
+
+  const startBaseIndex = data.findIndex(
+    (i: StockData) => i.date === support_base.startBaseDate
+  );
+
+  const endBaseIndex = data.findIndex(
+    (i: StockData) => i.date === support_base.endBaseDate
+  );
+
+  const listData = data.slice(endBaseIndex, startBaseIndex + 1);
+
+  console.log(listData);
+  const averageVolume = meanBy(listData, 'totalVolume');
+  const big_sell = listData
+    .filter((i) => i.priceClose < i.priceOpen && i.totalVolume > averageVolume)
+    .map((i) => {
+      return {
+        date: i.date,
+        overAverage: (100 * i.totalVolume) / averageVolume,
+      };
+    });
   return {
     risk,
     target,
+    big_sell,
   };
 };
 

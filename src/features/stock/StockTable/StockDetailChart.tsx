@@ -3,14 +3,32 @@ import moment from 'moment';
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import {
   mapDataChart,
-  calculateStockBase,
+  evaluateStockBase,
   getStockDataFromSupabase,
   getListMarkLines,
 } from '../utils';
 import StockService from '../service';
 import { useEffect, useState } from 'react';
-import { SupabaseData } from '../types';
-import { DatePicker, InputNumber, notification, Button, Select } from 'antd';
+import { SupabaseData, StockData } from '../types';
+import {
+  DatePicker,
+  InputNumber,
+  notification,
+  Button,
+  Select,
+  Divider,
+} from 'antd';
+
+const list_base_fields = [
+  {
+    key: 'support_base',
+    label: 'Support base',
+  },
+  {
+    key: 'target_base',
+    label: 'Target base',
+  },
+];
 
 const { RangePicker } = DatePicker;
 
@@ -23,6 +41,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
   const [dataChart, setDataChart] = useState<any>(null);
   const [stockBase, setStockBase] = useState<any>({});
   const [symbol, setSymbol] = useState<string>(defaultSymbol);
+  const [stockData, setStockData] = useState<StockData | null>(null);
 
   const handleChangeStockBase = (key: any, data: any) => {
     setStockBase({
@@ -122,19 +141,33 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       console.log('mappedData', mappedData);
       if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
+        const newStockData = mappedData[0];
+        setStockData(newStockData);
         setDataChart(
           mapDataChart({
-            fullData: mappedData[0].fullData,
+            fullData: newStockData.fullData,
             listMarkLines: getListMarkLines(newStockBase),
           })
         );
       }
+
       setStockBase(newStockBase);
     } catch (e) {
       console.log(e);
       notification.error({ message: 'error' });
     }
   };
+
+  useEffect(() => {
+    if (!stockData) return;
+    setDataChart(
+      mapDataChart({
+        fullData: stockData.fullData,
+        listMarkLines: getListMarkLines(stockBase),
+      })
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stockBase]);
 
   useEffect(() => {
     getData(symbol);
@@ -147,14 +180,20 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
 
   console.log('stockBase', stockBase);
 
-  const { risk, target } = calculateStockBase(stockBase);
+  const { risk, target, big_sell } = evaluateStockBase(
+    stockBase,
+    stockData?.fullData
+  );
 
   return (
     <div
       className="flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
-      <div style={{ height: '200px' }}>
+      <div
+        className="flex"
+        style={{ height: '200px', flexDirection: 'column' }}
+      >
         {symbol && (
           <div>
             <Select
@@ -175,18 +214,18 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
             </Button>
           </div>
         )}
-        <div className="flex">
-          <div>
+        <div className="flex flex-1" style={{ overflow: 'auto' }}>
+          {list_base_fields.map((i) => (
             <div>
-              Support base
+              {i.label}
               <div style={{ marginTop: '10px' }}>
                 <InputNumber
                   step={0.1}
                   size="small"
                   addonBefore="base_min"
-                  value={stockBase?.support_base?.base_min}
+                  value={stockBase?.[i.key]?.base_min}
                   onChange={(value: any) => {
-                    handleChangeStockBase('support_base', {
+                    handleChangeStockBase(i.key, {
                       base_min: value,
                     });
                   }}
@@ -197,9 +236,9 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
                   step={0.1}
                   size="small"
                   addonBefore="base_max"
-                  value={stockBase?.support_base?.base_max}
+                  value={stockBase?.[i.key]?.base_max}
                   onChange={(value: any) => {
-                    handleChangeStockBase('support_base', {
+                    handleChangeStockBase(i.key, {
                       base_max: value,
                     });
                   }}
@@ -209,7 +248,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
                 <RangePicker
                   size="small"
                   onChange={(dates) => {
-                    handleChangeStockBase('support_base', {
+                    handleChangeStockBase(i.key, {
                       startBaseDate:
                         dates && dates[0] && dates[0].format(DATE_FORMAT),
                       endBaseDate:
@@ -217,79 +256,41 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
                     });
                   }}
                   value={
-                    // stockBase && stockBase.support_base
-                    //   ? [
-                    //       moment(stockBase.support_base.startBaseDate),
-                    //       moment(stockBase.support_base.endBaseDate),
-                    //     ]
-                    //   :
-                    [moment().add(-8, 'months'), moment()]
+                    stockBase && stockBase[i.key]
+                      ? [
+                          moment(stockBase[i.key].startBaseDate),
+                          moment(stockBase[i.key].endBaseDate),
+                        ]
+                      : null
                   }
                   format={DATE_FORMAT}
                 />
               </div>
             </div>
-          </div>
-          <div style={{ marginLeft: '20px' }}>
-            <div>
-              Target base
-              <div style={{ marginTop: '10px' }}>
-                <InputNumber
-                  step={0.1}
-                  size="small"
-                  addonBefore="base_min"
-                  value={stockBase?.target_base?.base_min}
-                  onChange={(value: any) => {
-                    handleChangeStockBase('target_base', {
-                      base_min: value,
-                    });
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: '10px' }}>
-                <InputNumber
-                  step={0.1}
-                  size="small"
-                  addonBefore="base_max"
-                  value={stockBase?.target_base?.base_max}
-                  onChange={(value: any) => {
-                    handleChangeStockBase('target_base', {
-                      base_max: value,
-                    });
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: '10px' }}>
-                <RangePicker
-                  size="small"
-                  onChange={(dates) => {
-                    handleChangeStockBase('target_base', {
-                      startBaseDate:
-                        dates && dates[0] && dates[0].format(DATE_FORMAT),
-                      endBaseDate:
-                        dates && dates[1] && dates[1].format(DATE_FORMAT),
-                    });
-                  }}
-                  value={
-                    // stockBase && stockBase.target_base
-                    //   ? [
-                    //       moment(stockBase.target_base.startBaseDate),
-                    //       moment(stockBase.target_base.endBaseDate),
-                    //     ]
-                    //   :
-                    [moment().add(-8, 'months'), moment()]
-                  }
-                  format={DATE_FORMAT}
-                />
-              </div>
-            </div>
-          </div>
-          <div style={{ marginLeft: '20px' }}>
+          ))}
+          <div
+            className="flex"
+            style={{ marginLeft: '20px', flexDirection: 'column' }}
+          >
             <div>Risk: {risk && risk.toFixed(0) + '%'}</div>
             <div>target: {target && target.toFixed(0) + '%'}</div>
+            <div style={{ flex: 1, overflow: 'auto' }}>
+              <div>Big sell</div>
+              <div>
+                {big_sell &&
+                  big_sell.map((j) => {
+                    return (
+                      <div>
+                        {j.date} - {`${j.overAverage.toFixed(0)}%`}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <Divider />
       <div style={{ flex: 1 }}>
         {dataChart && <BackTestChart data={dataChart} />}{' '}
       </div>

@@ -137,3 +137,16 @@ export interface StockData extends StockCoreData {
   backtestData?: StockData[];
   fullData?: StockData[];
 }
+
+export interface StockBase {
+  symbol: string;
+  support_base: StockBaseData;
+  target_base: StockBaseData;
+}
+
+export interface StockBaseData {
+  base_max: number;
+  base_min: number;
+  startBaseDate: string;
+  endBaseDate: string;
+}
