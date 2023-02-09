@@ -233,48 +233,6 @@ const StockTable = () => {
   );
   const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
 
-  const header = () => {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          height: '50px',
-        }}
-      >
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Button
-            size="small"
-            icon={<CheckCircleOutlined />}
-            onClick={() => {
-              getAllStockBase();
-              getData();
-            }}
-          />
-          <RangePicker
-            size="small"
-            onChange={handleChangeDate}
-            value={dates}
-            format={DATE_FORMAT}
-          />
-        </div>
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Statistic
-            value={_filter_3.length}
-            valueStyle={{ color: 'green' }}
-            prefix={<ArrowUpOutlined />}
-          />
-          <Statistic value={_filter_2.length} style={{ margin: '0 10px' }} />
-          <Statistic
-            value={_filter_1.length}
-            valueStyle={{ color: 'red' }}
-            prefix={<ArrowDownOutlined />}
-          />
-        </div>
-      </div>
-    );
-  };
-
   const footer = () => {
     return (
       <div
@@ -301,8 +259,6 @@ const StockTable = () => {
               onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
-        </div>
-        <div className="flex" style={{ alignItems: 'center' }}>
           <Tooltip title="Backtest">
             <Button
               size="small"
@@ -322,6 +278,35 @@ const StockTable = () => {
             />
           </Tooltip>
         </div>
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <Button
+            size="small"
+            icon={<CheckCircleOutlined />}
+            onClick={() => {
+              getAllStockBase();
+              getData();
+            }}
+          />
+          <RangePicker
+            style={{ marginLeft: 8 }}
+            size="small"
+            onChange={handleChangeDate}
+            value={dates}
+            format={DATE_FORMAT}
+          />
+          <Statistic
+            style={{ marginLeft: 8 }}
+            value={_filter_3.length}
+            valueStyle={{ color: 'green' }}
+            prefix={<ArrowUpOutlined />}
+          />
+          <Statistic value={_filter_2.length} style={{ margin: '0 10px' }} />
+          <Statistic
+            value={_filter_1.length}
+            valueStyle={{ color: 'red' }}
+            prefix={<ArrowDownOutlined />}
+          />
+        </div>
       </div>
     );
   };
@@ -330,7 +315,6 @@ const StockTable = () => {
 
   return (
     <div className="StockTable height-100 flex">
-      {header()}
       <div className="flex height-100 width-100" style={{ flex: 1 }}>
         <div className="ag-theme-alpine height-100 width-100">
           <AgGridReact

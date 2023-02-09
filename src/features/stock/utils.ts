@@ -13,13 +13,11 @@ const baseUrl = config.apiUrl;
 export const getDataChart = ({
   data,
   volumeField = 'dealVolume',
-  grid,
   seriesMarkPoint,
   markLine,
 }: {
   data: StockCoreData[];
   volumeField?: 'dealVolume' | 'totalVolume';
-  grid?: any;
   seriesMarkPoint?: any;
   markLine?: any;
 }) => {
@@ -44,27 +42,11 @@ export const getDataChart = ({
       i.priceOpen < i.priceClose ? 1 : -1,
     ]);
 
-  const DEFAULT_GRID = [
-    {
-      left: 20,
-      right: 20,
-      top: 0,
-      height: '70%',
-    },
-    {
-      left: 20,
-      right: 20,
-      height: '25%',
-      bottom: 0,
-    },
-  ];
-
   return {
     dates,
     prices,
     volumes,
     seriesMarkPoint: seriesMarkPoint ? seriesMarkPoint : null,
-    grid: grid ? grid : DEFAULT_GRID,
     markLine: markLine ? markLine : null,
   };
 };
@@ -273,21 +255,6 @@ export const mapDataChart = ({
   listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
 }) => {
-  const grid = [
-    {
-      left: 20,
-      right: 20,
-      // top: 20,
-      height: '80%',
-    },
-    {
-      left: 20,
-      right: 20,
-      height: '10%',
-      bottom: 0,
-    },
-  ];
-
   const seriesMarkPoint = getSeriesMarkPoint({
     listMarkPoints,
     offset: 20,
@@ -313,7 +280,6 @@ export const mapDataChart = ({
 
   const newDataChart = getDataChart({
     data: fullData,
-    grid,
     seriesMarkPoint,
     markLine: {
       data: dataMarkLine,
