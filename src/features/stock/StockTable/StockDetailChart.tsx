@@ -1,22 +1,28 @@
 import BackTestChart from './BackTestChart';
 import moment from 'moment';
-import { DATE_FORMAT } from '../constants';
-import { mapDataChart, calculateStockBase } from '../utils';
+import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
+import {
+  mapDataChart,
+  calculateStockBase,
+  getStockDataFromSupabase,
+  getListMarkLines,
+} from '../utils';
 import StockService from '../service';
 import { useEffect, useState } from 'react';
-import { StockData } from '../types';
-import { DatePicker, InputNumber, notification, Button } from 'antd';
+import { SupabaseData } from '../types';
+import { DatePicker, InputNumber, notification, Button, Select } from 'antd';
 
 const { RangePicker } = DatePicker;
 
 interface Props {
   symbol: string;
-  fullData: StockData[];
+  dates: any;
 }
 
-const StockDetailChart = ({ symbol, fullData }: Props) => {
+const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
   const [dataChart, setDataChart] = useState<any>(null);
   const [stockBase, setStockBase] = useState<any>({});
+  const [symbol, setSymbol] = useState<string>(defaultSymbol);
 
   const handleChangeStockBase = (key: any, data: any) => {
     setStockBase({
@@ -46,89 +52,98 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
     }
   };
 
-  useEffect(() => {
-    const listMarkLines = [];
-    if (stockBase?.support_base) {
-      listMarkLines.push([
-        {
-          coord: [
-            stockBase.support_base.endBaseDate,
-            stockBase.support_base.base_min,
-          ],
-        },
-        {
-          coord: [
-            stockBase.support_base.startBaseDate,
-            stockBase.support_base.base_min,
-          ],
-        },
-      ]);
-      listMarkLines.push([
-        {
-          coord: [
-            stockBase.support_base.endBaseDate,
-            stockBase.support_base.base_max,
-          ],
-        },
-        {
-          coord: [
-            stockBase.support_base.startBaseDate,
-            stockBase.support_base.base_max,
-          ],
-        },
-      ]);
-    }
-    if (stockBase?.target_base) {
-      listMarkLines.push([
-        {
-          coord: [
-            stockBase.target_base.endBaseDate,
-            stockBase.target_base.base_min,
-          ],
-        },
-        {
-          coord: [
-            stockBase.target_base.startBaseDate,
-            stockBase.target_base.base_min,
-          ],
-        },
-      ]);
-      listMarkLines.push([
-        {
-          coord: [
-            stockBase.target_base.endBaseDate,
-            stockBase.target_base.base_max,
-          ],
-        },
-        {
-          coord: [
-            stockBase.target_base.startBaseDate,
-            stockBase.target_base.base_max,
-          ],
-        },
-      ]);
-    }
-
-    const filteredData = fullData.filter((i: StockData) => i.symbol === symbol);
-    let fullDataChart: any = [];
-    if (filteredData.length > 0) {
-      fullDataChart = filteredData[0].fullData || [];
-    }
-
-    setDataChart(mapDataChart({ fullData: fullDataChart, listMarkLines }));
-  }, [symbol, fullData, stockBase]);
-
-  useEffect(() => {
-    const init = async () => {
-      const res = await StockService.getStockBase(symbol);
-      if (res.data && res.data.length === 1) {
-        setStockBase(res.data[0]);
-      } else {
-        setStockBase({});
+  const getData = async (symbol: string) => {
+    try {
+      if (!dates || dates.length !== 2) return;
+      const resStockBase = await StockService.getStockBase(symbol);
+      let newStockBase = {};
+      if (resStockBase.data && resStockBase.data.length === 1) {
+        newStockBase = resStockBase.data[0];
       }
-    };
-    init();
+
+      const startDate = dates[0].format(DATE_FORMAT);
+      const endDate = dates[1].format(DATE_FORMAT);
+      // get data
+
+      // use latest data
+      // For now only can use data from fireant
+      let resFireant;
+      if (
+        dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
+        moment().hour() < 15
+      ) {
+        const res = await StockService.getStockDataFromFireant({
+          startDate: moment().format(DATE_FORMAT),
+          endDate: moment().format(DATE_FORMAT),
+          listSymbols: [symbol],
+        });
+        resFireant = res.map((i) => {
+          const item = i.data[0];
+          const {
+            date,
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          } = item;
+          return {
+            date: moment(date).format(DATE_FORMAT),
+            dealVolume,
+            priceClose,
+            priceHigh,
+            priceLow,
+            priceOpen,
+            symbol,
+            totalValue,
+            totalVolume,
+          };
+        });
+      }
+
+      // use old static data from supabase (updated 1 day ago)
+
+      const res = await StockService.getStockDataFromSupabase({
+        startDate,
+        endDate,
+        listSymbols: [symbol],
+      });
+      console.log('res', res);
+
+      let source: any = res.data;
+      if (resFireant) {
+        source = [...resFireant, ...source];
+      }
+      console.log('source', source);
+
+      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
+      console.log('mappedData', mappedData);
+      if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
+        setDataChart(
+          mapDataChart({
+            fullData: mappedData[0].fullData,
+            listMarkLines: getListMarkLines(newStockBase),
+          })
+        );
+      }
+      setStockBase(newStockBase);
+    } catch (e) {
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  };
+
+  useEffect(() => {
+    getData(symbol);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [symbol]);
+
+  useEffect(() => {
+    setSymbol(defaultSymbol);
+  }, [defaultSymbol]);
 
   console.log('stockBase', stockBase);
 
@@ -142,7 +157,19 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
       <div style={{ height: '200px' }}>
         {symbol && (
           <div>
-            {symbol}{' '}
+            <Select
+              showSearch
+              size="small"
+              value={symbol}
+              style={{ width: 120 }}
+              onChange={(value: string) => {
+                setSymbol(value);
+                getData(value);
+              }}
+              options={LIST_ALL_SYMBOLS.map((i) => {
+                return { value: i, label: i };
+              })}
+            />
             <Button size="small" onClick={updateStockBase}>
               Update
             </Button>
@@ -190,12 +217,13 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                     });
                   }}
                   value={
-                    stockBase && stockBase.support_base
-                      ? [
-                          moment(stockBase.support_base.startBaseDate),
-                          moment(stockBase.support_base.endBaseDate),
-                        ]
-                      : null
+                    // stockBase && stockBase.support_base
+                    //   ? [
+                    //       moment(stockBase.support_base.startBaseDate),
+                    //       moment(stockBase.support_base.endBaseDate),
+                    //     ]
+                    //   :
+                    [moment().add(-8, 'months'), moment()]
                   }
                   format={DATE_FORMAT}
                 />
@@ -243,12 +271,13 @@ const StockDetailChart = ({ symbol, fullData }: Props) => {
                     });
                   }}
                   value={
-                    stockBase && stockBase.target_base
-                      ? [
-                          moment(stockBase.target_base.startBaseDate),
-                          moment(stockBase.target_base.endBaseDate),
-                        ]
-                      : null
+                    // stockBase && stockBase.target_base
+                    //   ? [
+                    //       moment(stockBase.target_base.startBaseDate),
+                    //       moment(stockBase.target_base.endBaseDate),
+                    //     ]
+                    //   :
+                    [moment().add(-8, 'months'), moment()]
                   }
                   format={DATE_FORMAT}
                 />

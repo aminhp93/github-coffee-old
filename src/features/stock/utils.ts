@@ -346,3 +346,70 @@ export const calculateStockBase = (data: any) => {
     target,
   };
 };
+
+export const getListMarkLines = (stockBase: any) => {
+  const startDateBase = moment().add(-8, 'months');
+  const endDateBase = moment();
+  const listMarkLines = [];
+  if (stockBase?.support_base) {
+    listMarkLines.push([
+      {
+        coord: [
+          endDateBase.format(DATE_FORMAT),
+          stockBase.support_base.base_min,
+        ],
+      },
+      {
+        coord: [
+          startDateBase.format(DATE_FORMAT),
+          stockBase.support_base.base_min,
+        ],
+      },
+    ]);
+    listMarkLines.push([
+      {
+        coord: [
+          endDateBase.format(DATE_FORMAT),
+          stockBase.support_base.base_max,
+        ],
+      },
+      {
+        coord: [
+          startDateBase.format(DATE_FORMAT),
+          stockBase.support_base.base_max,
+        ],
+      },
+    ]);
+  }
+  if (stockBase?.target_base) {
+    listMarkLines.push([
+      {
+        coord: [
+          endDateBase.format(DATE_FORMAT),
+          stockBase.target_base.base_min,
+        ],
+      },
+      {
+        coord: [
+          startDateBase.format(DATE_FORMAT),
+          stockBase.target_base.base_min,
+        ],
+      },
+    ]);
+    listMarkLines.push([
+      {
+        coord: [
+          endDateBase.format(DATE_FORMAT),
+          stockBase.target_base.base_max,
+        ],
+      },
+      {
+        coord: [
+          startDateBase.format(DATE_FORMAT),
+          stockBase.target_base.base_max,
+        ],
+      },
+    ]);
+  }
+  return listMarkLines;
+};

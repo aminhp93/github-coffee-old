@@ -1,4 +1,4 @@
-import { Button, Drawer, InputNumber, Switch } from 'antd';
+import { Button, Drawer, InputNumber } from 'antd';
 import { useState } from 'react';
 import { DEFAULT_FILTER, DELAY_TIME } from '../constants';
 import './index.less';
@@ -13,9 +13,6 @@ interface Props {
 const Filters = ({ onChange, onClose }: Props) => {
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
-  const [useLatestData, setUseLatestData] = useState<boolean>(
-    localStorage.getItem('useLatestData') ? true : false
-  );
 
   const [values, setValues] = useState<Filter>(DEFAULT_FILTER);
 
@@ -93,23 +90,6 @@ const Filters = ({ onChange, onClose }: Props) => {
               onChange={(value: any) => {
                 handleChange('estimated_vol_change', value);
               }}
-            />
-          </div>
-
-          <div style={{ marginTop: '20px' }}>
-            <Switch
-              onChange={(e) => {
-                console.log(e);
-                setUseLatestData(e);
-                if (e) {
-                  localStorage.setItem('useLatestData', 'true');
-                } else {
-                  localStorage.removeItem('useLatestData');
-                }
-              }}
-              checkedChildren="useLatestData"
-              unCheckedChildren="useLatestData"
-              defaultChecked={useLatestData}
             />
           </div>
         </div>

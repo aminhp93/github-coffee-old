@@ -66,20 +66,20 @@ const StockTable = () => {
 
       if (res.data && res.data.length && res.data.length === 1) {
         const lastUpdated = res.data[0].last_updated;
-        let endUpdateDate = moment().format(DATE_FORMAT);
+        let newLastUpdated = moment().format(DATE_FORMAT);
         // check current time before 3pm
         if (moment().hour() < 15) {
-          endUpdateDate = moment().add(-1, 'days').format(DATE_FORMAT);
+          newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
         }
 
-        if (lastUpdated !== endUpdateDate) {
+        if (lastUpdated !== newLastUpdated) {
           let nextCall = true;
           let offset = 0;
 
           while (nextCall) {
             const res = await updateDataWithDate(
               moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-              endUpdateDate,
+              newLastUpdated,
               offset
             );
             offset += 20;
@@ -87,22 +87,14 @@ const StockTable = () => {
               nextCall = false;
             }
           }
-        } else {
-          localStorage.removeItem('useLatestData');
         }
 
         await StockService.updateLastUpdated({
           column: 'last_updated',
-          value: endUpdateDate,
+          value: newLastUpdated,
         });
-        if (localStorage.getItem('useLatestData')) {
-          setDates([moment().add(-1, 'years'), moment()]);
-        } else {
-          setDates([
-            moment(endUpdateDate).add(-1, 'years'),
-            moment(endUpdateDate),
-          ]);
-        }
+
+        setDates([moment().add(-1, 'years'), moment()]);
       }
       notification.success({ message: 'success' });
     } catch (e) {
@@ -127,9 +119,11 @@ const StockTable = () => {
 
       // use latest data
       // For now only can use data from fireant
-      const useLatestData = localStorage.getItem('useLatestData');
       let resFireant;
-      if (useLatestData) {
+      if (
+        dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
+        moment().hour() < 15
+      ) {
         const res = await StockService.getStockDataFromFireant({
           startDate: moment().format(DATE_FORMAT),
           endDate: moment().format(DATE_FORMAT),
@@ -252,7 +246,10 @@ const StockTable = () => {
           <Button
             size="small"
             icon={<CheckCircleOutlined />}
-            onClick={getData}
+            onClick={() => {
+              getAllStockBase();
+              getData();
+            }}
           />
           <RangePicker
             size="small"
@@ -354,7 +351,7 @@ const StockTable = () => {
           />
         </div>
         <div className="height-100 width-100">
-          <StockDetailChart symbol={clickedSymbol} fullData={listStocks} />
+          <StockDetailChart dates={dates} symbol={clickedSymbol} />
         </div>
       </div>
       {footer()}

@@ -18,7 +18,7 @@ const dataZoom = [
   {
     type: 'inside',
     xAxisIndex: [0, 1],
-    start: 0,
+    start: 30,
     end: 100,
   },
   {
@@ -26,7 +26,7 @@ const dataZoom = [
     xAxisIndex: [0, 1],
     type: 'slider',
     top: '85%',
-    start: 0,
+    start: 30,
     end: 100,
   },
 ];
