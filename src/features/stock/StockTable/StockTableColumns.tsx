@@ -176,7 +176,7 @@ const StockTableColumns = ({
         if (!filter.length || filter.length !== 1) return;
 
         if (!stockData.change_t0) return;
-        const { risk } = evaluateStockBase(filter[0]);
+        const { risk } = evaluateStockBase(filter[0], stockData.fullData);
         return risk && risk.toFixed(0) + '%';
       },
     },
@@ -196,7 +196,7 @@ const StockTableColumns = ({
         if (!filter.length || filter.length !== 1) return;
 
         if (!stockData.change_t0) return;
-        const { target } = evaluateStockBase(filter[0]);
+        const { target } = evaluateStockBase(filter[0], stockData.fullData);
         return target && target.toFixed(0) + '%';
       },
     },

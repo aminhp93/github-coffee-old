@@ -2,7 +2,6 @@ import moment from 'moment';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  CheckCircleOutlined,
   FilterOutlined,
   SettingOutlined,
   WarningOutlined,
@@ -28,7 +27,7 @@ import StockTableColumns from './StockTableColumns';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import StockDetailChart from './StockDetailChart';
-
+import RefreshButton from './RefreshButton';
 const { RangePicker } = DatePicker;
 
 const StockTable = () => {
@@ -44,6 +43,7 @@ const StockTable = () => {
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
+  const [allStocks, setAllStocks] = useState<StockData[]>([]);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -171,6 +171,7 @@ const StockTable = () => {
 
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       console.log('mappedData', mappedData);
+      setAllStocks(mappedData);
 
       const filterdData = filterData(mappedData, filters);
       console.log('filterdData', filterdData);
@@ -227,11 +228,11 @@ const StockTable = () => {
     setClickedSymbol(data.data.symbol);
   };
 
-  const _filter_1 = listStocks.filter((i: StockData) => i.change_t0 < -0.02);
-  const _filter_2 = listStocks.filter(
+  const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
+  const _filter_2 = allStocks.filter(
     (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
   );
-  const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
+  const _filter_3 = allStocks.filter((i: StockData) => i.change_t0 > 0.02);
 
   const footer = () => {
     return (
@@ -279,14 +280,13 @@ const StockTable = () => {
           </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <Button
-            size="small"
-            icon={<CheckCircleOutlined />}
+          <RefreshButton
             onClick={() => {
               getAllStockBase();
               getData();
             }}
           />
+
           <RangePicker
             style={{ marginLeft: 8 }}
             size="small"
@@ -297,13 +297,17 @@ const StockTable = () => {
           <Statistic
             style={{ marginLeft: 8 }}
             value={_filter_3.length}
-            valueStyle={{ color: 'green' }}
+            valueStyle={{ color: 'green', fontSize: '14px' }}
             prefix={<ArrowUpOutlined />}
           />
-          <Statistic value={_filter_2.length} style={{ margin: '0 10px' }} />
+          <Statistic
+            valueStyle={{ fontSize: '14px' }}
+            value={_filter_2.length}
+            style={{ margin: '0 10px' }}
+          />
           <Statistic
             value={_filter_1.length}
-            valueStyle={{ color: 'red' }}
+            valueStyle={{ color: 'red', fontSize: '14px' }}
             prefix={<ArrowDownOutlined />}
           />
         </div>

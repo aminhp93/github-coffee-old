@@ -1,6 +1,6 @@
 import { Button, Drawer, InputNumber } from 'antd';
 import { useState } from 'react';
-import { DEFAULT_FILTER, DELAY_TIME } from '../constants';
+import { DEFAULT_FILTER } from '../constants';
 import './index.less';
 import ReactMarkdown from 'react-markdown';
 import { Filter } from '../types';
@@ -11,9 +11,6 @@ interface Props {
 }
 
 const Filters = ({ onChange, onClose }: Props) => {
-  const [isPlaying, setPlaying] = useState<boolean>(false);
-  const [delay, setDelay] = useState<number>(DELAY_TIME);
-
   const [values, setValues] = useState<Filter>(DEFAULT_FILTER);
 
   const handleClearFilter = () => {
@@ -36,20 +33,6 @@ const Filters = ({ onChange, onClose }: Props) => {
         >
           <div>Filter</div>
           <div>
-            <Button
-              style={{ marginLeft: '8px' }}
-              size="small"
-              onClick={() => setPlaying(!isPlaying)}
-            >
-              {isPlaying ? 'Stop Interval' : 'Start Interval'}
-            </Button>
-            <InputNumber
-              size="small"
-              style={{ marginLeft: '8px' }}
-              disabled={isPlaying}
-              value={delay}
-              onChange={(value: any) => setDelay(value)}
-            />
             <Button
               style={{ marginLeft: '8px' }}
               size="small"

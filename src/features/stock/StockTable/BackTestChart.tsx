@@ -40,8 +40,8 @@ const grid = [
   {
     left: '5%',
     right: '5%',
-    top: '75%',
-    height: '15%',
+    top: '80%',
+    height: '10%',
   },
 ];
 

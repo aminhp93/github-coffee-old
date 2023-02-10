@@ -187,36 +187,35 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
 
   return (
     <div
-      className="flex height-100 width-100"
+      className="StockDetailChart flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
       <div
         className="flex"
         style={{ height: '200px', flexDirection: 'column' }}
       >
-        {symbol && (
-          <div>
-            <Select
-              showSearch
-              size="small"
-              value={symbol}
-              style={{ width: 120 }}
-              onChange={(value: string) => {
-                setSymbol(value);
-                getData(value);
-              }}
-              options={LIST_ALL_SYMBOLS.map((i) => {
-                return { value: i, label: i };
-              })}
-            />
-            <Button size="small" onClick={updateStockBase}>
-              Update
-            </Button>
-          </div>
-        )}
+        <div>
+          <Select
+            showSearch
+            size="small"
+            value={symbol}
+            style={{ width: 120 }}
+            onChange={(value: string) => {
+              setSymbol(value);
+              getData(value);
+            }}
+            options={LIST_ALL_SYMBOLS.map((i) => {
+              return { value: i, label: i };
+            })}
+          />
+          <Button size="small" onClick={updateStockBase}>
+            Update
+          </Button>
+        </div>
+
         <div className="flex flex-1" style={{ overflow: 'auto' }}>
           {list_base_fields.map((i) => (
-            <div>
+            <div key={i.key}>
               {i.label}
               <div style={{ marginTop: '10px' }}>
                 <InputNumber
@@ -280,7 +279,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
                 {big_sell &&
                   big_sell.map((j) => {
                     return (
-                      <div>
+                      <div key={j.date}>
                         {j.date} - {`${j.overAverage.toFixed(0)}%`}
                       </div>
                     );
