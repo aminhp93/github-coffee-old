@@ -9,7 +9,7 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Statistic, DatePicker, Tooltip } from 'antd';
 import StockService from '../service';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { DEFAULT_FILTER, DEFAULT_SETTING, DATE_FORMAT } from '../constants';
 import {
   filterData,
@@ -24,6 +24,7 @@ import Testing from './Testing';
 import { Filter, SupabaseData, StockData } from '../types';
 import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
+import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import StockDetailChart from './StockDetailChart';
@@ -315,6 +316,13 @@ const StockTable = () => {
     );
   };
 
+  const onGridReady = useCallback((params: any) => {
+    const defaultSortModel = [
+      { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
+    ];
+    params.columnApi.applyColumnState({ state: defaultSortModel });
+  }, []);
+
   console.log(listStocks, 'listStocks', dates);
 
   return (
@@ -331,10 +339,16 @@ const StockTable = () => {
               handleClickBacktest,
               listStockBase,
             })}
+            sideBar={{
+              toolPanels: ['columns', 'filters'],
+            }}
+            onGridReady={onGridReady}
             ref={gridRef}
             defaultColDef={{
-              filter: true,
+              editable: true,
               sortable: true,
+              filter: true,
+              resizable: true,
             }}
           />
         </div>

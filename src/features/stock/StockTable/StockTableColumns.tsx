@@ -54,6 +54,7 @@ const StockTableColumns = ({
     {
       headerName: 'Date',
       field: 'date',
+      hide: true,
       width: 120,
       onCellClicked: (data: any) => {
         handleClickDate && handleClickDate(data);
@@ -203,6 +204,7 @@ const StockTableColumns = ({
     {
       headerName: 'backtest',
       field: 'backtest',
+      hide: true,
       width: 120,
       cellRenderer: () => {
         return 'backtest';
