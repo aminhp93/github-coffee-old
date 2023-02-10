@@ -2,7 +2,6 @@ import moment from 'moment';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  CheckCircleOutlined,
   FilterOutlined,
   SettingOutlined,
   WarningOutlined,
@@ -28,7 +27,7 @@ import StockTableColumns from './StockTableColumns';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import StockDetailChart from './StockDetailChart';
-
+import RefreshButton from './RefreshButton';
 const { RangePicker } = DatePicker;
 
 const StockTable = () => {
@@ -44,6 +43,7 @@ const StockTable = () => {
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
+  const [allStocks, setAllStocks] = useState<StockData[]>([]);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -66,20 +66,20 @@ const StockTable = () => {
 
       if (res.data && res.data.length && res.data.length === 1) {
         const lastUpdated = res.data[0].last_updated;
-        let endUpdateDate = moment().format(DATE_FORMAT);
+        let newLastUpdated = moment().format(DATE_FORMAT);
         // check current time before 3pm
         if (moment().hour() < 15) {
-          endUpdateDate = moment().add(-1, 'days').format(DATE_FORMAT);
+          newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
         }
 
-        if (lastUpdated !== endUpdateDate) {
+        if (lastUpdated !== newLastUpdated) {
           let nextCall = true;
           let offset = 0;
 
           while (nextCall) {
             const res = await updateDataWithDate(
               moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-              endUpdateDate,
+              newLastUpdated,
               offset
             );
             offset += 20;
@@ -87,22 +87,14 @@ const StockTable = () => {
               nextCall = false;
             }
           }
-        } else {
-          localStorage.removeItem('useLatestData');
         }
 
         await StockService.updateLastUpdated({
           column: 'last_updated',
-          value: endUpdateDate,
+          value: newLastUpdated,
         });
-        if (localStorage.getItem('useLatestData')) {
-          setDates([moment().add(-1, 'years'), moment()]);
-        } else {
-          setDates([
-            moment(endUpdateDate).add(-1, 'years'),
-            moment(endUpdateDate),
-          ]);
-        }
+
+        setDates([moment().add(-1, 'years'), moment()]);
       }
       notification.success({ message: 'success' });
     } catch (e) {
@@ -127,9 +119,11 @@ const StockTable = () => {
 
       // use latest data
       // For now only can use data from fireant
-      const useLatestData = localStorage.getItem('useLatestData');
       let resFireant;
-      if (useLatestData) {
+      if (
+        dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
+        moment().hour() < 15
+      ) {
         const res = await StockService.getStockDataFromFireant({
           startDate: moment().format(DATE_FORMAT),
           endDate: moment().format(DATE_FORMAT),
@@ -177,6 +171,7 @@ const StockTable = () => {
 
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       console.log('mappedData', mappedData);
+      setAllStocks(mappedData);
 
       const filterdData = filterData(mappedData, filters);
       console.log('filterdData', filterdData);
@@ -233,50 +228,11 @@ const StockTable = () => {
     setClickedSymbol(data.data.symbol);
   };
 
-  const _filter_1 = listStocks.filter((i: StockData) => i.change_t0 < -0.02);
-  const _filter_2 = listStocks.filter(
+  const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
+  const _filter_2 = allStocks.filter(
     (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
   );
-  const _filter_3 = listStocks.filter((i: StockData) => i.change_t0 > 0.02);
-
-  const header = () => {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          height: '50px',
-        }}
-      >
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Button
-            size="small"
-            icon={<CheckCircleOutlined />}
-            onClick={getData}
-          />
-          <RangePicker
-            size="small"
-            onChange={handleChangeDate}
-            value={dates}
-            format={DATE_FORMAT}
-          />
-        </div>
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Statistic
-            value={_filter_3.length}
-            valueStyle={{ color: 'green' }}
-            prefix={<ArrowUpOutlined />}
-          />
-          <Statistic value={_filter_2.length} style={{ margin: '0 10px' }} />
-          <Statistic
-            value={_filter_1.length}
-            valueStyle={{ color: 'red' }}
-            prefix={<ArrowDownOutlined />}
-          />
-        </div>
-      </div>
-    );
-  };
+  const _filter_3 = allStocks.filter((i: StockData) => i.change_t0 > 0.02);
 
   const footer = () => {
     return (
@@ -304,8 +260,6 @@ const StockTable = () => {
               onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
-        </div>
-        <div className="flex" style={{ alignItems: 'center' }}>
           <Tooltip title="Backtest">
             <Button
               size="small"
@@ -325,6 +279,38 @@ const StockTable = () => {
             />
           </Tooltip>
         </div>
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <RefreshButton
+            onClick={() => {
+              getAllStockBase();
+              getData();
+            }}
+          />
+
+          <RangePicker
+            style={{ marginLeft: 8 }}
+            size="small"
+            onChange={handleChangeDate}
+            value={dates}
+            format={DATE_FORMAT}
+          />
+          <Statistic
+            style={{ marginLeft: 8 }}
+            value={_filter_3.length}
+            valueStyle={{ color: 'green', fontSize: '14px' }}
+            prefix={<ArrowUpOutlined />}
+          />
+          <Statistic
+            valueStyle={{ fontSize: '14px' }}
+            value={_filter_2.length}
+            style={{ margin: '0 10px' }}
+          />
+          <Statistic
+            value={_filter_1.length}
+            valueStyle={{ color: 'red', fontSize: '14px' }}
+            prefix={<ArrowDownOutlined />}
+          />
+        </div>
       </div>
     );
   };
@@ -333,7 +319,6 @@ const StockTable = () => {
 
   return (
     <div className="StockTable height-100 flex">
-      {header()}
       <div className="flex height-100 width-100" style={{ flex: 1 }}>
         <div className="ag-theme-alpine height-100 width-100">
           <AgGridReact
@@ -354,7 +339,7 @@ const StockTable = () => {
           />
         </div>
         <div className="height-100 width-100">
-          <StockDetailChart symbol={clickedSymbol} fullData={listStocks} />
+          <StockDetailChart dates={dates} symbol={clickedSymbol} />
         </div>
       </div>
       {footer()}

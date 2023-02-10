@@ -18,16 +18,30 @@ const dataZoom = [
   {
     type: 'inside',
     xAxisIndex: [0, 1],
-    start: 0,
+    start: 30,
     end: 100,
   },
   {
     show: true,
     xAxisIndex: [0, 1],
     type: 'slider',
-    top: '85%',
-    start: 0,
+    top: '95%',
+    start: 30,
     end: 100,
+  },
+];
+
+const grid = [
+  {
+    left: '5%',
+    right: '5%',
+    height: '65%',
+  },
+  {
+    left: '5%',
+    right: '5%',
+    top: '80%',
+    height: '10%',
   },
 ];
 
@@ -58,8 +72,8 @@ const yAxis = [
     splitLine: { show: true },
     axisTick: { show: false },
     axisLabel: {
-      inside: true,
-      show: false,
+      // inside: true,
+      // show: false,
       formatter: '{value}\n',
     },
   },
@@ -73,6 +87,23 @@ const yAxis = [
     splitLine: { show: false },
   },
 ];
+
+const toolbox = {
+  feature: {
+    brush: {
+      type: ['lineX', 'clear'],
+    },
+  },
+};
+
+const brush = {
+  xAxisIndex: 'all',
+  brushLink: 'all',
+  outOfBrush: {
+    colorAlpha: 0.1,
+  },
+};
+
 interface Props {
   data: {
     dates: string[];
@@ -85,7 +116,7 @@ interface Props {
 }
 
 const BackTestChart = ({ data }: Props) => {
-  const { dates, prices, volumes, seriesMarkPoint, grid, markLine } = data;
+  const { dates, prices, volumes, seriesMarkPoint, markLine } = data;
   //   const dates = [
   //     '2016-03-29',
   //     '2016-03-30',
@@ -111,14 +142,16 @@ const BackTestChart = ({ data }: Props) => {
       data: dates,
       boundaryGap: false,
       axisLine: { lineStyle: { color: '#777' } },
-      // axisLabel: {
-      //   formatter: function (value: any) {
-      //     return format.formatTime('MM-dd', value);
-      //   },
-      // },
+      axisLabel: {
+        formatter: function (value: any) {
+          // return format.formatTime('MM-dd', value);
+          return value;
+        },
+      },
+
+      splitLine: { show: false },
       min: 'dataMin',
       max: 'dataMax',
-      show: false,
       axisPointer: {
         show: true,
       },
@@ -134,7 +167,6 @@ const BackTestChart = ({ data }: Props) => {
       axisLine: { lineStyle: { color: '#777' } },
       min: 'dataMin',
       max: 'dataMax',
-      show: false,
       axisPointer: {
         type: 'shadow',
         label: { show: false },
@@ -215,6 +247,7 @@ const BackTestChart = ({ data }: Props) => {
   };
 
   const option = {
+    animation: false,
     color,
     xAxis,
     yAxis,
@@ -224,6 +257,8 @@ const BackTestChart = ({ data }: Props) => {
     markLine,
     tooltip,
     dataZoom,
+    toolbox,
+    brush,
   };
 
   return (
