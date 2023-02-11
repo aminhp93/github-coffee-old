@@ -1,23 +1,23 @@
-import BackTestChart from './BackTestChart';
-import moment from 'moment';
-import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import {
-  mapDataChart,
-  evaluateStockBase,
-  getStockDataFromSupabase,
-  getListMarkLines,
-} from '../utils';
-import StockService from '../service';
-import { useEffect, useState } from 'react';
-import { SupabaseData, StockData } from '../types';
-import {
+  Button,
   DatePicker,
+  Divider,
   InputNumber,
   notification,
-  Button,
   Select,
-  Divider,
 } from 'antd';
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
+import StockService from '../service';
+import { StockData, SupabaseData } from '../types';
+import {
+  evaluateStockBase,
+  getListMarkLines,
+  getStockDataFromSupabase,
+  mapDataChart,
+} from '../utils';
+import BackTestChart from './BackTestChart';
 
 const list_base_fields = [
   {
@@ -41,16 +41,23 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
   const [dataChart, setDataChart] = useState<any>(null);
   const [stockBase, setStockBase] = useState<any>({});
   const [symbol, setSymbol] = useState<string>(defaultSymbol);
-  const [stockData, setStockData] = useState<StockData | null>(null);
+  const [stockData, setStockData] = useState<StockData | undefined>(undefined);
 
   const handleChangeStockBase = (key: any, data: any) => {
-    setStockBase({
+    const newStockBase = {
       ...stockBase,
       [key]: {
         ...stockBase[key],
         ...data,
       },
-    });
+    };
+    setDataChart(
+      mapDataChart({
+        fullData: stockData?.fullData,
+        listMarkLines: getListMarkLines(newStockBase, stockData),
+      })
+    );
+    setStockBase(newStockBase);
   };
 
   const updateStockBase = async () => {
@@ -65,8 +72,8 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
         await StockService.insertStockBase([data]);
       }
       notification.success({ message: 'success' });
-    } catch (error) {
-      console.log('error', error);
+    } catch (e) {
+      console.log(e);
       notification.error({ message: 'error' });
     }
   };
@@ -75,17 +82,14 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
     try {
       if (!dates || dates.length !== 2) return;
       const resStockBase = await StockService.getStockBase(symbol);
-      let newStockBase = {};
+      let newStockBase: any;
       if (resStockBase.data && resStockBase.data.length === 1) {
         newStockBase = resStockBase.data[0];
       }
 
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
-      // get data
 
-      // use latest data
-      // For now only can use data from fireant
       let resFireant;
       if (
         dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
@@ -123,62 +127,48 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
         });
       }
 
-      // use old static data from supabase (updated 1 day ago)
-
       const res = await StockService.getStockDataFromSupabase({
         startDate,
         endDate,
         listSymbols: [symbol],
       });
-      console.log('res', res);
 
       let source: any = res.data;
       if (resFireant) {
         source = [...resFireant, ...source];
       }
-      console.log('source', source);
 
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
-      console.log('mappedData', mappedData);
       if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
         const newStockData = mappedData[0];
         setStockData(newStockData);
         setDataChart(
           mapDataChart({
             fullData: newStockData.fullData,
-            listMarkLines: getListMarkLines(newStockBase),
+            listMarkLines: getListMarkLines(newStockBase, newStockData),
           })
         );
       }
-
+      setSymbol(symbol);
       setStockBase(newStockBase);
     } catch (e) {
       console.log(e);
-      notification.error({ message: 'error' });
     }
   };
 
   useEffect(() => {
-    if (!stockData) return;
-    setDataChart(
-      mapDataChart({
-        fullData: stockData.fullData,
-        listMarkLines: getListMarkLines(stockBase),
-      })
-    );
+    getData(defaultSymbol);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stockBase]);
-
-  useEffect(() => {
-    getData(symbol);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbol]);
-
-  useEffect(() => {
-    setSymbol(defaultSymbol);
   }, [defaultSymbol]);
 
-  console.log('stockBase', stockBase);
+  console.log(
+    'stockBase',
+    stockBase,
+    'stockData',
+    stockData,
+    'dataChart',
+    dataChart
+  );
 
   const { risk, target, big_sell } = evaluateStockBase(
     stockBase,
@@ -201,7 +191,6 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
             value={symbol}
             style={{ width: 120 }}
             onChange={(value: string) => {
-              setSymbol(value);
               getData(value);
             }}
             options={LIST_ALL_SYMBOLS.map((i) => {
@@ -291,7 +280,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
       </div>
       <Divider />
       <div style={{ flex: 1 }}>
-        {dataChart && <BackTestChart data={dataChart} />}{' '}
+        {dataChart && <BackTestChart data={dataChart} />}
       </div>
     </div>
   );

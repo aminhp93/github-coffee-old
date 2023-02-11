@@ -1,19 +1,19 @@
+import { AgGridReact } from 'ag-grid-react';
 import {
-  Drawer,
   Button,
-  notification,
   DatePicker,
   Divider,
+  Drawer,
+  notification,
   Select,
 } from 'antd';
+import moment from 'moment';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import StockService from '../service';
-import moment from 'moment';
-import { mapDataChart, getStockDataFromSupabase } from '../utils';
+import { StockCoreData, StockData, SupabaseData } from '../types';
+import { getStockDataFromSupabase, mapDataChart } from '../utils';
 import BackTestChart from './BackTestChart';
-import { SupabaseData, StockCoreData, StockData } from '../types';
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { AgGridReact } from 'ag-grid-react';
 import StockTableColumns from './StockTableColumns';
 
 import 'ag-grid-community/styles/ag-grid.css';
@@ -84,24 +84,19 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
         });
       }
 
-      // use old static data from supabase (updated 1 day ago)
-
       const res = await StockService.getStockDataFromSupabase({
         startDate,
         endDate,
         listSymbols: [symbol],
       });
       gridRef.current.api && gridRef.current.api.hideOverlay();
-      console.log('res', res);
 
       let source: any = res.data;
       if (resFireant) {
         source = [...resFireant, ...source];
       }
-      console.log('source', source);
 
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
-      console.log('mappedData', mappedData);
 
       const backtestData = mappedData[0].backtestData;
       const fullData = mappedData[0].fullData;
@@ -118,7 +113,6 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
   };
 
   const handleClickDate = (data: StockData) => {
-    console.log(data);
     const latestBase = data.latestBase;
     const closetUpperBase = data.closetUpperBase;
     const listMarkPoints = [data];

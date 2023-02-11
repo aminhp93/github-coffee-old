@@ -41,7 +41,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
       startDate,
       endDate,
     });
-    console.log(res, res2);
     if (res && res2.data && res.length === 1 && res2.data.length === 1) {
       const data = res[0];
       const data2 = res2.data[0];
@@ -71,8 +70,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
     setDates(dates);
   };
 
-  console.log('dates', dates);
-
   const updateData = async () => {
     try {
       const selectedDate = dates.length === 2 ? dates[1] : null;
@@ -93,18 +90,16 @@ const TestSupabaseData = ({ onClose }: Props) => {
             moment().format(DATE_FORMAT),
             offset
           );
-          console.log(res);
           offset += 20;
           if (res && res.length && res[0].length < 20) {
             nextCall = false;
           }
         }
 
-        const res = await StockService.updateLastUpdated({
+        await StockService.updateLastUpdated({
           column: 'last_updated',
           value: moment().format(DATE_FORMAT),
         });
-        console.log(res);
       }
       notification.success({ message: 'success' });
     } catch (e) {
@@ -130,7 +125,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
     //   dataSource: newDataFireant,
     //   fullDataSource: fireantData,
     // });
-    // console.log(supabaseDataBacktest, fireantDataBacktest);
     // setDataFromSupabase(supabaseDataBacktest);
     // setDataFromFireant(fireantDataBacktest);
   };

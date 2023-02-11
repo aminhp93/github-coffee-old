@@ -1,6 +1,6 @@
 import moment from 'moment';
-import { StockData } from '../types';
 import { DATE_FORMAT } from '../constants';
+import { StockData } from '../types';
 import { evaluateStockBase } from '../utils';
 
 const MAIN_FIELD = [

@@ -1,45 +1,40 @@
-import moment from 'moment';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  FilterOutlined,
+  BoldOutlined,
   SettingOutlined,
   WarningOutlined,
-  BoldOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Statistic, DatePicker, Tooltip } from 'antd';
+
+import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
+import moment from 'moment';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { DATE_FORMAT, DEFAULT_FILTER, DEFAULT_SETTING } from '../constants';
 import StockService from '../service';
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { DEFAULT_FILTER, DEFAULT_SETTING, DATE_FORMAT } from '../constants';
+import { StockData, SupabaseData } from '../types';
 import {
   filterData,
-  updateDataWithDate,
   getStockDataFromSupabase,
+  updateDataWithDate,
 } from '../utils';
-import Filters from './Filter';
-import './index.less';
-import Settings from './Setting';
 import Backtest from './Backtest';
-import Testing from './Testing';
-import { Filter, SupabaseData, StockData } from '../types';
-import { AgGridReact } from 'ag-grid-react';
-import StockTableColumns from './StockTableColumns';
-import 'ag-grid-enterprise';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-import StockDetailChart from './StockDetailChart';
+import './index.less';
 import RefreshButton from './RefreshButton';
+import Settings from './Setting';
+import StockDetail from './StockDetail';
+import StockTableColumns from './StockTableColumns';
+import Testing from './Testing';
+import CustomAgGridReact from 'components/CustomAgGridReact';
+
 const { RangePicker } = DatePicker;
 
 const StockTable = () => {
   const gridRef: any = useRef();
 
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
-  const [openDrawerFilter, setOpenDrawerFilter] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [filters, setFilters] = useState(DEFAULT_FILTER);
   const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
@@ -48,17 +43,6 @@ const StockTable = () => {
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
-  };
-
-  const getAllStockBase = async () => {
-    try {
-      const res = await StockService.getAllStockBase();
-      if (res.data && res.data.length) {
-        setListStockBase(res.data);
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
   };
 
   const updateData = async () => {
@@ -108,7 +92,7 @@ const StockTable = () => {
     try {
       if (!dates || dates.length !== 2) return;
 
-      gridRef.current.api && gridRef.current.api.showLoadingOverlay();
+      gridRef.current?.api?.showLoadingOverlay();
 
       const startDate = dates[0].format(DATE_FORMAT);
       const endDate = dates[1].format(DATE_FORMAT);
@@ -116,10 +100,6 @@ const StockTable = () => {
         .add(-1, 'months')
         .format(DATE_FORMAT);
 
-      // get data
-
-      // use latest data
-      // For now only can use data from fireant
       let resFireant;
       if (
         dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
@@ -156,26 +136,19 @@ const StockTable = () => {
         });
       }
 
-      // use old static data from supabase (updated 1 day ago)
-
       const res = await StockService.getStockDataFromSupabase({
         startDate: tempStartDate,
         endDate,
       });
-      console.log('res', res);
 
       let source: any = res.data;
       if (resFireant) {
         source = [...resFireant, ...source];
       }
-      console.log('source', source);
 
-      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
-      console.log('mappedData', mappedData);
-      setAllStocks(mappedData);
+      const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
 
-      const filterdData = filterData(mappedData, filters);
-      console.log('filterdData', filterdData);
+      const filterdData = filterData(newAllStocks, DEFAULT_FILTER);
 
       const listSymbols = filterdData.map((i) => i.symbol);
 
@@ -184,8 +157,14 @@ const StockTable = () => {
         endDate,
         listSymbols,
       });
-      gridRef.current.api && gridRef.current.api.hideOverlay();
-      console.log('res2', res2);
+
+      const resStockBase = await StockService.getAllStockBase();
+
+      gridRef.current?.api?.hideOverlay();
+
+      if (resStockBase.data && resStockBase.data.length) {
+        setListStockBase(resStockBase.data);
+      }
 
       let source2: any = res2.data;
       if (resFireant) {
@@ -194,14 +173,14 @@ const StockTable = () => {
         );
         source2 = [...filteredResFireant, ...source2];
       }
-      console.log('source2', source2);
 
-      const mappedData2 = getStockDataFromSupabase(source2 as SupabaseData[]);
-      console.log('mappedData2', mappedData2);
-      setListStocks(mappedData2);
+      const newListStocks = getStockDataFromSupabase(source2 as SupabaseData[]);
+
+      setAllStocks(newAllStocks);
+      setListStocks(newListStocks);
     } catch (e) {
       console.log(e);
-      gridRef.current.api && gridRef.current.api.hideOverlay();
+      gridRef.current?.api?.hideOverlay();
       notification.error({ message: 'error' });
     }
   };
@@ -213,7 +192,6 @@ const StockTable = () => {
 
   useEffect(() => {
     updateData();
-    getAllStockBase();
   }, []);
 
   const handleClickSymbol = (data: any) => {
@@ -270,23 +248,9 @@ const StockTable = () => {
               onClick={() => setOpenDrawerBacktest(true)}
             />
           </Tooltip>
-          <Tooltip title="Filter">
-            <Button
-              size="small"
-              type="primary"
-              icon={<FilterOutlined />}
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenDrawerFilter(true)}
-            />
-          </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton
-            onClick={() => {
-              getAllStockBase();
-              getData();
-            }}
-          />
+          <RefreshButton onClick={() => getData()} />
 
           <RangePicker
             style={{ marginLeft: 8 }}
@@ -329,31 +293,19 @@ const StockTable = () => {
     <div className="StockTable height-100 flex">
       <div className="flex height-100 width-100" style={{ flex: 1 }}>
         <div className="ag-theme-alpine height-100 width-100">
-          <AgGridReact
+          <CustomAgGridReact
             rowData={listStocks}
-            overlayLoadingTemplate={
-              '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
-            }
             columnDefs={StockTableColumns({
               handleClickSymbol,
               handleClickBacktest,
               listStockBase,
             })}
-            sideBar={{
-              toolPanels: ['columns', 'filters'],
-            }}
             onGridReady={onGridReady}
             ref={gridRef}
-            defaultColDef={{
-              editable: true,
-              sortable: true,
-              filter: true,
-              resizable: true,
-            }}
           />
         </div>
         <div className="height-100 width-100">
-          <StockDetailChart dates={dates} symbol={clickedSymbol} />
+          <StockDetail dates={dates} symbol={clickedSymbol} />
         </div>
       </div>
       {footer()}
@@ -369,12 +321,6 @@ const StockTable = () => {
         />
       )}
 
-      {openDrawerFilter && (
-        <Filters
-          onChange={(data: Filter) => setFilters({ ...filters, ...data })}
-          onClose={() => setOpenDrawerFilter(false)}
-        />
-      )}
       {openDrawerSettings && (
         <Settings
           onChange={(data: any) => setSettings({ ...settings, ...data })}

@@ -1,8 +1,8 @@
-import { Button, Popover, InputNumber, Statistic } from 'antd';
+import { useInterval } from '@/hooks/useInterval';
+import { CheckCircleOutlined } from '@ant-design/icons';
+import { Button, InputNumber, Popover, Statistic } from 'antd';
 import { useState } from 'react';
 import { DELAY_TIME } from '../constants';
-import { CheckCircleOutlined } from '@ant-design/icons';
-import { useInterval } from '@/hooks/useInterval';
 
 const { Countdown } = Statistic;
 
