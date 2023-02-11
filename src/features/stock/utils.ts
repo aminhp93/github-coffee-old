@@ -324,8 +324,6 @@ export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
   );
 
   const listData = data.slice(endBaseIndex, startBaseIndex + 1);
-
-  console.log(listData);
   const averageVolume = meanBy(listData, 'totalVolume');
   const big_sell = listData
     .filter((i) => i.priceClose < i.priceOpen && i.totalVolume > averageVolume)
@@ -342,9 +340,15 @@ export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
   };
 };
 
-export const getListMarkLines = (stockBase: any) => {
-  const startDateBase = moment().add(-8, 'months');
-  const endDateBase = moment();
+// rewrite this function
+export const getListMarkLines = (
+  stockBase?: StockBase,
+  stockData?: StockData
+) => {
+  if (!stockBase || !stockData) return [];
+  const startDateBase = moment(stockData.date).add(-8, 'months');
+  const endDateBase = moment(stockData.date);
+
   const listMarkLines = [];
   if (stockBase?.support_base) {
     listMarkLines.push([

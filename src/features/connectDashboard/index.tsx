@@ -77,7 +77,6 @@ export default function ConnectDashboard() {
       </div>
 
       <Modal
-        // className="CustomModal"
         title="Create problem"
         open={isModalOpen}
         onOk={handleOk}

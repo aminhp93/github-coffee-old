@@ -409,6 +409,5 @@ export const getListAllSymbols = (listWatchlist?: Watchlist[]) => {
 
   // // unique listAllSYmbols
   // listAllSymbols = uniq(listAllSymbols);
-  // // console.log(listAllSymbols);
   //  return listAllSymbols;
 };

@@ -24,7 +24,11 @@ interface IProps {
   componentObj: any;
 }
 
-function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
+const CustomFlexLayout = ({
+  layoutName,
+  defaultJson,
+  componentObj,
+}: IProps) => {
   // const [layoutFile, setLayoutFile] = useState(null);
   // const [model, setModel] = useState(null);
   // const [adding, setAdding] = useState(false);
@@ -213,6 +217,6 @@ function FlexLayout({ layoutName, defaultJson, componentObj }: IProps) {
       </div>
     </div>
   );
-}
+};
 
-export default FlexLayout;
+export default CustomFlexLayout;
