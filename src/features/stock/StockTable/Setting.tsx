@@ -12,6 +12,9 @@ const Settings = ({ onChange, onClose }: Props) => {
   const [bordered, setBordered] = useState(DEFAULT_SETTING.bordered);
   const [size, setSize] = useState<SizeType>(DEFAULT_SETTING.size);
   const [showHeader, setShowHeader] = useState(DEFAULT_SETTING.showHeader);
+  const [turnOffFetchTodayData, setTurnOffFetchTodayData] = useState(
+    localStorage.getItem('turnOffFetchTodayData') === 'false'
+  );
 
   const handleBorderChange = (enable: boolean) => {
     setBordered(enable);
@@ -55,6 +58,18 @@ const Settings = ({ onChange, onClose }: Props) => {
               <Radio.Button value="middle">Middle</Radio.Button>
               <Radio.Button value="small">Small</Radio.Button>
             </Radio.Group>
+          </Form.Item>
+          <Form.Item label="turnOffFetchTodayData">
+            <Switch
+              checked={turnOffFetchTodayData}
+              onChange={() => {
+                setTurnOffFetchTodayData(!turnOffFetchTodayData);
+                localStorage.setItem(
+                  'turnOffFetchTodayData',
+                  String(!turnOffFetchTodayData)
+                );
+              }}
+            />
           </Form.Item>
         </Form>
       </div>

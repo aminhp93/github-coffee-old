@@ -93,7 +93,8 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
       let resFireant;
       if (
         dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
-        moment().hour() < 15
+        moment().hour() < 15 &&
+        !localStorage.getItem('turnOffFetchTodayData')
       ) {
         const res = await StockService.getStockDataFromFireant({
           startDate: moment().format(DATE_FORMAT),
@@ -101,30 +102,35 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
           listSymbols: [symbol],
         });
         resFireant = res.map((i) => {
-          const item = i.data[0];
-          const {
-            date,
-            dealVolume,
-            priceClose,
-            priceHigh,
-            priceLow,
-            priceOpen,
-            symbol,
-            totalValue,
-            totalVolume,
-          } = item;
-          return {
-            date: moment(date).format(DATE_FORMAT),
-            dealVolume,
-            priceClose,
-            priceHigh,
-            priceLow,
-            priceOpen,
-            symbol,
-            totalValue,
-            totalVolume,
-          };
+          const item = i.data && i.data[0];
+
+          if (item) {
+            const {
+              date,
+              dealVolume,
+              priceClose,
+              priceHigh,
+              priceLow,
+              priceOpen,
+              symbol,
+              totalValue,
+              totalVolume,
+            } = item;
+            return {
+              date: moment(date).format(DATE_FORMAT),
+              dealVolume,
+              priceClose,
+              priceHigh,
+              priceLow,
+              priceOpen,
+              symbol,
+              totalValue,
+              totalVolume,
+            };
+          }
+          return null;
         });
+        resFireant = resFireant.filter((i) => i);
       }
 
       const res = await StockService.getStockDataFromSupabase({
