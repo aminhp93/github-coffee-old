@@ -12,7 +12,9 @@ import {
 } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import './CustomFlexLayout.less';
-
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+import 'ag-grid-enterprise';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
 

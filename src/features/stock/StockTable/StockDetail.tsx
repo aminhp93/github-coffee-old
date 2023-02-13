@@ -5,6 +5,7 @@ import {
   InputNumber,
   notification,
   Select,
+  Tooltip,
 } from 'antd';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -18,6 +19,10 @@ import {
   mapDataChart,
 } from '../utils';
 import BackTestChart from './BackTestChart';
+import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import RefreshButton from './RefreshButton';
+import { SettingOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 
 const list_base_fields = [
   {
@@ -32,16 +37,23 @@ const list_base_fields = [
 
 const { RangePicker } = DatePicker;
 
-interface Props {
-  symbol: string;
-  dates: any;
-}
+const StockDetailChart = () => {
+  // get store from redux
+  const selectedSymbol = useSelector(selectSelectedSymbol);
+  const dispatch = useDispatch();
 
-const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
   const [dataChart, setDataChart] = useState<any>(null);
   const [stockBase, setStockBase] = useState<any>({});
-  const [symbol, setSymbol] = useState<string>(defaultSymbol);
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
+  const [showDetail, setShowDetail] = useState<boolean>(true);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>([
+    moment().add(-1, 'years'),
+    moment(),
+  ]);
+
+  const handleChangeDate = (dates: any) => {
+    setDates(dates);
+  };
 
   const handleChangeStockBase = (key: any, data: any) => {
     const newStockBase = {
@@ -63,7 +75,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
   const updateStockBase = async () => {
     try {
       const data = {
-        symbol,
+        symbol: selectedSymbol,
         ...stockBase,
       };
       if (stockBase && stockBase.id) {
@@ -102,7 +114,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
           listSymbols: [symbol],
         });
         resFireant = res.map((i) => {
-          const item = i.data && i.data[0];
+          const item = i && i.data && i.data[0];
 
           if (item) {
             const {
@@ -155,19 +167,50 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
           })
         );
       }
-      setSymbol(symbol);
       setStockBase(newStockBase);
     } catch (e) {
       console.log(e);
     }
   };
 
+  const footer = () => {
+    return (
+      <div
+        className="flex"
+        style={{ justifyContent: 'space-between', height: '50px' }}
+      >
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <Tooltip title="Setting">
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              icon={<SettingOutlined />}
+            />
+          </Tooltip>
+        </div>
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <RefreshButton />
+
+          <RangePicker
+            style={{ marginLeft: 8 }}
+            size="small"
+            onChange={handleChangeDate}
+            value={dates}
+            format={DATE_FORMAT}
+          />
+        </div>
+      </div>
+    );
+  };
+
   useEffect(() => {
-    getData(defaultSymbol);
+    getData(selectedSymbol);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultSymbol]);
+  }, [selectedSymbol]);
 
   console.log(
+    'StockDetail',
     'stockBase',
     stockBase,
     'stockData',
@@ -186,108 +229,118 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
       className="StockDetailChart flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
-      <div
-        className="flex"
-        style={{ height: '200px', flexDirection: 'column' }}
-      >
-        <div>
-          <Select
-            showSearch
-            size="small"
-            value={symbol}
-            style={{ width: 120 }}
-            onChange={(value: string) => {
-              getData(value);
-            }}
-            options={LIST_ALL_SYMBOLS.map((i) => {
-              return { value: i, label: i };
-            })}
-          />
-          <Button size="small" onClick={updateStockBase}>
-            Update
-          </Button>
-        </div>
+      <Button
+        size="small"
+        style={{
+          position: 'absolute',
+          right: 0,
+          top: 0,
+        }}
+        icon={showDetail ? <DownOutlined /> : <UpOutlined />}
+        onClick={() => setShowDetail(showDetail ? false : true)}
+      />
+      <Select
+        showSearch
+        size="small"
+        value={selectedSymbol}
+        style={{ width: 120 }}
+        onChange={(value: string) => {
+          dispatch(updateSelectedSymbol(value));
+        }}
+        options={LIST_ALL_SYMBOLS.map((i) => {
+          return { value: i, label: i };
+        })}
+      />
 
-        <div className="flex flex-1" style={{ overflow: 'auto' }}>
-          {list_base_fields.map((i) => (
-            <div key={i.key}>
-              {i.label}
-              <div style={{ marginTop: '10px' }}>
-                <InputNumber
-                  step={0.1}
-                  size="small"
-                  addonBefore="base_min"
-                  value={stockBase?.[i.key]?.base_min}
-                  onChange={(value: any) => {
-                    handleChangeStockBase(i.key, {
-                      base_min: value,
-                    });
-                  }}
-                />
+      {showDetail ? (
+        <div
+          className="flex"
+          style={{ height: '200px', flexDirection: 'column' }}
+        >
+          <div className="flex flex-1" style={{ overflow: 'auto' }}>
+            {list_base_fields.map((i) => (
+              <div key={i.key}>
+                <div style={{ marginTop: '10px' }}>
+                  <InputNumber
+                    step={0.1}
+                    size="small"
+                    addonBefore="base_min"
+                    value={stockBase?.[i.key]?.base_min}
+                    onChange={(value: any) => {
+                      handleChangeStockBase(i.key, {
+                        base_min: value,
+                      });
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: '10px' }}>
+                  <InputNumber
+                    step={0.1}
+                    size="small"
+                    addonBefore="base_max"
+                    value={stockBase?.[i.key]?.base_max}
+                    onChange={(value: any) => {
+                      handleChangeStockBase(i.key, {
+                        base_max: value,
+                      });
+                    }}
+                  />
+                </div>
+                <div style={{ marginTop: '10px' }}>
+                  <RangePicker
+                    size="small"
+                    onChange={(dates) => {
+                      handleChangeStockBase(i.key, {
+                        startBaseDate:
+                          dates && dates[0] && dates[0].format(DATE_FORMAT),
+                        endBaseDate:
+                          dates && dates[1] && dates[1].format(DATE_FORMAT),
+                      });
+                    }}
+                    value={
+                      stockBase && stockBase[i.key]
+                        ? [
+                            moment(stockBase[i.key].startBaseDate),
+                            moment(stockBase[i.key].endBaseDate),
+                          ]
+                        : null
+                    }
+                    format={DATE_FORMAT}
+                  />
+                </div>
               </div>
-              <div style={{ marginTop: '10px' }}>
-                <InputNumber
-                  step={0.1}
-                  size="small"
-                  addonBefore="base_max"
-                  value={stockBase?.[i.key]?.base_max}
-                  onChange={(value: any) => {
-                    handleChangeStockBase(i.key, {
-                      base_max: value,
-                    });
-                  }}
-                />
-              </div>
-              <div style={{ marginTop: '10px' }}>
-                <RangePicker
-                  size="small"
-                  onChange={(dates) => {
-                    handleChangeStockBase(i.key, {
-                      startBaseDate:
-                        dates && dates[0] && dates[0].format(DATE_FORMAT),
-                      endBaseDate:
-                        dates && dates[1] && dates[1].format(DATE_FORMAT),
-                    });
-                  }}
-                  value={
-                    stockBase && stockBase[i.key]
-                      ? [
-                          moment(stockBase[i.key].startBaseDate),
-                          moment(stockBase[i.key].endBaseDate),
-                        ]
-                      : null
-                  }
-                  format={DATE_FORMAT}
-                />
-              </div>
-            </div>
-          ))}
-          <div
-            className="flex"
-            style={{ marginLeft: '20px', flexDirection: 'column' }}
-          >
-            <div>Risk: {risk && risk.toFixed(0) + '%'}</div>
-            <div>target: {target && target.toFixed(0) + '%'}</div>
-            <div style={{ flex: 1, overflow: 'auto' }}>
-              <div>Big sell</div>
-              <div>
-                {big_sell &&
-                  big_sell.map((j) => {
-                    return (
-                      <div key={j.date}>
-                        {j.date} - {`${j.overAverage.toFixed(0)}%`}
-                      </div>
-                    );
-                  })}
+            ))}
+            <Button size="small" onClick={updateStockBase}>
+              Update
+            </Button>
+            <div
+              className="flex"
+              style={{ marginLeft: '20px', flexDirection: 'column' }}
+            >
+              <div>Risk: {risk && risk.toFixed(0) + '%'}</div>
+              <div>target: {target && target.toFixed(0) + '%'}</div>
+              <div style={{ flex: 1, overflow: 'auto' }}>
+                <div>Big sell</div>
+                <div>
+                  {big_sell &&
+                    big_sell.map((j) => {
+                      return (
+                        <div key={j.date}>
+                          {j.date} - {`${j.overAverage.toFixed(0)}%`}
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : null}
       <Divider />
       <div style={{ flex: 1 }}>
         {dataChart && <BackTestChart data={dataChart} />}
       </div>
+      {footer()}
     </div>
   );
 };

@@ -9,7 +9,6 @@ import Todo from 'features/todo';
 import { v4 as uuidv4 } from 'uuid';
 import { IJsonModel } from 'flexlayout-react';
 import StockDetail from 'features/stock/StockTable/StockDetail';
-import moment from 'moment';
 
 const rowId = uuidv4();
 const tabSetId = uuidv4();
@@ -72,12 +71,7 @@ const Work: React.FunctionComponent = () => {
         Snippet: <Snippet />,
         Test: <Test />,
         StockTable: <StockTable />,
-        StockDetail: (
-          <StockDetail
-            symbol=""
-            dates={[moment().add(-1, 'years'), moment()]}
-          />
-        ),
+        StockDetail: <StockDetail />,
       }}
     />
   );
