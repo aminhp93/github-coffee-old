@@ -21,16 +21,18 @@ import Backtest from './Backtest';
 import './index.less';
 import RefreshButton from './RefreshButton';
 import Settings from './Setting';
-import StockDetail from './StockDetail';
 import StockTableColumns from './StockTableColumns';
 import Testing from './Testing';
 import CustomAgGridReact from 'components/CustomAgGridReact';
+import { updateSelectedSymbol } from '../stockSlice';
+import { useDispatch } from 'react-redux';
 
 const { RangePicker } = DatePicker;
 
 const StockTable = () => {
+  // hooks
+  const dispatch = useDispatch();
   const gridRef: any = useRef();
-
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
@@ -203,6 +205,8 @@ const StockTable = () => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
     setClickedSymbol(data.data.symbol);
+    console.log(217, data.data.symbol);
+    dispatch(updateSelectedSymbol(data.data.symbol));
   };
 
   const handleClickBacktest = (data: any) => {
@@ -292,26 +296,21 @@ const StockTable = () => {
     params.columnApi.applyColumnState({ state: defaultSortModel });
   }, []);
 
-  console.log(listStocks, 'listStocks', dates);
+  console.log('StockTable', 'listStocks', listStocks);
 
   return (
     <div className="StockTable height-100 flex">
-      <div className="flex height-100 width-100" style={{ flex: 1 }}>
-        <div className="ag-theme-alpine height-100 width-100">
-          <CustomAgGridReact
-            rowData={listStocks}
-            columnDefs={StockTableColumns({
-              handleClickSymbol,
-              handleClickBacktest,
-              listStockBase,
-            })}
-            onGridReady={onGridReady}
-            ref={gridRef}
-          />
-        </div>
-        <div className="height-100 width-100">
-          <StockDetail dates={dates} symbol={clickedSymbol} />
-        </div>
+      <div className="height-100 width-100 ag-theme-alpine flex-1">
+        <CustomAgGridReact
+          rowData={listStocks}
+          columnDefs={StockTableColumns({
+            handleClickSymbol,
+            handleClickBacktest,
+            listStockBase,
+          })}
+          onGridReady={onGridReady}
+          ref={gridRef}
+        />
       </div>
       {footer()}
 

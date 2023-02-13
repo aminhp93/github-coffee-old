@@ -4,6 +4,34 @@ import StockService from '../service';
 import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
 import moment from 'moment';
 import { updateDataWithDate, createBackTestData } from '../utils';
+import CustomAgGridReact from 'components/CustomAgGridReact';
+import { keyBy } from 'lodash';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+
+const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
+  {
+    headerName: 'date',
+    field: 'date',
+  },
+  {
+    headerName: 'valid',
+    field: 'valid',
+    cellRenderer: (data: any) => {
+      return (
+        <div>
+          {data.value ? (
+            <CheckOutlined style={{ color: 'green' }} />
+          ) : (
+            <>
+              <CloseOutlined style={{ color: 'red' }} />
+              <Button onClick={() => handleForceUpdate(data)}>Update</Button>
+            </>
+          )}
+        </div>
+      );
+    },
+  },
+];
 
 const { RangePicker } = DatePicker;
 
@@ -12,8 +40,17 @@ interface Props {
 }
 
 const TestSupabaseData = ({ onClose }: Props) => {
-  const [dates, setDates] = useState<any>([moment(), moment()]);
+  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
+    moment().add(-1, 'months'),
+    moment(),
+  ]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
+  const [symbol, setSymbol] = useState<string>('VPB');
+  const [listData, setListData] = useState<any>([]);
+
+  const handleForceUpdate = (data: any) => {
+    updateData(data.data.date);
+  };
 
   const getLastUpdated = async () => {
     try {
@@ -31,8 +68,8 @@ const TestSupabaseData = ({ onClose }: Props) => {
     if (dates.length !== 2) return;
     const startDate = dates[0].format(DATE_FORMAT);
     const endDate = dates[1].format(DATE_FORMAT);
-    const res = await StockService.getHistoricalQuotes({
-      symbol,
+    const res = await StockService.getStockDataFromFireant({
+      listSymbols: [symbol],
       startDate,
       endDate,
     });
@@ -41,22 +78,52 @@ const TestSupabaseData = ({ onClose }: Props) => {
       startDate,
       endDate,
     });
-    if (res && res2.data && res.length === 1 && res2.data.length === 1) {
-      const data = res[0];
-      const data2 = res2.data[0];
-      if (
-        data.dealVolume === data2.dealVolume &&
-        data.priceClose === data2.priceClose &&
-        data.priceHigh === data2.priceHigh &&
-        data.priceLow === data2.priceLow &&
-        data.priceOpen === data2.priceOpen &&
-        data.totalValue === data2.totalValue &&
-        data.totalVolume === data2.totalVolume
-      ) {
-        console.log('OK');
-      } else {
-        console.log('NOT OK');
-      }
+
+    console.log(res, res2);
+
+    if (
+      res &&
+      res[0] &&
+      res[0].data &&
+      res2 &&
+      res2.data &&
+      res2.data.length === res[0].data.length
+    ) {
+      const mappedFireant = res[0].data.map((i: any) => {
+        i.date = moment(i.date).format(DATE_FORMAT);
+        return i;
+      });
+
+      const objFireant = keyBy(mappedFireant, 'date');
+      const objSupabase = keyBy(res2.data, 'date');
+      console.log(objFireant, objSupabase);
+      const newListData: any = [];
+
+      Object.keys(objFireant).forEach((key) => {
+        const itemFireant = objFireant[key];
+        const itemSupabase = objSupabase[key];
+        if (
+          itemFireant.dealVolume === itemSupabase.dealVolume &&
+          itemFireant.priceClose === itemSupabase.priceClose &&
+          itemFireant.priceHigh === itemSupabase.priceHigh &&
+          itemFireant.priceLow === itemSupabase.priceLow &&
+          itemFireant.priceOpen === itemSupabase.priceOpen &&
+          itemFireant.totalValue === itemSupabase.totalValue &&
+          itemFireant.totalVolume === itemSupabase.totalVolume
+        ) {
+          newListData.push({
+            date: key,
+            valid: true,
+          });
+        } else {
+          newListData.push({
+            date: key,
+            valid: false,
+          });
+        }
+      });
+
+      setListData(newListData);
     }
   };
 
@@ -70,16 +137,12 @@ const TestSupabaseData = ({ onClose }: Props) => {
     setDates(dates);
   };
 
-  const updateData = async () => {
+  const updateData = async (date: string) => {
     try {
-      const selectedDate = dates.length === 2 ? dates[1] : null;
-      if (selectedDate) {
+      if (!date) return;
+      if (date) {
         // if have selected date, update only selected date and no udpate selected date
-        updateDataWithDate(
-          selectedDate.format(DATE_FORMAT),
-          selectedDate.format(DATE_FORMAT),
-          0
-        );
+        updateDataWithDate(date, date, 0);
       } else {
         // if no selected date, update from last updated date to today, update selected date
         let nextCall = true;
@@ -108,27 +171,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
     }
   };
 
-  const handleTest2 = async () => {
-    // const startDate = DEFAULT_START_DATE.format(DATE_FORMAT);
-    // const endDate = DEFAULT_END_DATE.format(DATE_FORMAT);
-    // const supabaseData = await getDataFromSupabase({ startDate, endDate });
-    // const fireantData = await getDataFromFireant({ startDate, endDate });
-    // const newDataSupabase = getDataSource(supabaseData, DEFAULT_FILTER);
-    // const newDataFireant = getDataSource(fireantData, DEFAULT_FILTER);
-    // const supabaseDataBacktest = await getBackTestDataOffline({
-    //   database: 'supabase',
-    //   dataSource: newDataSupabase,
-    //   fullDataSource: supabaseData,
-    // });
-    // const fireantDataBacktest = await getBackTestDataOffline({
-    //   database: 'supabase',
-    //   dataSource: newDataFireant,
-    //   fullDataSource: fireantData,
-    // });
-    // setDataFromSupabase(supabaseDataBacktest);
-    // setDataFromFireant(fireantDataBacktest);
-  };
-
   useEffect(() => {
     getLastUpdated();
   }, []);
@@ -147,55 +189,68 @@ const TestSupabaseData = ({ onClose }: Props) => {
         </div>
       }
       placement="bottom"
+      height="60%"
       onClose={onClose}
       open={true}
     >
-      <div
-        className="height-100"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <div>
-          Last updated: {lastUpdated}
-          <Button size="small" onClick={updateData}>
-            Update data
-          </Button>
+      <div className="flex height-100" style={{ flexDirection: 'column' }}>
+        <div
+          className="flex"
+          style={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: '50px',
+          }}
+        >
+          <div>
+            Last updated: {lastUpdated}
+            <Button
+              size="small"
+              onClick={() =>
+                updateData(
+                  dates.length === 2 ? dates[1].format(DATE_FORMAT) : ''
+                )
+              }
+            >
+              Update data
+            </Button>
+          </div>
+          <div>
+            <Select
+              showSearch
+              size="small"
+              defaultValue={symbol}
+              style={{ width: 120 }}
+              onChange={(value: string) => {
+                setSymbol(value);
+              }}
+              options={LIST_ALL_SYMBOLS.map((i) => {
+                return { value: i, label: i };
+              })}
+            />
+            <Button size="small" onClick={() => handleTest(symbol)}>
+              Test
+            </Button>
+          </div>
+          <div>
+            <Button
+              disabled
+              size="small"
+              onClick={createBackTestData}
+              style={{ marginTop: '20px' }}
+            >
+              Create backtest
+            </Button>
+            <Button size="small" onClick={() => handleTestAll()}>
+              Test All Symbols
+            </Button>
+          </div>
         </div>
-        <div>
-          <Button
-            disabled
-            size="small"
-            onClick={createBackTestData}
-            style={{ marginTop: '20px' }}
-          >
-            Create backtest
-          </Button>
-          <Button
-            size="small"
-            onClick={handleTest2}
-            style={{ marginTop: '20px' }}
-          >
-            Test data from fireant vs supabase
-          </Button>
-          <Select
-            size="small"
-            defaultValue="VPB"
-            style={{ width: 120 }}
-            onChange={(value: string) => {
-              handleTest(value);
-            }}
-            options={LIST_ALL_SYMBOLS.map((i) => {
-              return { value: i, label: i };
-            })}
+        <div className="flex-1 ag-theme-alpine">
+          <CustomAgGridReact
+            rowData={listData}
+            columnDefs={COLUMN_DEFS({ handleForceUpdate })}
           />
-          <Button size="small" onClick={() => handleTest('VPB')}>
-            Test VPB
-          </Button>
-          <Button size="small" onClick={() => handleTestAll()}>
-            Test All
-          </Button>
         </div>
       </div>
     </Drawer>
