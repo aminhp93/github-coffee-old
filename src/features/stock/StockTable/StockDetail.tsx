@@ -82,7 +82,7 @@ const StockDetailChart = ({ symbol: defaultSymbol, dates }: Props) => {
     try {
       if (!dates || dates.length !== 2) return;
       const resStockBase = await StockService.getStockBase(symbol);
-      let newStockBase: any;
+      let newStockBase: any = {};
       if (resStockBase.data && resStockBase.data.length === 1) {
         newStockBase = resStockBase.data[0];
       }
