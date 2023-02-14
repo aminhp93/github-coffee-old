@@ -1,4 +1,4 @@
-import Echarts from 'components/Echarts';
+import CustomEcharts from 'components/CustomEcharts';
 
 const color = [
   '#c23531',
@@ -246,7 +246,7 @@ const BackTestChart = ({ data }: Props) => {
     // extraCssText: 'width: 170px'
   };
 
-  const option = {
+  const option: any = {
     animation: false,
     color,
     xAxis,
@@ -254,7 +254,6 @@ const BackTestChart = ({ data }: Props) => {
     series,
     grid,
     visualMap,
-    markLine,
     tooltip,
     dataZoom,
     toolbox,
@@ -263,7 +262,7 @@ const BackTestChart = ({ data }: Props) => {
 
   return (
     <div style={{ overflow: 'auto', width: '100%', height: '100%' }}>
-      <Echarts option={option} />
+      <CustomEcharts option={option} />
     </div>
   );
 };

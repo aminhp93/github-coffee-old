@@ -16,6 +16,7 @@ import {
   filterData,
   getStockDataFromSupabase,
   updateDataWithDate,
+  getTodayData,
 } from '../utils';
 import Backtest from './Backtest';
 import './index.less';
@@ -39,114 +40,33 @@ const StockTable = () => {
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
-  const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>();
+  const [dates, setDates] = useState<
+    [moment.Moment, moment.Moment] | undefined
+  >();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
 
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
+  const handleChangeDate = (data: any) => {
+    setDates(data);
+    getData(data);
   };
 
-  const updateData = async () => {
-    try {
-      const res: any = await StockService.getLastUpdated();
-
-      if (res.data && res.data.length && res.data.length === 1) {
-        const lastUpdated = res.data[0].last_updated;
-        let newLastUpdated = moment().format(DATE_FORMAT);
-        // check current time before 3pm
-        if (moment().hour() < 15) {
-          newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
-        }
-
-        if (lastUpdated !== newLastUpdated) {
-          let nextCall = true;
-          let offset = 0;
-
-          while (nextCall) {
-            const res = await updateDataWithDate(
-              moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-              newLastUpdated,
-              offset
-            );
-            offset += 20;
-            if (res && res.length && res[0].length < 20) {
-              nextCall = false;
-            }
-          }
-        }
-
-        await StockService.updateLastUpdated({
-          column: 'last_updated',
-          value: newLastUpdated,
-        });
-
-        setDates([moment().add(-1, 'years'), moment()]);
-      }
-      notification.success({ message: 'success' });
-    } catch (e) {
-      notification.error({ message: 'error' });
-      console.log(e);
-    }
-  };
-
-  const getData = async () => {
+  const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
 
       gridRef.current?.api?.showLoadingOverlay();
 
-      const startDate = dates[0].format(DATE_FORMAT);
-      const endDate = dates[1].format(DATE_FORMAT);
-      const tempStartDate = moment(endDate)
-        .add(-1, 'months')
-        .format(DATE_FORMAT);
-
-      let resFireant;
-      if (
-        dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
-        moment().hour() < 15 &&
-        !localStorage.getItem('turnOffFetchTodayData')
-      ) {
-        const res = await StockService.getStockDataFromFireant({
-          startDate: moment().format(DATE_FORMAT),
-          endDate: moment().format(DATE_FORMAT),
-        });
-        resFireant = res.map((i) => {
-          const item = i.data && i.data[0];
-          if (item) {
-            const {
-              date,
-              dealVolume,
-              priceClose,
-              priceHigh,
-              priceLow,
-              priceOpen,
-              symbol,
-              totalValue,
-              totalVolume,
-            } = item;
-            return {
-              date: moment(date).format(DATE_FORMAT),
-              dealVolume,
-              priceClose,
-              priceHigh,
-              priceLow,
-              priceOpen,
-              symbol,
-              totalValue,
-              totalVolume,
-            };
-          }
-          return null;
-        });
-        resFireant = resFireant.filter((i) => i);
-      }
+      let resFireant = await getTodayData(dates);
 
       const res = await StockService.getStockDataFromSupabase({
-        startDate: tempStartDate,
-        endDate,
+        startDate: dates[0].format(DATE_FORMAT),
+        endDate: dates[1].format(DATE_FORMAT),
       });
+
+      const resStockBase = await StockService.getAllStockBase();
+
+      gridRef.current?.api?.hideOverlay();
 
       let source: any = res.data;
       if (resFireant) {
@@ -157,34 +77,12 @@ const StockTable = () => {
 
       const filterdData = filterData(newAllStocks, DEFAULT_FILTER);
 
-      const listSymbols = filterdData.map((i) => i.symbol);
-
-      const res2 = await StockService.getStockDataFromSupabase({
-        startDate,
-        endDate,
-        listSymbols,
-      });
-
-      const resStockBase = await StockService.getAllStockBase();
-
-      gridRef.current?.api?.hideOverlay();
-
       if (resStockBase.data && resStockBase.data.length) {
         setListStockBase(resStockBase.data);
       }
 
-      let source2: any = res2.data;
-      if (resFireant) {
-        const filteredResFireant = resFireant.filter((i) =>
-          listSymbols.includes(i!.symbol)
-        );
-        source2 = [...filteredResFireant, ...source2];
-      }
-
-      const newListStocks = getStockDataFromSupabase(source2 as SupabaseData[]);
-
       setAllStocks(newAllStocks);
-      setListStocks(newListStocks);
+      setListStocks(filterdData);
     } catch (e) {
       console.log(e);
       gridRef.current?.api?.hideOverlay();
@@ -193,12 +91,50 @@ const StockTable = () => {
   };
 
   useEffect(() => {
-    getData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dates]);
+    const init = async () => {
+      try {
+        const res: any = await StockService.getLastUpdated();
 
-  useEffect(() => {
-    updateData();
+        if (res.data && res.data.length && res.data.length === 1) {
+          const lastUpdated = res.data[0].last_updated;
+          let newLastUpdated = moment().format(DATE_FORMAT);
+          // check current time before 3pm
+          if (moment().hour() < 15) {
+            newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
+          }
+
+          if (lastUpdated !== newLastUpdated) {
+            let nextCall = true;
+            let offset = 0;
+
+            while (nextCall) {
+              const res = await updateDataWithDate(
+                moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+                newLastUpdated,
+                offset
+              );
+              offset += 20;
+              if (res && res.length && res[0].length < 20) {
+                nextCall = false;
+              }
+            }
+
+            await StockService.updateLastUpdated({
+              column: 'last_updated',
+              value: newLastUpdated,
+            });
+          }
+
+          setDates([moment().add(-1, 'months'), moment()]);
+          getData([moment().add(-1, 'months'), moment()]);
+        }
+        notification.success({ message: 'success' });
+      } catch (e) {
+        notification.error({ message: 'error' });
+        console.log(e);
+      }
+    };
+    init();
   }, []);
 
   const handleClickSymbol = (data: any) => {
@@ -259,7 +195,7 @@ const StockTable = () => {
           </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton onClick={() => getData()} />
+          <RefreshButton onClick={() => getData(dates)} />
 
           <RangePicker
             style={{ marginLeft: 8 }}

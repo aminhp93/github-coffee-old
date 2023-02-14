@@ -1,4 +1,4 @@
-import CustomEcharts from 'components/Echarts';
+import CustomEcharts from 'components/CustomEcharts';
 import Notification from 'components/firebaseNotifications/Notification';
 import Layout from 'components/layout';
 import Chat from 'features/chat';

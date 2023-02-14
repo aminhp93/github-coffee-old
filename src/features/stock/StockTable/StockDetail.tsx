@@ -5,7 +5,6 @@ import {
   InputNumber,
   notification,
   Select,
-  Tooltip,
 } from 'antd';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
@@ -17,12 +16,12 @@ import {
   getListMarkLines,
   getStockDataFromSupabase,
   mapDataChart,
+  getTodayData,
 } from '../utils';
 import BackTestChart from './BackTestChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
 import { useSelector, useDispatch } from 'react-redux';
-import RefreshButton from './RefreshButton';
-import { SettingOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 
 const list_base_fields = [
   {
@@ -46,10 +45,9 @@ const StockDetailChart = () => {
   const [stockBase, setStockBase] = useState<any>({});
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
   const [showDetail, setShowDetail] = useState<boolean>(true);
-  const [dates, setDates] = useState<[moment.Moment, moment.Moment] | null>([
-    moment().add(-1, 'years'),
-    moment(),
-  ]);
+  const [dates, setDates] = useState<
+    [moment.Moment, moment.Moment] | undefined
+  >([moment().add(-1, 'years'), moment()]);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -90,124 +88,72 @@ const StockDetailChart = () => {
     }
   };
 
-  const getData = async (symbol: string) => {
-    try {
-      if (!dates || dates.length !== 2) return;
-      const resStockBase = await StockService.getStockBase(symbol);
-      let newStockBase: any = {};
-      if (resStockBase.data && resStockBase.data.length === 1) {
-        newStockBase = resStockBase.data[0];
-      }
-
-      const startDate = dates[0].format(DATE_FORMAT);
-      const endDate = dates[1].format(DATE_FORMAT);
-
-      let resFireant;
-      if (
-        dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
-        moment().hour() < 15 &&
-        !localStorage.getItem('turnOffFetchTodayData')
-      ) {
-        const res = await StockService.getStockDataFromFireant({
-          startDate: moment().format(DATE_FORMAT),
-          endDate: moment().format(DATE_FORMAT),
-          listSymbols: [symbol],
-        });
-        resFireant = res.map((i) => {
-          const item = i && i.data && i.data[0];
-
-          if (item) {
-            const {
-              date,
-              dealVolume,
-              priceClose,
-              priceHigh,
-              priceLow,
-              priceOpen,
-              symbol,
-              totalValue,
-              totalVolume,
-            } = item;
-            return {
-              date: moment(date).format(DATE_FORMAT),
-              dealVolume,
-              priceClose,
-              priceHigh,
-              priceLow,
-              priceOpen,
-              symbol,
-              totalValue,
-              totalVolume,
-            };
-          }
-          return null;
-        });
-        resFireant = resFireant.filter((i) => i);
-      }
-
-      const res = await StockService.getStockDataFromSupabase({
-        startDate,
-        endDate,
-        listSymbols: [symbol],
-      });
-
-      let source: any = res.data;
-      if (resFireant) {
-        source = [...resFireant, ...source];
-      }
-
-      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
-      if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
-        const newStockData = mappedData[0];
-        setStockData(newStockData);
-        setDataChart(
-          mapDataChart({
-            fullData: newStockData.fullData,
-            listMarkLines: getListMarkLines(newStockBase, newStockData),
-          })
-        );
-      }
-      setStockBase(newStockBase);
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
   const footer = () => {
     return (
       <div
         className="flex"
-        style={{ justifyContent: 'space-between', height: '50px' }}
+        style={{
+          justifyContent: 'flex-end',
+          height: '50px',
+          alignItems: 'center',
+        }}
       >
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Tooltip title="Setting">
-            <Button
-              size="small"
-              type="primary"
-              style={{ marginLeft: 8 }}
-              icon={<SettingOutlined />}
-            />
-          </Tooltip>
-        </div>
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton />
-
-          <RangePicker
-            style={{ marginLeft: 8 }}
-            size="small"
-            onChange={handleChangeDate}
-            value={dates}
-            format={DATE_FORMAT}
-          />
-        </div>
+        <RangePicker
+          style={{ marginLeft: 8 }}
+          size="small"
+          onChange={handleChangeDate}
+          value={dates}
+          format={DATE_FORMAT}
+        />
       </div>
     );
   };
 
   useEffect(() => {
-    getData(selectedSymbol);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSymbol]);
+    const getData = async (
+      symbol: string,
+      dates: [moment.Moment, moment.Moment] | undefined
+    ) => {
+      try {
+        if (!dates || dates.length !== 2 || !symbol) return;
+
+        let resFireant = await getTodayData(dates);
+
+        const res = await StockService.getStockDataFromSupabase({
+          startDate: dates[0].format(DATE_FORMAT),
+          endDate: dates[1].format(DATE_FORMAT),
+          listSymbols: [symbol],
+        });
+
+        const resStockBase = await StockService.getStockBase(symbol);
+
+        let newStockBase: any = {};
+        if (resStockBase.data && resStockBase.data.length === 1) {
+          newStockBase = resStockBase.data[0];
+        }
+        let source: any = res.data;
+        if (resFireant) {
+          source = [...resFireant, ...source];
+        }
+
+        const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
+        if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
+          const newStockData = mappedData[0];
+          setStockData(newStockData);
+          setDataChart(
+            mapDataChart({
+              fullData: newStockData.fullData,
+              listMarkLines: getListMarkLines(newStockBase, newStockData),
+            })
+          );
+        }
+        setStockBase(newStockBase);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    getData(selectedSymbol, dates);
+  }, [selectedSymbol, dates]);
 
   console.log(
     'StockDetail',
