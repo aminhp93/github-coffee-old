@@ -1,49 +1,46 @@
+import type { EChartsOption } from 'echarts';
 import { ECharts, getInstanceByDom, init } from 'echarts';
 import { memo, useEffect, useRef } from 'react';
+import { withSize } from 'react-sizeme';
 
-interface Props {
-  option?: any;
-  handleHighlight?: any;
+export interface EchartsProps {
+  size?: {
+    width: number;
+    height: number;
+  };
+  option?: EChartsOption;
 }
 
-function EchartsLineChart({ option, handleHighlight }: Props) {
+const CustomEcharts = ({ size, option }: EchartsProps): React.ReactElement => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize chart
     let chart: ECharts | undefined;
-    if (chartRef.current !== null) {
+    if (chartRef.current !== null && chartRef.current.clientHeight) {
       chart = init(chartRef.current);
     }
-
-    // Add chart resize listener
-    function resizeChart() {
-      chart?.resize();
-    }
-    window.addEventListener('resize', resizeChart);
 
     // Return cleanup function
     return () => {
       chart?.dispose();
-      window.removeEventListener('resize', resizeChart);
     };
   }, []);
 
   useEffect(() => {
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
-      chart &&
-        chart.on('highlight', function (params: any) {
-          handleHighlight && handleHighlight(params);
-        });
+      chart?.resize();
     }
-  }, [handleHighlight]);
+  }, [size]);
 
   useEffect(() => {
     // Update chart
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
-      option && chart?.setOption(option);
+
+      // console.log("updated chart", chart, old, option);
+      option && chart && chart.setOption && chart.setOption(option);
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
@@ -52,11 +49,15 @@ function EchartsLineChart({ option, handleHighlight }: Props) {
       ref={chartRef}
       style={{
         width: '100%',
+        minWidth: '100px',
+        minHeight: '100px',
         height: '100%',
         borderRadius: '10px',
       }}
     />
   );
-}
+};
 
-export default memo(EchartsLineChart);
+export default memo(
+  withSize({ monitorHeight: true, monitorWidth: true })(CustomEcharts)
+);
