@@ -26,6 +26,24 @@ const StockTableColumns = ({
       onCellClicked: (data: any) => {
         handleClickSymbol && handleClickSymbol(data);
       },
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+        if (!stockData.date) return;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        const buyPoint = filter[0]?.buy_point;
+
+        return (
+          <div
+            style={{
+              color: buyPoint ? '#00aa00' : '',
+            }}
+          >
+            {stockData.symbol}
+          </div>
+        );
+      },
     },
     {
       headerName: 'Date',

@@ -50,6 +50,7 @@ const StockTable = () => {
   >();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
+  const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
 
   const handleChangeDate = (data: any) => {
     setDates(data);
@@ -80,7 +81,15 @@ const StockTable = () => {
 
       const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
 
-      const filterdData = filterData(newAllStocks, DEFAULT_FILTER);
+      const excludeData = (resStockBase.data || [])
+        .filter((i) => i.buy_point)
+        .map((i) => i.symbol);
+
+      const filterdData = filterData(newAllStocks, DEFAULT_FILTER, excludeData);
+
+      setPinnedTopRowData(
+        newAllStocks.filter((i) => excludeData.includes(i.symbol))
+      );
 
       if (resStockBase.data && resStockBase.data.length) {
         setListStockBase(resStockBase.data);
@@ -146,7 +155,6 @@ const StockTable = () => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
     setClickedSymbol(data.data.symbol);
-    console.log(217, data.data.symbol);
     dispatch(updateSelectedSymbol(data.data.symbol));
   };
 
@@ -233,6 +241,7 @@ const StockTable = () => {
   const onGridReady = useCallback((params: any) => {
     const defaultSortModel = [
       { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
+      { colId: 'change_t0', sort: 'desc', sortIndex: 1 },
     ];
     params.columnApi.applyColumnState({ state: defaultSortModel });
   }, []);
@@ -249,6 +258,7 @@ const StockTable = () => {
             handleClickBacktest,
             listStockBase,
           })}
+          pinnedTopRowData={pinnedTopRowData}
           onGridReady={onGridReady}
           ref={gridRef}
         />
