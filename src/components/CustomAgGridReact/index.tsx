@@ -10,18 +10,21 @@ interface Props {
   columnDefs: ColDef[];
   onGridReady?: (data: GridReadyEvent) => void;
   ref?: any;
+  pinnedTopRowData?: any;
 }
 
 const CustomAgGridReact = ({
   rowData,
   columnDefs,
   onGridReady,
+  pinnedTopRowData,
   ref,
 }: Props) => {
   return (
     <AgGridReact
       rowData={rowData}
       columnDefs={columnDefs}
+      pinnedTopRowData={pinnedTopRowData}
       onGridReady={onGridReady}
       ref={ref}
       overlayLoadingTemplate={

@@ -23,6 +23,7 @@ import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import RefreshButton from './RefreshButton';
+import BuyPoint from './BuyPoint';
 
 const { RangePicker } = DatePicker;
 
@@ -157,6 +158,19 @@ const StockDetailChart = () => {
     }
   };
 
+  const handleCbBuyPoint = (data: moment.Moment | undefined) => {
+    const newStockBase = {
+      ...stockBase,
+      symbol: selectedSymbol,
+      buy_point: data
+        ? {
+            date: data.format(DATE_FORMAT),
+          }
+        : null,
+    };
+    setStockBase(newStockBase);
+  };
+
   useEffect(() => {
     const getData = async (
       symbol: string,
@@ -213,39 +227,46 @@ const StockDetailChart = () => {
     dataChart
   );
 
-  const { risk, target, big_sell } = evaluateStockBase(
-    stockBase,
-    stockData?.fullData
-  );
+  const { risk, target } = evaluateStockBase(stockBase, stockData?.fullData);
 
   return (
     <div
       className="StockDetailChart flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
-      <Button
-        size="small"
-        style={{
-          position: 'absolute',
-          right: 0,
-          top: 0,
-        }}
-        icon={showDetail ? <DownOutlined /> : <UpOutlined />}
-        onClick={() => setShowDetail(showDetail ? false : true)}
-      />
-      <Select
-        showSearch
-        size="small"
-        value={selectedSymbol}
-        style={{ width: 120 }}
-        onChange={(value: string) => {
-          dispatch(updateSelectedSymbol(value));
-          getData(value, dates);
-        }}
-        options={LIST_ALL_SYMBOLS.map((i) => {
-          return { value: i, label: i };
-        })}
-      />
+      <div className="flex" style={{ justifyContent: 'space-between' }}>
+        <div className="flex">
+          <Select
+            showSearch
+            size="small"
+            value={selectedSymbol}
+            style={{ width: 120 }}
+            onChange={(value: string) => {
+              dispatch(updateSelectedSymbol(value));
+              getData(value, dates);
+            }}
+            options={LIST_ALL_SYMBOLS.map((i) => {
+              return { value: i, label: i };
+            })}
+          />
+          <div style={{ marginLeft: '10px' }}>
+            Risk: {risk && risk.toFixed(0) + '%'}
+          </div>
+          <div style={{ marginLeft: '10px' }}>
+            Target: {target && target.toFixed(0) + '%'}
+          </div>
+        </div>
+        <Button
+          size="small"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+          }}
+          icon={showDetail ? <DownOutlined /> : <UpOutlined />}
+          onClick={() => setShowDetail(showDetail ? false : true)}
+        />
+      </div>
 
       {showDetail ? (
         <div
@@ -253,7 +274,7 @@ const StockDetailChart = () => {
           style={{ height: '200px', flexDirection: 'column' }}
         >
           <div className="flex flex-1" style={{ overflow: 'auto' }}>
-            <div>
+            <div style={{ marginRight: '10px' }}>
               {[1, 2, 3].map((i: any, index: number) => (
                 <div key={i.key} style={{ marginTop: '10px' }}>
                   <InputNumber
@@ -278,26 +299,11 @@ const StockDetailChart = () => {
                 Update
               </Button>
             </div>
-
-            <div
-              className="flex"
-              style={{ marginLeft: '20px', flexDirection: 'column' }}
-            >
-              <div>Risk: {risk && risk.toFixed(0) + '%'}</div>
-              <div>target: {target && target.toFixed(0) + '%'}</div>
-              <div style={{ flex: 1, overflow: 'auto' }}>
-                <div>Big sell</div>
-                <div>
-                  {big_sell &&
-                    big_sell.map((j) => {
-                      return (
-                        <div key={j.date}>
-                          {j.date} - {`${j.overAverage.toFixed(0)}%`}
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
+            <div style={{ marginTop: '10px' }}>
+              <BuyPoint
+                buyPoint={stockBase?.buy_point}
+                onCb={handleCbBuyPoint}
+              />
             </div>
           </div>
         </div>

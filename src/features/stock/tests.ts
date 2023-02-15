@@ -102,7 +102,7 @@ export const getBacktestData = (
     }
   });
 
-  const backtestData = filterData(fullData, DEFAULT_FILTER);
+  const backtestData = filterData(fullData, DEFAULT_FILTER, []);
   return {
     backtestData,
     fullData,

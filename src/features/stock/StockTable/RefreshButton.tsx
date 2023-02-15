@@ -7,7 +7,7 @@ import { DELAY_TIME } from '../constants';
 const { Countdown } = Statistic;
 
 const RefreshButton = ({ onClick }: any) => {
-  const [isPlaying, setPlaying] = useState<boolean>(true);
+  const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
 
   useInterval(
