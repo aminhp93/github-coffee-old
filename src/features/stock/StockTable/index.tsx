@@ -9,7 +9,12 @@ import {
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DATE_FORMAT, DEFAULT_FILTER, DEFAULT_SETTING } from '../constants';
+import {
+  DATE_FORMAT,
+  DEFAULT_FILTER,
+  DEFAULT_SETTING,
+  LIST_ALL_SYMBOLS,
+} from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData } from '../types';
 import {
@@ -57,7 +62,7 @@ const StockTable = () => {
 
       gridRef.current?.api?.showLoadingOverlay();
 
-      let resFireant = await getTodayData(dates);
+      let resFireant = await getTodayData(dates, LIST_ALL_SYMBOLS);
 
       const res = await StockService.getStockDataFromSupabase({
         startDate: dates[0].format(DATE_FORMAT),
