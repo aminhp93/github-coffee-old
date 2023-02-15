@@ -159,13 +159,14 @@ const StockDetailChart = () => {
   };
 
   const handleCbBuyPoint = (data: moment.Moment | undefined) => {
-    if (!data) return;
     const newStockBase = {
       ...stockBase,
       symbol: selectedSymbol,
-      buy_point: {
-        date: data.format(DATE_FORMAT),
-      },
+      buy_point: data
+        ? {
+            date: data.format(DATE_FORMAT),
+          }
+        : null,
     };
     setStockBase(newStockBase);
   };
