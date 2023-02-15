@@ -22,17 +22,7 @@ import BackTestChart from './BackTestChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
-
-const list_base_fields = [
-  {
-    key: 'support_base',
-    label: 'Support base',
-  },
-  {
-    key: 'target_base',
-    label: 'Target base',
-  },
-];
+import RefreshButton from './RefreshButton';
 
 const { RangePicker } = DatePicker;
 
@@ -53,14 +43,31 @@ const StockDetailChart = () => {
     setDates(dates);
   };
 
-  const handleChangeStockBase = (key: any, data: any) => {
+  const handleChangeStockBase = (id: any, data: any) => {
+    const new_list_base =
+      stockBase && stockBase.list_base
+        ? stockBase.list_base.map((item: any) => {
+            return {
+              id: item.id,
+              value: id === item.id ? data : item.value,
+              startDate: item.startDate,
+              endDate: item.endDate,
+            };
+          })
+        : [1, 2, 3].map((item) => {
+            return {
+              id: item,
+              value: id === item ? data : 0,
+              startDate: null,
+              endDate: null,
+            };
+          });
     const newStockBase = {
       ...stockBase,
-      [key]: {
-        ...stockBase[key],
-        ...data,
-      },
+      symbol: selectedSymbol,
+      list_base: new_list_base,
     };
+
     setDataChart(
       mapDataChart({
         fullData: stockData?.fullData,
@@ -72,14 +79,10 @@ const StockDetailChart = () => {
 
   const updateStockBase = async () => {
     try {
-      const data = {
-        symbol: selectedSymbol,
-        ...stockBase,
-      };
       if (stockBase && stockBase.id) {
-        await StockService.updateStockBase(data);
+        await StockService.updateStockBase(stockBase);
       } else {
-        await StockService.insertStockBase([data]);
+        await StockService.insertStockBase([stockBase]);
       }
       notification.success({ message: 'success' });
     } catch (e) {
@@ -98,15 +101,60 @@ const StockDetailChart = () => {
           alignItems: 'center',
         }}
       >
-        <RangePicker
-          style={{ marginLeft: 8 }}
-          size="small"
-          onChange={handleChangeDate}
-          value={dates}
-          format={DATE_FORMAT}
-        />
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
+          <RangePicker
+            style={{ marginLeft: 8 }}
+            size="small"
+            onChange={handleChangeDate}
+            value={dates}
+            format={DATE_FORMAT}
+          />
+        </div>
       </div>
     );
+  };
+
+  const getData = async (
+    symbol: string,
+    dates: [moment.Moment, moment.Moment] | undefined
+  ) => {
+    try {
+      if (!dates || dates.length !== 2 || !symbol) return;
+
+      let resFireant = await getTodayData(dates, [symbol]);
+      const res = await StockService.getStockDataFromSupabase({
+        startDate: dates[0].format(DATE_FORMAT),
+        endDate: dates[1].format(DATE_FORMAT),
+        listSymbols: [symbol],
+      });
+
+      const resStockBase = await StockService.getStockBase(symbol);
+
+      let newStockBase: any = {};
+      if (resStockBase.data && resStockBase.data.length === 1) {
+        newStockBase = resStockBase.data[0];
+      }
+      let source: any = res.data;
+      if (resFireant) {
+        source = [...resFireant, ...source];
+      }
+
+      const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
+      if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
+        const newStockData = mappedData[0];
+        setStockData(newStockData);
+        setDataChart(
+          mapDataChart({
+            fullData: newStockData.fullData,
+            listMarkLines: getListMarkLines(newStockBase, newStockData),
+          })
+        );
+      }
+      setStockBase(newStockBase);
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   useEffect(() => {
@@ -117,7 +165,7 @@ const StockDetailChart = () => {
       try {
         if (!dates || dates.length !== 2 || !symbol) return;
 
-        let resFireant = await getTodayData(dates);
+        let resFireant = await getTodayData(dates, [symbol]);
 
         const res = await StockService.getStockDataFromSupabase({
           startDate: dates[0].format(DATE_FORMAT),
@@ -192,6 +240,7 @@ const StockDetailChart = () => {
         style={{ width: 120 }}
         onChange={(value: string) => {
           dispatch(updateSelectedSymbol(value));
+          getData(value, dates);
         }}
         options={LIST_ALL_SYMBOLS.map((i) => {
           return { value: i, label: i };
@@ -204,61 +253,32 @@ const StockDetailChart = () => {
           style={{ height: '200px', flexDirection: 'column' }}
         >
           <div className="flex flex-1" style={{ overflow: 'auto' }}>
-            {list_base_fields.map((i) => (
-              <div key={i.key}>
-                <div style={{ marginTop: '10px' }}>
+            <div>
+              {[1, 2, 3].map((i: any, index: number) => (
+                <div key={i.key} style={{ marginTop: '10px' }}>
                   <InputNumber
                     step={0.1}
                     size="small"
-                    addonBefore="base_min"
-                    value={stockBase?.[i.key]?.base_min}
-                    onChange={(value: any) => {
-                      handleChangeStockBase(i.key, {
-                        base_min: value,
-                      });
-                    }}
-                  />
-                </div>
-                <div style={{ marginTop: '10px' }}>
-                  <InputNumber
-                    step={0.1}
-                    size="small"
-                    addonBefore="base_max"
-                    value={stockBase?.[i.key]?.base_max}
-                    onChange={(value: any) => {
-                      handleChangeStockBase(i.key, {
-                        base_max: value,
-                      });
-                    }}
-                  />
-                </div>
-                <div style={{ marginTop: '10px' }}>
-                  <RangePicker
-                    size="small"
-                    onChange={(dates) => {
-                      handleChangeStockBase(i.key, {
-                        startBaseDate:
-                          dates && dates[0] && dates[0].format(DATE_FORMAT),
-                        endBaseDate:
-                          dates && dates[1] && dates[1].format(DATE_FORMAT),
-                      });
-                    }}
+                    addonBefore={`base_${index + 1}`}
                     value={
-                      stockBase && stockBase[i.key]
-                        ? [
-                            moment(stockBase[i.key].startBaseDate),
-                            moment(stockBase[i.key].endBaseDate),
-                          ]
-                        : null
+                      stockBase.list_base ? stockBase.list_base[index].value : 0
                     }
-                    format={DATE_FORMAT}
+                    onChange={(value: any) => {
+                      handleChangeStockBase(index + 1, value);
+                    }}
                   />
                 </div>
-              </div>
-            ))}
-            <Button size="small" onClick={updateStockBase}>
-              Update
-            </Button>
+              ))}
+
+              <Button
+                style={{ marginTop: '10px' }}
+                size="small"
+                onClick={updateStockBase}
+              >
+                Update
+              </Button>
+            </div>
+
             <div
               className="flex"
               style={{ marginLeft: '20px', flexDirection: 'column' }}

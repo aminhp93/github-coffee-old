@@ -22,7 +22,7 @@ const StockTableColumns = ({
     {
       headerName: 'Symbol',
       field: 'symbol',
-      width: 120,
+      width: 110,
       onCellClicked: (data: any) => {
         handleClickSymbol && handleClickSymbol(data);
       },
@@ -42,10 +42,10 @@ const StockTableColumns = ({
       },
     },
     {
-      headerName: 'change_t0',
+      headerName: 't0',
       field: 'change_t0',
       type: 'rightAligned',
-      width: 150,
+      width: 90,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -56,9 +56,9 @@ const StockTableColumns = ({
     {
       field: 'estimated_vol_change',
       suppressMenu: true,
-      width: 150,
+      width: 90,
       type: 'rightAligned',
-      headerName: 'estimated_vol_change',
+      headerName: 'vol_t0',
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -76,6 +76,46 @@ const StockTableColumns = ({
       },
     },
     {
+      headerName: 'target',
+      field: 'target',
+      type: 'rightAligned',
+      width: 100,
+      cellRenderer: (data: any) => {
+        if (!listStockBase) return;
+
+        const stockData: StockData = data.data;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        if (!filter.length || filter.length !== 1) return;
+
+        if (!stockData.change_t0) return;
+        const { target } = evaluateStockBase(filter[0], stockData.fullData);
+        if (!target) return;
+        return target && target.toFixed(0) + '%';
+      },
+    },
+    {
+      headerName: 'risk',
+      field: 'risk',
+      type: 'rightAligned',
+      width: 100,
+      cellRenderer: (data: any) => {
+        if (!listStockBase) return;
+        const stockData: StockData = data.data;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        if (!filter.length || filter.length !== 1) return;
+
+        if (!stockData.change_t0) return;
+        const { risk } = evaluateStockBase(filter[0], stockData.fullData);
+        if (!risk) return;
+        return risk && risk.toFixed(0) + '%';
+      },
+    },
+
+    {
       field: 'extra_volume',
       suppressMenu: true,
       type: 'rightAligned',
@@ -90,45 +130,6 @@ const StockTableColumns = ({
         return `${percent_extra.toFixed(0)}% (${extra}/${
           stockData.dealVolume
         })`;
-      },
-    },
-    {
-      headerName: 'risk',
-      field: 'risk',
-      type: 'rightAligned',
-      width: 150,
-      filter: 'agNumberColumnFilter',
-      cellRenderer: (data: any) => {
-        if (!listStockBase) return;
-        const stockData: StockData = data.data;
-        const filter = listStockBase.filter(
-          (i: any) => i.symbol === stockData.symbol
-        );
-        if (!filter.length || filter.length !== 1) return;
-
-        if (!stockData.change_t0) return;
-        const { risk } = evaluateStockBase(filter[0], stockData.fullData);
-        return risk && risk.toFixed(0) + '%';
-      },
-    },
-    {
-      headerName: 'target',
-      field: 'target',
-      type: 'rightAligned',
-      width: 150,
-      filter: 'agNumberColumnFilter',
-      cellRenderer: (data: any) => {
-        if (!listStockBase) return;
-
-        const stockData: StockData = data.data;
-        const filter = listStockBase.filter(
-          (i: any) => i.symbol === stockData.symbol
-        );
-        if (!filter.length || filter.length !== 1) return;
-
-        if (!stockData.change_t0) return;
-        const { target } = evaluateStockBase(filter[0], stockData.fullData);
-        return target && target.toFixed(0) + '%';
       },
     },
   ];

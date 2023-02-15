@@ -25,7 +25,8 @@ const dataZoom = [
     show: true,
     xAxisIndex: [0, 1],
     type: 'slider',
-    top: '95%',
+    bottom: 20,
+    height: 30,
     start: 30,
     end: 100,
   },
@@ -33,15 +34,16 @@ const dataZoom = [
 
 const grid = [
   {
+    top: 0,
     left: '5%',
     right: '5%',
-    height: '65%',
+    bottom: 180,
   },
   {
     left: '5%',
     right: '5%',
-    top: '80%',
-    height: '10%',
+    height: 80,
+    bottom: 60,
   },
 ];
 

@@ -1,7 +1,7 @@
 import { cloneDeep, groupBy, chunk, meanBy } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, getListAllSymbols, BACKTEST_COUNT } from './constants';
-import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
+import { SupabaseData, StockData, StockCoreData } from './types';
 import StockService from './service';
 import request from '@/services/request';
 import { notification } from 'antd';
@@ -290,8 +290,8 @@ export const mapDataChart = ({
   return newDataChart;
 };
 
-export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
-  if (!stockBase || !data) {
+export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
+  if (!stockBase || !stockBase.list_base || !data) {
     return {
       risk: null,
       target: null,
@@ -299,29 +299,16 @@ export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
     };
   }
 
-  const { support_base, target_base } = stockBase;
-  if (!support_base || !target_base) {
-    return {
-      risk: null,
-      target: null,
-      big_sell: [],
-    };
-  }
+  const base_1 = stockBase.list_base[0].value;
+  const base_2 = stockBase.list_base[1].value;
+  const base_3 = stockBase.list_base[2].value;
 
-  const risk =
-    (100 * (support_base.base_max - support_base.base_min)) /
-    support_base.base_min;
-  const target =
-    (100 * (target_base.base_min - support_base.base_max)) /
-    support_base.base_max;
+  const risk = base_2 && base_1 && (100 * (base_2 - base_1)) / base_1;
+  const target = base_2 && base_3 && (100 * (base_3 - base_2)) / base_2;
 
-  const startBaseIndex = data.findIndex(
-    (i: StockData) => i.date === support_base.startBaseDate
-  );
+  const startBaseIndex = data.findIndex((i: StockData) => i.date === '');
 
-  const endBaseIndex = data.findIndex(
-    (i: StockData) => i.date === support_base.endBaseDate
-  );
+  const endBaseIndex = data.findIndex((i: StockData) => i.date === '');
 
   const listData = data.slice(endBaseIndex, startBaseIndex + 1);
   const averageVolume = meanBy(listData, 'totalVolume');
@@ -341,79 +328,31 @@ export const evaluateStockBase = (stockBase: StockBase, data?: StockData[]) => {
 };
 
 // rewrite this function
-export const getListMarkLines = (
-  stockBase?: StockBase,
-  stockData?: StockData
-) => {
+export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
   if (!stockBase || !stockData) return [];
   const startDateBase = moment(stockData.date).add(-8, 'months');
   const endDateBase = moment(stockData.date);
 
-  const listMarkLines = [];
-  if (stockBase?.support_base) {
+  const listMarkLines: any = [];
+
+  (stockBase?.list_base || []).forEach((i: any) => {
     listMarkLines.push([
       {
-        coord: [
-          endDateBase.format(DATE_FORMAT),
-          stockBase.support_base.base_min,
-        ],
+        coord: [endDateBase.format(DATE_FORMAT), i.value],
       },
       {
-        coord: [
-          startDateBase.format(DATE_FORMAT),
-          stockBase.support_base.base_min,
-        ],
+        coord: [startDateBase.format(DATE_FORMAT), i.value],
       },
     ]);
-    listMarkLines.push([
-      {
-        coord: [
-          endDateBase.format(DATE_FORMAT),
-          stockBase.support_base.base_max,
-        ],
-      },
-      {
-        coord: [
-          startDateBase.format(DATE_FORMAT),
-          stockBase.support_base.base_max,
-        ],
-      },
-    ]);
-  }
-  if (stockBase?.target_base) {
-    listMarkLines.push([
-      {
-        coord: [
-          endDateBase.format(DATE_FORMAT),
-          stockBase.target_base.base_min,
-        ],
-      },
-      {
-        coord: [
-          startDateBase.format(DATE_FORMAT),
-          stockBase.target_base.base_min,
-        ],
-      },
-    ]);
-    listMarkLines.push([
-      {
-        coord: [
-          endDateBase.format(DATE_FORMAT),
-          stockBase.target_base.base_max,
-        ],
-      },
-      {
-        coord: [
-          startDateBase.format(DATE_FORMAT),
-          stockBase.target_base.base_max,
-        ],
-      },
-    ]);
-  }
+  });
+
   return listMarkLines;
 };
 
-export const getTodayData = async (dates: [moment.Moment, moment.Moment]) => {
+export const getTodayData = async (
+  dates: [moment.Moment, moment.Moment],
+  listSymbols: string[]
+) => {
   let resFireant;
   if (
     dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
@@ -423,6 +362,7 @@ export const getTodayData = async (dates: [moment.Moment, moment.Moment]) => {
     const res = await StockService.getStockDataFromFireant({
       startDate: moment().format(DATE_FORMAT),
       endDate: moment().format(DATE_FORMAT),
+      listSymbols,
     });
     resFireant = res.map((i) => {
       const item = i.data && i.data[0];
