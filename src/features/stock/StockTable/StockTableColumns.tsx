@@ -50,7 +50,15 @@ const StockTableColumns = ({
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
         if (!stockData.change_t0) return;
-        return stockData.change_t0.toFixed(1) + '%';
+        return (
+          <div
+            style={{
+              color: stockData.change_t0 > 6.5 ? '#ff00ff' : '#00aa00',
+            }}
+          >
+            {stockData.change_t0.toFixed(1) + '%'}
+          </div>
+        );
       },
     },
     {
@@ -67,7 +75,7 @@ const StockTableColumns = ({
         return (
           <div
             style={{
-              color: stockData.estimated_vol_change > 0.5 ? 'green' : '',
+              color: stockData.estimated_vol_change > 0.5 ? '#00aa00' : '',
             }}
           >
             {stockData.estimated_vol_change.toFixed(1) + '%'}
