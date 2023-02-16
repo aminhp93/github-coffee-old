@@ -1,6 +1,11 @@
-import { cloneDeep, groupBy, chunk, meanBy } from 'lodash';
+import { cloneDeep, groupBy, chunk, meanBy, minBy, maxBy } from 'lodash';
 import moment from 'moment';
-import { DATE_FORMAT, getListAllSymbols, BACKTEST_COUNT } from './constants';
+import {
+  DATE_FORMAT,
+  getListAllSymbols,
+  BACKTEST_COUNT,
+  UNIT_BILLION,
+} from './constants';
 import { SupabaseData, StockData, StockCoreData } from './types';
 import StockService from './service';
 import request from '@/services/request';
@@ -65,6 +70,11 @@ export const filterData = (
     }
 
     if (change_t0 && i.change_t0 < change_t0) {
+      return false;
+    }
+
+    const { minTotal } = getMinTotalValue(i);
+    if (minTotal && minTotal < 2) {
       return false;
     }
 
@@ -384,4 +394,32 @@ export const getTodayData = async (
     resFireant = resFireant.filter((i) => i);
   }
   return resFireant;
+};
+
+export const getMinTotalValue = (data: StockData | undefined) => {
+  let minTotal;
+  let maxTotal;
+  let averageTotal;
+
+  if (data && data.fullData) {
+    minTotal = minBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
+    if (minTotal) {
+      minTotal = (minTotal / UNIT_BILLION).toFixed(0);
+    }
+    maxTotal = maxBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
+    if (maxTotal) {
+      maxTotal = (maxTotal / UNIT_BILLION).toFixed(0);
+    }
+
+    averageTotal = meanBy(data.fullData.slice(1, 20), 'totalValue');
+    if (averageTotal) {
+      averageTotal = (averageTotal / UNIT_BILLION).toFixed(0);
+    }
+  }
+
+  return {
+    minTotal,
+    maxTotal,
+    averageTotal,
+  };
 };

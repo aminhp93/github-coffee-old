@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { DATE_FORMAT } from '../constants';
 import { StockData } from '../types';
-import { evaluateStockBase } from '../utils';
+import { evaluateStockBase, getMinTotalValue } from '../utils';
 
 interface Props {
   isBacktest?: boolean;
@@ -67,7 +67,7 @@ const StockTableColumns = ({
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
-        if (!stockData.change_t0) return;
+        if (!stockData.change_t0 && stockData.change_t0 !== 0) return;
         return (
           <div
             style={{
@@ -116,9 +116,20 @@ const StockTableColumns = ({
         if (!filter.length || filter.length !== 1) return;
 
         if (!stockData.change_t0) return;
-        const { target } = evaluateStockBase(filter[0], stockData.fullData);
+        const { target, risk } = evaluateStockBase(
+          filter[0],
+          stockData.fullData
+        );
         if (!target) return;
-        return target && target.toFixed(0) + '%';
+        return (
+          <div
+            style={{
+              color: risk && target > risk ? '#00aa00' : '',
+            }}
+          >
+            {target && target.toFixed(0) + '%'}
+          </div>
+        );
       },
     },
     {
@@ -156,6 +167,20 @@ const StockTableColumns = ({
         return `${percent_extra.toFixed(0)}% (${extra}/${
           stockData.dealVolume
         })`;
+      },
+    },
+    {
+      field: 'min_total_value',
+      suppressMenu: true,
+      type: 'rightAligned',
+      headerName: 'min_total_value',
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+
+        const { minTotal, maxTotal, averageTotal } =
+          getMinTotalValue(stockData);
+        return `${minTotal} - ${maxTotal} - ${averageTotal}`;
       },
     },
   ];

@@ -14,6 +14,7 @@ import {
   DEFAULT_FILTER,
   DEFAULT_SETTING,
   LIST_ALL_SYMBOLS,
+  BLACK_LIST_SYMBOLS,
 } from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData } from '../types';
@@ -81,14 +82,17 @@ const StockTable = () => {
 
       const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
 
-      const excludeData = (resStockBase.data || [])
+      const listBuyPoint = (resStockBase.data || [])
         .filter((i) => i.buy_point)
         .map((i) => i.symbol);
 
-      const filterdData = filterData(newAllStocks, DEFAULT_FILTER, excludeData);
+      const filterdData = filterData(newAllStocks, DEFAULT_FILTER, [
+        ...listBuyPoint,
+        ...BLACK_LIST_SYMBOLS,
+      ]);
 
       setPinnedTopRowData(
-        newAllStocks.filter((i) => excludeData.includes(i.symbol))
+        newAllStocks.filter((i) => listBuyPoint.includes(i.symbol))
       );
 
       if (resStockBase.data && resStockBase.data.length) {

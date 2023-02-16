@@ -17,6 +17,7 @@ import {
   getStockDataFromSupabase,
   mapDataChart,
   getTodayData,
+  getMinTotalValue,
 } from '../utils';
 import BackTestChart from './BackTestChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
@@ -228,6 +229,7 @@ const StockDetailChart = () => {
   );
 
   const { risk, target } = evaluateStockBase(stockBase, stockData?.fullData);
+  const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
 
   return (
     <div
@@ -304,6 +306,9 @@ const StockDetailChart = () => {
                 buyPoint={stockBase?.buy_point}
                 onCb={handleCbBuyPoint}
               />
+            </div>
+            <div>
+              Min total in 30 days: {minTotal} - {maxTotal} - {averageTotal}
             </div>
           </div>
         </div>
