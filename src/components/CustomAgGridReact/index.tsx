@@ -33,6 +33,8 @@ const CustomAgGridReact = ({
       sideBar={{
         toolPanels: ['columns', 'filters'],
       }}
+      rowHeight={30}
+      rowSelection={'single'}
       defaultColDef={{
         editable: true,
         sortable: true,

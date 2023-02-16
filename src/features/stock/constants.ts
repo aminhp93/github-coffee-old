@@ -327,6 +327,29 @@ export const LIST_ALL_SYMBOLS = [
   'BCC',
 ];
 
+export const BLACK_LIST_SYMBOLS = [
+  'TGG',
+  'SJF',
+  'BII',
+  'ROS',
+  'E1VFVN30',
+  'NVL',
+  'MSN',
+  'VHM',
+  'VNM',
+  'VIC',
+  'ART',
+  'KLF',
+  'HAI',
+  'AMD',
+  'FLC',
+  'HQC',
+  'KDC',
+  'SAB',
+  'THD',
+  'PDR',
+];
+
 export const getMaxPercentBase = (symbol: string) => {
   if (['MBS'].includes(symbol)) {
     return 10;
