@@ -329,7 +329,7 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
 // rewrite this function
 export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
   if (!stockBase || !stockData) return [];
-  const startDateBase = moment(stockData.date).add(-8, 'months');
+  const startDateBase = moment(stockData.date).add(-6, 'months');
   const endDateBase = moment(stockData.date);
 
   const listMarkLines: any = [];
@@ -422,4 +422,17 @@ export const getMinTotalValue = (data: StockData | undefined) => {
     maxTotal,
     averageTotal,
   };
+};
+
+export const getColorStock = (data: StockData | undefined) => {
+  if (!data) return '';
+  if (data.change_t0 > 6.5) {
+    return '#ff00ff';
+  } else if (data.change_t0 > 0) {
+    return '#00aa00';
+  } else if (data.change_t0 <= 0) {
+    return '#ee5442';
+  } else if (data.change_t0 < -6.5) {
+    return '#00cccc';
+  }
 };

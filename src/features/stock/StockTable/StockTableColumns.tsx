@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { DATE_FORMAT } from '../constants';
 import { StockData } from '../types';
-import { evaluateStockBase, getMinTotalValue } from '../utils';
+import { evaluateStockBase, getMinTotalValue, getColorStock } from '../utils';
 
 interface Props {
   isBacktest?: boolean;
@@ -29,15 +29,10 @@ const StockTableColumns = ({
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
         if (!stockData.date) return;
-        const filter = listStockBase.filter(
-          (i: any) => i.symbol === stockData.symbol
-        );
-        const buyPoint = filter[0]?.buy_point;
-
         return (
           <div
             style={{
-              color: buyPoint ? '#00aa00' : '',
+              color: getColorStock(stockData),
             }}
           >
             {stockData.symbol}
@@ -71,7 +66,7 @@ const StockTableColumns = ({
         return (
           <div
             style={{
-              color: stockData.change_t0 > 6.5 ? '#ff00ff' : '#00aa00',
+              color: getColorStock(stockData),
             }}
           >
             {stockData.change_t0.toFixed(1) + '%'}
@@ -151,24 +146,6 @@ const StockTableColumns = ({
         return risk && risk.toFixed(0) + '%';
       },
     },
-
-    {
-      field: 'extra_volume',
-      suppressMenu: true,
-      type: 'rightAligned',
-      headerName: 'extra_volume',
-      filter: 'agNumberColumnFilter',
-      cellRenderer: (data: any) => {
-        const stockData: StockData = data.data;
-        const extra = stockData.totalVolume - stockData.dealVolume;
-        if (!extra) return;
-        const percent_extra = (100 * extra) / stockData.dealVolume;
-
-        return `${percent_extra.toFixed(0)}% (${extra}/${
-          stockData.dealVolume
-        })`;
-      },
-    },
     {
       field: 'min_total_value',
       suppressMenu: true,
@@ -181,6 +158,24 @@ const StockTableColumns = ({
         const { minTotal, maxTotal, averageTotal } =
           getMinTotalValue(stockData);
         return `${minTotal} - ${maxTotal} - ${averageTotal}`;
+      },
+    },
+    {
+      field: 'extra_volume',
+      suppressMenu: true,
+      type: 'rightAligned',
+      headerName: 'extra_volume',
+      width: 120,
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+        const extra = stockData.totalVolume - stockData.dealVolume;
+        if (!extra) return;
+        const percent_extra = (100 * extra) / stockData.dealVolume;
+
+        return `${percent_extra.toFixed(0)}% (${extra}/${
+          stockData.dealVolume
+        })`;
       },
     },
   ];

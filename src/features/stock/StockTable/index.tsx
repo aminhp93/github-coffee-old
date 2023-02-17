@@ -92,7 +92,9 @@ const StockTable = () => {
       ]);
 
       setPinnedTopRowData(
-        newAllStocks.filter((i) => listBuyPoint.includes(i.symbol))
+        newAllStocks
+          .filter((i) => listBuyPoint.includes(i.symbol))
+          .sort((a, b) => (a.change_t0 > b.change_t0 ? -1 : 1))
       );
 
       if (resStockBase.data && resStockBase.data.length) {
@@ -245,7 +247,6 @@ const StockTable = () => {
   const onGridReady = useCallback((params: any) => {
     const defaultSortModel = [
       { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
-      { colId: 'change_t0', sort: 'desc', sortIndex: 1 },
     ];
     params.columnApi.applyColumnState({ state: defaultSortModel });
   }, []);
