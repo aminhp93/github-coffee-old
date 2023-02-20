@@ -321,30 +321,36 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
     target = (100 * (base_3 - t0_price)) / t0_price;
   }
 
-  const startBaseIndex = data.findIndex((i: StockData) => i.date === '');
-  const endBaseIndex = data.findIndex((i: StockData) => i.date === '');
+  const startBaseIndex = data.findIndex(
+    (i: StockData) => i.date === '2022-10-04'
+  );
+  const endBaseIndex = data.findIndex(
+    (i: StockData) => i.date === '2023-02-15'
+  );
 
   const listData = data.slice(endBaseIndex, startBaseIndex + 1);
-  const averageVolume = meanBy(listData, 'totalVolume');
-  const big_sell = listData
-    .filter((i) => i.priceClose < i.priceOpen && i.totalVolume > averageVolume)
-    .map((i) => {
-      return {
-        date: i.date,
-        overAverage: (100 * i.totalVolume) / averageVolume,
-      };
-    });
+  const buy: any = [];
+  let diff = 0;
+  listData.forEach((i: StockData) => {
+    if (i.priceClose > i.priceOpen) {
+      buy.push(i);
+      diff += i.totalVolume;
+    } else {
+      diff -= i.totalVolume;
+    }
+  });
+  console.log(listData, buy, diff);
   return {
     risk,
     target,
-    big_sell,
+    big_sell: [],
   };
 };
 
 // rewrite this function
 export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
-  if (!stockBase || !stockData) return [];
-  const startDateBase = moment(stockData.date).add(-6, 'months');
+  if (!stockBase || !stockData || !stockData.fullData) return [];
+  const startDateBase = moment(stockData.fullData[120].date);
   const endDateBase = moment(stockData.date);
 
   const listMarkLines: any = [];
