@@ -173,48 +173,6 @@ const StockDetailChart = () => {
   };
 
   useEffect(() => {
-    const getData = async (
-      symbol: string,
-      dates: [moment.Moment, moment.Moment] | undefined
-    ) => {
-      try {
-        if (!dates || dates.length !== 2 || !symbol) return;
-
-        let resFireant = await getTodayData(dates, [symbol]);
-
-        const res = await StockService.getStockDataFromSupabase({
-          startDate: dates[0].format(DATE_FORMAT),
-          endDate: dates[1].format(DATE_FORMAT),
-          listSymbols: [symbol],
-        });
-
-        const resStockBase = await StockService.getStockBase(symbol);
-
-        let newStockBase: any = {};
-        if (resStockBase.data && resStockBase.data.length === 1) {
-          newStockBase = resStockBase.data[0];
-        }
-        let source: any = res.data;
-        if (resFireant) {
-          source = [...resFireant, ...source];
-        }
-
-        const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
-        if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
-          const newStockData = mappedData[0];
-          setStockData(newStockData);
-          setDataChart(
-            mapDataChart({
-              fullData: newStockData.fullData,
-              listMarkLines: getListMarkLines(newStockBase, newStockData),
-            })
-          );
-        }
-        setStockBase(newStockBase);
-      } catch (e) {
-        console.log(e);
-      }
-    };
     getData(selectedSymbol, dates);
   }, [selectedSymbol, dates]);
 
@@ -237,7 +195,7 @@ const StockDetailChart = () => {
       style={{ flexDirection: 'column' }}
     >
       <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div className="flex">
+        <div>
           <Select
             showSearch
             size="small"
@@ -251,20 +209,17 @@ const StockDetailChart = () => {
               return { value: i, label: i };
             })}
           />
-          <div style={{ marginLeft: '10px' }}>
-            Risk: {risk && risk.toFixed(0) + '%'}
-          </div>
+        </div>
+        <div className="flex">
           <div style={{ marginLeft: '10px' }}>
             Target: {target && target.toFixed(0) + '%'}
+          </div>
+          <div style={{ marginLeft: '10px' }}>
+            Risk: {risk && risk.toFixed(0) + '%'}
           </div>
         </div>
         <Button
           size="small"
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-          }}
           icon={showDetail ? <DownOutlined /> : <UpOutlined />}
           onClick={() => setShowDetail(showDetail ? false : true)}
         />
@@ -275,37 +230,41 @@ const StockDetailChart = () => {
           className="flex"
           style={{ height: '200px', flexDirection: 'column' }}
         >
-          <div className="flex flex-1" style={{ overflow: 'auto' }}>
-            <div style={{ marginRight: '10px' }}>
-              {[1, 2, 3].map((i: any, index: number) => (
-                <div key={i.key} style={{ marginTop: '10px' }}>
+          <div
+            className="flex flex-1"
+            style={{
+              overflow: 'auto',
+              justifyContent: 'space-between',
+              marginTop: '10px',
+            }}
+          >
+            <div>
+              <div style={{ marginRight: '10px' }}>
+                {[1, 2, 3].map((i: any, index: number) => (
                   <InputNumber
+                    key={i.key}
                     step={0.1}
                     size="small"
-                    addonBefore={`base_${index + 1}`}
+                    addonBefore={`b_${index + 1}`}
                     value={
                       stockBase.list_base ? stockBase.list_base[index].value : 0
                     }
+                    style={{ marginBottom: '10px', marginRight: '4px' }}
                     onChange={(value: any) => {
                       handleChangeStockBase(index + 1, value);
                     }}
                   />
+                ))}
+                <div style={{ marginBottom: '10px' }}>
+                  <BuyPoint
+                    buyPoint={stockBase?.buy_point}
+                    onCb={handleCbBuyPoint}
+                  />
                 </div>
-              ))}
-
-              <Button
-                style={{ marginTop: '10px' }}
-                size="small"
-                onClick={updateStockBase}
-              >
-                Update
-              </Button>
-            </div>
-            <div style={{ marginTop: '10px' }}>
-              <BuyPoint
-                buyPoint={stockBase?.buy_point}
-                onCb={handleCbBuyPoint}
-              />
+                <Button size="small" onClick={updateStockBase}>
+                  Update
+                </Button>
+              </div>
             </div>
             <div>
               Min total in 30 days: {minTotal} - {maxTotal} - {averageTotal}

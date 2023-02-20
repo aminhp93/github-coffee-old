@@ -40,13 +40,12 @@ export const getDataChart = ({
       i[volumeField],
     ])
     .reverse();
-  const volumes = newData
-    .reverse()
-    .map((i: StockCoreData, index: number) => [
-      index,
-      i[volumeField],
-      i.priceOpen < i.priceClose ? 1 : -1,
-    ]);
+  newData.reverse();
+  const volumes = newData.map((i: StockCoreData, index: number) => [
+    index,
+    i[volumeField],
+    i.priceOpen < i.priceClose ? 1 : -1,
+  ]);
 
   return {
     dates,
@@ -298,15 +297,31 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
     };
   }
 
+  let risk;
+  let target;
+
   const base_1 = stockBase.list_base[0].value;
   const base_2 = stockBase.list_base[1].value;
   const base_3 = stockBase.list_base[2].value;
 
-  const risk = base_2 && base_1 && (100 * (base_2 - base_1)) / base_1;
-  const target = base_2 && base_3 && (100 * (base_3 - base_2)) / base_2;
+  const t0_price = data[0].priceClose;
+
+  if (base_1 && base_2 && t0_price && t0_price >= base_1 && t0_price < base_2) {
+    risk = (100 * (t0_price - base_1)) / base_1;
+    target = (100 * (base_2 - t0_price)) / t0_price;
+  } else if (
+    base_1 &&
+    base_3 &&
+    base_2 &&
+    t0_price &&
+    t0_price >= base_2 &&
+    t0_price < base_3
+  ) {
+    risk = (100 * (t0_price - base_1)) / base_1;
+    target = (100 * (base_3 - t0_price)) / t0_price;
+  }
 
   const startBaseIndex = data.findIndex((i: StockData) => i.date === '');
-
   const endBaseIndex = data.findIndex((i: StockData) => i.date === '');
 
   const listData = data.slice(endBaseIndex, startBaseIndex + 1);
