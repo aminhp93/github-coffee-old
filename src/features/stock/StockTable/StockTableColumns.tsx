@@ -110,7 +110,6 @@ const StockTableColumns = ({
         );
         if (!filter.length || filter.length !== 1) return;
 
-        if (!stockData.change_t0) return;
         const { target, risk } = evaluateStockBase(
           filter[0],
           stockData.fullData
@@ -140,7 +139,6 @@ const StockTableColumns = ({
         );
         if (!filter.length || filter.length !== 1) return;
 
-        if (!stockData.change_t0) return;
         const { risk } = evaluateStockBase(filter[0], stockData.fullData);
         if (!risk) return;
         return risk && risk.toFixed(0) + '%';
