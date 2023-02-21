@@ -11,6 +11,7 @@ interface Props {
   onGridReady?: (data: GridReadyEvent) => void;
   ref?: any;
   pinnedTopRowData?: any;
+  getRowClass?: any;
 }
 
 const CustomAgGridReact = ({
@@ -19,6 +20,7 @@ const CustomAgGridReact = ({
   onGridReady,
   pinnedTopRowData,
   ref,
+  getRowClass,
 }: Props) => {
   return (
     <AgGridReact
@@ -26,6 +28,7 @@ const CustomAgGridReact = ({
       columnDefs={columnDefs}
       pinnedTopRowData={pinnedTopRowData}
       onGridReady={onGridReady}
+      getRowClass={getRowClass}
       ref={ref}
       overlayLoadingTemplate={
         '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'

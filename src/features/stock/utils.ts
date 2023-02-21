@@ -59,7 +59,8 @@ export const getDataChart = ({
 export const filterData = (
   data: StockData[],
   filter: Partial<StockData>,
-  exclude: string[]
+  exclude: string[],
+  stockBase: any
 ) => {
   const { change_t0 } = filter;
 
@@ -80,7 +81,29 @@ export const filterData = (
     return true;
   });
 
-  return result;
+  const top1: StockData[] = [];
+  const rest: StockData[] = [];
+
+  result.forEach((i: StockData) => {
+    const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
+    const { target, risk_b2, risk_b1 } = evaluateStockBase(
+      filter[0],
+      i.fullData
+    );
+
+    if (
+      i.estimated_vol_change > 100 &&
+      ((target && risk_b2 && target > risk_b2) ||
+        (!risk_b2 && risk_b1 && target && target > risk_b1))
+    ) {
+      i.potential = true;
+      top1.push(i);
+    } else {
+      rest.push(i);
+    }
+  });
+
+  return top1.concat(rest);
 };
 
 export const getSeriesMarkPoint = ({
@@ -291,13 +314,15 @@ export const mapDataChart = ({
 export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   if (!stockBase || !stockBase.list_base || !data) {
     return {
-      risk: null,
+      risk_b1: null,
+      risk_b2: null,
       target: null,
       big_sell: [],
     };
   }
 
-  let risk;
+  let risk_b1;
+  let risk_b2;
   let target;
 
   const base_1 = stockBase.list_base[0].value;
@@ -307,7 +332,7 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   const t0_price = data[0].priceClose;
 
   if (base_1 && base_2 && t0_price && t0_price >= base_1 && t0_price < base_2) {
-    risk = (100 * (t0_price - base_1)) / base_1;
+    risk_b1 = (100 * (t0_price - base_1)) / base_1;
     target = (100 * (base_2 - t0_price)) / t0_price;
   } else if (
     base_1 &&
@@ -317,15 +342,16 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
     t0_price >= base_2 &&
     t0_price < base_3
   ) {
-    risk = (100 * (t0_price - base_1)) / base_1;
+    risk_b1 = (100 * (t0_price - base_1)) / base_1;
+    risk_b2 = (100 * (t0_price - base_2)) / base_2;
     target = (100 * (base_3 - t0_price)) / t0_price;
   }
 
   const startBaseIndex = data.findIndex(
-    (i: StockData) => i.date === '2022-10-04'
+    (i: StockData) => i.date === '2023-01-06'
   );
   const endBaseIndex = data.findIndex(
-    (i: StockData) => i.date === '2023-02-15'
+    (i: StockData) => i.date === '2023-02-16'
   );
 
   const listData = data.slice(endBaseIndex, startBaseIndex + 1);
@@ -341,7 +367,8 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   });
   console.log(listData, buy, diff);
   return {
-    risk,
+    risk_b2,
+    risk_b1,
     target,
     big_sell: [],
   };

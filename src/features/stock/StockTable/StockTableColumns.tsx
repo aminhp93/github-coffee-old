@@ -20,24 +20,16 @@ const StockTableColumns = ({
 }: Props) => {
   return [
     {
-      headerName: 'Symbol',
+      headerName: '',
       field: 'symbol',
-      width: 110,
+      width: 80,
       onCellClicked: (data: any) => {
         handleClickSymbol && handleClickSymbol(data);
       },
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
         if (!stockData.date) return;
-        return (
-          <div
-            style={{
-              color: getColorStock(stockData),
-            }}
-          >
-            {stockData.symbol}
-          </div>
-        );
+        return stockData.symbol;
       },
     },
     {
@@ -110,15 +102,22 @@ const StockTableColumns = ({
         );
         if (!filter.length || filter.length !== 1) return;
 
-        const { target, risk } = evaluateStockBase(
+        const { target, risk_b2, risk_b1 } = evaluateStockBase(
           filter[0],
           stockData.fullData
         );
         if (!target) return;
+        let color = '';
+        if (risk_b2 && target > risk_b2) {
+          color = '#00aa00';
+        } else if (!risk_b2 && risk_b1 && target > risk_b1) {
+          color = '#00aa00';
+        }
+
         return (
           <div
             style={{
-              color: risk && target > risk ? '#00aa00' : '',
+              color,
             }}
           >
             {target && target.toFixed(0) + '%'}
@@ -127,8 +126,8 @@ const StockTableColumns = ({
       },
     },
     {
-      headerName: 'risk',
-      field: 'risk',
+      headerName: 'risk_b2',
+      field: 'risk_b2',
       type: 'rightAligned',
       width: 100,
       cellRenderer: (data: any) => {
@@ -139,9 +138,27 @@ const StockTableColumns = ({
         );
         if (!filter.length || filter.length !== 1) return;
 
-        const { risk } = evaluateStockBase(filter[0], stockData.fullData);
-        if (!risk) return;
-        return risk && risk.toFixed(0) + '%';
+        const { risk_b2 } = evaluateStockBase(filter[0], stockData.fullData);
+        if (!risk_b2) return;
+        return risk_b2 && risk_b2.toFixed(0) + '%';
+      },
+    },
+    {
+      headerName: 'risk_b1',
+      field: 'risk_b1',
+      type: 'rightAligned',
+      width: 100,
+      cellRenderer: (data: any) => {
+        if (!listStockBase) return;
+        const stockData: StockData = data.data;
+        const filter = listStockBase.filter(
+          (i: any) => i.symbol === stockData.symbol
+        );
+        if (!filter.length || filter.length !== 1) return;
+
+        const { risk_b1 } = evaluateStockBase(filter[0], stockData.fullData);
+        if (!risk_b1) return;
+        return risk_b1 && risk_b1.toFixed(0) + '%';
       },
     },
     {
