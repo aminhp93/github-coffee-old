@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Drawer, Select, Button, DatePicker, notification } from 'antd';
 import StockService from '../service';
-import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
+import { DATE_FORMAT } from '../constants';
 import moment from 'moment';
-import { updateDataWithDate, createBackTestData } from '../utils';
+import { updateDataWithDate, mapDataFromStockBase } from '../utils';
 import CustomAgGridReact from 'components/CustomAgGridReact';
 import { keyBy } from 'lodash';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
@@ -47,6 +47,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listData, setListData] = useState<any>([]);
+  const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
 
   const handleForceUpdate = (data: any) => {
     updateData(data.data.date);
@@ -128,7 +129,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
   };
 
   const handleTestAll = () => {
-    LIST_ALL_SYMBOLS.forEach((symbol) => {
+    listAllSymbols.forEach((symbol) => {
       handleTest(symbol);
     });
   };
@@ -142,7 +143,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
       if (!date) return;
       if (date) {
         // if have selected date, update only selected date and no udpate selected date
-        updateDataWithDate(date, date, 0);
+        updateDataWithDate(date, date, 0, listAllSymbols);
       } else {
         // if no selected date, update from last updated date to today, update selected date
         let nextCall = true;
@@ -151,7 +152,8 @@ const TestSupabaseData = ({ onClose }: Props) => {
           const res = await updateDataWithDate(
             moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
             moment().format(DATE_FORMAT),
-            offset
+            offset,
+            listAllSymbols
           );
           offset += 20;
           if (res && res.length && res[0].length < 20) {
@@ -173,6 +175,13 @@ const TestSupabaseData = ({ onClose }: Props) => {
 
   useEffect(() => {
     getLastUpdated();
+    const init = async () => {
+      const resStockBase = await StockService.getAllStockBase();
+
+      const { list_all } = mapDataFromStockBase(resStockBase.data || []);
+      setListAllSymbols(list_all);
+    };
+    init();
   }, []);
 
   return (
@@ -224,7 +233,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
               onChange={(value: string) => {
                 setSymbol(value);
               }}
-              options={LIST_ALL_SYMBOLS.map((i) => {
+              options={listAllSymbols.map((i) => {
                 return { value: i, label: i };
               })}
             />
@@ -233,14 +242,6 @@ const TestSupabaseData = ({ onClose }: Props) => {
             </Button>
           </div>
           <div>
-            <Button
-              disabled
-              size="small"
-              onClick={createBackTestData}
-              style={{ marginTop: '20px' }}
-            >
-              Create backtest
-            </Button>
             <Button size="small" onClick={() => handleTestAll()}>
               Test All Symbols
             </Button>

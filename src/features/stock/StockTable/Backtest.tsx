@@ -9,7 +9,7 @@ import {
 } from 'antd';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
+import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import { StockCoreData, StockData, SupabaseData } from '../types';
 import { getStockDataFromSupabase, mapDataChart } from '../utils';
@@ -224,7 +224,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
             onChange={(value: string) => {
               getData(value);
             }}
-            options={LIST_ALL_SYMBOLS.map((i) => {
+            options={[].map((i) => {
               return { value: i, label: i };
             })}
           />

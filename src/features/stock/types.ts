@@ -140,14 +140,17 @@ export interface StockData extends StockCoreData {
 }
 
 export interface StockBase {
+  id: number;
+  buy_point?: {
+    date: string;
+  };
+  created_at: string;
+  is_blacklist: boolean;
+  list_base?: {
+    id: number;
+    value: number;
+    startDate?: string;
+    endDate?: string;
+  }[];
   symbol: string;
-  support_base: StockBaseData;
-  target_base: StockBaseData;
-}
-
-export interface StockBaseData {
-  base_max: number;
-  base_min: number;
-  startBaseDate: string;
-  endBaseDate: string;
 }
