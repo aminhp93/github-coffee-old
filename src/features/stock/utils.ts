@@ -278,12 +278,13 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
       diff -= i.totalVolume;
     }
   });
-  console.log(listData, buy, diff);
+  // console.log(listData, buy, diff);
   return {
     risk_b2,
     risk_b1,
     target,
     big_sell: [],
+    diff,
   };
 };
 

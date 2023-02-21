@@ -55,7 +55,7 @@ const StockTable = () => {
   const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
-
+      console.log(gridRef);
       gridRef.current?.api?.showLoadingOverlay();
 
       const resStockBase = await StockService.getAllStockBase();
