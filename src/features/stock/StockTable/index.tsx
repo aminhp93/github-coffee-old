@@ -9,7 +9,7 @@ import {
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { DATE_FORMAT, DEFAULT_FILTER, DEFAULT_SETTING } from '../constants';
+import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData } from '../types';
 import {
@@ -39,7 +39,6 @@ const StockTable = () => {
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [settings, setSettings] = useState(DEFAULT_SETTING);
   const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<
     [moment.Moment, moment.Moment] | undefined
@@ -56,7 +55,7 @@ const StockTable = () => {
   const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
-
+      console.log(gridRef);
       gridRef.current?.api?.showLoadingOverlay();
 
       const resStockBase = await StockService.getAllStockBase();
@@ -83,7 +82,6 @@ const StockTable = () => {
 
       const filterdData = filterData(
         newAllStocks,
-        DEFAULT_FILTER,
         [...list_buyPoint, ...list_blacklist],
         resStockBase.data
       );
@@ -291,10 +289,7 @@ const StockTable = () => {
       )}
 
       {openDrawerSettings && (
-        <Settings
-          onChange={(data: any) => setSettings({ ...settings, ...data })}
-          onClose={() => setOpenDrawerSettings(false)}
-        />
+        <Settings onClose={() => setOpenDrawerSettings(false)} />
       )}
     </div>
   );

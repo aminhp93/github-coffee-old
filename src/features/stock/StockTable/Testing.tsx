@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Drawer, Select, Button, DatePicker, notification } from 'antd';
 import StockService from '../service';
 import { DATE_FORMAT } from '../constants';
@@ -10,8 +10,8 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
   {
-    headerName: 'date',
-    field: 'date',
+    headerName: 'symbol',
+    field: 'symbol',
   },
   {
     headerName: 'valid',
@@ -40,13 +40,13 @@ interface Props {
 }
 
 const TestSupabaseData = ({ onClose }: Props) => {
+  const gridRef: any = useRef();
   const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
     moment().add(-1, 'months'),
     moment(),
   ]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
-  const [listData, setListData] = useState<any>([]);
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
 
   const handleForceUpdate = (data: any) => {
@@ -66,6 +66,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
   };
 
   const handleTest = async (symbol: string) => {
+    console.log(symbol);
     if (dates.length !== 2) return;
     const startDate = dates[0].format(DATE_FORMAT);
     const endDate = dates[1].format(DATE_FORMAT);
@@ -80,7 +81,8 @@ const TestSupabaseData = ({ onClose }: Props) => {
       endDate,
     });
 
-    console.log(res, res2);
+    // wait 5 seconds
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     if (
       res &&
@@ -97,8 +99,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
 
       const objFireant = keyBy(mappedFireant, 'date');
       const objSupabase = keyBy(res2.data, 'date');
-      console.log(objFireant, objSupabase);
-      const newListData: any = [];
+      const result: any = [];
 
       Object.keys(objFireant).forEach((key) => {
         const itemFireant = objFireant[key];
@@ -112,26 +113,41 @@ const TestSupabaseData = ({ onClose }: Props) => {
           itemFireant.totalValue === itemSupabase.totalValue &&
           itemFireant.totalVolume === itemSupabase.totalVolume
         ) {
-          newListData.push({
+          result.push({
             date: key,
             valid: true,
           });
         } else {
-          newListData.push({
+          result.push({
             date: key,
             valid: false,
           });
         }
       });
 
-      setListData(newListData);
+      const valid = result.filter((i: any) => i.valid).length > 0;
+      const rowData: any = [];
+      gridRef.current.api.forEachNode((node: any) => {
+        rowData.push(node.data);
+      });
+      const b = gridRef.current?.api?.applyTransaction({
+        add: [
+          {
+            symbol,
+            valid,
+          },
+        ],
+        addIndex: rowData.length,
+      });
+      console.log(b, gridRef);
     }
   };
 
-  const handleTestAll = () => {
-    listAllSymbols.forEach((symbol) => {
-      handleTest(symbol);
-    });
+  const handleTestAll = async () => {
+    gridRef.current?.api?.setRowData([]);
+    for (let i = 0; i < listAllSymbols.length; i++) {
+      await handleTest(listAllSymbols[i]);
+    }
   };
 
   const handleChangeDate = (dates: any) => {
@@ -249,7 +265,9 @@ const TestSupabaseData = ({ onClose }: Props) => {
         </div>
         <div className="flex-1 ag-theme-alpine">
           <CustomAgGridReact
-            rowData={listData}
+            ref={gridRef}
+            rowData={[]}
+            getRowId={(params: any) => params.data.symbol}
             columnDefs={COLUMN_DEFS({ handleForceUpdate })}
           />
         </div>
