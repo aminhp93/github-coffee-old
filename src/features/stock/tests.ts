@@ -1,10 +1,9 @@
-import { filterData } from './utils';
 import {
-  DEFAULT_FILTER,
+  filterData,
   getEstimatedVol,
   getBase_min_max,
   getMaxPercentBase,
-} from './constants';
+} from './utils';
 import { StockData, StockCoreData, Base } from './types';
 import { min, max } from 'lodash';
 
@@ -102,7 +101,7 @@ export const getBacktestData = (
     }
   });
 
-  const backtestData = filterData(fullData, DEFAULT_FILTER, [], []);
+  const backtestData = filterData(fullData, [], []);
   return {
     backtestData,
     fullData,

@@ -1,9 +1,8 @@
-import { cloneDeep, groupBy, meanBy, minBy, maxBy } from 'lodash';
+import { cloneDeep, groupBy, meanBy, minBy, maxBy, min, max } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
 import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
-
 import { getStockData } from './tests';
 
 export const getDataChart = ({
@@ -49,18 +48,15 @@ export const getDataChart = ({
 
 export const filterData = (
   data: StockData[],
-  filter: Partial<StockData>,
   exclude: string[],
   stockBase: any
 ) => {
-  const { change_t0 } = filter;
-
   const result = data.filter((i: StockData) => {
     if (exclude.includes(i.symbol)) {
       return false;
     }
 
-    if (change_t0 && i.change_t0 < change_t0) {
+    if (i.change_t0 < 2) {
       return false;
     }
 
@@ -418,4 +414,65 @@ export const mapDataFromStockBase = (data: StockBase[]) => {
     list_blacklist,
     list_buyPoint,
   };
+};
+
+export const getEstimatedVol = (data: StockCoreData) => {
+  if (data.date === moment().format(DATE_FORMAT)) {
+    // from 9:00 to 11:30
+    const morning_time = 60 * 2.5;
+
+    // from 13:00 to 14:45
+    const afternoon_time = 60 * 1.75;
+
+    const total_time = morning_time + afternoon_time;
+    const current_time = moment().format('HH:mm');
+    let estimated_vol;
+
+    if (current_time < '09:00') {
+      estimated_vol = 0;
+    } else if (current_time >= '09:00' && current_time <= '11:30') {
+      const diff_time = moment(current_time, 'HH:mm').diff(
+        moment('09:00', 'HH:mm'),
+        'minute'
+      );
+      estimated_vol = data.totalVolume * (total_time / diff_time);
+    } else if (current_time >= '11:31' && current_time <= '12:59') {
+      estimated_vol = data.totalVolume * (total_time / morning_time);
+    } else if (current_time >= '13:00' && current_time <= '14:45') {
+      const diff_time = moment(current_time, 'HH:mm').diff(
+        moment('13:00', 'HH:mm'),
+        'minute'
+      );
+      estimated_vol =
+        data.totalVolume * (total_time / (morning_time + diff_time));
+    } else {
+      estimated_vol = data.totalVolume;
+    }
+    return estimated_vol;
+  }
+
+  return data.totalVolume;
+};
+
+export const getBase_min_max = (data: StockCoreData[]) => {
+  return {
+    base_min: min([
+      minBy(data, 'priceOpen')?.priceOpen,
+      minBy(data, 'priceClose')?.priceClose,
+    ]),
+    base_max: max([
+      maxBy(data, 'priceOpen')?.priceOpen,
+      maxBy(data, 'priceClose')?.priceClose,
+    ]),
+  };
+};
+
+export const getMaxPercentBase = (symbol: string) => {
+  if (['MBS'].includes(symbol)) {
+    return 10;
+  } else if (['BSR'].includes(symbol)) {
+    return 15;
+  } else {
+    return 7;
+  }
 };
