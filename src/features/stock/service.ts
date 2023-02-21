@@ -1,6 +1,6 @@
 import axios from 'axios';
 import moment from 'moment';
-import { DATE_FORMAT, getListAllSymbols } from './constants';
+import { DATE_FORMAT } from './constants';
 import { HistoricalQuoteParams, HistoricalQuote } from './types';
 import request from '@/services/request';
 import config from '@/config';
@@ -71,11 +71,11 @@ const StockService = {
   async getStockDataFromFireant({
     startDate,
     endDate,
-    listSymbols = getListAllSymbols(),
+    listSymbols,
   }: {
     startDate: string;
     endDate: string;
-    listSymbols?: string[];
+    listSymbols: string[];
   }) {
     const listPromises: any = [];
     listSymbols.forEach((i: any) => {
@@ -240,11 +240,11 @@ const StockService = {
   getStockDataFromSupabase: ({
     startDate,
     endDate,
-    listSymbols = getListAllSymbols(),
+    listSymbols,
   }: {
     startDate: string;
     endDate: string;
-    listSymbols?: string[];
+    listSymbols: string[];
   }) => {
     return supabase
       .from('stock')

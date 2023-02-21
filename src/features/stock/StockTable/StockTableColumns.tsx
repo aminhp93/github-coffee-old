@@ -112,6 +112,8 @@ const StockTableColumns = ({
           color = '#00aa00';
         } else if (!risk_b2 && risk_b1 && target > risk_b1) {
           color = '#00aa00';
+        } else if (target < 0) {
+          color = '#ee5442';
         }
 
         return (

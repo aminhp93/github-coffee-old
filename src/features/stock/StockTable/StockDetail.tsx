@@ -8,7 +8,7 @@ import {
 } from 'antd';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
-import { DATE_FORMAT, LIST_ALL_SYMBOLS } from '../constants';
+import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData } from '../types';
 import {
@@ -18,6 +18,7 @@ import {
   mapDataChart,
   getTodayData,
   getMinTotalValue,
+  mapDataFromStockBase,
 } from '../utils';
 import BackTestChart from './BackTestChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
@@ -40,6 +41,7 @@ const StockDetailChart = () => {
   const [dates, setDates] = useState<
     [moment.Moment, moment.Moment] | undefined
   >([moment().add(-1, 'years'), moment()]);
+  const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -123,6 +125,7 @@ const StockDetailChart = () => {
   ) => {
     try {
       if (!dates || dates.length !== 2 || !symbol) return;
+      const resStockBase = await StockService.getStockBase(symbol);
 
       let resFireant = await getTodayData(dates, [symbol]);
       const res = await StockService.getStockDataFromSupabase({
@@ -130,8 +133,6 @@ const StockDetailChart = () => {
         endDate: dates[1].format(DATE_FORMAT),
         listSymbols: [symbol],
       });
-
-      const resStockBase = await StockService.getStockBase(symbol);
 
       let newStockBase: any = {};
       if (resStockBase.data && resStockBase.data.length === 1) {
@@ -176,6 +177,16 @@ const StockDetailChart = () => {
     getData(selectedSymbol, dates);
   }, [selectedSymbol, dates]);
 
+  useEffect(() => {
+    const init = async () => {
+      const resStockBase = await StockService.getAllStockBase();
+
+      const { list_all } = mapDataFromStockBase(resStockBase.data || []);
+      setListAllSymbols(list_all);
+    };
+    init();
+  }, []);
+
   console.log(
     'StockDetail',
     'stockBase',
@@ -208,7 +219,7 @@ const StockDetailChart = () => {
               dispatch(updateSelectedSymbol(value));
               getData(value, dates);
             }}
-            options={LIST_ALL_SYMBOLS.map((i) => {
+            options={listAllSymbols.map((i) => {
               return { value: i, label: i };
             })}
           />

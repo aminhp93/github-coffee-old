@@ -9,13 +9,7 @@ import {
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  DATE_FORMAT,
-  DEFAULT_FILTER,
-  DEFAULT_SETTING,
-  LIST_ALL_SYMBOLS,
-  BLACK_LIST_SYMBOLS,
-} from '../constants';
+import { DATE_FORMAT, DEFAULT_FILTER, DEFAULT_SETTING } from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData } from '../types';
 import {
@@ -23,6 +17,7 @@ import {
   getStockDataFromSupabase,
   updateDataWithDate,
   getTodayData,
+  mapDataFromStockBase,
 } from '../utils';
 import Backtest from './Backtest';
 import './index.less';
@@ -64,14 +59,18 @@ const StockTable = () => {
 
       gridRef.current?.api?.showLoadingOverlay();
 
-      let resFireant = await getTodayData(dates, LIST_ALL_SYMBOLS);
+      const resStockBase = await StockService.getAllStockBase();
+
+      const { list_active, list_blacklist, list_buyPoint } =
+        mapDataFromStockBase(resStockBase.data || []);
+
+      let resFireant = await getTodayData(dates, list_active);
 
       const res = await StockService.getStockDataFromSupabase({
         startDate: dates[0].format(DATE_FORMAT),
         endDate: dates[1].format(DATE_FORMAT),
+        listSymbols: list_active,
       });
-
-      const resStockBase = await StockService.getAllStockBase();
 
       gridRef.current?.api?.hideOverlay();
 
@@ -82,14 +81,10 @@ const StockTable = () => {
 
       const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
 
-      const listBuyPoint = (resStockBase.data || [])
-        .filter((i) => i.buy_point)
-        .map((i) => i.symbol);
-
       const filterdData = filterData(
         newAllStocks,
         DEFAULT_FILTER,
-        [...listBuyPoint, ...BLACK_LIST_SYMBOLS],
+        [...list_buyPoint, ...list_blacklist],
         resStockBase.data
       );
 
@@ -97,7 +92,7 @@ const StockTable = () => {
 
       setPinnedTopRowData(
         newAllStocks
-          .filter((i) => listBuyPoint.includes(i.symbol))
+          .filter((i) => list_buyPoint.includes(i.symbol))
           .sort((a, b) => (a.change_t0 > b.change_t0 ? -1 : 1))
       );
 
@@ -118,7 +113,9 @@ const StockTable = () => {
     const init = async () => {
       try {
         const res: any = await StockService.getLastUpdated();
+        const resStockBase = await StockService.getAllStockBase();
 
+        const { list_all } = mapDataFromStockBase(resStockBase.data || []);
         if (res.data && res.data.length && res.data.length === 1) {
           const lastUpdated = res.data[0].last_updated;
           let newLastUpdated = moment().format(DATE_FORMAT);
@@ -135,7 +132,8 @@ const StockTable = () => {
               const res = await updateDataWithDate(
                 moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
                 newLastUpdated,
-                offset
+                offset,
+                list_all
               );
               offset += 20;
               if (res && res.length && res[0].length < 20) {

@@ -1,19 +1,10 @@
-import { cloneDeep, groupBy, chunk, meanBy, minBy, maxBy } from 'lodash';
+import { cloneDeep, groupBy, meanBy, minBy, maxBy } from 'lodash';
 import moment from 'moment';
-import {
-  DATE_FORMAT,
-  getListAllSymbols,
-  BACKTEST_COUNT,
-  UNIT_BILLION,
-} from './constants';
-import { SupabaseData, StockData, StockCoreData } from './types';
+import { DATE_FORMAT, UNIT_BILLION } from './constants';
+import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
-import request from '@/services/request';
-import { notification } from 'antd';
-import config from '@/config';
-import { getStockData } from './tests';
 
-const baseUrl = config.apiUrl;
+import { getStockData } from './tests';
 
 export const getDataChart = ({
   data,
@@ -92,7 +83,7 @@ export const filterData = (
     );
 
     if (
-      i.estimated_vol_change > 100 &&
+      i.estimated_vol_change > 50 &&
       ((target && risk_b2 && target > risk_b2) ||
         (!risk_b2 && risk_b1 && target && target > risk_b1))
     ) {
@@ -102,6 +93,11 @@ export const filterData = (
       rest.push(i);
     }
   });
+
+  rest.sort(
+    (a: StockData, b: StockData) =>
+      b.estimated_vol_change - a.estimated_vol_change
+  );
 
   return top1.concat(rest);
 };
@@ -151,87 +147,15 @@ export const getStockDataFromSupabase = (data: SupabaseData[]): StockData[] => {
   return result;
 };
 
-const getListPromise = async (data: any) => {
-  const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-  const endDate = moment().format(DATE_FORMAT);
-  const listPromise: any = [];
-  data.forEach((i: any) => {
-    listPromise.push(
-      StockService.getHistoricalQuotes({
-        symbol: i.symbol,
-        startDate,
-        endDate,
-        offset: i.offset * 20,
-        returnRequest: true,
-      })
-    );
-  });
-
-  return Promise.all(listPromise);
-};
-
-export const createBackTestData = async () => {
-  // Get data to backtest within 1 year from buy, sell symbol
-  const listPromises: any = [];
-  getListAllSymbols().forEach((j: any) => {
-    for (let i = 0; i <= BACKTEST_COUNT; i++) {
-      listPromises.push({
-        symbol: j,
-        offset: i,
-      });
-    }
-  });
-
-  const chunkedPromise = chunk(listPromises, 200);
-  console.log(chunkedPromise);
-
-  await request({
-    url: `${baseUrl}/api/stocks/delete/`,
-    method: 'POST',
-  });
-
-  for (let i = 0; i < chunkedPromise.length; i++) {
-    // delay 2s
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
-    const res = await getListPromise(chunkedPromise[i]);
-    const mappedRes = res
-      .map((i: any) => i.data)
-      .flat()
-      .map((i: any) => {
-        i.key = `${i.symbol}_${i.date}`;
-        i.date = moment(i.date).format(DATE_FORMAT);
-        return i;
-      });
-    // const res2 = await request({
-    //   url: `${baseUrl}/api/stocks/delete/`,
-    //   method: 'POST',
-    // });
-    const res2 = await request({
-      url: `${baseUrl}/api/stocks/create/`,
-      method: 'POST',
-      data: mappedRes,
-      // data: datafail,
-    });
-    console.log(i, chunkedPromise.length, mappedRes);
-
-    if (res2?.status !== 200) {
-      notification.error({ message: 'error' });
-      // break for loop
-      return;
-    }
-  }
-
-  notification.success({ message: 'success' });
-};
-
 export const updateDataWithDate = async (
   startDate: string,
   endDate: string,
-  offset: number
+  offset: number,
+  listSymbols: string[]
 ) => {
   // get data
   const listPromises: any = [];
-  getListAllSymbols().forEach((symbol: string) => {
+  listSymbols.forEach((symbol: string) => {
     listPromises.push(
       StockService.getHistoricalQuotes({
         symbol,
@@ -334,14 +258,7 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   if (base_1 && base_2 && t0_price && t0_price >= base_1 && t0_price < base_2) {
     risk_b1 = (100 * (t0_price - base_1)) / base_1;
     target = (100 * (base_2 - t0_price)) / t0_price;
-  } else if (
-    base_1 &&
-    base_3 &&
-    base_2 &&
-    t0_price &&
-    t0_price >= base_2 &&
-    t0_price < base_3
-  ) {
+  } else if (base_1 && base_3 && base_2 && t0_price && t0_price >= base_2) {
     risk_b1 = (100 * (t0_price - base_1)) / base_1;
     risk_b2 = (100 * (t0_price - base_2)) / base_2;
     target = (100 * (base_3 - t0_price)) / t0_price;
@@ -483,4 +400,22 @@ export const getColorStock = (data: StockData | undefined) => {
   } else if (data.change_t0 < -6.5) {
     return '#00cccc';
   }
+};
+
+export const mapDataFromStockBase = (data: StockBase[]) => {
+  const list_all = data.map((i) => i.symbol);
+  const list_buyPoint = data.filter((i) => i.buy_point).map((i) => i.symbol);
+
+  const list_blacklist = data
+    .filter((i) => i.is_blacklist)
+    .map((i) => i.symbol);
+
+  const list_active = data.filter((i) => !i.is_blacklist).map((i) => i.symbol);
+
+  return {
+    list_all,
+    list_active,
+    list_blacklist,
+    list_buyPoint,
+  };
 };
