@@ -86,10 +86,14 @@ const StockTable = () => {
         .filter((i) => i.buy_point)
         .map((i) => i.symbol);
 
-      const filterdData = filterData(newAllStocks, DEFAULT_FILTER, [
-        ...listBuyPoint,
-        ...BLACK_LIST_SYMBOLS,
-      ]);
+      const filterdData = filterData(
+        newAllStocks,
+        DEFAULT_FILTER,
+        [...listBuyPoint, ...BLACK_LIST_SYMBOLS],
+        resStockBase.data
+      );
+
+      console.log(filterdData);
 
       setPinnedTopRowData(
         newAllStocks
@@ -245,13 +249,19 @@ const StockTable = () => {
   };
 
   const onGridReady = useCallback((params: any) => {
-    const defaultSortModel = [
-      { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
-    ];
-    params.columnApi.applyColumnState({ state: defaultSortModel });
+    // const defaultSortModel = [
+    //   { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
+    // ];
+    // params.columnApi.applyColumnState({ state: defaultSortModel });
   }, []);
 
   console.log('StockTable', 'listStocks', listStocks);
+
+  const getRowClass = (params: any) => {
+    if (params.node.data.potential) {
+      return 'potential-row';
+    }
+  };
 
   return (
     <div className="StockTable height-100 flex">
@@ -264,6 +274,7 @@ const StockTable = () => {
             listStockBase,
           })}
           pinnedTopRowData={pinnedTopRowData}
+          getRowClass={getRowClass}
           onGridReady={onGridReady}
           ref={gridRef}
         />

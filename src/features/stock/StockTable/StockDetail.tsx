@@ -186,7 +186,10 @@ const StockDetailChart = () => {
     dataChart
   );
 
-  const { risk, target } = evaluateStockBase(stockBase, stockData?.fullData);
+  const { risk_b1, risk_b2, target } = evaluateStockBase(
+    stockBase,
+    stockData?.fullData
+  );
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
 
   return (
@@ -212,10 +215,13 @@ const StockDetailChart = () => {
         </div>
         <div className="flex">
           <div style={{ marginLeft: '10px' }}>
-            Target: {target && target.toFixed(0) + '%'}
+            target: {target && target.toFixed(0) + '%'}
           </div>
           <div style={{ marginLeft: '10px' }}>
-            Risk: {risk && risk.toFixed(0) + '%'}
+            risk_b2: {risk_b2 && risk_b2.toFixed(0) + '%'}
+          </div>
+          <div style={{ marginLeft: '10px' }}>
+            risk_b1: {risk_b1 && risk_b1.toFixed(0) + '%'}
           </div>
         </div>
         <Button

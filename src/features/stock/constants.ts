@@ -348,6 +348,8 @@ export const BLACK_LIST_SYMBOLS = [
   'SAB',
   'THD',
   'PDR',
+  'HPX',
+  'TCH',
 ];
 
 export const getMaxPercentBase = (symbol: string) => {
