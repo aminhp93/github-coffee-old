@@ -19,6 +19,7 @@ import {
   getTodayData,
   getMinTotalValue,
   mapDataFromStockBase,
+  getListMarkPoints,
 } from '../utils';
 import BackTestChart from './BackTestChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
@@ -42,6 +43,9 @@ const StockDetailChart = () => {
     [moment.Moment, moment.Moment] | undefined
   >([moment().add(-1, 'years'), moment()]);
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
+  const [selectedVolumeField, setSelectedVolumeField] = useState<
+    'dealVolume' | 'totalVolume'
+  >('dealVolume');
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -74,7 +78,9 @@ const StockDetailChart = () => {
 
     setDataChart(
       mapDataChart({
+        volumeField: selectedVolumeField,
         fullData: stockData?.fullData,
+        listMarkPoints: getListMarkPoints(newStockBase, stockData),
         listMarkLines: getListMarkLines(newStockBase, stockData),
       })
     );
@@ -121,7 +127,8 @@ const StockDetailChart = () => {
 
   const getData = async (
     symbol: string,
-    dates: [moment.Moment, moment.Moment] | undefined
+    dates: [moment.Moment, moment.Moment] | undefined,
+    volumeField: 'dealVolume' | 'totalVolume' = 'dealVolume'
   ) => {
     try {
       if (!dates || dates.length !== 2 || !symbol) return;
@@ -149,8 +156,10 @@ const StockDetailChart = () => {
         setStockData(newStockData);
         setDataChart(
           mapDataChart({
+            volumeField,
             fullData: newStockData.fullData,
             listMarkLines: getListMarkLines(newStockBase, newStockData),
+            listMarkPoints: getListMarkPoints(newStockBase, newStockData),
           })
         );
       }
@@ -174,8 +183,8 @@ const StockDetailChart = () => {
   };
 
   useEffect(() => {
-    getData(selectedSymbol, dates);
-  }, [selectedSymbol, dates]);
+    getData(selectedSymbol, dates, selectedVolumeField);
+  }, [selectedSymbol, dates, selectedVolumeField]);
 
   useEffect(() => {
     const init = async () => {
@@ -285,6 +294,19 @@ const StockDetailChart = () => {
             </div>
             <div>
               Min total in 30 days: {minTotal} - {maxTotal} - {averageTotal}
+              <div>
+                <Select
+                  size="small"
+                  value={selectedVolumeField}
+                  style={{ width: 120 }}
+                  onChange={(value) => {
+                    setSelectedVolumeField(value);
+                  }}
+                  options={['dealVolume', 'totalVolume'].map((i) => {
+                    return { value: i, label: i };
+                  })}
+                />
+              </div>
             </div>
           </div>
         </div>
