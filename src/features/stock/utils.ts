@@ -5,47 +5,6 @@ import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
 import { getStockData } from './tests';
 
-export const getDataChart = ({
-  data,
-  volumeField = 'dealVolume',
-  seriesMarkPoint,
-  markLine,
-}: {
-  data?: StockCoreData[];
-  volumeField?: 'dealVolume' | 'totalVolume';
-  seriesMarkPoint?: any;
-  markLine?: any;
-}) => {
-  if (!data) return;
-  const newData = [...data];
-  const dates = newData
-    .map((i: StockCoreData) => moment(i.date).format(DATE_FORMAT))
-    .reverse();
-  const prices = newData
-    .map((i: StockCoreData) => [
-      i.priceOpen,
-      i.priceClose,
-      i.priceLow,
-      i.priceHigh,
-      i[volumeField],
-    ])
-    .reverse();
-  newData.reverse();
-  const volumes = newData.map((i: StockCoreData, index: number) => [
-    index,
-    i[volumeField],
-    i.priceOpen < i.priceClose ? 1 : -1,
-  ]);
-
-  return {
-    dates,
-    prices,
-    volumes,
-    seriesMarkPoint: seriesMarkPoint ? seriesMarkPoint : null,
-    markLine: markLine ? markLine : null,
-  };
-};
-
 export const filterData = (
   data: StockData[],
   exclude: string[],
@@ -98,7 +57,36 @@ export const filterData = (
   return top1.concat(rest);
 };
 
-export const getSeriesMarkPoint = ({
+const getMarkLine = (listMarkLines: any) => {
+  const data: any = [];
+
+  listMarkLines.forEach((i: any) => {
+    data.push([
+      {
+        name: '',
+        symbol: 'none',
+        lineStyle: {
+          color: 'purple',
+        },
+        coord: i[0].coord,
+      },
+      {
+        coord: i[1].coord,
+      },
+    ]);
+  });
+  return {
+    data,
+  };
+};
+
+export const getListMarkPoints = (stockBase: any, stockData: any) => {
+  return stockData?.fullData?.filter(
+    (item: any) => item.date === stockBase.buy_point?.date
+  );
+};
+
+const getSeriesMarkPoint = ({
   listMarkPoints,
   offset = 10,
 }: {
@@ -192,43 +180,48 @@ export const mapDataChart = ({
   fullData,
   listMarkPoints = [],
   listMarkLines = [],
+  volumeField = 'dealVolume',
 }: {
   fullData?: StockCoreData[];
   listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
+  volumeField?: 'dealVolume' | 'totalVolume';
 }) => {
   const seriesMarkPoint = getSeriesMarkPoint({
     listMarkPoints,
     offset: 20,
   });
+  const markLine = getMarkLine(listMarkLines);
 
-  const dataMarkLine: any = [];
+  if (!fullData) return;
 
-  listMarkLines.forEach((i: any) => {
-    dataMarkLine.push([
-      {
-        name: '',
-        symbol: 'none',
-        lineStyle: {
-          color: 'purple',
-        },
-        coord: i[0].coord,
-      },
-      {
-        coord: i[1].coord,
-      },
-    ]);
-  });
+  const newData = [...fullData];
+  newData.reverse();
 
-  const newDataChart = getDataChart({
-    data: fullData,
+  const dates = newData.map((i: StockCoreData) =>
+    moment(i.date).format(DATE_FORMAT)
+  );
+  const prices = newData.map((i: StockCoreData) => [
+    i.priceOpen,
+    i.priceClose,
+    i.priceLow,
+    i.priceHigh,
+    i[volumeField],
+  ]);
+
+  const volumes = newData.map((i: StockCoreData, index: number) => [
+    index,
+    i[volumeField],
+    i.priceOpen < i.priceClose ? 1 : -1,
+  ]);
+
+  return {
+    dates,
+    prices,
+    volumes,
     seriesMarkPoint,
-    markLine: {
-      data: dataMarkLine,
-    },
-  });
-
-  return newDataChart;
+    markLine,
+  };
 };
 
 export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
@@ -260,31 +253,24 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
     target = (100 * (base_3 - t0_price)) / t0_price;
   }
 
-  const startBaseIndex = data.findIndex(
-    (i: StockData) => i.date === '2023-01-06'
-  );
-  const endBaseIndex = data.findIndex(
-    (i: StockData) => i.date === '2023-02-16'
+  const startIndex = data.findIndex(
+    (i: StockData) => i.date === stockBase.buy_point?.date
   );
 
-  const listData = data.slice(endBaseIndex, startBaseIndex + 1);
-  const buy: any = [];
-  let diff = 0;
-  listData.forEach((i: StockData) => {
-    if (i.priceClose > i.priceOpen) {
-      buy.push(i);
-      diff += i.totalVolume;
-    } else {
-      diff -= i.totalVolume;
-    }
-  });
-  // console.log(listData, buy, diff);
+  const listData = data.slice(0, startIndex + 1);
+  console.log(listData);
+  const list_50 = data.slice(startIndex + 1, startIndex + 51);
+  const average_50 = meanBy(list_50, 'totalVolume');
+
+  const a = listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
+
+  console.log(average_50, a);
+
   return {
     risk_b2,
     risk_b1,
     target,
     big_sell: [],
-    diff,
   };
 };
 
