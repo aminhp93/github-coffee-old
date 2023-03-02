@@ -8,9 +8,9 @@ import {
 } from 'antd';
 import moment from 'moment';
 import { useEffect, useState } from 'react';
-import { DATE_FORMAT } from '../constants';
-import StockService from '../service';
-import { StockData, SupabaseData } from '../types';
+import { DATE_FORMAT } from './constants';
+import StockService from './service';
+import { StockData, SupabaseData } from './types';
 import {
   evaluateStockBase,
   getListMarkLines,
@@ -20,13 +20,13 @@ import {
   getMinTotalValue,
   mapDataFromStockBase,
   getListMarkPoints,
-} from '../utils';
-import BackTestChart from './BackTestChart';
-import { updateSelectedSymbol, selectSelectedSymbol } from '../stockSlice';
+} from './utils';
+import StockChart from './stockChart/StockChart';
+import { updateSelectedSymbol, selectSelectedSymbol } from './stockSlice';
 import { useSelector, useDispatch } from 'react-redux';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import RefreshButton from './RefreshButton';
-import BuyPoint from './BuyPoint';
+import RefreshButton from './StockTable/RefreshButton';
+import BuyPoint from './StockTable/BuyPoint';
 
 const { RangePicker } = DatePicker;
 
@@ -313,7 +313,7 @@ const StockDetailChart = () => {
       ) : null}
       <Divider />
       <div style={{ flex: 1 }}>
-        {dataChart && <BackTestChart data={dataChart} />}
+        {dataChart && <StockChart data={dataChart} />}
       </div>
       {footer()}
     </div>

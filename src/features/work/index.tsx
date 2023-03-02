@@ -8,7 +8,7 @@ import Test from 'features/test';
 import Todo from 'features/todo';
 import { v4 as uuidv4 } from 'uuid';
 import { IJsonModel } from 'flexlayout-react';
-import StockDetail from 'features/stock/StockTable/StockDetail';
+import StockDetail from 'features/stock/StockDetail';
 
 const rowId = uuidv4();
 const tabSetId = uuidv4();

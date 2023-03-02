@@ -13,7 +13,7 @@ import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import { StockCoreData, StockData, SupabaseData } from '../types';
 import { getStockDataFromSupabase, mapDataChart } from '../utils';
-import BackTestChart from './BackTestChart';
+import StockChart from '../stockChart/StockChart';
 import StockTableColumns from './StockTableColumns';
 
 import 'ag-grid-community/styles/ag-grid.css';
@@ -237,7 +237,7 @@ const Testing = ({ onClose, symbol = 'VPB' }: Props) => {
           <Divider />
         </div>
         <div style={{ height: '600px', width: '100%' }}>
-          {dataChart && <BackTestChart data={dataChart} />}
+          {dataChart && <StockChart data={dataChart} />}
         </div>
         <div style={{ height: '400px', width: '100%', marginTop: '20px' }}>
           <div
