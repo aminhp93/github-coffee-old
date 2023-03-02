@@ -38,9 +38,14 @@ const CustomEcharts = ({ size, option }: EchartsProps): React.ReactElement => {
     // Update chart
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
+      const old = chart?.getOption();
+      console.log(old);
+      const newOption: any = { ...option };
+      if (old?.dataZoom) {
+        newOption.dataZoom = old?.dataZoom;
+      }
 
-      // console.log("updated chart", chart, old, option);
-      option && chart && chart.setOption && chart.setOption(option);
+      option && chart && chart.setOption && chart.setOption(newOption);
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
