@@ -27,6 +27,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import RefreshButton from './StockTable/RefreshButton';
 import BuyPoint from './StockTable/BuyPoint';
+import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 const { RangePicker } = DatePicker;
 
@@ -286,6 +287,12 @@ const StockDetailChart = () => {
                     buyPoint={stockBase?.buy_point}
                     onCb={handleCbBuyPoint}
                   />
+                  is_blacklist :{' '}
+                  {stockBase?.is_blacklist ? (
+                    <CheckCircleOutlined style={{ color: '#00aa00' }} />
+                  ) : (
+                    <CloseCircleOutlined style={{ color: '#ee5442' }} />
+                  )}
                 </div>
                 <Button size="small" onClick={updateStockBase}>
                   Update

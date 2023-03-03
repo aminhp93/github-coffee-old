@@ -4,20 +4,11 @@ import { StockData } from '../types';
 import { evaluateStockBase, getMinTotalValue, getColorStock } from '../utils';
 
 interface Props {
-  isBacktest?: boolean;
   handleClickSymbol?: (record: StockData) => void;
-  handleClickBacktest?: (record: StockData) => void;
-  handleClickDate?: (record: StockData) => void;
   listStockBase?: any;
 }
 
-const StockTableColumns = ({
-  handleClickSymbol,
-  handleClickBacktest,
-  handleClickDate,
-  isBacktest,
-  listStockBase,
-}: Props) => {
+const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
   return [
     {
       headerName: '',
@@ -37,9 +28,6 @@ const StockTableColumns = ({
       field: 'date',
       hide: true,
       width: 120,
-      onCellClicked: (data: any) => {
-        handleClickDate && handleClickDate(data);
-      },
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
         if (!stockData.date) return;

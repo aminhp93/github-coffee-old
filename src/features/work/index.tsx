@@ -9,6 +9,7 @@ import Todo from 'features/todo';
 import { v4 as uuidv4 } from 'uuid';
 import { IJsonModel } from 'flexlayout-react';
 import StockDetail from 'features/stock/StockDetail';
+import StockManager from 'features/stock/stockManager/StockManager';
 
 const rowId = uuidv4();
 const tabSetId = uuidv4();
@@ -72,6 +73,7 @@ const Work: React.FunctionComponent = () => {
         Test: <Test />,
         StockTable: <StockTable />,
         StockDetail: <StockDetail />,
+        StockManager: <StockManager />,
       }}
     />
   );
