@@ -91,6 +91,22 @@ const StockService = {
     });
     return Promise.all(listPromises);
   },
+  getFundamentalsDataFromFireant(listSymbols: string[]) {
+    const listPromises: any = [];
+    listSymbols.forEach((i: any) => {
+      listPromises.push(
+        new Promise(async (resolve, reject) => {
+          const res = await axios({
+            url: `${domain}/symbols/${i}/fundamental`,
+            method: 'GET',
+            headers,
+          });
+          resolve({ ...res.data, symbol: i });
+        })
+      );
+    });
+    return Promise.all(listPromises);
+  },
   async getFundamentals({ symbol }: any, callback?: any, extraDataCb?: any) {
     if (!symbol) return null;
     try {

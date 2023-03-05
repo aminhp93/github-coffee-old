@@ -1,7 +1,6 @@
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  BoldOutlined,
   SettingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
@@ -19,7 +18,6 @@ import {
   getTodayData,
   mapDataFromStockBase,
 } from '../utils';
-import Backtest from './Backtest';
 import './index.less';
 import RefreshButton from './RefreshButton';
 import Settings from './Setting';
@@ -37,9 +35,7 @@ const StockTable = () => {
   const gridRef: any = useRef();
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
-  const [openDrawerBacktest, setOpenDrawerBacktest] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [clickedSymbol, setClickedSymbol] = useState<string>('');
   const [dates, setDates] = useState<
     [moment.Moment, moment.Moment] | undefined
   >();
@@ -160,15 +156,7 @@ const StockTable = () => {
   const handleClickSymbol = (data: any) => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
-    setClickedSymbol(data.data.symbol);
     dispatch(updateSelectedSymbol(data.data.symbol));
-  };
-
-  const handleClickBacktest = (data: any) => {
-    const symbol = data.data?.symbol;
-    if (!symbol) return;
-    setOpenDrawerBacktest(true);
-    setClickedSymbol(data.data.symbol);
   };
 
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
@@ -201,15 +189,6 @@ const StockTable = () => {
               icon={<WarningOutlined />}
               style={{ marginLeft: 8 }}
               onClick={() => setOpenDrawerTesting(true)}
-            />
-          </Tooltip>
-          <Tooltip title="Backtest">
-            <Button
-              size="small"
-              type="primary"
-              icon={<BoldOutlined />}
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenDrawerBacktest(true)}
             />
           </Tooltip>
         </div>
@@ -266,7 +245,6 @@ const StockTable = () => {
           rowData={listStocks}
           columnDefs={StockTableColumns({
             handleClickSymbol,
-            handleClickBacktest,
             listStockBase,
           })}
           pinnedTopRowData={pinnedTopRowData}
@@ -279,13 +257,6 @@ const StockTable = () => {
 
       {openDrawerTesting && (
         <Testing onClose={() => setOpenDrawerTesting(false)} />
-      )}
-
-      {openDrawerBacktest && (
-        <Backtest
-          symbol={clickedSymbol}
-          onClose={() => setOpenDrawerBacktest(false)}
-        />
       )}
 
       {openDrawerSettings && (
