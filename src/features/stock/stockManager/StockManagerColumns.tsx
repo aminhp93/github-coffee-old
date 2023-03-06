@@ -36,6 +36,33 @@ const StockManagerColumns = ({
       },
     },
     {
+      headerName: 'marketCap',
+      field: 'marketCap',
+      type: 'rightAligned',
+
+      cellRenderer: (data: any) => {
+        return (data.data.marketCap / UNIT_BILLION).toFixed(0);
+      },
+    },
+    {
+      headerName: 'averageChange',
+      field: 'averageChange',
+      type: 'rightAligned',
+
+      cellRenderer: (data: any) => {
+        return data.data.averageChange.toFixed(1) + '%';
+      },
+    },
+    {
+      headerName: 'averageRangeChange',
+      field: 'averageRangeChange',
+      type: 'rightAligned',
+
+      cellRenderer: (data: any) => {
+        return data.data.averageRangeChange.toFixed(1) + '%';
+      },
+    },
+    {
       headerName: 'is_blacklist',
       field: 'is_blacklist',
     },

@@ -43,6 +43,8 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
   const change_t0 =
     (100 * (today_close_price - yesterday_close_price)) / yesterday_close_price;
 
+  const rangeChange_t0 = (100 * (priceHigh - priceLow)) / priceLow;
+
   // get estimated_vol_change
   const averageVolume_last5 =
     data.slice(1, 6).reduce((a: number, b: any) => a + b.totalVolume, 0) / 5;
@@ -61,6 +63,7 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
     totalValue,
     change_t0,
     estimated_vol_change,
+    rangeChange_t0,
   };
 
   // get Extends Data
