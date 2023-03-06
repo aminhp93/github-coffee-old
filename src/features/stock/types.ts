@@ -85,6 +85,7 @@ export interface StockCoreData {
 export interface StockData extends StockCoreData {
   potential?: boolean;
   change_t0: number;
+  rangeChange_t0: number;
   estimated_vol_change: number;
   t0_over_base_max?: number;
   closetUpperBase?: Base;

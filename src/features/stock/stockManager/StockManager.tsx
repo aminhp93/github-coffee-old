@@ -6,7 +6,7 @@ import StockService from '../service';
 import { DATE_FORMAT, UNIT_BILLION } from '../constants';
 import moment from 'moment';
 import { getStockDataFromSupabase } from '../utils';
-import { cloneDeep, keyBy, minBy } from 'lodash';
+import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
 import './StockManager.less';
 import { updateSelectedSymbol } from '../stockSlice';
 import { useDispatch } from 'react-redux';
@@ -54,6 +54,10 @@ const StockManager = () => {
             minValue: minBy(i.fullData, 'totalValue')?.totalValue,
             marketCap: keyByFundamental[i.symbol]?.marketCap,
             is_blacklist: stockBaseObj[i.symbol]?.is_blacklist,
+            averageChange: meanBy(i.fullData, (i) =>
+              i.change_t0 > 0 ? i.change_t0 : -i.change_t0
+            ),
+            averageRangeChange: meanBy(i.fullData, 'rangeChange_t0'),
           };
         });
 
@@ -128,6 +132,8 @@ const StockManager = () => {
           handleClickSymbol,
           handleClickUpdate,
         })}
+        pagination={true}
+        paginationAutoPageSize={true}
         onGridReady={onGridReady}
         getRowClass={getRowClass}
         ref={gridRef}

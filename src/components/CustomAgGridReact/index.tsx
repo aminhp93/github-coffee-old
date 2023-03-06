@@ -12,6 +12,8 @@ interface Props {
   pinnedTopRowData?: any;
   getRowClass?: any;
   getRowId?: any;
+  pagination?: boolean;
+  paginationAutoPageSize?: boolean;
 }
 
 const CustomAgGridReact = forwardRef(
@@ -23,6 +25,8 @@ const CustomAgGridReact = forwardRef(
       pinnedTopRowData,
       getRowClass,
       getRowId,
+      pagination,
+      paginationAutoPageSize,
     }: Props,
     ref: any
   ) => {
@@ -31,6 +35,8 @@ const CustomAgGridReact = forwardRef(
         rowData={rowData}
         columnDefs={columnDefs}
         pinnedTopRowData={pinnedTopRowData}
+        pagination={pagination}
+        paginationAutoPageSize={paginationAutoPageSize}
         onGridReady={onGridReady}
         getRowId={getRowId}
         getRowClass={getRowClass}
