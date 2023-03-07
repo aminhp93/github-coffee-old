@@ -7,7 +7,6 @@ const stockSlice = createSlice({
   },
   reducers: {
     updateSelectedSymbol: (state, action: any) => {
-      console.log(action);
       state.selectedSymbol = action.payload;
     },
   },

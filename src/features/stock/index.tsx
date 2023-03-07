@@ -4,7 +4,7 @@ import './index.less';
 import StockHistoryTrade from './StockHistoryTrade';
 import StockTools from './StockTools';
 import StockNews from './StockNews';
-import StockTable from './StockTable';
+import StockTable from './stockTable/StockTable';
 
 import { v4 as uuidv4 } from 'uuid';
 
