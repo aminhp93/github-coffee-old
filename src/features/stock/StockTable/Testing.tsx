@@ -83,14 +83,14 @@ const TestSupabaseData = ({ onClose }: Props) => {
 
     // wait 5 seconds
     await new Promise((resolve) => setTimeout(resolve, 100));
-
+    let valid = false;
     if (
       res &&
       res[0] &&
       res[0].data &&
       res2 &&
       res2.data &&
-      res2.data.length === res[0].data.length
+      res2.data.slice(0, 20).length === res[0].data.length
     ) {
       const mappedFireant = res[0].data.map((i: any) => {
         i.date = moment(i.date).format(DATE_FORMAT);
@@ -98,7 +98,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
       });
 
       const objFireant = keyBy(mappedFireant, 'date');
-      const objSupabase = keyBy(res2.data, 'date');
+      const objSupabase = keyBy(res2.data.slice(0, 20), 'date');
       const result: any = [];
 
       Object.keys(objFireant).forEach((key) => {
@@ -125,22 +125,21 @@ const TestSupabaseData = ({ onClose }: Props) => {
         }
       });
 
-      const valid = result.filter((i: any) => i.valid).length > 0;
-      const rowData: any = [];
-      gridRef.current.api.forEachNode((node: any) => {
-        rowData.push(node.data);
-      });
-      const b = gridRef.current?.api?.applyTransaction({
-        add: [
-          {
-            symbol,
-            valid,
-          },
-        ],
-        addIndex: rowData.length,
-      });
-      console.log(b, gridRef);
+      valid = result.filter((i: any) => i.valid).length > 0;
     }
+    const rowData: any = [];
+    gridRef.current.api.forEachNode((node: any) => {
+      rowData.push(node.data);
+    });
+    gridRef.current?.api?.applyTransaction({
+      add: [
+        {
+          symbol,
+          valid,
+        },
+      ],
+      addIndex: rowData.length,
+    });
   };
 
   const handleTestAll = async () => {

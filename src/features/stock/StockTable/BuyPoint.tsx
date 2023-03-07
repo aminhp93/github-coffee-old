@@ -7,7 +7,6 @@ const BuyPoint = ({ onCb, buyPoint }: any) => {
   const [date, setDate] = useState<any>(buyPoint?.date);
 
   const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
     setDate(date);
     onCb(date);
   };

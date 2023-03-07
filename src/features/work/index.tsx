@@ -2,7 +2,7 @@ import CustomFlexLayout from 'components/CustomFlexLayout';
 import Chat from 'features/chat';
 import Post from 'features/post';
 import Snippet from 'features/snippet';
-import StockTable from 'features/stock/StockTable';
+import StockTable from 'features/stock/stockTable/StockTable';
 import StockNews from 'features/stock/StockNews';
 import Test from 'features/test';
 import Todo from 'features/todo';

@@ -24,10 +24,14 @@ import {
 import StockChart from './stockChart/StockChart';
 import { updateSelectedSymbol, selectSelectedSymbol } from './stockSlice';
 import { useSelector, useDispatch } from 'react-redux';
-import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import RefreshButton from './StockTable/RefreshButton';
-import BuyPoint from './StockTable/BuyPoint';
-import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import {
+  DownOutlined,
+  UpOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
+import RefreshButton from './stockTable/RefreshButton';
+import BuyPoint from './stockTable/BuyPoint';
 
 const { RangePicker } = DatePicker;
 

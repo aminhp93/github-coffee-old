@@ -110,8 +110,14 @@ export default function StockTools() {
         Update
       </Button>
       <hr />
-      {listWatchlists.map((i: any, index: number) => {
-        return <StockToolItem data={i} key={index} dataAll={listWatchlists} />;
+      {listWatchlists.map((i: any) => {
+        return (
+          <StockToolItem
+            data={i}
+            key={i.watchlistID}
+            dataAll={listWatchlists}
+          />
+        );
       })}
     </div>
   );
