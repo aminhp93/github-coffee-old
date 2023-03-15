@@ -6,12 +6,12 @@ import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
 import PostService from './service';
-import { IPost } from './types';
+import { Post } from './types';
 
 type ModeType = 'list' | 'create';
 
-const Post = () => {
-  const [selectedPost, setSelectedPost] = useState({} as IPost);
+const PostPage = () => {
+  const [selectedPost, setSelectedPost] = useState({} as Post);
   const [listPosts, setListPosts] = useState([]);
   const [mode, setMode] = useState<ModeType>('list');
 
@@ -22,16 +22,16 @@ const Post = () => {
 
   const getListPosts = async () => {
     try {
-      const res = await PostService.listPost();
-      if (res?.data?.results) {
-        setListPosts(res.data.results);
+      const res: any = await PostService.listPost();
+      if (res && res.data) {
+        setListPosts(res.data);
       }
     } catch (e) {
       notification.error({ message: 'error' });
     }
   };
 
-  const handleUpdateSuccess = (updatedPost: IPost) => {
+  const handleUpdateSuccess = (updatedPost: Post) => {
     const newListPosts = [...listPosts];
     const mappedNewListPosts: any = newListPosts.map((i: any) => {
       if (i.id === updatedPost.id) {
@@ -44,8 +44,8 @@ const Post = () => {
   };
 
   const handleDeleteSuccess = (postId: any) => {
-    setListPosts((old) => old.filter((i: IPost) => i.id !== postId));
-    setSelectedPost({} as IPost);
+    setListPosts((old) => old.filter((i: Post) => i.id !== postId));
+    setSelectedPost({} as Post);
   };
 
   const handleCreateSuccess = (data: any) => {
@@ -74,6 +74,8 @@ const Post = () => {
     ) : (
       <div className="width-100">No post selected</div>
     );
+
+  console.log(selectedPost);
 
   return (
     <div className="Post flex">
@@ -108,4 +110,4 @@ const Post = () => {
   );
 };
 
-export default Post;
+export default PostPage;

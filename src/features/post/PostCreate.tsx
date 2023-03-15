@@ -1,34 +1,36 @@
 import { Button, Form, Input, notification, Select } from 'antd';
-import axios from 'axios';
 import CustomPlate from 'components/CustomPlate';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 import PostService from './service';
+import TagService from '@/services/tag';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import './index.less';
+import { Post } from './types';
+import { Tag } from '@/types/tag';
 
 interface Props {
   onCreateSuccess: (data: any) => void;
 }
 
-interface ITag {
-  name: string;
-}
-
 export default function PostCreate({ onCreateSuccess }: Props) {
   const [plateId] = useState(uuidv4());
-  const [tags, setTags] = useState([]);
+  const [listTags, setListTags] = useState<Tag[]>([]);
+  const [selectedTag, setSelectedTag] = useState<Tag>();
 
   const onFinish = async (values: any) => {
     try {
-      const { title, body } = values;
-      const dataCreate = {
+      const { title, content } = values;
+      const dataCreate: Partial<Post> = {
         title,
-        body: JSON.stringify(body || DEFAULT_PLATE_VALUE),
-        tags,
+        content: JSON.stringify(content || DEFAULT_PLATE_VALUE),
+        tag: selectedTag?.id,
       };
       const res = await PostService.createPost(dataCreate);
-      onCreateSuccess(res.data);
+      if (res.data && res.data.length === 1) {
+        onCreateSuccess(res.data[0]);
+      }
+
       notification.success({ message: 'Create success' });
     } catch (e) {
       notification.error({ message: 'Create failed' });
@@ -39,24 +41,23 @@ export default function PostCreate({ onCreateSuccess }: Props) {
     console.log('Failed:', errorInfo);
   };
 
-  const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
+  const handleChange = (value: any, data: any) => {
+    console.log(`selected ${value}`, data);
+    setSelectedTag(data.data);
   };
 
   const getListTags = async () => {
-    const res = await axios({
-      method: 'GET',
-      url: 'http://localhost:8000/api/tags/',
-    });
+    const res = await TagService.listTag();
 
     if (res && res.data) {
-      const newTags = res.data.map((i: ITag) => {
+      const newTags: any = res.data.map((i: Tag) => {
         return {
-          label: i.name,
-          value: i.name,
+          label: i.title,
+          value: i.id,
+          data: i,
         };
       });
-      setTags(newTags);
+      setListTags(newTags);
     }
   };
 
@@ -82,17 +83,16 @@ export default function PostCreate({ onCreateSuccess }: Props) {
         </Form.Item>
         <Form.Item name="Tags">
           <Select
-            mode="tags"
-            style={{ width: '100%' }}
+            style={{ width: '100px' }}
             placeholder="Tags Mode"
             onChange={handleChange}
-            options={tags}
+            options={listTags}
           />
         </Form.Item>
 
         <Form.Item
-          name="body"
-          rules={[{ required: false, message: 'Please input your body!' }]}
+          name="content"
+          rules={[{ required: false, message: 'Please input your content!' }]}
         >
           <CustomPlate id={String(plateId)} />
         </Form.Item>

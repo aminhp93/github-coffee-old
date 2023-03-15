@@ -51,7 +51,7 @@ const useFirebaseAuth = () => {
     setLoading(true);
   };
 
-  const signInWithPopup = async () => {
+  const signInWithPopup = () => {
     const provider = new GithubAuthProvider();
     signInWithPopupFirebase(auth, provider);
   };

@@ -1,35 +1,20 @@
 import { Button } from 'antd';
-import TestService from '@/services/test';
-import PushNotificationService from '@/services/pushNotification';
+import { useAuth } from '@/context/SupabaseContext';
+import { sum } from './utils';
 
 export default function Test() {
-  const test = async () => {
-    TestService.test();
-  };
-
-  const testStartJob = () => {
-    TestService.startJob();
-  };
-
-  const testNoti = async () => {
-    PushNotificationService.createPushNotification({
-      title: 'test',
-      body: 'test',
-    });
-  };
+  const { signOut, signInWithOAuth, authUser }: any = useAuth();
 
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
-      <Button size="small" onClick={test}>
-        Test
+      <Button
+        size="small"
+        onClick={() => (authUser ? signOut() : signInWithOAuth())}
+      >
+        {authUser ? 'Sign Out' : 'Sign In'}
       </Button>
-
-      <Button size="small" onClick={testStartJob}>
-        testStartJob
-      </Button>
-      <Button size="small" onClick={testNoti}>
-        testNoti
-      </Button>
+      {authUser && <div>{authUser.email}</div>}
+      <div onClick={() => sum()}>sum</div>
     </div>
   );
 }

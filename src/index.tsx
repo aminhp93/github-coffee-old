@@ -8,6 +8,7 @@ import { store } from './@/store';
 import { initializeApp } from 'firebase/app';
 import Router from 'components/router';
 import { FirebaseAuthProvider } from '@/context/FirebaseContext';
+import { SupabaseAuthProvider } from '@/context/SupabaseContext';
 
 notification.config({
   placement: 'bottomLeft',
@@ -21,9 +22,11 @@ const root = ReactDOM.createRoot(document.getElementById('root') as any);
 root.render(
   <React.Fragment>
     <Provider store={store}>
-      <FirebaseAuthProvider>
-        <Router />
-      </FirebaseAuthProvider>
+      <SupabaseAuthProvider>
+        <FirebaseAuthProvider>
+          <Router />
+        </FirebaseAuthProvider>
+      </SupabaseAuthProvider>
     </Provider>
   </React.Fragment>
 );
