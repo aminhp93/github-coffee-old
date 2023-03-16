@@ -9,15 +9,15 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import dayjs from 'dayjs';
 import PostService from 'features/post/service';
 import { Post } from 'features/post/types';
-import moment from 'moment';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { v4 as uuidv4 } from 'uuid';
 import './Todo.less';
 
-const format = 'HH:mm';
+const FORMAT = 'HH:mm';
 
 const Completionist = () => <span>You are good to go!</span>;
 
@@ -54,7 +54,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
   const countDownRef = useRef<any>(null);
-  const [timer, setTimer] = useState(moment('00:01', format));
+  const [timer, setTimer] = useState(dayjs('00:01'));
   const [status, setStatus] = useState('');
   const preventUpdate = useRef(false);
   const debouncedValue = useDebounce<string>(JSON.stringify(value), 500);
@@ -207,9 +207,9 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
               <Tooltip placement="right" title="Start timer">
                 <div style={{ marginTop: '8px' }}>
                   <TimePicker
-                    defaultValue={moment('00:01', format)}
+                    defaultValue={dayjs('00:01')}
                     onChange={handleChangeTimer}
-                    format={format}
+                    format={FORMAT}
                   />
                   <Button
                     size="small"
@@ -290,7 +290,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
 
         <Countdown
           ref={countDownRef}
-          date={moment()
+          date={dayjs()
             .add(timer.hour() * 60 + timer.minute(), 'minute')
             .valueOf()}
           renderer={status === 'start' ? renderer : () => null}

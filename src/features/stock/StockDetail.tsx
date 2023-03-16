@@ -1,4 +1,10 @@
 import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  DownOutlined,
+  UpOutlined,
+} from '@ant-design/icons';
+import {
   Button,
   DatePicker,
   Divider,
@@ -6,32 +12,26 @@ import {
   notification,
   Select,
 } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
+import StockChart from './stockChart/StockChart';
+import { selectSelectedSymbol, updateSelectedSymbol } from './stockSlice';
+import BuyPoint from './stockTable/BuyPoint';
+import RefreshButton from './stockTable/RefreshButton';
 import { StockData, SupabaseData } from './types';
 import {
   evaluateStockBase,
   getListMarkLines,
-  getStockDataFromSupabase,
-  mapDataChart,
-  getTodayData,
-  getMinTotalValue,
-  mapDataFromStockBase,
   getListMarkPoints,
+  getMinTotalValue,
+  getStockDataFromSupabase,
+  getTodayData,
+  mapDataChart,
+  mapDataFromStockBase,
 } from './utils';
-import StockChart from './stockChart/StockChart';
-import { updateSelectedSymbol, selectSelectedSymbol } from './stockSlice';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  DownOutlined,
-  UpOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons';
-import RefreshButton from './stockTable/RefreshButton';
-import BuyPoint from './stockTable/BuyPoint';
 
 const { RangePicker } = DatePicker;
 
@@ -44,9 +44,10 @@ const StockDetailChart = () => {
   const [stockBase, setStockBase] = useState<any>({});
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
   const [showDetail, setShowDetail] = useState<boolean>(true);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >([moment().add(-1, 'years'), moment()]);
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
+    dayjs().add(-1, 'years'),
+    dayjs(),
+  ]);
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [selectedVolumeField, setSelectedVolumeField] = useState<
     'dealVolume' | 'totalVolume'
@@ -132,7 +133,7 @@ const StockDetailChart = () => {
 
   const getData = async (
     symbol: string,
-    dates: [moment.Moment, moment.Moment] | undefined,
+    dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined,
     volumeField: 'dealVolume' | 'totalVolume' = 'dealVolume'
   ) => {
     try {
@@ -174,7 +175,7 @@ const StockDetailChart = () => {
     }
   };
 
-  const handleCbBuyPoint = (data: moment.Moment | undefined) => {
+  const handleCbBuyPoint = (data: dayjs.Dayjs | undefined) => {
     const newStockBase = {
       ...stockBase,
       symbol: selectedSymbol,

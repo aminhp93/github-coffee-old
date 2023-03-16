@@ -6,6 +6,7 @@ import {
 
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
+import dayjs from 'dayjs';
 import moment from 'moment';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -39,9 +40,7 @@ const StockTable = () => {
   const gridRef: any = useRef();
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >();
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
@@ -51,7 +50,7 @@ const StockTable = () => {
     getData(data);
   };
 
-  const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
+  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
       console.log(gridRef);
@@ -144,8 +143,8 @@ const StockTable = () => {
             });
           }
 
-          setDates([moment().add(-1, 'months'), moment()]);
-          getData([moment().add(-1, 'months'), moment()]);
+          setDates([dayjs().add(-1, 'month'), dayjs()]);
+          getData([dayjs().add(-1, 'month'), dayjs()]);
         }
         notification.success({ message: 'success' });
       } catch (e) {

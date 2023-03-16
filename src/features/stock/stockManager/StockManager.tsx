@@ -1,8 +1,8 @@
 import { WarningOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
+import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import moment from 'moment';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { DATE_FORMAT, UNIT_BILLION } from '../constants';
@@ -22,9 +22,10 @@ const StockManager = () => {
   const dispatch = useDispatch();
 
   const [listStocks, setListStocks] = useState<any[]>([]);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >([moment().add(-1, 'years'), moment()]);
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
+    dayjs().add(-1, 'years'),
+    dayjs(),
+  ]);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
 
   const handleChangeDate = (dates: any) => {
@@ -38,7 +39,7 @@ const StockManager = () => {
     });
   }, []);
 
-  const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
+  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
     if (!dates || dates.length !== 2) return;
     const resStockBase = await StockService.getAllStockBase();
     if (resStockBase.data) {

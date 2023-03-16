@@ -1,14 +1,15 @@
-import { notification } from 'antd';
 import config from '@/config';
+import { FirebaseAuthProvider } from '@/context/FirebaseContext';
+import { SupabaseAuthProvider } from '@/context/SupabaseContext';
+import { notification } from 'antd';
+import 'antd/dist/reset.css';
+import Router from 'components/router';
+import { initializeApp } from 'firebase/app';
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import 'styles/index.less';
 import { store } from './@/store';
-import { initializeApp } from 'firebase/app';
-import Router from 'components/router';
-import { FirebaseAuthProvider } from '@/context/FirebaseContext';
-import { SupabaseAuthProvider } from '@/context/SupabaseContext';
 
 notification.config({
   placement: 'bottomLeft',

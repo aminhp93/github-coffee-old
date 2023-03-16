@@ -1,8 +1,8 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
+import dayjs from 'dayjs';
 import { keyBy } from 'lodash';
-import moment from 'moment';
 import { useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
@@ -41,9 +41,9 @@ interface Props {
 
 const StockTesting = ({ onClose }: Props) => {
   const gridRef: any = useRef();
-  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
-    moment().add(-1, 'months'),
-    moment(),
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().add(-1, 'month'),
+    dayjs(),
   ]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
@@ -93,7 +93,7 @@ const StockTesting = ({ onClose }: Props) => {
       res2.data.slice(0, 20).length === res[0].data.length
     ) {
       const mappedFireant = res[0].data.map((i: any) => {
-        i.date = moment(i.date).format(DATE_FORMAT);
+        i.date = dayjs(i.date).format(DATE_FORMAT);
         return i;
       });
 
@@ -165,8 +165,8 @@ const StockTesting = ({ onClose }: Props) => {
         let offset = 0;
         while (nextCall) {
           const res = await updateDataWithDate(
-            moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-            moment().format(DATE_FORMAT),
+            dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+            dayjs().format(DATE_FORMAT),
             offset,
             listAllSymbols
           );
@@ -178,7 +178,7 @@ const StockTesting = ({ onClose }: Props) => {
 
         await StockService.updateLastUpdated({
           column: 'last_updated',
-          value: moment().format(DATE_FORMAT),
+          value: dayjs().format(DATE_FORMAT),
         });
       }
       notification.success({ message: 'success' });

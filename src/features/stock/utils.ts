@@ -1,9 +1,10 @@
-import { cloneDeep, groupBy, meanBy, minBy, maxBy, min, max } from 'lodash';
+import dayjs from 'dayjs';
+import { cloneDeep, groupBy, max, maxBy, meanBy, min, minBy } from 'lodash';
 import moment from 'moment';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
-import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
 import { getStockData } from './tests';
+import { StockBase, StockCoreData, StockData, SupabaseData } from './types';
 
 export const filterData = (
   data: StockData[],
@@ -297,18 +298,18 @@ export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
 };
 
 export const getTodayData = async (
-  dates: [moment.Moment, moment.Moment],
+  dates: [dayjs.Dayjs, dayjs.Dayjs],
   listSymbols: string[]
 ) => {
   let resFireant;
   if (
-    dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
-    moment().hour() < 15 &&
+    dates[1].format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
+    dayjs().hour() < 15 &&
     !localStorage.getItem('turnOffFetchTodayData')
   ) {
     const res = await StockService.getStockDataFromFireant({
-      startDate: moment().format(DATE_FORMAT),
-      endDate: moment().format(DATE_FORMAT),
+      startDate: dayjs().format(DATE_FORMAT),
+      endDate: dayjs().format(DATE_FORMAT),
       listSymbols,
     });
     resFireant = res.map((i) => {
