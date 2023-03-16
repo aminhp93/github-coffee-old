@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
-import { Drawer, Select, Button, DatePicker, notification } from 'antd';
-import StockService from '../service';
-import { DATE_FORMAT } from '../constants';
-import moment from 'moment';
-import { updateDataWithDate, mapDataFromStockBase } from '../utils';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, DatePicker, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
 import { keyBy } from 'lodash';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import moment from 'moment';
+import { useEffect, useRef, useState } from 'react';
+import { DATE_FORMAT } from './constants';
+import StockService from './service';
+import { mapDataFromStockBase, updateDataWithDate } from './utils';
 
 const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
   {
@@ -39,7 +39,7 @@ interface Props {
   onClose: () => void;
 }
 
-const TestSupabaseData = ({ onClose }: Props) => {
+const StockTesting = ({ onClose }: Props) => {
   const gridRef: any = useRef();
   const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
     moment().add(-1, 'months'),
@@ -275,4 +275,4 @@ const TestSupabaseData = ({ onClose }: Props) => {
   );
 };
 
-export default TestSupabaseData;
+export default StockTesting;

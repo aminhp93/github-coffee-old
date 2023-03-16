@@ -2,30 +2,34 @@ import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   SettingOutlined,
-  WarningOutlined,
 } from '@ant-design/icons';
 
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
+import CustomAgGridReact from 'components/CustomAgGridReact';
 import moment from 'moment';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
+import { updateSelectedSymbol } from '../stockSlice';
 import { StockData, SupabaseData } from '../types';
 import {
   filterData,
   getStockDataFromSupabase,
-  updateDataWithDate,
   getTodayData,
   mapDataFromStockBase,
+  updateDataWithDate,
 } from '../utils';
 import './index.less';
 import RefreshButton from './RefreshButton';
 import Settings from './Setting';
 import StockTableColumns from './StockTableColumns';
-import Testing from './Testing';
-import CustomAgGridReact from 'components/CustomAgGridReact';
-import { updateSelectedSymbol } from '../stockSlice';
-import { useDispatch } from 'react-redux';
+
+const getRowClass = (params: any) => {
+  if (params.node.data.potential) {
+    return 'potential-row';
+  }
+};
 
 const { RangePicker } = DatePicker;
 
@@ -34,7 +38,6 @@ const StockTable = () => {
   const dispatch = useDispatch();
   const gridRef: any = useRef();
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
-  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<
     [moment.Moment, moment.Moment] | undefined
@@ -172,7 +175,6 @@ const StockTable = () => {
         style={{ justifyContent: 'space-between', height: '50px' }}
       >
         <div className="flex" style={{ alignItems: 'center' }}>
-          {`${String(listStocks.length)} rows`}
           <Tooltip title="Setting">
             <Button
               size="small"
@@ -180,15 +182,6 @@ const StockTable = () => {
               style={{ marginLeft: 8 }}
               icon={<SettingOutlined />}
               onClick={() => setOpenDrawerSettings(true)}
-            />
-          </Tooltip>
-          <Tooltip title="Testing">
-            <Button
-              size="small"
-              type="primary"
-              icon={<WarningOutlined />}
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
         </div>
@@ -223,20 +216,7 @@ const StockTable = () => {
     );
   };
 
-  const onGridReady = useCallback((params: any) => {
-    // const defaultSortModel = [
-    //   { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
-    // ];
-    // params.columnApi.applyColumnState({ state: defaultSortModel });
-  }, []);
-
   console.log('StockTable', 'listStocks', listStocks);
-
-  const getRowClass = (params: any) => {
-    if (params.node.data.potential) {
-      return 'potential-row';
-    }
-  };
 
   return (
     <div className="StockTable height-100 flex">
@@ -249,15 +229,10 @@ const StockTable = () => {
           })}
           pinnedTopRowData={pinnedTopRowData}
           getRowClass={getRowClass}
-          onGridReady={onGridReady}
           ref={gridRef}
         />
       </div>
       {footer()}
-
-      {openDrawerTesting && (
-        <Testing onClose={() => setOpenDrawerTesting(false)} />
-      )}
 
       {openDrawerSettings && (
         <Settings onClose={() => setOpenDrawerSettings(false)} />

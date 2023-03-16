@@ -1,17 +1,19 @@
+import { WarningOutlined } from '@ant-design/icons';
+import { Button, DatePicker, notification, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { SupabaseData } from '../types';
-import StockManagerColumns from './StockManagerColumns';
-import StockService from '../service';
-import { DATE_FORMAT, UNIT_BILLION } from '../constants';
-import moment from 'moment';
-import { getStockDataFromSupabase } from '../utils';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import './StockManager.less';
-import { updateSelectedSymbol } from '../stockSlice';
+import moment from 'moment';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { notification, DatePicker } from 'antd';
+import { DATE_FORMAT, UNIT_BILLION } from '../constants';
+import StockService from '../service';
+import { updateSelectedSymbol } from '../stockSlice';
 import RefreshButton from '../stockTable/RefreshButton';
+import StockTesting from '../StockTesting';
+import { SupabaseData } from '../types';
+import { getStockDataFromSupabase } from '../utils';
+import './StockManager.less';
+import StockManagerColumns from './StockManagerColumns';
 
 const { RangePicker } = DatePicker;
 
@@ -23,6 +25,7 @@ const StockManager = () => {
   const [dates, setDates] = useState<
     [moment.Moment, moment.Moment] | undefined
   >([moment().add(-1, 'years'), moment()]);
+  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -36,11 +39,12 @@ const StockManager = () => {
   }, []);
 
   const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
+    if (!dates || dates.length !== 2) return;
     const resStockBase = await StockService.getAllStockBase();
     if (resStockBase.data) {
       const res = await StockService.getStockDataFromSupabase({
-        startDate: moment().add(-30, 'days').format(DATE_FORMAT),
-        endDate: moment().format(DATE_FORMAT),
+        startDate: dates[0].format(DATE_FORMAT),
+        endDate: dates[1].format(DATE_FORMAT),
         listSymbols: resStockBase.data.map((i) => i.symbol),
       });
 
@@ -138,11 +142,22 @@ const StockManager = () => {
       <div
         className="flex"
         style={{
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           height: '50px',
           alignItems: 'center',
         }}
       >
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <Tooltip title="Testing">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerTesting(true)}
+            />
+          </Tooltip>
+        </div>
         <div className="flex" style={{ alignItems: 'center' }}>
           <RefreshButton onClick={() => getData(dates)} />
           <RangePicker
@@ -177,6 +192,9 @@ const StockManager = () => {
         />
       </div>
       {footer()}
+      {openDrawerTesting && (
+        <StockTesting onClose={() => setOpenDrawerTesting(false)} />
+      )}
     </div>
   );
 };

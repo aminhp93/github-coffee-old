@@ -4,9 +4,10 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.4.4",
-    "@emotion/react": "^11.10.0",
-    "@emotion/styled": "^11.10.0",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
     "@faker-js/faker": "^7.3.0",
+    "@mui/material": "^5.11.13",
     "@octokit/rest": "^19.0.3",
     "@reduxjs/toolkit": "^1.8.1",
     "@supabase/supabase-js": "^2.4.0",
