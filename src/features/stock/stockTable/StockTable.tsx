@@ -20,10 +20,10 @@ import {
   mapDataFromStockBase,
   updateDataWithDate,
 } from '../utils';
-import './index.less';
 import RefreshButton from './RefreshButton';
-import Settings from './Setting';
+import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
+import StockTableSetting from './StockTableSetting';
 
 const getRowClass = (params: any) => {
   if (params.node.data.potential) {
@@ -235,7 +235,7 @@ const StockTable = () => {
       {footer()}
 
       {openDrawerSettings && (
-        <Settings onClose={() => setOpenDrawerSettings(false)} />
+        <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />
       )}
     </div>
   );

@@ -1,19 +1,19 @@
-import {
-  CheckCircleOutlined,
-  WarningOutlined,
-  DeleteOutlined,
-} from '@ant-design/icons';
-import { Button, notification, Typography, Select } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import PostService from './service';
-import { memo, useEffect, useState, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 import { useDebounce, useIsFirstRender } from '@/hooks';
-import './index.less';
-import { Post } from './types';
 import TagService from '@/services/tag';
 import { Tag } from '@/types/tag';
+import {
+  CheckCircleOutlined,
+  DeleteOutlined,
+  WarningOutlined,
+} from '@ant-design/icons';
+import { Button, notification, Select, Typography } from 'antd';
+import CustomPlate from 'components/CustomPlate';
+import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
+import { memo, useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import './Post.less';
+import PostService from './service';
+import { Post } from './types';
 
 const { Paragraph } = Typography;
 

@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import './index.less';
+import './Post.less';
 import PostListItem from './PostListItem';
 import { Post } from './types';
 

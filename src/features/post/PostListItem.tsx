@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import './index.less';
+import './Post.less';
 
 interface IPostListItemProps {
   data: any;

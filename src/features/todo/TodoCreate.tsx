@@ -1,11 +1,10 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import TodoService from './service';
-import * as React from 'react';
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
+import PostService from 'features/post/service';
+import { memo, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 interface IProps {
   onCreateSuccess: () => void;
@@ -20,10 +19,10 @@ function TodoCreate({ onCreateSuccess }: IProps) {
     if (!value) return;
     try {
       const data = {
-        body: JSON.stringify(value),
+        content: JSON.stringify(value),
       };
       setLoading(true);
-      const res = await TodoService.createTodo(data);
+      const res = await PostService.createPost(data);
 
       setLoading(false);
       if (res && res.data) {
@@ -75,6 +74,6 @@ function TodoCreate({ onCreateSuccess }: IProps) {
   );
 }
 
-const MemoizedTodoCreate = React.memo(TodoCreate);
+const MemoizedTodoCreate = memo(TodoCreate);
 
 export default MemoizedTodoCreate;

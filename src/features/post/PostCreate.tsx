@@ -1,13 +1,13 @@
+import TagService from '@/services/tag';
+import { Tag } from '@/types/tag';
 import { Button, Form, Input, notification, Select } from 'antd';
 import CustomPlate from 'components/CustomPlate';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import PostService from './service';
-import TagService from '@/services/tag';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import './index.less';
+import './Post.less';
+import PostService from './service';
 import { Post } from './types';
-import { Tag } from '@/types/tag';
 
 interface Props {
   onCreateSuccess: (data: any) => void;

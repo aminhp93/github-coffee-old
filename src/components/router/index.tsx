@@ -1,16 +1,16 @@
+import { useAuth } from '@/context/FirebaseContext';
 import CustomEcharts from 'components/CustomEcharts';
 import Notification from 'components/firebaseNotifications/Notification';
 import Layout from 'components/layout';
 import Chat from 'features/chat';
 import Example from 'features/example';
-import Post from 'features/post';
+import Post from 'features/post/Post';
 import Snippet from 'features/snippet';
 import Stock from 'features/stock';
 import TaskManager from 'features/taskManager';
 import Test from 'features/test';
-import Work from 'features/work';
+import Work from 'features/work/Work';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { useAuth } from '@/context/FirebaseContext';
 
 const Router = () => {
   const { authUser }: any = useAuth();

@@ -5,7 +5,7 @@ interface Props {
   onClose: () => void;
 }
 
-const Settings = ({ onClose }: Props) => {
+const StockTableSetting = ({ onClose }: Props) => {
   const [turnOffFetchTodayData, setTurnOffFetchTodayData] = useState(
     localStorage.getItem('turnOffFetchTodayData') === 'false'
   );
@@ -43,4 +43,4 @@ const Settings = ({ onClose }: Props) => {
   );
 };
 
-export default Settings;
+export default StockTableSetting;

@@ -1,7 +1,7 @@
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
-import './index.less';
+import './Post.less';
 import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';

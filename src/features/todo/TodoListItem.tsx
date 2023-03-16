@@ -9,13 +9,13 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
+import PostService from 'features/post/service';
+import { Post } from 'features/post/types';
 import moment from 'moment';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { v4 as uuidv4 } from 'uuid';
-import './index.less';
-import TodoService from './service';
-import { ITodo } from './types';
+import './Todo.less';
 
 const format = 'HH:mm';
 
@@ -43,13 +43,13 @@ const renderer = (props: any) => {
   }
 };
 interface Props {
-  todoItem: ITodo;
+  todoItem: Post;
   onDeleteSuccess?: (todoId: number) => void;
 }
 
 function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [plateId, setPlateId] = useState(null as any);
-  const [value, setValue] = useState(JSON.parse(todoItem.body));
+  const [value, setValue] = useState(JSON.parse(todoItem.content));
   const [isDone, setIsDone] = useState(todoItem.isDone);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
@@ -65,7 +65,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         isDone: !isDone,
       };
       setIsDone(!isDone);
-      await TodoService.updateTodo(todoItem.id, data);
+      await PostService.updatePost(todoItem.id, data);
       notification.success({
         message: 'Marked done',
       });
@@ -80,9 +80,9 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const handleUpdate = async () => {
     try {
       const data = {
-        body: JSON.stringify(value),
+        content: JSON.stringify(value),
       };
-      await TodoService.updateTodo(todoItem.id, data);
+      await PostService.updatePost(todoItem.id, data);
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -93,7 +93,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
 
   const handleDelete = async () => {
     try {
-      await TodoService.deleteTodo(todoItem.id);
+      await PostService.deletePost(todoItem.id);
       onDeleteSuccess && onDeleteSuccess(todoItem.id);
     } catch (error: any) {
       notification.error({
