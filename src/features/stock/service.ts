@@ -1,10 +1,10 @@
-import axios from 'axios';
-import moment from 'moment';
-import { DATE_FORMAT } from './constants';
-import { HistoricalQuoteParams, HistoricalQuote } from './types';
-import request from '@/services/request';
 import config from '@/config';
+import request from '@/services/request';
 import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { DATE_FORMAT } from './constants';
+import { HistoricalQuote, HistoricalQuoteParams } from './types';
 
 const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
 const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
@@ -33,8 +33,8 @@ const StockService = {
   ) {
     if (!symbol) return;
     try {
-      if (!endDate) endDate = moment().format(DATE_FORMAT);
-      if (!startDate) startDate = moment().add(-7, 'days').format(DATE_FORMAT);
+      if (!endDate) endDate = dayjs().format(DATE_FORMAT);
+      if (!startDate) startDate = dayjs().add(-7, 'days').format(DATE_FORMAT);
       if (returnRequest) {
         return axios({
           url: `${domain}/symbols/${symbol.toUpperCase()}/historical-quotes`,

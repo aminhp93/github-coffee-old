@@ -1,15 +1,15 @@
 import { Button, Input, notification, Spin } from 'antd';
 import axios from 'axios';
-import StockService from './service';
+import dayjs from 'dayjs';
+import { chunk, minBy, orderBy } from 'lodash';
+import { useEffect, useState } from 'react';
 import {
   DATE_FORMAT,
   MIN_MEDIUM_TOTOL_VALUE,
   MIN_TOTAL_VALUE,
   MIN_TOTAL_VOLUME,
 } from './constants';
-import { chunk, minBy, orderBy } from 'lodash';
-import moment from 'moment';
-import { useEffect, useState } from 'react';
+import StockService from './service';
 
 export default function StockTools() {
   const [listWatchlists, setListWatchlists] = useState([]);
@@ -181,8 +181,8 @@ function StockToolItem(props: IStockToolItemProps) {
 
   const getHistorialQuote = async (symbol: string) => {
     if (!symbol) return;
-    const startDate = moment().add(-1000, 'days').format(DATE_FORMAT);
-    const endDate = moment().add(0, 'days').format(DATE_FORMAT);
+    const startDate = dayjs().add(-1000, 'days').format(DATE_FORMAT);
+    const endDate = dayjs().add(0, 'days').format(DATE_FORMAT);
 
     const res = await axios({
       method: 'GET',

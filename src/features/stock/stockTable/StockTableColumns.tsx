@@ -1,7 +1,7 @@
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { DATE_FORMAT } from '../constants';
 import { StockData } from '../types';
-import { evaluateStockBase, getMinTotalValue, getColorStock } from '../utils';
+import { evaluateStockBase, getColorStock, getMinTotalValue } from '../utils';
 
 interface Props {
   handleClickSymbol?: (record: StockData) => void;
@@ -31,7 +31,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
         if (!stockData.date) return;
-        return moment(stockData.date).format(DATE_FORMAT);
+        return dayjs(stockData.date).format(DATE_FORMAT);
       },
     },
     {

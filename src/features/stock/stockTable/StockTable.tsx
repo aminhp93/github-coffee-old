@@ -7,7 +7,6 @@ import {
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
 import dayjs from 'dayjs';
-import moment from 'moment';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { DATE_FORMAT } from '../constants';
@@ -114,10 +113,10 @@ const StockTable = () => {
         const { list_all } = mapDataFromStockBase(resStockBase.data || []);
         if (res.data && res.data.length && res.data.length === 1) {
           const lastUpdated = res.data[0].last_updated;
-          let newLastUpdated = moment().format(DATE_FORMAT);
+          let newLastUpdated = dayjs().format(DATE_FORMAT);
           // check current time before 3pm
-          if (moment().hour() < 15) {
-            newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
+          if (dayjs().hour() < 15) {
+            newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
           }
 
           if (lastUpdated !== newLastUpdated) {
@@ -126,7 +125,7 @@ const StockTable = () => {
 
             while (nextCall) {
               const res = await updateDataWithDate(
-                moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+                dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
                 newLastUpdated,
                 offset,
                 list_all
