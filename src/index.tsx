@@ -1,5 +1,4 @@
 import config from '@/config';
-import { FirebaseAuthProvider } from '@/context/FirebaseContext';
 import { SupabaseAuthProvider } from '@/context/SupabaseContext';
 import { notification } from 'antd';
 import 'antd/dist/reset.css';
@@ -24,9 +23,7 @@ root.render(
   <React.Fragment>
     <Provider store={store}>
       <SupabaseAuthProvider>
-        <FirebaseAuthProvider>
-          <Router />
-        </FirebaseAuthProvider>
+        <Router />
       </SupabaseAuthProvider>
     </Provider>
   </React.Fragment>

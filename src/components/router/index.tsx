@@ -1,4 +1,4 @@
-import { useAuth } from '@/context/FirebaseContext';
+import { useAuth } from '@/context/SupabaseContext';
 import CustomEcharts from 'components/CustomEcharts';
 import Notification from 'components/firebaseNotifications/Notification';
 import Layout from 'components/layout';

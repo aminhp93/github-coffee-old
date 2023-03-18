@@ -1,9 +1,9 @@
-import { Button, Dropdown, Menu } from 'antd';
 import config from '@/config';
-import { useAuth } from '@/context/FirebaseContext';
+import { useAuth } from '@/context/SupabaseContext';
+import { Button, Dropdown, Menu } from 'antd';
 
 export default function User() {
-  const { authUser, signOut, signInWithPopup }: any = useAuth();
+  const { authUser, signOut, signInWithOAuth }: any = useAuth();
 
   const menu = (
     <Menu onClick={signOut}>
@@ -29,7 +29,7 @@ export default function User() {
           <div style={{ cursor: 'pointer' }}>{`${authUser?.email}`}</div>
         </Dropdown>
       ) : (
-        <Button size="small" onClick={signInWithPopup}>
+        <Button size="small" onClick={signInWithOAuth}>
           Login
         </Button>
       )}
