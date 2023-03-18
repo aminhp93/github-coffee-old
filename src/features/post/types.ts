@@ -3,7 +3,7 @@ export interface Post {
   id: number;
   title: string;
   content: string;
-  author: any;
+  author: string | null;
   tag: number;
   isDone: boolean;
 }

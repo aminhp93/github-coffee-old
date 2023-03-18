@@ -13,7 +13,7 @@ const Layout = () => {
       <div
         style={{
           position: 'fixed',
-          height: '36px',
+          height: '29px',
           bottom: 0,
           right: 0,
         }}

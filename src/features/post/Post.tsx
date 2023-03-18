@@ -1,3 +1,4 @@
+import { useAuth } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
@@ -14,22 +15,13 @@ const PostPage = () => {
   const [selectedPost, setSelectedPost] = useState({} as Post);
   const [listPosts, setListPosts] = useState([]);
   const [mode, setMode] = useState<ModeType>('list');
+  const { authUser }: any = useAuth();
+  console.log(authUser);
 
   const handleSelect = useCallback((data: any) => {
     setMode('list');
     setSelectedPost(data);
   }, []);
-
-  const getListPosts = async () => {
-    try {
-      const res: any = await PostService.listPost();
-      if (res && res.data) {
-        setListPosts(res.data);
-      }
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
-  };
 
   const handleUpdateSuccess = (updatedPost: Post) => {
     const newListPosts = [...listPosts];
@@ -57,8 +49,18 @@ const PostPage = () => {
   };
 
   useEffect(() => {
-    getListPosts();
-  }, []);
+    const init = async () => {
+      try {
+        const res: any = await PostService.listPost({ author: authUser?.id });
+        if (res && res.data) {
+          setListPosts(res.data);
+        }
+      } catch (e) {
+        notification.error({ message: 'error' });
+      }
+    };
+    init();
+  }, [authUser]);
 
   const renderCreate = () => (
     <PostCreate onCreateSuccess={handleCreateSuccess} />
