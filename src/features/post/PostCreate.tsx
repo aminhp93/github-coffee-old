@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import './Post.less';
 import PostService from './service';
 import { Post } from './types';
+import { useAuth } from '@/context/SupabaseContext';
 
 interface Props {
   onCreateSuccess: (data: any) => void;
@@ -17,14 +18,17 @@ export default function PostCreate({ onCreateSuccess }: Props) {
   const [plateId] = useState(uuidv4());
   const [listTags, setListTags] = useState<Tag[]>([]);
   const [selectedTag, setSelectedTag] = useState<Tag>();
+  const { authUser }: any = useAuth();
 
   const onFinish = async (values: any) => {
     try {
+      if (!authUser || !authUser.id) return;
       const { title, content } = values;
       const dataCreate: Partial<Post> = {
         title,
         content: JSON.stringify(content || DEFAULT_PLATE_VALUE),
         tag: selectedTag?.id,
+        author: authUser.id,
       };
       const res = await PostService.createPost(dataCreate);
       if (res.data && res.data.length === 1) {

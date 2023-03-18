@@ -16,7 +16,6 @@ const PostPage = () => {
   const [listPosts, setListPosts] = useState([]);
   const [mode, setMode] = useState<ModeType>('list');
   const { authUser }: any = useAuth();
-  console.log(authUser);
 
   const handleSelect = useCallback((data: any) => {
     setMode('list');
