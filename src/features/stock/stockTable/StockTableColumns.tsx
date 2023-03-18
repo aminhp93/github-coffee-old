@@ -13,6 +13,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
     {
       headerName: '',
       field: 'symbol',
+      suppressMenu: true,
       width: 80,
       onCellClicked: (data: any) => {
         handleClickSymbol && handleClickSymbol(data);
@@ -35,10 +36,11 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 't0',
+      headerName: 'P (%)',
       field: 'change_t0',
       type: 'rightAligned',
-      width: 90,
+      suppressMenu: true,
+      width: 80,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -49,7 +51,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
               color: getColorStock(stockData),
             }}
           >
-            {stockData.change_t0.toFixed(1) + '%'}
+            {stockData.change_t0.toFixed(1)}
           </div>
         );
       },
@@ -57,9 +59,9 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
     {
       field: 'estimated_vol_change',
       suppressMenu: true,
-      width: 90,
+      width: 80,
       type: 'rightAligned',
-      headerName: 'vol_t0',
+      headerName: 'V (%)',
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -71,16 +73,17 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
               color: stockData.estimated_vol_change > 0.5 ? '#00aa00' : '',
             }}
           >
-            {stockData.estimated_vol_change.toFixed(1) + '%'}
+            {stockData.estimated_vol_change.toFixed(0)}
           </div>
         );
       },
     },
     {
-      headerName: 'target',
+      headerName: 'target (%)',
       field: 'target',
+      suppressMenu: true,
       type: 'rightAligned',
-      width: 100,
+      width: 110,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
 
@@ -110,16 +113,17 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
               color,
             }}
           >
-            {target && target.toFixed(0) + '%'}
+            {target.toFixed(0)}
           </div>
         );
       },
     },
     {
-      headerName: 'risk_b2',
+      headerName: 'risk_2 (%)',
+      suppressMenu: true,
       field: 'risk_b2',
       type: 'rightAligned',
-      width: 100,
+      width: 110,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
@@ -130,14 +134,15 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
 
         const { risk_b2 } = evaluateStockBase(filter[0], stockData.fullData);
         if (!risk_b2) return;
-        return risk_b2 && risk_b2.toFixed(0) + '%';
+        return risk_b2 && risk_b2.toFixed(0);
       },
     },
     {
-      headerName: 'risk_b1',
+      headerName: 'risk_1 (%)',
       field: 'risk_b1',
       type: 'rightAligned',
-      width: 100,
+      suppressMenu: true,
+      width: 110,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
@@ -148,23 +153,10 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
 
         const { risk_b1 } = evaluateStockBase(filter[0], stockData.fullData);
         if (!risk_b1) return;
-        return risk_b1 && risk_b1.toFixed(0) + '%';
+        return risk_b1 && risk_b1.toFixed(0);
       },
     },
-    {
-      field: 'min_total_value',
-      suppressMenu: true,
-      type: 'rightAligned',
-      headerName: 'min_total_value',
-      filter: 'agNumberColumnFilter',
-      cellRenderer: (data: any) => {
-        const stockData: StockData = data.data;
 
-        const { minTotal, maxTotal, averageTotal } =
-          getMinTotalValue(stockData);
-        return `${minTotal} - ${maxTotal} - ${averageTotal}`;
-      },
-    },
     {
       field: 'extra_volume',
       suppressMenu: true,
@@ -181,6 +173,20 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
         return `${percent_extra.toFixed(0)}% (${extra}/${
           stockData.dealVolume
         })`;
+      },
+    },
+    {
+      field: 'min_total_value',
+      suppressMenu: true,
+      type: 'rightAligned',
+      headerName: 'min_total_value',
+      filter: 'agNumberColumnFilter',
+      cellRenderer: (data: any) => {
+        const stockData: StockData = data.data;
+
+        const { minTotal, maxTotal, averageTotal } =
+          getMinTotalValue(stockData);
+        return `${minTotal} - ${maxTotal} - ${averageTotal}`;
       },
     },
   ];

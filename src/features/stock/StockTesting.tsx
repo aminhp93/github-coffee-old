@@ -8,6 +8,8 @@ import { DATE_FORMAT } from './constants';
 import StockService from './service';
 import { mapDataFromStockBase, updateDataWithDate } from './utils';
 
+const DEFAULT_ROW_DATA: any = [];
+
 const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
   {
     headerName: 'symbol',
@@ -48,6 +50,8 @@ const StockTesting = ({ onClose }: Props) => {
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [count, setCount] = useState<number>(0);
 
   const handleForceUpdate = (data: any) => {
     updateData(data.data.date);
@@ -67,6 +71,7 @@ const StockTesting = ({ onClose }: Props) => {
 
   const handleTest = async (symbol: string) => {
     console.log(symbol);
+    setCount((oldCount) => oldCount + 1);
     if (dates.length !== 2) return;
     const startDate = dates[0].format(DATE_FORMAT);
     const endDate = dates[1].format(DATE_FORMAT);
@@ -143,10 +148,13 @@ const StockTesting = ({ onClose }: Props) => {
   };
 
   const handleTestAll = async () => {
+    setLoading(true);
+    setCount(0);
     gridRef.current?.api?.setRowData([]);
     for (let i = 0; i < listAllSymbols.length; i++) {
       await handleTest(listAllSymbols[i]);
     }
+    setLoading(false);
   };
 
   const handleChangeDate = (dates: any) => {
@@ -257,7 +265,12 @@ const StockTesting = ({ onClose }: Props) => {
             </Button>
           </div>
           <div>
-            <Button size="small" onClick={() => handleTestAll()}>
+            {`${count} / ${listAllSymbols.length}`}
+            <Button
+              disabled={loading}
+              size="small"
+              onClick={() => handleTestAll()}
+            >
               Test All Symbols
             </Button>
           </div>
@@ -265,7 +278,7 @@ const StockTesting = ({ onClose }: Props) => {
         <div className="flex-1 ag-theme-alpine">
           <CustomAgGridReact
             ref={gridRef}
-            rowData={[]}
+            rowData={DEFAULT_ROW_DATA}
             getRowId={(params: any) => params.data.symbol}
             columnDefs={COLUMN_DEFS({ handleForceUpdate })}
           />

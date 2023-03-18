@@ -3,7 +3,7 @@ import { Button, DatePicker, notification, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { DATE_FORMAT, UNIT_BILLION } from '../constants';
 import StockService from '../service';
@@ -31,13 +31,6 @@ const StockManager = () => {
   const handleChangeDate = (dates: any) => {
     setDates(dates);
   };
-
-  const onGridReady = useCallback((params: any) => {
-    gridRef.current.api.sizeColumnsToFit({
-      defaultMinWidth: 100,
-      columnLimits: [{ key: 'country', minWidth: 900 }],
-    });
-  }, []);
 
   const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
     if (!dates || dates.length !== 2) return;
@@ -138,6 +131,16 @@ const StockManager = () => {
     }
   };
 
+  const handleResize = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
+  const handleGridReady = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
   const footer = () => {
     return (
       <div
@@ -187,8 +190,9 @@ const StockManager = () => {
           })}
           pagination={true}
           paginationAutoPageSize={true}
-          onGridReady={onGridReady}
           getRowClass={getRowClass}
+          onResize={handleResize}
+          onGridReady={handleGridReady}
           ref={gridRef}
         />
       </div>

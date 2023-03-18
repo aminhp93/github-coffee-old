@@ -258,13 +258,10 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   );
 
   const listData = data.slice(0, startIndex + 1);
-  console.log(listData);
   const list_50 = data.slice(startIndex + 1, startIndex + 51);
   const average_50 = meanBy(list_50, 'totalVolume');
 
-  const a = listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
-
-  console.log(average_50, a);
+  listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
 
   return {
     risk_b2,
