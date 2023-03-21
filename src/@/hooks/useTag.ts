@@ -1,9 +1,9 @@
-import request from '@/services/request';
+import axios from 'axios';
 import { useEffect } from 'react';
 
 export function useTag() {
   useEffect(() => {
-    request({
+    axios({
       method: 'GET',
       url: 'http://localhost:8000/api/tags/',
     });

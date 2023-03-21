@@ -1,9 +1,7 @@
-import config from '@/config';
 import { SupabaseAuthProvider } from '@/context/SupabaseContext';
 import { notification } from 'antd';
 import 'antd/dist/reset.css';
 import Router from 'components/router';
-import { initializeApp } from 'firebase/app';
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
@@ -14,8 +12,6 @@ notification.config({
   placement: 'bottomLeft',
   duration: 3,
 });
-
-initializeApp(config.firebase);
 
 const root = ReactDOM.createRoot(document.getElementById('root') as any);
 

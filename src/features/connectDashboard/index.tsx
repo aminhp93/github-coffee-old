@@ -1,6 +1,6 @@
 import type { InputRef } from 'antd';
 import { Button, Input, Modal } from 'antd';
-import request from '@/services/request';
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import ProblemItem from './ProblemItem';
 
@@ -25,7 +25,7 @@ export default function ConnectDashboard() {
       setProblemSrc(
         'https://codesandbox.io/embed/github/aminhp93/problem-react-template/tree/main/?fontsize=14&hidenavigation=1&theme=dark'
       );
-      const res = await request({
+      const res = await axios({
         url: 'http://localhost:8000/api/problems/create/',
         method: 'POST',
         data: {
@@ -45,7 +45,7 @@ export default function ConnectDashboard() {
   };
 
   const getList = async () => {
-    const res = await request({
+    const res = await axios({
       url: 'http://localhost:8000/api/problems/',
 
       method: 'GET',

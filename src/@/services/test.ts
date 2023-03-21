@@ -1,25 +1,11 @@
-import axios from 'axios';
-import config from '@/config';
-
-const baseUrl = config.apiUrl;
-
-const TestUrls = {
-  test: `${baseUrl}/api/test/test/`,
-  startJob: `${baseUrl}/api/test/start-job/`,
-};
+import supabase from '@/services/supabase';
 
 const TestService = {
-  test() {
-    return axios({
-      method: 'GET',
-      url: TestUrls.test,
-    });
+  test: () => {
+    return supabase.from('test').select();
   },
   startJob: () => {
-    return axios({
-      method: 'GET',
-      url: TestUrls.startJob,
-    });
+    return supabase.from('test').select();
   },
 };
 

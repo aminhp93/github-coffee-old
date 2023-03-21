@@ -1,21 +1,13 @@
-import config from '@/config';
-import request from '@/services/request';
-import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { DATE_FORMAT } from './constants';
 import { HistoricalQuote, HistoricalQuoteParams } from './types';
-
-const supabaseUrl = 'https://bnimawsouehpkbipqqvl.supabase.co';
-const supabaseKey = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJuaW1hd3NvdWVocGtiaXBxcXZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzM0NDY4MzcsImV4cCI6MTk4OTAyMjgzN30.K_BGIC_TlWbHl07XX94EWxRI_2Om_NKu_PY5pGtG-hk`;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import supabase from '@/services/supabase';
 
 const domain = 'https://restv2.fireant.vn';
-const baseUrl = config.apiUrl;
 
 const headers = {
-  Authorization:
-    'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSIsImtpZCI6IkdYdExONzViZlZQakdvNERWdjV4QkRITHpnSSJ9.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4iLCJhdWQiOiJodHRwczovL2FjY291bnRzLmZpcmVhbnQudm4vcmVzb3VyY2VzIiwiZXhwIjoxOTEzNjIzMDMyLCJuYmYiOjE2MTM2MjMwMzIsImNsaWVudF9pZCI6ImZpcmVhbnQudHJhZGVzdGF0aW9uIiwic2NvcGUiOlsib3BlbmlkIiwicHJvZmlsZSIsInJvbGVzIiwiZW1haWwiLCJhY2NvdW50cy1yZWFkIiwiYWNjb3VudHMtd3JpdGUiLCJvcmRlcnMtcmVhZCIsIm9yZGVycy13cml0ZSIsImNvbXBhbmllcy1yZWFkIiwiaW5kaXZpZHVhbHMtcmVhZCIsImZpbmFuY2UtcmVhZCIsInBvc3RzLXdyaXRlIiwicG9zdHMtcmVhZCIsInN5bWJvbHMtcmVhZCIsInVzZXItZGF0YS1yZWFkIiwidXNlci1kYXRhLXdyaXRlIiwidXNlcnMtcmVhZCIsInNlYXJjaCIsImFjYWRlbXktcmVhZCIsImFjYWRlbXktd3JpdGUiLCJibG9nLXJlYWQiLCJpbnZlc3RvcGVkaWEtcmVhZCJdLCJzdWIiOiIxZmI5NjI3Yy1lZDZjLTQwNGUtYjE2NS0xZjgzZTkwM2M1MmQiLCJhdXRoX3RpbWUiOjE2MTM2MjMwMzIsImlkcCI6IkZhY2Vib29rIiwibmFtZSI6Im1pbmhwbi5vcmcuZWMxQGdtYWlsLmNvbSIsInNlY3VyaXR5X3N0YW1wIjoiODIzMzcwOGUtYjFjOS00ZmQ3LTkwYmYtMzI2NTYzYmU4N2JkIiwianRpIjoiZmIyZWJkNzAzNTBiMDBjMGJhMWE5ZDA5NGUwNDMxMjYiLCJhbXIiOlsiZXh0ZXJuYWwiXX0.OhgGCRCsL8HVXSueC31wVLUhwWWPkOu-yKTZkt3jhdrK3MMA1yJroj0Y73odY9XSLZ3dA4hUTierF0LxcHgQ-pf3UXR5KYU8E7ieThAXnIPibWR8ESFtB0X3l8XYyWSYZNoqoUiV9NGgvG2yg0tQ7lvjM8UYbiI-3vUfWFsMX7XU3TQnhxW8jYS_bEXEz7Fvd_wQbjmnUhQZuIVJmyO0tFd7TGaVipqDbRdry3iJRDKETIAMNIQx9miHLHGvEqVD5BsadOP4l8M8zgVX_SEZJuYq6zWOtVhlq3uink7VvnbZ7tFahZ4Ty4z8ev5QbUU846OZPQyMlEnu_TpQNpI1hg',
+  Authorization: `Bearer ${process.env.REACT_APP_AUTHORIZATION_TOKEN}`,
 };
 
 const StockService = {
@@ -189,39 +181,6 @@ const StockService = {
         )
         .in('symbol', symbols);
     }
-
-    return request({
-      url: `${baseUrl}/api/stocks/`,
-      method: 'GET',
-      params: {
-        symbols: symbols.join(','),
-      },
-    });
-  },
-  getListStockJobs: () => {
-    return request({
-      url: `${baseUrl}/api/stocks/list-stock-jobs/`,
-      method: 'GET',
-    });
-  },
-  startDailyImportStockJob: () => {
-    return request({
-      url: `${baseUrl}/api/stocks/start-daily-import-stock-job/`,
-      method: 'POST',
-    });
-  },
-  cancelDailyImportStockJob: () => {
-    return request({
-      url: `${baseUrl}/api/stocks/cancel-daily-import-stock-job/`,
-      method: 'POST',
-    });
-  },
-  forceDailyImportStockJob: (data: any) => {
-    return request({
-      url: `${baseUrl}/api/stocks/force-daily-import-stock-job/`,
-      method: 'POST',
-      data,
-    });
   },
   getLastUpdated: () => {
     return supabase.from('stock_info').select('*');
@@ -312,49 +271,49 @@ const AccountUrls = {
 
 export const AccountService = {
   postAuthToken(data: any) {
-    return request({
+    return axios({
       method: 'POST',
       url: AccountUrls.postAuthToken,
       data,
     });
   },
   fetchAccount(headers: any) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchAccount,
     });
   },
   fetchAccountPortfolio(headers: any) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchAccountPortfolio,
     });
   },
   fetchAccountAssets(headers: any) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchAccountAssets,
     });
   },
   fetchAccountStocks(headers: any) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchAccountStocks,
     });
   },
   fetchOrdersHistory(headers: any, fromDate: string, toDate: string) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchOrdersHistory(fromDate, toDate),
     });
   },
   fetchCashStatement(headers: any, index: number) {
-    return request({
+    return axios({
       headers,
       method: 'GET',
       url: AccountUrls.fetchCashStatement(index),

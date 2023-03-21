@@ -1,10 +1,25 @@
 import { Button } from 'antd';
 import { useAuth } from '@/context/SupabaseContext';
 import { sum } from './utils';
+import { useEffect } from 'react';
+import supabase from '@/services/supabase';
 
 export default function Test() {
   console.log(process.env);
   const { signOut, signInWithOAuth, authUser }: any = useAuth();
+
+  useEffect(() => {
+    supabase
+      .channel('custom-all-channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'post' },
+        (payload) => {
+          console.log('Change received!', payload);
+        }
+      )
+      .subscribe();
+  }, []);
 
   return (
     <div className="height-100 width-100" style={{ background: 'white' }}>
