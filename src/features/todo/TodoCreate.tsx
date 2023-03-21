@@ -5,12 +5,15 @@ import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 import PostService from 'features/post/service';
 import { memo, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/context/SupabaseContext';
 
 interface IProps {
   onCreateSuccess: () => void;
 }
 
 function TodoCreate({ onCreateSuccess }: IProps) {
+  const { authUser }: any = useAuth();
+
   const [plateId, setPlateId] = useState(uuidv4());
   const [value, setValue] = useState(DEFAULT_PLATE_VALUE);
   const [loading, setLoading] = useState(false);
@@ -20,6 +23,7 @@ function TodoCreate({ onCreateSuccess }: IProps) {
     try {
       const data = {
         content: JSON.stringify(value),
+        author: authUser.id,
       };
       setLoading(true);
       const res = await PostService.createPost(data);

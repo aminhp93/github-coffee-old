@@ -3,6 +3,7 @@ import { useAuth } from '@/context/SupabaseContext';
 import { sum } from './utils';
 
 export default function Test() {
+  console.log(process.env);
   const { signOut, signInWithOAuth, authUser }: any = useAuth();
 
   return (

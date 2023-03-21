@@ -2,23 +2,24 @@ import type { RadioChangeEvent } from 'antd';
 import { Divider, Empty, notification, Radio } from 'antd';
 import PostService from 'features/post/service';
 import { Post } from 'features/post/types';
-import * as React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import './Todo.less';
 import TodoCreate from './TodoCreate';
 import TodoListItem from './TodoListItem';
+import { useAuth } from '@/context/SupabaseContext';
 
 const Todo = () => {
+  const { authUser }: any = useAuth();
+
   const [listTodos, setListTodos] = useState<Post[]>([]);
   const [filter, setFilter] = useState<'all' | 'active' | 'complete'>('active');
-
   const getListTodos = useCallback(
     async (data?: any) => {
       try {
         const dataRequest: Partial<Post> = {
-          tag: 2,
+          author: authUser?.id,
         };
         if (filter === 'all') {
           //
@@ -36,7 +37,7 @@ const Todo = () => {
         notification.error({ message: 'error' });
       }
     },
-    [filter]
+    [authUser?.id, filter]
   );
 
   const handleDeleteSuccess = (todoId: number) => {
@@ -48,7 +49,7 @@ const Todo = () => {
     setFilter(value);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     getListTodos();
   }, [filter, getListTodos]);
 

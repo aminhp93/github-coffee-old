@@ -1,5 +1,5 @@
 import { useDebounce } from '@/hooks';
-import PushNotificationService from '@/services/pushNotification';
+// import PushNotificationService from '@/services/pushNotification';
 import {
   CloseCircleOutlined,
   DeleteOutlined,
@@ -58,6 +58,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [status, setStatus] = useState('');
   const preventUpdate = useRef(false);
   const debouncedValue = useDebounce<string>(JSON.stringify(value), 500);
+  const [toggleHeight, setToggleHeight] = useState(false);
 
   const handleDone = async () => {
     try {
@@ -122,18 +123,19 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
     }
   };
 
-  const handleComplete = () => {
-    if (divRef.current) {
-      divRef.current.style.width = `0%`;
-    }
+  // const handleComplete = () => {
+  //   console.log('complete');
+  //   if (divRef.current) {
+  //     divRef.current.style.width = `0%`;
+  //   }
 
-    PushNotificationService.createPushNotification({
-      title: 'Time for your task is up!',
-      body: `Time for task ${todoItem.id} is up!`,
-    });
+  //   PushNotificationService.createPushNotification({
+  //     title: 'Time for your task is up!',
+  //     body: `Time for task ${todoItem.id} is up!`,
+  //   });
 
-    notification.success({ message: 'Time for your task is up!' });
-  };
+  //   notification.success({ message: 'Time for your task is up!' });
+  // };
 
   const handlelTick = (data: any) => {
     if (divRef.current) {
@@ -258,13 +260,14 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         }}
       />
       <div
-        className="flex height-100 width-100"
+        className="flex width-100"
         style={{
           background: 'transparent',
           zIndex: 1,
           alignItems: 'center',
-          minHeight: '100px',
-          maxHeight: '300px',
+          // minHeight: '100px',
+          // maxHeight: '300px',
+          height: toggleHeight ? '100%' : '200px',
         }}
       >
         <Button
@@ -278,6 +281,17 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
           }}
           onClick={() => handleDone()}
         />
+        <Button
+          size="small"
+          icon={<CloseCircleOutlined />}
+          style={{
+            position: 'absolute',
+            top: '2px',
+            right: '40px',
+            zIndex: 1,
+          }}
+          onClick={() => setToggleHeight(!toggleHeight)}
+        />
 
         <CustomPlate
           id={String(plateId)}
@@ -285,9 +299,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
           hideToolBar
           onChange={handleChange}
         />
-
         {renderPopover()}
-
         <Countdown
           ref={countDownRef}
           date={dayjs()
@@ -295,7 +307,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
             .valueOf()}
           renderer={status === 'start' ? renderer : () => null}
           onTick={handlelTick}
-          onComplete={handleComplete}
+          // onComplete={() => handleComplete()}
           autoStart={false}
         />
       </div>

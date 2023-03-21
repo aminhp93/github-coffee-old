@@ -1,5 +1,5 @@
 const CracoLessPlugin = require('craco-less');
-const { ProvidePlugin, DefinePlugin } = require('webpack');
+const { ProvidePlugin } = require('webpack');
 
 module.exports = {
   plugins: [
@@ -27,15 +27,12 @@ module.exports = {
     output: {
       filename: '[name].bundle.js',
     },
-    // plugins: {
-    //   add: [
-    //     new ProvidePlugin({
-    //       process: 'process/browser.js',
-    //     }),
-    //     new DefinePlugin({
-    //       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-    //     }),
-    //   ],
-    // },
+    plugins: {
+      add: [
+        new ProvidePlugin({
+          process: 'process/browser.js',
+        }),
+      ],
+    },
   },
 };
