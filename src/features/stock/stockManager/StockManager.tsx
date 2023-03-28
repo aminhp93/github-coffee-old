@@ -138,6 +138,13 @@ const StockManager = () => {
 
   const handleGridReady = () => {
     if (!gridRef.current || !gridRef.current.api) return;
+    console.log(gridRef.current.api);
+    gridRef.current.api.setFilterModel({
+      is_blacklist: {
+        type: 'set',
+        values: ['false'],
+      },
+    });
     gridRef.current.api.sizeColumnsToFit();
   };
 

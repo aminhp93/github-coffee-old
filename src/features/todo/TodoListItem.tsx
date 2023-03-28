@@ -6,6 +6,8 @@ import {
   FieldTimeOutlined,
   PauseOutlined,
   SettingOutlined,
+  DownOutlined,
+  UpOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
@@ -283,7 +285,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         />
         <Button
           size="small"
-          icon={<CloseCircleOutlined />}
+          icon={toggleHeight ? <UpOutlined /> : <DownOutlined />}
           style={{
             position: 'absolute',
             top: '2px',

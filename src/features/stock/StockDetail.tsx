@@ -45,7 +45,7 @@ const StockDetailChart = () => {
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
   const [showDetail, setShowDetail] = useState<boolean>(true);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
-    dayjs().add(-1, 'years'),
+    dayjs().add(-18, 'months'),
     dayjs(),
   ]);
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
