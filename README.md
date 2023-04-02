@@ -67,3 +67,22 @@ yarn start
 - [Next Typescript Template](https://github.com/aminhp93/next-typescript-template)
 
 - [React Native Typescript Template](https://github.com/aminhp93/react-native-typescript-template)
+
+## Convention
+
+-
+
+```
+import { useEffect } from 'react' ✅
+import * from 'react' ❌
+```
+
+- Nameing and Grouping import
+
+```
+// ** Import React
+import { useEffect } from 'react'
+
+// ** Import Components
+import Chat from '@/components/chat'
+```

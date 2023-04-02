@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
-import './index.less';
+import './Snippet.less';
 
 export default function Snippet() {
   const [text, setText] = useState('');

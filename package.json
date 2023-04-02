@@ -49,10 +49,11 @@
     "dev": "GENERATE_SOURCEMAP=false craco start",
     "start": "GENERATE_SOURCEMAP=false craco start",
     "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
-    "test": "CI=true craco test",
     "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint --fix .",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "CI=true craco test",
+    "coverage": "craco test --coverage"
   },
   "eslintConfig": {
     "extends": [
@@ -83,7 +84,7 @@
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.0.1",
+    "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.1.1",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.25",
