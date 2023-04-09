@@ -20,6 +20,8 @@ interface Props {
   };
   onResize?: any;
   onGridReady?: any;
+  onCellEditingStarted?: any;
+  onCellEditingStopped?: any;
 }
 
 interface CustomAgGridReactProps extends Props {
@@ -38,8 +40,9 @@ const CustomAgGridReact = ({
   gridRef,
   onResize,
   onGridReady: onGridReadyProps,
+  onCellEditingStarted,
+  onCellEditingStopped,
 }: CustomAgGridReactProps) => {
-
   const onGridReady = useCallback(
     (params: any) => {
       onGridReadyProps && onGridReadyProps(params);
@@ -61,6 +64,8 @@ const CustomAgGridReact = ({
         paginationAutoPageSize={paginationAutoPageSize}
         getRowId={getRowId}
         onGridReady={onGridReady}
+        onCellEditingStarted={onCellEditingStarted}
+        onCellEditingStopped={onCellEditingStopped}
         getRowClass={getRowClass}
         ref={gridRef}
         overlayLoadingTemplate={

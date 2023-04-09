@@ -48,6 +48,7 @@ import {
   PlateEventProvider,
   PlateFloatingLink,
   StyledElement,
+  createSingleLinePlugin,
 } from '@udecode/plate';
 import { createJuicePlugin } from '@udecode/plate-juice';
 import {
@@ -98,6 +99,7 @@ interface IProps {
 
 const CustomPlate = (props: IProps) => {
   const containerRef = useRef(null);
+
   const plugins = useMemo(
     () =>
       createMyPlugins(
@@ -147,6 +149,7 @@ const CustomPlate = (props: IProps) => {
           createTrailingBlockPlugin(CONFIG.trailingBlock),
           createSelectOnBackspacePlugin(CONFIG.selectOnBackspace),
           createComboboxPlugin(),
+          createSingleLinePlugin(),
           createMentionPlugin(),
           createDeserializeMdPlugin(),
           createDeserializeCsvPlugin(),
