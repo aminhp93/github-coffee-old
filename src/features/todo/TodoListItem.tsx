@@ -1,23 +1,25 @@
 import { useDebounce } from '@/hooks';
-import PushNotificationService from '@/services/pushNotification';
+// import PushNotificationService from '@/services/pushNotification';
 import {
   CloseCircleOutlined,
   DeleteOutlined,
   FieldTimeOutlined,
   PauseOutlined,
   SettingOutlined,
+  DownOutlined,
+  UpOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import PostService from 'features/post/service';
+import { Post } from 'features/post/types';
 import { memo, useEffect, useRef, useState } from 'react';
 import Countdown from 'react-countdown';
 import { v4 as uuidv4 } from 'uuid';
-import './index.less';
-import TodoService from './service';
-import { ITodo } from './types';
+import './Todo.less';
 
-const format = 'HH:mm';
+const FORMAT = 'HH:mm';
 
 const Completionist = () => <span>You are good to go!</span>;
 
@@ -43,21 +45,22 @@ const renderer = (props: any) => {
   }
 };
 interface Props {
-  todoItem: ITodo;
+  todoItem: Post;
   onDeleteSuccess?: (todoId: number) => void;
 }
 
 function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [plateId, setPlateId] = useState(null as any);
-  const [value, setValue] = useState(JSON.parse(todoItem.body));
+  const [value, setValue] = useState(JSON.parse(todoItem.content));
   const [isDone, setIsDone] = useState(todoItem.isDone);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
   const countDownRef = useRef<any>(null);
-  const [timer, setTimer] = useState(moment('00:01', format));
+  const [timer, setTimer] = useState(dayjs('00:01'));
   const [status, setStatus] = useState('');
   const preventUpdate = useRef(false);
   const debouncedValue = useDebounce<string>(JSON.stringify(value), 500);
+  const [toggleHeight, setToggleHeight] = useState(false);
 
   const handleDone = async () => {
     try {
@@ -65,7 +68,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         isDone: !isDone,
       };
       setIsDone(!isDone);
-      await TodoService.updateTodo(todoItem.id, data);
+      await PostService.updatePost(todoItem.id, data);
       notification.success({
         message: 'Marked done',
       });
@@ -80,9 +83,9 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const handleUpdate = async () => {
     try {
       const data = {
-        body: JSON.stringify(value),
+        content: JSON.stringify(value),
       };
-      await TodoService.updateTodo(todoItem.id, data);
+      await PostService.updatePost(todoItem.id, data);
     } catch (error: any) {
       notification.error({
         message: 'Error',
@@ -93,7 +96,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
 
   const handleDelete = async () => {
     try {
-      await TodoService.deleteTodo(todoItem.id);
+      await PostService.deletePost(todoItem.id);
       onDeleteSuccess && onDeleteSuccess(todoItem.id);
     } catch (error: any) {
       notification.error({
@@ -120,19 +123,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
     if (divRef.current) {
       divRef.current.style.width = `0%`;
     }
-  };
-
-  const handleComplete = () => {
-    if (divRef.current) {
-      divRef.current.style.width = `0%`;
-    }
-
-    PushNotificationService.createPushNotification({
-      title: 'Time for your task is up!',
-      body: `Time for task ${todoItem.id} is up!`,
-    });
-
-    notification.success({ message: 'Time for your task is up!' });
   };
 
   const handlelTick = (data: any) => {
@@ -207,9 +197,9 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
               <Tooltip placement="right" title="Start timer">
                 <div style={{ marginTop: '8px' }}>
                   <TimePicker
-                    defaultValue={moment('00:01', format)}
+                    defaultValue={dayjs('00:01')}
                     onChange={handleChangeTimer}
-                    format={format}
+                    format={FORMAT}
                   />
                   <Button
                     size="small"
@@ -258,13 +248,14 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         }}
       />
       <div
-        className="flex height-100 width-100"
+        className="flex width-100"
         style={{
           background: 'transparent',
           zIndex: 1,
           alignItems: 'center',
-          minHeight: '100px',
-          maxHeight: '300px',
+          // minHeight: '100px',
+          // maxHeight: '300px',
+          height: toggleHeight ? '100%' : '200px',
         }}
       >
         <Button
@@ -278,6 +269,17 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
           }}
           onClick={() => handleDone()}
         />
+        <Button
+          size="small"
+          icon={toggleHeight ? <UpOutlined /> : <DownOutlined />}
+          style={{
+            position: 'absolute',
+            top: '2px',
+            right: '40px',
+            zIndex: 1,
+          }}
+          onClick={() => setToggleHeight(!toggleHeight)}
+        />
 
         <CustomPlate
           id={String(plateId)}
@@ -285,17 +287,15 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
           hideToolBar
           onChange={handleChange}
         />
-
         {renderPopover()}
-
         <Countdown
           ref={countDownRef}
-          date={moment()
+          date={dayjs()
             .add(timer.hour() * 60 + timer.minute(), 'minute')
             .valueOf()}
           renderer={status === 'start' ? renderer : () => null}
           onTick={handlelTick}
-          onComplete={handleComplete}
+          // onComplete={() => handleComplete()}
           autoStart={false}
         />
       </div>

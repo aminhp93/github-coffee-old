@@ -1,15 +1,16 @@
 import CustomFlexLayout from 'components/CustomFlexLayout';
 import Chat from 'features/chat';
-import Post from 'features/post';
-import Snippet from 'features/snippet';
-import StockTable from 'features/stock/stockTable/StockTable';
-import StockNews from 'features/stock/StockNews';
-import Test from 'features/test';
-import Todo from 'features/todo';
-import { v4 as uuidv4 } from 'uuid';
-import { IJsonModel } from 'flexlayout-react';
+import Post from 'features/post/Post';
+import Snippet from 'features/snippet/Snippet';
 import StockDetail from 'features/stock/StockDetail';
 import StockManager from 'features/stock/stockManager/StockManager';
+import StockNews from 'features/stock/StockNews';
+import StockTable from 'features/stock/stockTable/StockTable';
+import Test from 'features/test/Test';
+// import Todo from 'features/todo/Todo';
+import TodoTable from 'features/todo/TodoTable';
+import { IJsonModel } from 'flexlayout-react';
+import { v4 as uuidv4 } from 'uuid';
 
 const rowId = uuidv4();
 const tabSetId = uuidv4();
@@ -68,7 +69,7 @@ const Work: React.FunctionComponent = () => {
         Post: <Post />,
         StockNews: <StockNews />,
         Chat: <Chat hideOnlineUsers />,
-        Todo: <Todo />,
+        Todo: <TodoTable />,
         Snippet: <Snippet />,
         Test: <Test />,
         StockTable: <StockTable />,

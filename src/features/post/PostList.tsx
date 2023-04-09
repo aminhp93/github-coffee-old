@@ -1,15 +1,15 @@
 import { useCallback, useState } from 'react';
-import './index.less';
+import './Post.less';
 import PostListItem from './PostListItem';
-import { IPost } from './types';
+import { Post } from './types';
 
 interface Props {
   cb?: any;
-  listPosts: IPost[];
+  listPosts: Post[];
 }
 
 const PostList = ({ cb, listPosts }: Props) => {
-  const [selectedPost, setSelectedPost] = useState({} as IPost);
+  const [selectedPost, setSelectedPost] = useState({} as Post);
 
   const handleSelect = useCallback(
     (data: any) => {
@@ -21,10 +21,10 @@ const PostList = ({ cb, listPosts }: Props) => {
 
   return (
     <div className="PostList flex">
-      {listPosts.map((i: IPost, index) => {
+      {listPosts.map((i: Post, index) => {
         return (
           <PostListItem
-            selected={selectedPost.slug === i.slug}
+            selected={selectedPost.id === i.id}
             key={index}
             data={i}
             handleSelect={handleSelect}

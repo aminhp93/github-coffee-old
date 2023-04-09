@@ -40,8 +40,6 @@ const RefreshButton = ({ onClick }: any) => {
     );
   };
 
-  console.log('delay', delay);
-
   return (
     <Popover content={content}>
       <Button size="small" onClick={onClick}>

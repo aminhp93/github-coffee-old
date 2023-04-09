@@ -1,8 +1,8 @@
 import { Button, notification, Table } from 'antd';
-import { sum, uniqBy } from 'lodash';
-import moment from 'moment';
-import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { AccountService } from 'features/stock/service';
+import { sum, uniqBy } from 'lodash';
+import { useEffect, useState } from 'react';
 
 interface TProps {
   onClose?: any;
@@ -11,7 +11,7 @@ interface TProps {
 function StockHistoryTrade(props: TProps) {
   const filterObj = {
     startDate: '2020-07-01',
-    endDate: moment().format('YYYY-MM-DD'),
+    endDate: dayjs().format('YYYY-MM-DD'),
     orderStatus: '4',
   };
 
@@ -27,7 +27,7 @@ function StockHistoryTrade(props: TProps) {
       title: 'Ngay',
       align: 'right' as 'right',
       render: (data: any) => {
-        return moment(data.transactionDate).format('YYYY-MM-DD');
+        return dayjs(data.transactionDate).format('YYYY-MM-DD');
       },
     },
     {
@@ -120,7 +120,7 @@ function StockHistoryTrade(props: TProps) {
       title: 'Ngay',
       align: 'right' as 'right',
       render: (data: any) => {
-        return moment(data.transactionDate).format('YYYY-MM-DD');
+        return dayjs(data.transactionDate).format('YYYY-MM-DD');
       },
     },
     {

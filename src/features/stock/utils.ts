@@ -1,9 +1,9 @@
-import { cloneDeep, groupBy, meanBy, minBy, maxBy, min, max } from 'lodash';
-import moment from 'moment';
+import dayjs from 'dayjs';
+import { cloneDeep, groupBy, max, maxBy, meanBy, min, minBy } from 'lodash';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
-import { SupabaseData, StockData, StockCoreData, StockBase } from './types';
 import StockService from './service';
 import { getStockData } from './tests';
+import { StockBase, StockCoreData, StockData, SupabaseData } from './types';
 
 export const filterData = (
   data: StockData[],
@@ -99,7 +99,7 @@ const getSeriesMarkPoint = ({
     listMarkPoints.forEach((i: StockCoreData) => {
       seriesMarkPointData.push({
         name: 'Buy',
-        coord: [moment(i.date).format(DATE_FORMAT), i.priceOpen],
+        coord: [dayjs(i.date).format(DATE_FORMAT), i.priceOpen],
         value: i.priceOpen,
         itemStyle: {
           color: '#e700ff',
@@ -160,12 +160,12 @@ export const updateDataWithDate = async (
         const element = objData[key];
         objData[key] = element.map((i: any) => {
           i.key = `${i.symbol}_${i.date}`;
-          i.date = moment(i.date).format(DATE_FORMAT);
+          i.date = dayjs(i.date).format(DATE_FORMAT);
           return i;
         });
         listPromiseUpdate.push(
           StockService.deleteAndInsertStockData(
-            moment(key).format(DATE_FORMAT),
+            dayjs(key).format(DATE_FORMAT),
             element
           )
         );
@@ -180,7 +180,7 @@ export const mapDataChart = ({
   fullData,
   listMarkPoints = [],
   listMarkLines = [],
-  volumeField = 'dealVolume',
+  volumeField = 'totalVolume',
 }: {
   fullData?: StockCoreData[];
   listMarkPoints?: StockCoreData[];
@@ -199,13 +199,14 @@ export const mapDataChart = ({
   newData.reverse();
 
   const dates = newData.map((i: StockCoreData) =>
-    moment(i.date).format(DATE_FORMAT)
+    dayjs(i.date).format(DATE_FORMAT)
   );
+
   const prices = newData.map((i: StockCoreData) => [
-    i.priceOpen,
-    i.priceClose,
-    i.priceLow,
-    i.priceHigh,
+    i.priceOpen / i.adjRatio,
+    i.priceClose / i.adjRatio,
+    i.priceLow / i.adjRatio,
+    i.priceHigh / i.adjRatio,
     i[volumeField],
   ]);
 
@@ -258,13 +259,10 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   );
 
   const listData = data.slice(0, startIndex + 1);
-  console.log(listData);
   const list_50 = data.slice(startIndex + 1, startIndex + 51);
   const average_50 = meanBy(list_50, 'totalVolume');
 
-  const a = listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
-
-  console.log(average_50, a);
+  listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
 
   return {
     risk_b2,
@@ -277,8 +275,10 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
 // rewrite this function
 export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
   if (!stockBase || !stockData || !stockData.fullData) return [];
-  const startDateBase = moment(stockData.fullData[120].date);
-  const endDateBase = moment(stockData.date);
+  const startPoint =
+    stockData.fullData.length > 120 ? 120 : stockData.fullData.length - 1;
+  const startDateBase = dayjs(stockData.fullData[startPoint].date);
+  const endDateBase = dayjs(stockData.date);
 
   const listMarkLines: any = [];
 
@@ -297,18 +297,18 @@ export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
 };
 
 export const getTodayData = async (
-  dates: [moment.Moment, moment.Moment],
+  dates: [dayjs.Dayjs, dayjs.Dayjs],
   listSymbols: string[]
 ) => {
   let resFireant;
   if (
-    dates[1].format(DATE_FORMAT) === moment().format(DATE_FORMAT) &&
-    moment().hour() < 15 &&
+    dates[1].format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
+    dayjs().hour() < 15 &&
     !localStorage.getItem('turnOffFetchTodayData')
   ) {
     const res = await StockService.getStockDataFromFireant({
-      startDate: moment().format(DATE_FORMAT),
-      endDate: moment().format(DATE_FORMAT),
+      startDate: dayjs().format(DATE_FORMAT),
+      endDate: dayjs().format(DATE_FORMAT),
       listSymbols,
     });
     resFireant = res.map((i) => {
@@ -326,7 +326,7 @@ export const getTodayData = async (
           totalVolume,
         } = item;
         return {
-          date: moment(date).format(DATE_FORMAT),
+          date: dayjs(date).format(DATE_FORMAT),
           dealVolume,
           priceClose,
           priceHigh,
@@ -404,7 +404,7 @@ export const mapDataFromStockBase = (data: StockBase[]) => {
 };
 
 export const getEstimatedVol = (data: StockCoreData) => {
-  if (data.date === moment().format(DATE_FORMAT)) {
+  if (data.date === dayjs().format(DATE_FORMAT)) {
     // from 9:00 to 11:30
     const morning_time = 60 * 2.5;
 
@@ -412,22 +412,22 @@ export const getEstimatedVol = (data: StockCoreData) => {
     const afternoon_time = 60 * 1.75;
 
     const total_time = morning_time + afternoon_time;
-    const current_time = moment().format('HH:mm');
+    const current_time = dayjs().format('HH:mm');
     let estimated_vol;
 
     if (current_time < '09:00') {
       estimated_vol = 0;
     } else if (current_time >= '09:00' && current_time <= '11:30') {
-      const diff_time = moment(current_time, 'HH:mm').diff(
-        moment('09:00', 'HH:mm'),
+      const diff_time = dayjs(current_time, 'HH:mm').diff(
+        dayjs('09:00', 'HH:mm'),
         'minute'
       );
       estimated_vol = data.totalVolume * (total_time / diff_time);
     } else if (current_time >= '11:31' && current_time <= '12:59') {
       estimated_vol = data.totalVolume * (total_time / morning_time);
     } else if (current_time >= '13:00' && current_time <= '14:45') {
-      const diff_time = moment(current_time, 'HH:mm').diff(
-        moment('13:00', 'HH:mm'),
+      const diff_time = dayjs(current_time, 'HH:mm').diff(
+        dayjs('13:00', 'HH:mm'),
         'minute'
       );
       estimated_vol =
@@ -462,4 +462,21 @@ export const getMaxPercentBase = (symbol: string) => {
   } else {
     return 7;
   }
+};
+
+export const checkValidCondition = (
+  item1: any,
+  item2: any,
+  listFields: any
+) => {
+  let result: boolean[] = [];
+  listFields.forEach((i: any) => {
+    if (item1[i] === item2[i]) {
+      result.push(true);
+    } else {
+      result.push(false);
+    }
+  });
+  const listInvalid = result.filter((i) => !i);
+  return listInvalid.length === 0;
 };

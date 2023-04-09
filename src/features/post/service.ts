@@ -1,48 +1,34 @@
-import request from '@/services/request';
-import config from '@/config';
-
-const baseUrl = config.apiUrl;
-
-const PostUrls = {
-  createPost: `${baseUrl}/api/posts/create/`,
-  listPost: `${baseUrl}/api/posts/`,
-  detailPost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-  updatePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-  deletePost: (postId: number) => `${baseUrl}/api/posts/${postId}/`,
-};
+import supabase from '@/services/supabase';
+import { Post } from './types';
 
 const PostService = {
-  createPost(data: any) {
-    return request({
-      method: 'POST',
-      url: PostUrls.createPost,
-      data,
-    });
+  createPost(data: Partial<Post>) {
+    return supabase.from('post').insert([data]).select();
   },
-  listPost() {
-    return request({
-      method: 'GET',
-      url: PostUrls.listPost,
-    });
+  listPost(params?: Partial<Post>) {
+    const isDone = params && Object.hasOwnProperty.call(params, 'isDone');
+    const tag = params && Object.hasOwnProperty.call(params, 'tag');
+    // let authorQuery = 'author.is.null';
+    // if (params?.author) {
+    //   authorQuery = `author.is.null,author.eq.${params.author}`;
+    // }
+
+    return supabase
+      .from('post')
+      .select()
+      .eq('author', params?.author)
+      .eq(isDone ? 'isDone' : '', params?.isDone)
+      .eq(tag ? 'tag' : '', params?.tag);
+    // .or(authorQuery);
   },
   detailPost(postId: number) {
-    return request({
-      method: 'GET',
-      url: PostUrls.detailPost(postId),
-    });
+    return supabase.from('post').select().eq('id', postId);
   },
-  updatePost(postId: number, data: any) {
-    return request({
-      method: 'PUT',
-      url: PostUrls.updatePost(postId),
-      data,
-    });
+  updatePost(postId: number, data: Partial<Post>) {
+    return supabase.from('post').update(data).eq('id', postId).select();
   },
   deletePost(postId: number) {
-    return request({
-      method: 'DELETE',
-      url: PostUrls.deletePost(postId),
-    });
+    return supabase.from('post').delete().eq('id', postId);
   },
 };
 

@@ -1,4 +1,4 @@
-import request from '@/services/request';
+import axios from 'axios';
 
 const GitHubUrls = {
   getUsersDetail: (userId: string) => `https://api.github.com/users/${userId}`,
@@ -12,25 +12,25 @@ const GitHubUrls = {
 
 const GitHubService = {
   getReposDetail(userId: string, repoId: string) {
-    return request({
+    return axios({
       method: 'GET',
       url: GitHubUrls.getReposDetail(userId, repoId),
     });
   },
   getReposList(userId: string) {
-    return request({
+    return axios({
       method: 'GET',
       url: GitHubUrls.getReposList(userId),
     });
   },
   getReposDetailLanguages(userId: string, repoId: string) {
-    return request({
+    return axios({
       method: 'GET',
       url: GitHubUrls.getReposDetailLanguages(userId, repoId),
     });
   },
   getUsersDetail(userId: string) {
-    return request({
+    return axios({
       method: 'GET',
       url: GitHubUrls.getUsersDetail(userId),
     });

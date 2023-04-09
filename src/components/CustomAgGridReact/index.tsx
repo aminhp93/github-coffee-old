@@ -1,46 +1,73 @@
+import { ColDef } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { AgGridReact } from 'ag-grid-react';
-import { forwardRef } from 'react';
-import { ColDef, GridReadyEvent } from 'ag-grid-community';
+import { forwardRef, memo, useCallback, useEffect } from 'react';
+import { withSize } from 'react-sizeme';
 
 interface Props {
   rowData: any;
   columnDefs: ColDef[];
-  onGridReady?: (data: GridReadyEvent) => void;
   pinnedTopRowData?: any;
   getRowClass?: any;
   getRowId?: any;
   pagination?: boolean;
   paginationAutoPageSize?: boolean;
+  size?: {
+    width: number;
+    height: number;
+  };
+  onResize?: any;
+  onGridReady?: any;
+  onCellEditingStarted?: any;
+  onCellEditingStopped?: any;
 }
 
-const CustomAgGridReact = forwardRef(
-  (
-    {
-      rowData,
-      columnDefs,
-      onGridReady,
-      pinnedTopRowData,
-      getRowClass,
-      getRowId,
-      pagination,
-      paginationAutoPageSize,
-    }: Props,
-    ref: any
-  ) => {
-    return (
+interface CustomAgGridReactProps extends Props {
+  gridRef: any;
+}
+
+const CustomAgGridReact = ({
+  rowData,
+  columnDefs,
+  pinnedTopRowData,
+  getRowClass,
+  getRowId,
+  pagination,
+  paginationAutoPageSize,
+  size,
+  gridRef,
+  onResize,
+  onGridReady: onGridReadyProps,
+  onCellEditingStarted,
+  onCellEditingStopped,
+}: CustomAgGridReactProps) => {
+  const onGridReady = useCallback(
+    (params: any) => {
+      onGridReadyProps && onGridReadyProps(params);
+    },
+    [onGridReadyProps]
+  );
+
+  useEffect(() => {
+    onResize && onResize();
+  }, [size, onResize]);
+
+  return (
+    <>
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
         pinnedTopRowData={pinnedTopRowData}
         pagination={pagination}
         paginationAutoPageSize={paginationAutoPageSize}
-        onGridReady={onGridReady}
         getRowId={getRowId}
+        onGridReady={onGridReady}
+        onCellEditingStarted={onCellEditingStarted}
+        onCellEditingStopped={onCellEditingStopped}
         getRowClass={getRowClass}
-        ref={ref}
+        ref={gridRef}
         overlayLoadingTemplate={
           '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
         }
@@ -56,8 +83,17 @@ const CustomAgGridReact = forwardRef(
           resizable: true,
         }}
       />
-    );
-  }
-);
+    </>
+  );
+};
 
-export default CustomAgGridReact;
+const WithSizeCustomAgGridReact = withSize({
+  monitorHeight: true,
+  monitorWidth: true,
+})(CustomAgGridReact);
+
+export default memo(
+  forwardRef((props: Props, ref) => (
+    <WithSizeCustomAgGridReact {...props} gridRef={ref} />
+  ))
+);

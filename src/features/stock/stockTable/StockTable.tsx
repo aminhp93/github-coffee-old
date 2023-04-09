@@ -2,30 +2,34 @@ import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   SettingOutlined,
-  WarningOutlined,
 } from '@ant-design/icons';
 
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
-import moment from 'moment';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import CustomAgGridReact from 'components/CustomAgGridReact';
+import dayjs from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
+import { updateSelectedSymbol } from '../stockSlice';
 import { StockData, SupabaseData } from '../types';
 import {
   filterData,
   getStockDataFromSupabase,
-  updateDataWithDate,
   getTodayData,
   mapDataFromStockBase,
+  updateDataWithDate,
 } from '../utils';
-import './index.less';
 import RefreshButton from './RefreshButton';
-import Settings from './Setting';
+import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
-import Testing from './Testing';
-import CustomAgGridReact from 'components/CustomAgGridReact';
-import { updateSelectedSymbol } from '../stockSlice';
-import { useDispatch } from 'react-redux';
+import StockTableSetting from './StockTableSetting';
+
+const getRowClass = (params: any) => {
+  if (params.node.data.potential) {
+    return 'potential-row';
+  }
+};
 
 const { RangePicker } = DatePicker;
 
@@ -34,11 +38,8 @@ const StockTable = () => {
   const dispatch = useDispatch();
   const gridRef: any = useRef();
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
-  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >();
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
   const [listStockBase, setListStockBase] = useState<any[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
@@ -48,10 +49,9 @@ const StockTable = () => {
     getData(data);
   };
 
-  const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
+  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
-      console.log(gridRef);
       gridRef.current?.api?.showLoadingOverlay();
 
       const resStockBase = await StockService.getAllStockBase();
@@ -82,8 +82,6 @@ const StockTable = () => {
         resStockBase.data
       );
 
-      console.log(filterdData);
-
       setPinnedTopRowData(
         newAllStocks
           .filter((i) => list_buyPoint.includes(i.symbol))
@@ -97,7 +95,6 @@ const StockTable = () => {
       setAllStocks(newAllStocks);
       setListStocks(filterdData);
     } catch (e) {
-      console.log(e);
       gridRef.current?.api?.hideOverlay();
       notification.error({ message: 'error' });
     }
@@ -112,10 +109,10 @@ const StockTable = () => {
         const { list_all } = mapDataFromStockBase(resStockBase.data || []);
         if (res.data && res.data.length && res.data.length === 1) {
           const lastUpdated = res.data[0].last_updated;
-          let newLastUpdated = moment().format(DATE_FORMAT);
+          let newLastUpdated = dayjs().format(DATE_FORMAT);
           // check current time before 3pm
-          if (moment().hour() < 15) {
-            newLastUpdated = moment().add(-1, 'days').format(DATE_FORMAT);
+          if (dayjs().hour() < 15) {
+            newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
           }
 
           if (lastUpdated !== newLastUpdated) {
@@ -124,7 +121,7 @@ const StockTable = () => {
 
             while (nextCall) {
               const res = await updateDataWithDate(
-                moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+                dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
                 newLastUpdated,
                 offset,
                 list_all
@@ -141,13 +138,12 @@ const StockTable = () => {
             });
           }
 
-          setDates([moment().add(-1, 'months'), moment()]);
-          getData([moment().add(-1, 'months'), moment()]);
+          setDates([dayjs().add(-1, 'month'), dayjs()]);
+          getData([dayjs().add(-1, 'month'), dayjs()]);
         }
         notification.success({ message: 'success' });
       } catch (e) {
         notification.error({ message: 'error' });
-        console.log(e);
       }
     };
     init();
@@ -172,7 +168,6 @@ const StockTable = () => {
         style={{ justifyContent: 'space-between', height: '50px' }}
       >
         <div className="flex" style={{ alignItems: 'center' }}>
-          {`${String(listStocks.length)} rows`}
           <Tooltip title="Setting">
             <Button
               size="small"
@@ -180,15 +175,6 @@ const StockTable = () => {
               style={{ marginLeft: 8 }}
               icon={<SettingOutlined />}
               onClick={() => setOpenDrawerSettings(true)}
-            />
-          </Tooltip>
-          <Tooltip title="Testing">
-            <Button
-              size="small"
-              type="primary"
-              icon={<WarningOutlined />}
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
         </div>
@@ -223,21 +209,6 @@ const StockTable = () => {
     );
   };
 
-  const onGridReady = useCallback((params: any) => {
-    // const defaultSortModel = [
-    //   { colId: 'change_t0', sort: 'desc', sortIndex: 0 },
-    // ];
-    // params.columnApi.applyColumnState({ state: defaultSortModel });
-  }, []);
-
-  console.log('StockTable', 'listStocks', listStocks);
-
-  const getRowClass = (params: any) => {
-    if (params.node.data.potential) {
-      return 'potential-row';
-    }
-  };
-
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
@@ -249,18 +220,13 @@ const StockTable = () => {
           })}
           pinnedTopRowData={pinnedTopRowData}
           getRowClass={getRowClass}
-          onGridReady={onGridReady}
           ref={gridRef}
         />
       </div>
       {footer()}
 
-      {openDrawerTesting && (
-        <Testing onClose={() => setOpenDrawerTesting(false)} />
-      )}
-
       {openDrawerSettings && (
-        <Settings onClose={() => setOpenDrawerSettings(false)} />
+        <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />
       )}
     </div>
   );

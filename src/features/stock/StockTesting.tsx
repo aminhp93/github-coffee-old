@@ -1,12 +1,22 @@
-import { useState, useEffect, useRef } from 'react';
-import { Drawer, Select, Button, DatePicker, notification } from 'antd';
-import StockService from '../service';
-import { DATE_FORMAT } from '../constants';
-import moment from 'moment';
-import { updateDataWithDate, mapDataFromStockBase } from '../utils';
-import CustomAgGridReact from 'components/CustomAgGridReact';
-import { keyBy } from 'lodash';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { Button, DatePicker, Drawer, notification, Select } from 'antd';
+import CustomAgGridReact from 'components/CustomAgGridReact';
+import dayjs from 'dayjs';
+import { keyBy } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
+import {
+  DATE_FORMAT,
+  LIST_TESTING_FIELDS,
+  START_DATE_STOCK_SUPABASE,
+} from './constants';
+import StockService from './service';
+import {
+  mapDataFromStockBase,
+  updateDataWithDate,
+  checkValidCondition,
+} from './utils';
+
+const DEFAULT_ROW_DATA: any = [];
 
 const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
   {
@@ -22,11 +32,11 @@ const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
           {data.value ? (
             <CheckOutlined style={{ color: 'green' }} />
           ) : (
-            <>
-              <CloseOutlined style={{ color: 'red' }} />
-              <Button onClick={() => handleForceUpdate(data)}>Update</Button>
-            </>
+            <CloseOutlined style={{ color: 'red' }} />
           )}
+          <Button onClick={() => handleForceUpdate([data.data.symbol])}>
+            Force Update
+          </Button>
         </div>
       );
     },
@@ -39,19 +49,17 @@ interface Props {
   onClose: () => void;
 }
 
-const TestSupabaseData = ({ onClose }: Props) => {
+const StockTesting = ({ onClose }: Props) => {
   const gridRef: any = useRef();
-  const [dates, setDates] = useState<[moment.Moment, moment.Moment]>([
-    moment().add(-1, 'months'),
-    moment(),
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().add(-1, 'month'),
+    dayjs(),
   ]);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
-
-  const handleForceUpdate = (data: any) => {
-    updateData(data.data.date);
-  };
+  const [loading, setLoading] = useState<boolean>(false);
+  const [count, setCount] = useState<number>(0);
 
   const getLastUpdated = async () => {
     try {
@@ -60,13 +68,12 @@ const TestSupabaseData = ({ onClose }: Props) => {
         setLastUpdated(res.data[0].last_updated);
       }
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };
 
   const handleTest = async (symbol: string) => {
-    console.log(symbol);
+    setCount((oldCount) => oldCount + 1);
     if (dates.length !== 2) return;
     const startDate = dates[0].format(DATE_FORMAT);
     const endDate = dates[1].format(DATE_FORMAT);
@@ -93,7 +100,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
       res2.data.slice(0, 20).length === res[0].data.length
     ) {
       const mappedFireant = res[0].data.map((i: any) => {
-        i.date = moment(i.date).format(DATE_FORMAT);
+        i.date = dayjs(i.date).format(DATE_FORMAT);
         return i;
       });
 
@@ -104,28 +111,19 @@ const TestSupabaseData = ({ onClose }: Props) => {
       Object.keys(objFireant).forEach((key) => {
         const itemFireant = objFireant[key];
         const itemSupabase = objSupabase[key];
-        if (
-          itemFireant.dealVolume === itemSupabase.dealVolume &&
-          itemFireant.priceClose === itemSupabase.priceClose &&
-          itemFireant.priceHigh === itemSupabase.priceHigh &&
-          itemFireant.priceLow === itemSupabase.priceLow &&
-          itemFireant.priceOpen === itemSupabase.priceOpen &&
-          itemFireant.totalValue === itemSupabase.totalValue &&
-          itemFireant.totalVolume === itemSupabase.totalVolume
-        ) {
-          result.push({
-            date: key,
-            valid: true,
-          });
-        } else {
-          result.push({
-            date: key,
-            valid: false,
-          });
-        }
+
+        const validCondition = checkValidCondition(
+          itemFireant,
+          itemSupabase,
+          LIST_TESTING_FIELDS
+        );
+        result.push({
+          date: key,
+          valid: validCondition,
+        });
       });
 
-      valid = result.filter((i: any) => i.valid).length > 0;
+      valid = result.filter((i: any) => !i.valid).length === 0;
     }
     const rowData: any = [];
     gridRef.current.api.forEachNode((node: any) => {
@@ -143,47 +141,44 @@ const TestSupabaseData = ({ onClose }: Props) => {
   };
 
   const handleTestAll = async () => {
+    setLoading(true);
+    setCount(0);
     gridRef.current?.api?.setRowData([]);
     for (let i = 0; i < listAllSymbols.length; i++) {
       await handleTest(listAllSymbols[i]);
     }
+    setLoading(false);
   };
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
   };
 
-  const updateData = async (date: string) => {
+  const handleForceUpdate = async (listSymbols: string[]) => {
     try {
-      if (!date) return;
-      if (date) {
-        // if have selected date, update only selected date and no udpate selected date
-        updateDataWithDate(date, date, 0, listAllSymbols);
-      } else {
-        // if no selected date, update from last updated date to today, update selected date
-        let nextCall = true;
-        let offset = 0;
-        while (nextCall) {
-          const res = await updateDataWithDate(
-            moment(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-            moment().format(DATE_FORMAT),
-            offset,
-            listAllSymbols
-          );
-          offset += 20;
-          if (res && res.length && res[0].length < 20) {
-            nextCall = false;
-          }
+      // if no selected date, update from last updated date to today, update selected date
+      let nextCall = true;
+      let offset = 0;
+      while (nextCall) {
+        const res = await updateDataWithDate(
+          dayjs(START_DATE_STOCK_SUPABASE).format(DATE_FORMAT),
+          dayjs().format(DATE_FORMAT),
+          offset,
+          listSymbols
+        );
+        offset += 20;
+        if (res && res.length && res[0].length < 20) {
+          nextCall = false;
         }
-
-        await StockService.updateLastUpdated({
-          column: 'last_updated',
-          value: moment().format(DATE_FORMAT),
-        });
       }
+
+      await StockService.updateLastUpdated({
+        column: 'last_updated',
+        value: dayjs().format(DATE_FORMAT),
+      });
+
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };
@@ -230,13 +225,9 @@ const TestSupabaseData = ({ onClose }: Props) => {
             Last updated: {lastUpdated}
             <Button
               size="small"
-              onClick={() =>
-                updateData(
-                  dates.length === 2 ? dates[1].format(DATE_FORMAT) : ''
-                )
-              }
+              onClick={() => handleForceUpdate(listAllSymbols)}
             >
-              Update data
+              Update All data
             </Button>
           </div>
           <div>
@@ -257,7 +248,12 @@ const TestSupabaseData = ({ onClose }: Props) => {
             </Button>
           </div>
           <div>
-            <Button size="small" onClick={() => handleTestAll()}>
+            {`${count} / ${listAllSymbols.length}`}
+            <Button
+              disabled={loading}
+              size="small"
+              onClick={() => handleTestAll()}
+            >
               Test All Symbols
             </Button>
           </div>
@@ -265,7 +261,7 @@ const TestSupabaseData = ({ onClose }: Props) => {
         <div className="flex-1 ag-theme-alpine">
           <CustomAgGridReact
             ref={gridRef}
-            rowData={[]}
+            rowData={DEFAULT_ROW_DATA}
             getRowId={(params: any) => params.data.symbol}
             columnDefs={COLUMN_DEFS({ handleForceUpdate })}
           />
@@ -275,4 +271,4 @@ const TestSupabaseData = ({ onClose }: Props) => {
   );
 };
 
-export default TestSupabaseData;
+export default StockTesting;

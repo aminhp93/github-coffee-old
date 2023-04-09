@@ -71,6 +71,7 @@ export interface SupabaseData {
 }
 
 export interface StockCoreData {
+  adjRatio: number;
   symbol: string;
   date: string;
   priceClose: number;

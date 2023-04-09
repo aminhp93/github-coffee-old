@@ -13,6 +13,8 @@ const StockManagerColumns = ({
     {
       headerName: '',
       field: 'symbol',
+      suppressMenu: true,
+      width: 80,
       onCellClicked: (data: any) => {
         handleClickSymbol(data);
       },
@@ -21,7 +23,8 @@ const StockManagerColumns = ({
       headerName: 'minValue',
       field: 'minValue',
       type: 'rightAligned',
-
+      width: 100,
+      suppressMenu: true,
       cellRenderer: (data: any) => {
         return (data.data.minValue / UNIT_BILLION).toFixed(0);
       },
@@ -29,37 +32,44 @@ const StockManagerColumns = ({
     {
       headerName: 'marketCap',
       field: 'marketCap',
+      width: 100,
       type: 'rightAligned',
-
+      suppressMenu: true,
       cellRenderer: (data: any) => {
         return (data.data.marketCap / UNIT_BILLION).toFixed(0);
       },
     },
     {
-      headerName: 'averageChange',
+      headerName: 'averageChange (%)',
+      width: 100,
       field: 'averageChange',
       type: 'rightAligned',
-
+      suppressMenu: true,
       cellRenderer: (data: any) => {
-        return data.data.averageChange.toFixed(1) + '%';
+        return data.data.averageChange.toFixed(1);
       },
     },
     {
       headerName: 'averageRangeChange',
       field: 'averageRangeChange',
       type: 'rightAligned',
-
+      width: 100,
+      suppressMenu: true,
       cellRenderer: (data: any) => {
-        return data.data.averageRangeChange.toFixed(1) + '%';
+        return data.data.averageRangeChange.toFixed(1);
       },
     },
     {
       headerName: 'is_blacklist',
+      width: 100,
       field: 'is_blacklist',
+      suppressMenu: true,
     },
     {
       headerName: '',
       field: 'action',
+      width: 100,
+      suppressMenu: true,
       onCellClicked: (data: any) => {
         handleClickUpdate(data);
       },

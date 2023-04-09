@@ -1,9 +1,8 @@
+import { useAuth } from '@/context/SupabaseContext';
 import { Button, Dropdown, Menu } from 'antd';
-import config from '@/config';
-import { useAuth } from '@/context/FirebaseContext';
 
 export default function User() {
-  const { authUser, signOut, signInWithPopup }: any = useAuth();
+  const { authUser, signOut, signInWithOAuth }: any = useAuth();
 
   const menu = (
     <Menu onClick={signOut}>
@@ -21,15 +20,12 @@ export default function User() {
         marginRight: '8px',
       }}
     >
-      <div style={{ marginRight: '8px' }}>
-        {config.env === 'production' ? '[PRO] ' : '[DEV] '}
-      </div>
       {authUser?.email ? (
         <Dropdown overlay={menu} trigger={['click']}>
           <div style={{ cursor: 'pointer' }}>{`${authUser?.email}`}</div>
         </Dropdown>
       ) : (
-        <Button size="small" onClick={signInWithPopup}>
+        <Button size="small" onClick={signInWithOAuth}>
           Login
         </Button>
       )}

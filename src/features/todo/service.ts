@@ -1,55 +1,34 @@
-import request from '@/services/request';
-import config from '@/config';
-
-const baseUrl = config.apiUrl;
-
-const TodoUrls = {
-  createTodo: `${baseUrl}/api/todos/create/`,
-  listTodo: `${baseUrl}/api/todos/`,
-  detailTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-  updateTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-  deleteTodo: (todoId: number) => `${baseUrl}/api/todos/${todoId}/`,
-};
+import supabase from '@/services/supabase';
+import { Todo } from './types';
 
 const TodoService = {
-  createTodo(data: any) {
-    return request({
-      method: 'POST',
-      url: TodoUrls.createTodo,
-      data,
-    });
+  createTodo(data: Partial<Todo>) {
+    return supabase.from('todo').insert([data]).select();
   },
-  listTodo(params: any, requestUrl?: string) {
-    if (requestUrl) {
-      return request({
-        method: 'GET',
-        url: requestUrl,
-      });
-    }
-    return request({
-      method: 'GET',
-      url: TodoUrls.listTodo,
-      params,
-    });
+  listTodo(params?: Partial<Todo>) {
+    const isDone = params && Object.hasOwnProperty.call(params, 'isDone');
+    const tag = params && Object.hasOwnProperty.call(params, 'tag');
+    // let authorQuery = 'author.is.null';
+    // if (params?.author) {
+    //   authorQuery = `author.is.null,author.eq.${params.author}`;
+    // }
+
+    return supabase
+      .from('todo')
+      .select()
+      .eq('author', params?.author)
+      .eq(isDone ? 'isDone' : '', params?.isDone)
+      .eq(tag ? 'tag' : '', params?.tag);
+    // .or(authorQuery);
   },
   detailTodo(todoId: number) {
-    return request({
-      method: 'GET',
-      url: TodoUrls.detailTodo(todoId),
-    });
+    return supabase.from('todo').select().eq('id', todoId);
   },
-  updateTodo(todoId: number, data: any) {
-    return request({
-      method: 'PUT',
-      url: TodoUrls.updateTodo(todoId),
-      data,
-    });
+  updateTodo(todoId: number, data: Partial<Todo>) {
+    return supabase.from('todo').update(data).eq('id', todoId).select();
   },
   deleteTodo(todoId: number) {
-    return request({
-      method: 'DELETE',
-      url: TodoUrls.deleteTodo(todoId),
-    });
+    return supabase.from('todo').delete().eq('id', todoId);
   },
 };
 

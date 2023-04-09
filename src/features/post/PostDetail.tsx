@@ -1,16 +1,19 @@
+import { useDebounce, useIsFirstRender } from '@/hooks';
+import TagService from '@/services/tag';
+import { Tag } from '@/types/tag';
 import {
   CheckCircleOutlined,
-  WarningOutlined,
   DeleteOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Typography } from 'antd';
+import { Button, notification, Select, Typography } from 'antd';
 import CustomPlate from 'components/CustomPlate';
-import PostService from './service';
-import { memo, useEffect, useState, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import { useDebounce } from '@/hooks';
-import './index.less';
+import { memo, useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import './Post.less';
+import PostService from './service';
+import { Post } from './types';
 
 const { Paragraph } = Typography;
 
@@ -25,25 +28,33 @@ const MemoizedPostDetail = memo(function PostDetail({
   onUpdateSuccess,
   onDeleteSuccess,
 }: IProps) {
+  const isFirstRender = useIsFirstRender();
   const [plateId, setPlateId] = useState(uuidv4());
-  const [post, setPost] = useState(DEFAULT_PLATE_VALUE);
+  const [content, setContent] = useState(DEFAULT_PLATE_VALUE);
   const [postTitle, setPostTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isUpdated, setIsUpdated] = useState<boolean>(true);
-  const debouncedPost = useDebounce<string>(JSON.stringify(post), 500);
+  const debouncedPost = useDebounce<string>(JSON.stringify(content), 500);
   const preventUpdate = useRef(false);
+  const [listTags, setListTags] = useState<Tag[]>([]);
+  const [selectedTagId, setSelectedTagId] = useState<number>();
 
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         const res: any = await PostService.detailPost(postId);
+
         preventUpdate.current = true;
+
         setLoading(false);
-        setPost(JSON.parse(res.data.body));
-        setPostTitle(res.data.title);
-        setPlateId(uuidv4());
+        if (res.data && res.data.length === 1) {
+          setContent(JSON.parse(res.data[0].content));
+          setPostTitle(res.data[0].title);
+          setSelectedTagId(res.data[0].tag);
+          setPlateId(uuidv4());
+        }
       } catch (e) {
         setLoading(false);
       }
@@ -51,18 +62,20 @@ const MemoizedPostDetail = memo(function PostDetail({
   }, [postId]);
 
   const handleUpdate = async () => {
-    if (!postTitle) return;
     try {
-      const data = {
+      const data: Partial<Post> = {
         title: postTitle,
-        body: JSON.stringify(post),
+        content: JSON.stringify(content),
+        tag: selectedTagId,
       };
       setLoading(true);
       const res = await PostService.updatePost(postId, data);
 
       setLoading(false);
       setIsUpdated(true);
-      onUpdateSuccess && onUpdateSuccess(res.data);
+      if (res.data && res.data.length === 1) {
+        onUpdateSuccess && onUpdateSuccess(res.data[0]);
+      }
     } catch (e) {
       setIsUpdated(false);
       setLoading(false);
@@ -84,16 +97,39 @@ const MemoizedPostDetail = memo(function PostDetail({
 
   const handleChange = (e: any) => {
     preventUpdate.current = false;
-    setPost(e);
+    setContent(e);
     setIsUpdated(false);
   };
+
+  const getListTags = async () => {
+    const res = await TagService.listTag();
+
+    if (res && res.data) {
+      const newTags: any = res.data.map((i: Tag) => {
+        return {
+          label: i.title,
+          value: i.id,
+          data: i,
+        };
+      });
+      setListTags(newTags);
+    }
+  };
+
+  const handleChangeTag = (value: any, data: any) => {
+    setSelectedTagId(value);
+  };
+
+  useEffect(() => {
+    getListTags();
+  }, []);
 
   useEffect(() => {
     setIsUpdated(true);
   }, [postId]);
 
   useEffect(() => {
-    if (preventUpdate.current) return;
+    if (preventUpdate.current || isFirstRender) return;
     handleUpdate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedPost]);
@@ -176,8 +212,12 @@ const MemoizedPostDetail = memo(function PostDetail({
           }}
         ></Button>
       )}
-      <div style={{ margin: '8px 16px' }}>
+      <div
+        className="flex"
+        style={{ margin: '8px 16px', justifyContent: 'space-between' }}
+      >
         <Paragraph
+          style={{ height: '20px' }}
           editable={{
             // icon: <HighlightOutlined />,
             tooltip: 'click to edit text',
@@ -189,11 +229,18 @@ const MemoizedPostDetail = memo(function PostDetail({
         >
           {postTitle}
         </Paragraph>
+        <Select
+          style={{ width: '100px' }}
+          value={selectedTagId}
+          placeholder="Tags Mode"
+          onChange={handleChangeTag}
+          options={listTags}
+        />
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <CustomPlate
           id={String(plateId)}
-          value={post}
+          value={content}
           onChange={handleChange}
         />
       </div>

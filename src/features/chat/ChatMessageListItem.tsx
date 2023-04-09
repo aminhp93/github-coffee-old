@@ -1,5 +1,5 @@
 import { Divider } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import './index.less';
 import { IChat } from './types';
 
@@ -16,7 +16,7 @@ const ChatMessageListItem = ({ chat }: Props) => {
           <div className="ChatMessageListItem-message-container">
             {chat.message}{' '}
             <span className="ChatMessageListItem-message-time">
-              {moment(chat.createdAt).format('HH:mm')}
+              {dayjs(chat.createdAt).format('HH:mm')}
             </span>
           </div>
         </div>

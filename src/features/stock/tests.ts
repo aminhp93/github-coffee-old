@@ -35,6 +35,7 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
     totalVolume,
     dealVolume,
     totalValue,
+    adjRatio,
   } = last_data;
 
   // get change_t0
@@ -64,6 +65,7 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
     change_t0,
     estimated_vol_change,
     rangeChange_t0,
+    adjRatio,
   };
 
   // get Extends Data

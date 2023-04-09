@@ -189,7 +189,7 @@ const CustomFlexLayout = ({
       </Drawer>
       <Button
         size="small"
-        style={{ position: 'fixed', bottom: '6px', right: '10px', zIndex: 1 }}
+        style={{ position: 'fixed', bottom: '3px', right: '10px', zIndex: 1 }}
         icon={<SettingOutlined />}
         onClick={() => showDrawer()}
       />

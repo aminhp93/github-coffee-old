@@ -1,26 +1,21 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import { ELEMENT_HR, TDescendant } from '@udecode/plate'
-import { jsx } from '@udecode/plate-test-utils'
-import { faker } from '@faker-js/faker'
-import { initialDataExcalidraw } from './initialDataExcalidraw'
-import { createList, getNodesWithRandomId } from './utils'
+import { ELEMENT_HR, TDescendant } from '@udecode/plate';
+import { jsx } from '@udecode/plate-test-utils';
+import { initialDataExcalidraw } from './initialDataExcalidraw';
+import { createList, getNodesWithRandomId } from './utils';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-jsx
+jsx;
 
 const align: any = (
   <fragment>
     <hh1 align="right">Alignment</hh1>
-    <hp align="right">
-      This block text is aligned to the right. {faker.lorem.paragraph()}
-    </hp>
+    <hp align="right">This block text is aligned to the right.</hp>
     <hh2 align="center">Center</hh2>
-    <hp align="justify">
-      This block text is justified. {faker.lorem.paragraph()}
-    </hp>
+    <hp align="justify">This block text is justified.</hp>
   </fragment>
-)
+);
 
 const indent: any = (
   <fragment>
@@ -34,7 +29,7 @@ const indent: any = (
       For instance, this paragraph looks like it belongs to the previous one.
     </hp>
   </fragment>
-)
+);
 
 const empty: any = (
   <fragment>
@@ -42,7 +37,7 @@ const empty: any = (
       <htext />
     </hp>
   </fragment>
-)
+);
 
 const placeholder: any = (
   <fragment>
@@ -53,7 +48,7 @@ const placeholder: any = (
       <htext />
     </hp>
   </fragment>
-)
+);
 
 const horizontalRule: any = (
   <fragment>
@@ -67,7 +62,7 @@ const horizontalRule: any = (
     </element>
     <hp>But between those paragraphs are horizontal rules.</hp>
   </fragment>
-)
+);
 
 const mediaEmbed: any = (
   <fragment>
@@ -85,7 +80,7 @@ const mediaEmbed: any = (
       handle any type.
     </hp>
   </fragment>
-)
+);
 
 const excalidraw: any = (
   <fragment>
@@ -96,7 +91,7 @@ const excalidraw: any = (
     </hexcalidraw>
     <hp>Try it out!</hp>
   </fragment>
-)
+);
 
 const forcedLayout: any = (
   <fragment>
@@ -121,7 +116,7 @@ const forcedLayout: any = (
       content to make it valid again.
     </hp>
   </fragment>
-)
+);
 
 const balloonToolbar: any = (
   <fragment>
@@ -139,7 +134,7 @@ const balloonToolbar: any = (
       Tippy.js documentation for more info!
     </hp>
   </fragment>
-)
+);
 
 const image: any = (
   <fragment>
@@ -161,7 +156,7 @@ const image: any = (
       image.
     </hp>
   </fragment>
-)
+);
 
 const link: any = (
   <fragment>
@@ -177,7 +172,7 @@ const link: any = (
       a range of text is selected.
     </hp>
   </fragment>
-)
+);
 
 const previewMd: any = (
   <fragment>
@@ -194,7 +189,7 @@ const previewMd: any = (
     <hp>## Try it out!</hp>
     <hp>Try it out for yourself!</hp>
   </fragment>
-)
+);
 
 const autoformat: any = (
   <fragment>
@@ -314,7 +309,7 @@ const autoformat: any = (
       </hli>
     </hul>
   </fragment>
-)
+);
 
 const mentions: any = (
   <fragment>
@@ -337,7 +332,7 @@ const mentions: any = (
       !
     </hp>
   </fragment>
-)
+);
 
 const pasteHtml: any = (
   <fragment>
@@ -356,7 +351,7 @@ const pasteHtml: any = (
       formatting should be preserved.
     </hp>
   </fragment>
-)
+);
 
 const pasteMd: any = (
   <fragment>
@@ -376,7 +371,7 @@ const pasteMd: any = (
       </ha>
     </hp>
   </fragment>
-)
+);
 
 const pasteAst: any = (
   <fragment>
@@ -412,7 +407,7 @@ const pasteAst: any = (
       trees.
     </hp>
   </fragment>
-)
+);
 
 const plainText: any = (
   <fragment>
@@ -421,7 +416,7 @@ const plainText: any = (
       textarea!
     </hp>
   </fragment>
-)
+);
 
 const pasteCSV: any = (
   <fragment>
@@ -430,7 +425,7 @@ const pasteCSV: any = (
       a CSV source and paste it below.
     </hp>
   </fragment>
-)
+);
 
 const basicMarks: any = (
   <fragment>
@@ -465,7 +460,7 @@ const basicMarks: any = (
       <htext code>This is an inline code.</htext>
     </hp>
   </fragment>
-)
+);
 
 const font: any = (
   <fragment>
@@ -527,7 +522,7 @@ const font: any = (
       </htext>
     </hp>
   </fragment>
-)
+);
 
 const kbd: any = (
   <fragment>
@@ -536,9 +531,9 @@ const kbd: any = (
       <htext kbd>⌘+I</htext> to mark it italic.
     </hp>
   </fragment>
-)
+);
 
-const marks = [...basicMarks, ...kbd]
+const marks = [...basicMarks, ...kbd];
 
 const highlight: any = (
   <fragment>
@@ -549,7 +544,7 @@ const highlight: any = (
       highlighting it for future reference.
     </hp>
   </fragment>
-)
+);
 
 const basicElements: any = (
   <fragment>
@@ -568,7 +563,7 @@ const basicElements: any = (
       <hcodeline>const b = 'World';</hcodeline>
     </hcodeblock>
   </fragment>
-)
+);
 
 const list: any = (
   <fragment>
@@ -619,7 +614,7 @@ const list: any = (
     <htodoli>Let's go to work!</htodoli>
     <hp>Try it out for yourself!</hp>
   </fragment>
-)
+);
 
 const findReplace: any = (
   <fragment>
@@ -630,7 +625,7 @@ const findReplace: any = (
     </hp>
     <hp>Try it out for yourself by typing in the search box above!</hp>
   </fragment>
-)
+);
 
 const createTable = (): any => (
   <fragment>
@@ -691,7 +686,7 @@ const createTable = (): any => (
       </htr>
     </htable>
   </fragment>
-)
+);
 
 const createSpanningTable = (): any => (
   <fragment>
@@ -715,7 +710,7 @@ const createSpanningTable = (): any => (
       </htr>
     </htable>
   </fragment>
-)
+);
 
 const table: any = (
   <fragment>
@@ -736,7 +731,7 @@ const table: any = (
       This table is an example of rendering a table spanning multiple columns.
     </hp>
   </fragment>
-)
+);
 
 const softBreak: any = (
   <fragment>
@@ -751,13 +746,13 @@ const softBreak: any = (
       <hcodeline>And ⏎ here.</hcodeline>
     </hcodeblock>
   </fragment>
-)
+);
 
 const singleLine: any = (
   <fragment>
     <hp>You cannot type or paste text with multiple lines.</hp>
   </fragment>
-)
+);
 
 const exitBreak: any = (
   <fragment>
@@ -776,7 +771,7 @@ const exitBreak: any = (
     <hp>It also works for nested blocks:</hp>
     {createTable()}
   </fragment>
-)
+);
 
 const editableVoids: any = (
   <fragment>
@@ -792,7 +787,7 @@ const editableVoids: any = (
       <htext />
     </hp>
   </fragment>
-)
+);
 
 const iframe: any = (
   <fragment>
@@ -807,26 +802,26 @@ const iframe: any = (
       <htext bold>media queries</htext> in your CSS.
     </hp>
   </fragment>
-)
+);
 
-const HEADINGS = 100
-const PARAGRAPHS = 7
+const HEADINGS = 100;
+const PARAGRAPHS = 7;
 
 const createHugeDocument = () => {
-  const hugeDocument: TDescendant[] = []
+  const hugeDocument: TDescendant[] = [];
 
   for (let h = 0; h < HEADINGS; h++) {
-    hugeDocument.push((<hh1>{faker.lorem.sentence()}</hh1>) as any)
+    hugeDocument.push((<hh1></hh1>) as any);
 
     for (let p = 0; p < PARAGRAPHS; p++) {
-      hugeDocument.push((<hp>{faker.lorem.paragraph()}</hp>) as any)
+      hugeDocument.push((<hp></hp>) as any);
     }
   }
 
-  return hugeDocument
-}
+  return hugeDocument;
+};
 
-const basicNodes = [...basicElements, ...basicMarks]
+const basicNodes = [...basicElements, ...basicMarks];
 
 const playground: any = getNodesWithRandomId([
   ...forcedLayout,
@@ -851,7 +846,7 @@ const playground: any = getNodesWithRandomId([
   ...pasteMd,
   ...pasteCSV,
   ...pasteAst,
-])
+]);
 
 export const VALUES: Record<string, any> = {
   autoformat,
@@ -892,4 +887,4 @@ export const VALUES: Record<string, any> = {
   softBreak,
   table,
   align,
-}
+};

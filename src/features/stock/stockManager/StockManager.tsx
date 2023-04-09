@@ -1,17 +1,19 @@
+import { WarningOutlined } from '@ant-design/icons';
+import { Button, DatePicker, notification, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/CustomAgGridReact';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { SupabaseData } from '../types';
-import StockManagerColumns from './StockManagerColumns';
-import StockService from '../service';
-import { DATE_FORMAT, UNIT_BILLION } from '../constants';
-import moment from 'moment';
-import { getStockDataFromSupabase } from '../utils';
+import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import './StockManager.less';
-import { updateSelectedSymbol } from '../stockSlice';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { notification, DatePicker } from 'antd';
+import { DATE_FORMAT, UNIT_BILLION } from '../constants';
+import StockService from '../service';
+import { updateSelectedSymbol } from '../stockSlice';
 import RefreshButton from '../stockTable/RefreshButton';
+import StockTesting from '../StockTesting';
+import { SupabaseData } from '../types';
+import { getStockDataFromSupabase } from '../utils';
+import './StockManager.less';
+import StockManagerColumns from './StockManagerColumns';
 
 const { RangePicker } = DatePicker;
 
@@ -20,27 +22,23 @@ const StockManager = () => {
   const dispatch = useDispatch();
 
   const [listStocks, setListStocks] = useState<any[]>([]);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >([moment().add(-1, 'years'), moment()]);
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
+    dayjs().add(-1, 'years'),
+    dayjs(),
+  ]);
+  const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
   };
 
-  const onGridReady = useCallback((params: any) => {
-    gridRef.current.api.sizeColumnsToFit({
-      defaultMinWidth: 100,
-      columnLimits: [{ key: 'country', minWidth: 900 }],
-    });
-  }, []);
-
-  const getData = async (dates: [moment.Moment, moment.Moment] | undefined) => {
+  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
+    if (!dates || dates.length !== 2) return;
     const resStockBase = await StockService.getAllStockBase();
     if (resStockBase.data) {
       const res = await StockService.getStockDataFromSupabase({
-        startDate: moment().add(-30, 'days').format(DATE_FORMAT),
-        endDate: moment().format(DATE_FORMAT),
+        startDate: dates[0].format(DATE_FORMAT),
+        endDate: dates[1].format(DATE_FORMAT),
         listSymbols: resStockBase.data.map((i) => i.symbol),
       });
 
@@ -53,7 +51,6 @@ const StockManager = () => {
       const keyByFundamental = keyBy(fundamental, 'symbol');
 
       const newAllStocks = getStockDataFromSupabase(res.data as SupabaseData[]);
-      console.log(newAllStocks, keyByFundamental);
 
       const newListStocks = newAllStocks.map((i) => {
         return {
@@ -128,9 +125,24 @@ const StockManager = () => {
 
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
+  };
+
+  const handleResize = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
+  const handleGridReady = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.setFilterModel({
+      is_blacklist: {
+        type: 'set',
+        values: ['false'],
+      },
+    });
+    gridRef.current.api.sizeColumnsToFit();
   };
 
   const footer = () => {
@@ -138,11 +150,22 @@ const StockManager = () => {
       <div
         className="flex"
         style={{
-          justifyContent: 'flex-end',
+          justifyContent: 'space-between',
           height: '50px',
           alignItems: 'center',
         }}
       >
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <Tooltip title="Testing">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerTesting(true)}
+            />
+          </Tooltip>
+        </div>
         <div className="flex" style={{ alignItems: 'center' }}>
           <RefreshButton onClick={() => getData(dates)} />
           <RangePicker
@@ -171,12 +194,16 @@ const StockManager = () => {
           })}
           pagination={true}
           paginationAutoPageSize={true}
-          onGridReady={onGridReady}
           getRowClass={getRowClass}
+          onResize={handleResize}
+          onGridReady={handleGridReady}
           ref={gridRef}
         />
       </div>
       {footer()}
+      {openDrawerTesting && (
+        <StockTesting onClose={() => setOpenDrawerTesting(false)} />
+      )}
     </div>
   );
 };

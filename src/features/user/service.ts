@@ -1,41 +1,17 @@
-import request from '@/services/request';
-import config from '@/config';
-
-const baseUrl = config.apiUrl;
-
-const UserUrls = {
-  getAuthUser: `${baseUrl}/api/users/firebase/auth/`,
-  checkAuthUser: `${baseUrl}/api/users/firebase/auth/`,
-  getAccessToken: `${baseUrl}/api/token/`,
-  getPublic: `${baseUrl}/api/users/public/`,
-  getProtected: `${baseUrl}/api/users/protected/`,
-};
+import supabase from '@/services/supabase';
 
 const UserService = {
   getAuthUser() {
-    return request({
-      method: 'GET',
-      url: UserUrls.getAuthUser,
-    });
+    return supabase.from('user').select();
   },
   getAccessToken(data: any) {
-    return request({
-      method: 'POST',
-      url: UserUrls.getAccessToken,
-      data,
-    });
+    return supabase.from('user').select();
   },
   getPublic() {
-    return request({
-      method: 'GET',
-      url: UserUrls.getPublic,
-    });
+    return supabase.from('user').select();
   },
   getProtected() {
-    return request({
-      method: 'GET',
-      url: UserUrls.getProtected,
-    });
+    return supabase.from('user').select();
   },
 };
 

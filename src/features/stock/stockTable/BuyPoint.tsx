@@ -1,7 +1,7 @@
-import { DatePicker } from 'antd';
 import type { DatePickerProps } from 'antd';
+import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-import moment from 'moment';
 
 const BuyPoint = ({ onCb, buyPoint }: any) => {
   const [date, setDate] = useState<any>(buyPoint?.date);
@@ -18,7 +18,7 @@ const BuyPoint = ({ onCb, buyPoint }: any) => {
   return (
     <DatePicker
       size="small"
-      value={date ? moment(date) : undefined}
+      value={date ? dayjs(date) : undefined}
       onChange={onChange}
     />
   );

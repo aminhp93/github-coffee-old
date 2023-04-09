@@ -25,10 +25,21 @@ export const dataZoom = [
     xAxisIndex: [0, 1],
     type: 'slider',
     bottom: 20,
-    height: 30,
+    height: 20,
     start: 30,
     end: 100,
     filterMode: 'empty',
+  },
+  {
+    type: 'slider',
+    yAxisIndex: 0,
+    // filterMode: 'none',
+    filterMode: 'empty',
+    top: '5%',
+    width: 20,
+    height: '80%',
+    showDataShadow: false,
+    right: '2%',
   },
 ];
 
@@ -136,7 +147,7 @@ export const tooltip = {
     size: { viewSize: number[] }
   ) {
     const obj: any = {
-      top: 10,
+      bottom: 10,
     };
     obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 80;
     return obj;

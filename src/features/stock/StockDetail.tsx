@@ -1,4 +1,10 @@
 import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  DownOutlined,
+  UpOutlined,
+} from '@ant-design/icons';
+import {
   Button,
   DatePicker,
   Divider,
@@ -6,32 +12,26 @@ import {
   notification,
   Select,
 } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
+import StockChart from './stockChart/StockChart';
+import { selectSelectedSymbol, updateSelectedSymbol } from './stockSlice';
+import BuyPoint from './stockTable/BuyPoint';
+import RefreshButton from './stockTable/RefreshButton';
 import { StockData, SupabaseData } from './types';
 import {
   evaluateStockBase,
   getListMarkLines,
-  getStockDataFromSupabase,
-  mapDataChart,
-  getTodayData,
-  getMinTotalValue,
-  mapDataFromStockBase,
   getListMarkPoints,
+  getMinTotalValue,
+  getStockDataFromSupabase,
+  getTodayData,
+  mapDataChart,
+  mapDataFromStockBase,
 } from './utils';
-import StockChart from './stockChart/StockChart';
-import { updateSelectedSymbol, selectSelectedSymbol } from './stockSlice';
-import { useSelector, useDispatch } from 'react-redux';
-import {
-  DownOutlined,
-  UpOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-} from '@ant-design/icons';
-import RefreshButton from './stockTable/RefreshButton';
-import BuyPoint from './stockTable/BuyPoint';
 
 const { RangePicker } = DatePicker;
 
@@ -44,13 +44,14 @@ const StockDetailChart = () => {
   const [stockBase, setStockBase] = useState<any>({});
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
   const [showDetail, setShowDetail] = useState<boolean>(true);
-  const [dates, setDates] = useState<
-    [moment.Moment, moment.Moment] | undefined
-  >([moment().add(-1, 'years'), moment()]);
+  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
+    dayjs().add(-18, 'months'),
+    dayjs(),
+  ]);
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [selectedVolumeField, setSelectedVolumeField] = useState<
     'dealVolume' | 'totalVolume'
-  >('dealVolume');
+  >('totalVolume');
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);
@@ -101,7 +102,6 @@ const StockDetailChart = () => {
       }
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };
@@ -132,7 +132,7 @@ const StockDetailChart = () => {
 
   const getData = async (
     symbol: string,
-    dates: [moment.Moment, moment.Moment] | undefined,
+    dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined,
     volumeField: 'dealVolume' | 'totalVolume' = 'dealVolume'
   ) => {
     try {
@@ -158,6 +158,7 @@ const StockDetailChart = () => {
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
         const newStockData = mappedData[0];
+
         setStockData(newStockData);
         setDataChart(
           mapDataChart({
@@ -174,7 +175,7 @@ const StockDetailChart = () => {
     }
   };
 
-  const handleCbBuyPoint = (data: moment.Moment | undefined) => {
+  const handleCbBuyPoint = (data: dayjs.Dayjs | undefined) => {
     const newStockBase = {
       ...stockBase,
       symbol: selectedSymbol,
@@ -200,16 +201,6 @@ const StockDetailChart = () => {
     };
     init();
   }, []);
-
-  console.log(
-    'StockDetail',
-    'stockBase',
-    stockBase,
-    'stockData',
-    stockData,
-    'dataChart',
-    dataChart
-  );
 
   const { risk_b1, risk_b2, target } = evaluateStockBase(
     stockBase,
@@ -324,7 +315,7 @@ const StockDetailChart = () => {
       ) : null}
       <Divider />
       <div style={{ flex: 1 }}>
-        {dataChart && <StockChart data={dataChart} />}
+        {dataChart ? <StockChart data={dataChart} /> : <div>No data</div>}
       </div>
       {footer()}
     </div>

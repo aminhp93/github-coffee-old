@@ -1,7 +1,7 @@
 import { Button, Input, List } from 'antd';
+import dayjs from 'dayjs';
 import parse from 'html-react-parser';
 import { flatten, keyBy } from 'lodash';
-import moment from 'moment';
 import { useEffect, useState } from 'react';
 
 import StockService from './service';
@@ -84,7 +84,9 @@ export default function StockNews() {
           }}
         >
           <div style={{ height: '50px' }}>
-            <Button size='small' onClick={handleBack}>Back</Button>
+            <Button size="small" onClick={handleBack}>
+              Back
+            </Button>
           </div>
 
           <div style={{ flex: 1, overflow: 'auto' }}>
@@ -107,13 +109,13 @@ export default function StockNews() {
               <List.Item
                 onClick={() => handleClickNews(item.postID)}
                 className={`StockNews-item flex ${
-                  moment(item.date).format('MM-DD') === moment().format('MM-DD')
+                  dayjs(item.date).format('MM-DD') === dayjs().format('MM-DD')
                     ? 'highlight'
                     : ''
                 }`}
               >
                 <div style={{ width: '60px' }}>
-                  {moment(item.date).format('MM-DD')}
+                  {dayjs(item.date).format('MM-DD')}
                 </div>
                 <div style={{ flex: 1 }}>
                   {item.symbol} - {item.title}
