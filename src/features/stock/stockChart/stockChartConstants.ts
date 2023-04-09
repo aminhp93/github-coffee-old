@@ -147,7 +147,7 @@ export const tooltip = {
     size: { viewSize: number[] }
   ) {
     const obj: any = {
-      top: 10,
+      bottom: 10,
     };
     obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 80;
     return obj;

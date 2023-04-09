@@ -51,7 +51,7 @@ const StockDetailChart = () => {
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [selectedVolumeField, setSelectedVolumeField] = useState<
     'dealVolume' | 'totalVolume'
-  >('dealVolume');
+  >('totalVolume');
 
   const handleChangeDate = (dates: any) => {
     setDates(dates);

@@ -180,7 +180,7 @@ export const mapDataChart = ({
   fullData,
   listMarkPoints = [],
   listMarkLines = [],
-  volumeField = 'dealVolume',
+  volumeField = 'totalVolume',
 }: {
   fullData?: StockCoreData[];
   listMarkPoints?: StockCoreData[];
