@@ -52,7 +52,6 @@ const StockTable = () => {
   const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
     try {
       if (!dates || dates.length !== 2) return;
-      console.log(gridRef);
       gridRef.current?.api?.showLoadingOverlay();
 
       const resStockBase = await StockService.getAllStockBase();
@@ -83,8 +82,6 @@ const StockTable = () => {
         resStockBase.data
       );
 
-      console.log(filterdData);
-
       setPinnedTopRowData(
         newAllStocks
           .filter((i) => list_buyPoint.includes(i.symbol))
@@ -98,7 +95,6 @@ const StockTable = () => {
       setAllStocks(newAllStocks);
       setListStocks(filterdData);
     } catch (e) {
-      console.log(e);
       gridRef.current?.api?.hideOverlay();
       notification.error({ message: 'error' });
     }
@@ -148,7 +144,6 @@ const StockTable = () => {
         notification.success({ message: 'success' });
       } catch (e) {
         notification.error({ message: 'error' });
-        console.log(e);
       }
     };
     init();
@@ -213,8 +208,6 @@ const StockTable = () => {
       </div>
     );
   };
-
-  console.log('StockTable', 'listStocks', listStocks);
 
   return (
     <div className="StockTable height-100 flex">

@@ -42,11 +42,10 @@ export default function PostCreate({ onCreateSuccess }: Props) {
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+    // console.log('Failed:', errorInfo);
   };
 
   const handleChange = (value: any, data: any) => {
-    console.log(`selected ${value}`, data);
     setSelectedTag(data.data);
   };
 

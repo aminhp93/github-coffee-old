@@ -51,7 +51,6 @@ const StockManager = () => {
       const keyByFundamental = keyBy(fundamental, 'symbol');
 
       const newAllStocks = getStockDataFromSupabase(res.data as SupabaseData[]);
-      console.log(newAllStocks, keyByFundamental);
 
       const newListStocks = newAllStocks.map((i) => {
         return {
@@ -126,7 +125,6 @@ const StockManager = () => {
 
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };
@@ -138,7 +136,6 @@ const StockManager = () => {
 
   const handleGridReady = () => {
     if (!gridRef.current || !gridRef.current.api) return;
-    console.log(gridRef.current.api);
     gridRef.current.api.setFilterModel({
       is_blacklist: {
         type: 'set',

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
-import { DATE_FORMAT } from './constants';
+import { DATE_FORMAT, GET_FIELD_STOCK_SUPABASE } from './constants';
 import { HistoricalQuote, HistoricalQuoteParams } from './types';
 import supabase from '@/services/supabase';
 
@@ -188,9 +188,6 @@ const StockService = {
   insertStockData: (data: any) => {
     return supabase.from('stock').insert(data);
   },
-  deleteStockData: ({ column, value }: any) => {
-    return supabase.from('stock').delete().eq(column, value);
-  },
   getStockBase: (symbol: string) => {
     return supabase.from('stock_base').select('*').in('symbol', [symbol]);
   },
@@ -224,7 +221,7 @@ const StockService = {
     return supabase
       .from('stock')
       .select(
-        'date,symbol,priceClose,priceHigh,priceLow,priceOpen,dealVolume,totalVolume,totalValue'
+        GET_FIELD_STOCK_SUPABASE
         // '*'
       )
       .in('symbol', listSymbols)
@@ -236,13 +233,17 @@ const StockService = {
     return new Promise(async (resolve, reject) => {
       try {
         // Delete all old data with selected date
-        await StockService.deleteStockData({
-          column: 'date',
-          value: date,
-        });
+        await supabase
+          .from('stock')
+          .delete()
+          .eq('date', date)
+          .in(
+            'symbol',
+            data.map((i: any) => i.symbol)
+          );
 
         // Insert new data with selected date
-        await StockService.insertStockData(data);
+        await supabase.from('stock').insert(data);
         resolve({ status: 'success', date });
       } catch (e) {
         console.log(e);

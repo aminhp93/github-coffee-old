@@ -201,11 +201,12 @@ export const mapDataChart = ({
   const dates = newData.map((i: StockCoreData) =>
     dayjs(i.date).format(DATE_FORMAT)
   );
+
   const prices = newData.map((i: StockCoreData) => [
-    i.priceOpen,
-    i.priceClose,
-    i.priceLow,
-    i.priceHigh,
+    i.priceOpen / i.adjRatio,
+    i.priceClose / i.adjRatio,
+    i.priceLow / i.adjRatio,
+    i.priceHigh / i.adjRatio,
     i[volumeField],
   ]);
 
@@ -274,7 +275,9 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
 // rewrite this function
 export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
   if (!stockBase || !stockData || !stockData.fullData) return [];
-  const startDateBase = dayjs(stockData.fullData[120].date);
+  const startPoint =
+    stockData.fullData.length > 120 ? 120 : stockData.fullData.length - 1;
+  const startDateBase = dayjs(stockData.fullData[startPoint].date);
   const endDateBase = dayjs(stockData.date);
 
   const listMarkLines: any = [];
@@ -459,4 +462,21 @@ export const getMaxPercentBase = (symbol: string) => {
   } else {
     return 7;
   }
+};
+
+export const checkValidCondition = (
+  item1: any,
+  item2: any,
+  listFields: any
+) => {
+  let result: boolean[] = [];
+  listFields.forEach((i: any) => {
+    if (item1[i] === item2[i]) {
+      result.push(true);
+    } else {
+      result.push(false);
+    }
+  });
+  const listInvalid = result.filter((i) => !i);
+  return listInvalid.length === 0;
 };

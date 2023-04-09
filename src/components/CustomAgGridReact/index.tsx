@@ -39,7 +39,6 @@ const CustomAgGridReact = ({
   onResize,
   onGridReady: onGridReadyProps,
 }: CustomAgGridReactProps) => {
-  console.log(size, gridRef);
 
   const onGridReady = useCallback(
     (params: any) => {

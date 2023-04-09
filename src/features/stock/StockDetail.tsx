@@ -102,7 +102,6 @@ const StockDetailChart = () => {
       }
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };
@@ -159,6 +158,7 @@ const StockDetailChart = () => {
       const mappedData = getStockDataFromSupabase(source as SupabaseData[]);
       if (mappedData && mappedData.length === 1 && mappedData[0].fullData) {
         const newStockData = mappedData[0];
+
         setStockData(newStockData);
         setDataChart(
           mapDataChart({
@@ -201,16 +201,6 @@ const StockDetailChart = () => {
     };
     init();
   }, []);
-
-  console.log(
-    'StockDetail',
-    'stockBase',
-    stockBase,
-    'stockData',
-    stockData,
-    'dataChart',
-    dataChart
-  );
 
   const { risk_b1, risk_b2, target } = evaluateStockBase(
     stockBase,
@@ -325,7 +315,7 @@ const StockDetailChart = () => {
       ) : null}
       <Divider />
       <div style={{ flex: 1 }}>
-        {dataChart && <StockChart data={dataChart} />}
+        {dataChart ? <StockChart data={dataChart} /> : <div>No data</div>}
       </div>
       {footer()}
     </div>

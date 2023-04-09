@@ -40,8 +40,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   const [listTags, setListTags] = useState<Tag[]>([]);
   const [selectedTagId, setSelectedTagId] = useState<number>();
 
-  console.log(setSelectedTagId);
-
   useEffect(() => {
     (async () => {
       try {
@@ -119,7 +117,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   };
 
   const handleChangeTag = (value: any, data: any) => {
-    console.log(`selected ${value}`, data);
     setSelectedTagId(value);
   };
 

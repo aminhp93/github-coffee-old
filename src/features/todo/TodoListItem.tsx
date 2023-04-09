@@ -125,20 +125,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
     }
   };
 
-  // const handleComplete = () => {
-  //   console.log('complete');
-  //   if (divRef.current) {
-  //     divRef.current.style.width = `0%`;
-  //   }
-
-  //   PushNotificationService.createPushNotification({
-  //     title: 'Time for your task is up!',
-  //     body: `Time for task ${todoItem.id} is up!`,
-  //   });
-
-  //   notification.success({ message: 'Time for your task is up!' });
-  // };
-
   const handlelTick = (data: any) => {
     if (divRef.current) {
       divRef.current.style.width = `${

@@ -76,8 +76,6 @@ const PostPage = () => {
       <div className="width-100">No post selected</div>
     );
 
-  console.log(selectedPost);
-
   return (
     <div className="Post flex">
       <div className="PostListContainer">
