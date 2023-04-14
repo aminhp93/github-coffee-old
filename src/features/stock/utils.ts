@@ -203,10 +203,10 @@ export const mapDataChart = ({
   );
 
   const prices = newData.map((i: StockCoreData) => [
-    i.priceOpen / i.adjRatio,
-    i.priceClose / i.adjRatio,
-    i.priceLow / i.adjRatio,
-    i.priceHigh / i.adjRatio,
+    i.priceOpen / (i.adjRatio || 1),
+    i.priceClose / (i.adjRatio || 1),
+    i.priceLow / (i.adjRatio || 1),
+    i.priceHigh / (i.adjRatio || 1),
     i[volumeField],
   ]);
 

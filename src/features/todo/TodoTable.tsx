@@ -5,10 +5,7 @@ import { Todo } from './types';
 import { useAuth } from '@/context/SupabaseContext';
 import TodoService from './service';
 import { notification } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import { CONFIG } from 'components/CustomPlate/config/config';
-import { v4 as uuidv4 } from 'uuid';
+import CustomLexical from 'components/customLexical/CustomLexical';
 
 const createNewRowData = () => {
   return {
@@ -39,8 +36,6 @@ const TodoTableColumns = () => {
 const TodoTable = () => {
   const { authUser }: any = useAuth();
   const gridRef: any = useRef();
-  const [value, setValue] = useState(DEFAULT_PLATE_VALUE);
-  const [plateId, setPlateId] = useState(uuidv4());
 
   const [listTodo, setListTodo] = useState<Todo[]>([]);
 
@@ -53,7 +48,7 @@ const TodoTable = () => {
 
         const res = await TodoService.listTodo(dataRequest);
         if (res?.data) {
-          setListTodo(res.data);
+          setListTodo(res.data as Todo[]);
         }
       } catch (e) {
         notification.error({ message: 'error' });
@@ -90,17 +85,16 @@ const TodoTable = () => {
     console.log('cellEditingStopped', event);
   }, []);
 
-  const handleChange = (data: any) => {
-    console.log(data);
-    setValue(data);
-  };
-
-  const handleKeyDown = (e: any) => {
-    if (e.key === 'Enter') {
-      console.log('enter');
-      setValue(DEFAULT_PLATE_VALUE);
-      setPlateId(uuidv4());
-    }
+  const handleChangeLexical = (value: any) => {
+    console.log(value);
+    const newPost = {
+      // title: post?.title,
+      // tag: selectedTag?.id,
+      author: authUser.id,
+      content: value,
+    };
+    console.log('newPost', newPost);
+    // setPost(newPost as any);
   };
 
   useEffect(() => {
@@ -114,16 +108,7 @@ const TodoTable = () => {
           <div>Todo</div>
           <div onClick={() => addItems(undefined)}>New task</div>
           <div>
-            <CustomPlate
-              hideToolBar
-              id={String(plateId)}
-              value={value}
-              onChange={handleChange}
-              editableProps={{
-                ...CONFIG.editableProps,
-                onKeyDown: handleKeyDown,
-              }}
-            />
+            <CustomLexical onChange={handleChangeLexical} />
           </div>
         </div>
         <CustomAgGridReact

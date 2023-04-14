@@ -1,36 +1,30 @@
 import TagService from '@/services/tag';
 import { Tag } from '@/types/tag';
 import { Button, Form, Input, notification, Select } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
 import { useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import './Post.less';
 import PostService from './service';
 import { Post } from './types';
 import { useAuth } from '@/context/SupabaseContext';
+import CustomLexical from 'components/customLexical/CustomLexical';
 
 interface Props {
   onCreateSuccess: (data: any) => void;
 }
 
 export default function PostCreate({ onCreateSuccess }: Props) {
-  const [plateId] = useState(uuidv4());
-  const [listTags, setListTags] = useState<Tag[]>([]);
-  const [selectedTag, setSelectedTag] = useState<Tag>();
   const { authUser }: any = useAuth();
+  const [listTags, setListTags] = useState<Tag[]>([]);
+  const [post, setPost] = useState<Partial<Post> | undefined>();
 
-  const onFinish = async (values: any) => {
+  const onFinish = async () => {
     try {
-      if (!authUser || !authUser.id) return;
-      const { title, content } = values;
-      const dataCreate: Partial<Post> = {
-        title,
-        content: JSON.stringify(content || DEFAULT_PLATE_VALUE),
-        tag: selectedTag?.id,
+      if (!authUser || !authUser.id || !post) return;
+      const requestData = {
+        ...post,
         author: authUser.id,
       };
-      const res = await PostService.createPost(dataCreate);
+      const res = await PostService.createPost(requestData);
       if (res.data && res.data.length === 1) {
         onCreateSuccess(res.data[0]);
       }
@@ -45,15 +39,29 @@ export default function PostCreate({ onCreateSuccess }: Props) {
     // console.log('Failed:', errorInfo);
   };
 
-  const handleChange = (value: any, data: any) => {
-    setSelectedTag(data.data);
+  const handleChangeTag = (value: any, data: any) => {
+    setPost({
+      ...post,
+      tag: data.data.id,
+    });
+  };
+
+  const handleChangeTitle = (e: any) => {
+    const newPost = {
+      ...post,
+      title: e.target.value,
+    };
+    setPost(newPost as any);
+  };
+
+  const handleChangeLexical = (value: any) => {
+    setPost({ ...post, content: value });
   };
 
   const getListTags = async () => {
     const res = await TagService.listTag();
-
     if (res && res.data) {
-      const newTags: any = res.data.map((i: Tag) => {
+      const newTags: any = (res.data as Tag[]).map((i: Tag) => {
         return {
           label: i.title,
           value: i.id,
@@ -82,13 +90,13 @@ export default function PostCreate({ onCreateSuccess }: Props) {
           name="title"
           rules={[{ required: true, message: 'Please input your title!' }]}
         >
-          <Input />
+          <Input onChange={handleChangeTitle} />
         </Form.Item>
         <Form.Item name="Tags">
           <Select
             style={{ width: '100px' }}
             placeholder="Tags Mode"
-            onChange={handleChange}
+            onChange={handleChangeTag}
             options={listTags}
           />
         </Form.Item>
@@ -97,7 +105,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
           name="content"
           rules={[{ required: false, message: 'Please input your content!' }]}
         >
-          <CustomPlate id={String(plateId)} />
+          <CustomLexical onChange={handleChangeLexical} />
         </Form.Item>
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

@@ -10,7 +10,7 @@ import {
   UpOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
-import CustomPlate from 'components/CustomPlate';
+import CustomLexical from 'components/customLexical/CustomLexical';
 import dayjs from 'dayjs';
 import PostService from 'features/post/service';
 import { Post } from 'features/post/types';
@@ -50,8 +50,8 @@ interface Props {
 }
 
 function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
-  const [plateId, setPlateId] = useState(null as any);
-  const [value, setValue] = useState(JSON.parse(todoItem.content));
+  const [, setPlateId] = useState(null as any);
+  const [value] = useState(JSON.parse(todoItem.content));
   const [isDone, setIsDone] = useState(todoItem.isDone);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
@@ -104,11 +104,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         description: error.message,
       });
     }
-  };
-
-  const handleChange = (data: any) => {
-    preventUpdate.current = false;
-    setValue(data);
   };
 
   const handleStartTimer = () => {
@@ -281,12 +276,14 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
           onClick={() => setToggleHeight(!toggleHeight)}
         />
 
-        <CustomPlate
+        {/* <CustomPlate
           id={String(plateId)}
           value={value}
           hideToolBar
           onChange={handleChange}
-        />
+        /> */}
+        <CustomLexical data={value} />
+
         {renderPopover()}
         <Countdown
           ref={countDownRef}

@@ -31,7 +31,7 @@ const Todo = () => {
 
         const res = await PostService.listPost(dataRequest);
         if (res?.data) {
-          setListTodos(res.data);
+          setListTodos(res.data as Post[]);
         }
       } catch (e) {
         notification.error({ message: 'error' });

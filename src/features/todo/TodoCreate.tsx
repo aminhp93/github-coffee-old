@@ -1,11 +1,11 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
+
 import PostService from 'features/post/service';
 import { memo, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '@/context/SupabaseContext';
+import CustomLexical from 'components/customLexical/CustomLexical';
+import { Todo } from './types';
 
 interface IProps {
   onCreateSuccess: () => void;
@@ -14,25 +14,21 @@ interface IProps {
 function TodoCreate({ onCreateSuccess }: IProps) {
   const { authUser }: any = useAuth();
 
-  const [plateId, setPlateId] = useState(uuidv4());
-  const [value, setValue] = useState(DEFAULT_PLATE_VALUE);
   const [loading, setLoading] = useState(false);
+  const [todo, setTodo] = useState<Partial<Todo> | undefined>();
 
   const handleSubmit = async () => {
-    if (!value) return;
+    if (!authUser || !authUser.id || !todo) return;
     try {
-      const data = {
-        content: JSON.stringify(value),
+      const requestData = {
+        ...todo,
         author: authUser.id,
       };
       setLoading(true);
-      const res = await PostService.createPost(data);
-
+      const res = await PostService.createPost(requestData);
       setLoading(false);
       if (res && res.data) {
         onCreateSuccess && onCreateSuccess();
-        setPlateId(uuidv4());
-        setValue(DEFAULT_PLATE_VALUE);
       }
     } catch (e: any) {
       setLoading(false);
@@ -46,8 +42,8 @@ function TodoCreate({ onCreateSuccess }: IProps) {
     }
   };
 
-  const handleChange = (data: any) => {
-    setValue(data);
+  const handleChangeLexical = (value: any) => {
+    setTodo({ ...todo, content: value });
   };
 
   return (
@@ -67,12 +63,7 @@ function TodoCreate({ onCreateSuccess }: IProps) {
         icon={<PlusOutlined />}
       />
       <div className="height-100 width-100" style={{ minHeight: '100px' }}>
-        <CustomPlate
-          hideToolBar
-          id={String(plateId)}
-          value={value}
-          onChange={handleChange}
-        />
+        <CustomLexical onChange={handleChangeLexical} />
       </div>
     </div>
   );

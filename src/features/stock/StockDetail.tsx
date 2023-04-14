@@ -196,7 +196,9 @@ const StockDetailChart = () => {
     const init = async () => {
       const resStockBase = await StockService.getAllStockBase();
 
-      const { list_all } = mapDataFromStockBase(resStockBase.data || []);
+      const { list_all } = mapDataFromStockBase(
+        resStockBase.data || ([] as any)
+      );
       setListAllSymbols(list_all);
     };
     init();
@@ -207,6 +209,8 @@ const StockDetailChart = () => {
     stockData?.fullData
   );
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
+
+  console.log('dataChart', dataChart, stockData, stockBase);
 
   return (
     <div
@@ -221,7 +225,7 @@ const StockDetailChart = () => {
             value={selectedSymbol}
             style={{ width: 120 }}
             onChange={(value: string) => {
-              dispatch(updateSelectedSymbol(value));
+              dispatch(updateSelectedSymbol(value as any));
               getData(value, dates);
             }}
             options={listAllSymbols.map((i) => {
