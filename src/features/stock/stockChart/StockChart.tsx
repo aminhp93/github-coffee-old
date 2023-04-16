@@ -11,7 +11,7 @@ import {
   brush,
   axisPointer,
   tooltip,
-} from './stockChartConstants';
+} from './stockChart.constants';
 
 /*
   const dates = [

@@ -7,13 +7,13 @@ import StockManager from 'features/stock/stockManager/StockManager';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/stockTable/StockTable';
 import Test from 'features/test/Test';
-// import Todo from 'features/todo/Todo';
 import TodoTable from 'features/todo/TodoTable';
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
 
 const rowId = uuidv4();
-const tabSetId = uuidv4();
+const tabSetId1 = uuidv4();
+const tabSetId2 = uuidv4();
 
 const defaultJson: IJsonModel = {
   global: {
@@ -26,7 +26,7 @@ const defaultJson: IJsonModel = {
     {
       type: 'border',
       size: 467,
-      location: 'bottom',
+      location: 'right',
       children: [
         {
           type: 'tab',
@@ -44,14 +44,30 @@ const defaultJson: IJsonModel = {
     children: [
       {
         type: 'tabset',
-        id: tabSetId,
+        id: tabSetId1,
+        weight: 12.5,
+        width: 620,
+        children: [
+          {
+            type: 'tab',
+
+            id: '#StockTable',
+            name: 'StockTable',
+            component: 'StockTable',
+          },
+        ],
+        active: true,
+      },
+      {
+        type: 'tabset',
+        id: tabSetId2,
         weight: 12.5,
         children: [
           {
             type: 'tab',
-            id: '#StockTable',
-            name: 'StockTable',
-            component: 'StockTable',
+            id: '#StockDetail',
+            name: 'StockDetail',
+            component: 'StockDetail',
           },
         ],
         active: true,

@@ -40,7 +40,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       field: 'change_t0',
       type: 'rightAligned',
       suppressMenu: true,
-      width: 80,
+      width: 74,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -59,7 +59,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
     {
       field: 'estimated_vol_change',
       suppressMenu: true,
-      width: 80,
+      width: 74,
       type: 'rightAligned',
       headerName: 'V (%)',
       filter: 'agNumberColumnFilter',
@@ -79,11 +79,11 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'target (%)',
+      headerName: 'T (%)',
       field: 'target',
       suppressMenu: true,
       type: 'rightAligned',
-      width: 110,
+      width: 74,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
 
@@ -119,11 +119,11 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'risk_2 (%)',
+      headerName: 'R_2 (%)',
       suppressMenu: true,
       field: 'risk_b2',
       type: 'rightAligned',
-      width: 110,
+      width: 85,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
@@ -138,11 +138,11 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'risk_1 (%)',
+      headerName: 'R_1(%)',
       field: 'risk_b1',
       type: 'rightAligned',
       suppressMenu: true,
-      width: 110,
+      width: 85,
       cellRenderer: (data: any) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
@@ -161,8 +161,8 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       field: 'extra_volume',
       suppressMenu: true,
       type: 'rightAligned',
-      headerName: 'extra_volume',
-      width: 120,
+      headerName: 'extra_V',
+      width: 100,
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: any) => {
         const stockData: StockData = data.data;
@@ -178,6 +178,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
     {
       field: 'min_total_value',
       suppressMenu: true,
+      hide: true,
       type: 'rightAligned',
       headerName: 'min_total_value',
       filter: 'agNumberColumnFilter',

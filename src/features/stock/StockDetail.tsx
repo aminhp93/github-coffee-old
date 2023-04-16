@@ -254,7 +254,7 @@ const StockDetailChart = () => {
       {showDetail ? (
         <div
           className="flex"
-          style={{ height: '200px', flexDirection: 'column' }}
+          style={{ height: '120px', flexDirection: 'column' }}
         >
           <div
             className="flex flex-1"
