@@ -1,49 +1,19 @@
 import { useDebounce } from '@/hooks';
-// import PushNotificationService from '@/services/pushNotification';
 import {
   CloseCircleOutlined,
   DeleteOutlined,
-  FieldTimeOutlined,
-  PauseOutlined,
   SettingOutlined,
   DownOutlined,
   UpOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Popover, TimePicker, Tooltip } from 'antd';
+import { Button, notification, Popover, Tooltip } from 'antd';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import dayjs from 'dayjs';
 import PostService from 'features/post/service';
 import { Post } from 'features/post/types';
 import { memo, useEffect, useRef, useState } from 'react';
-import Countdown from 'react-countdown';
 import { v4 as uuidv4 } from 'uuid';
 import './Todo.less';
 
-const FORMAT = 'HH:mm';
-
-const Completionist = () => <span>You are good to go!</span>;
-
-const renderer = (props: any) => {
-  const { days, hours, minutes, seconds, completed } = props;
-  if (completed) {
-    // Render a completed state
-    return <Completionist />;
-  } else {
-    // Render a countdown
-    return (
-      <span
-        style={{
-          margin: '60px 40px 0 0',
-          position: 'absolute',
-          bottom: 0,
-          right: '20px',
-        }}
-      >
-        {days}:{hours}:{minutes}:{seconds}
-      </span>
-    );
-  }
-};
 interface Props {
   todoItem: Post;
   onDeleteSuccess?: (todoId: number) => void;
@@ -55,9 +25,7 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
   const [isDone, setIsDone] = useState(todoItem.isDone);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
   const divRef = useRef<HTMLDivElement>(null);
-  const countDownRef = useRef<any>(null);
-  const [timer, setTimer] = useState(dayjs('00:01'));
-  const [status, setStatus] = useState('');
+
   const preventUpdate = useRef(false);
   const debouncedValue = useDebounce<string>(JSON.stringify(value), 500);
   const [toggleHeight, setToggleHeight] = useState(false);
@@ -104,32 +72,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         description: error.message,
       });
     }
-  };
-
-  const handleStartTimer = () => {
-    setStatus('start');
-    countDownRef.current && countDownRef.current.start();
-  };
-
-  const handleResetTimer = () => {
-    setStatus('');
-
-    countDownRef.current && countDownRef.current.stop();
-    if (divRef.current) {
-      divRef.current.style.width = `0%`;
-    }
-  };
-
-  const handlelTick = (data: any) => {
-    if (divRef.current) {
-      divRef.current.style.width = `${
-        (100 * data.total) / ((timer.hour() * 60 + timer.minute()) * 60 * 1000)
-      }%`;
-    }
-  };
-
-  const handleChangeTimer = (data: any) => {
-    setTimer(data);
   };
 
   useEffect(() => {
@@ -188,33 +130,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
                 />
               )}
             </Tooltip>
-            {status === '' && (
-              <Tooltip placement="right" title="Start timer">
-                <div style={{ marginTop: '8px' }}>
-                  <TimePicker
-                    defaultValue={dayjs('00:01')}
-                    onChange={handleChangeTimer}
-                    format={FORMAT}
-                  />
-                  <Button
-                    size="small"
-                    style={{ marginLeft: '8px' }}
-                    icon={<FieldTimeOutlined />}
-                    onClick={handleStartTimer}
-                  />
-                </div>
-              </Tooltip>
-            )}
-            {status === 'start' && (
-              <Tooltip placement="right" title="Reset time">
-                <Button
-                  size="small"
-                  style={{ marginTop: '8px' }}
-                  icon={<PauseOutlined />}
-                  onClick={handleResetTimer}
-                />
-              </Tooltip>
-            )}
           </div>
         }
       >
@@ -285,16 +200,6 @@ function TodoListItem({ todoItem, onDeleteSuccess }: Props) {
         <CustomLexical data={value} />
 
         {renderPopover()}
-        <Countdown
-          ref={countDownRef}
-          date={dayjs()
-            .add(timer.hour() * 60 + timer.minute(), 'minute')
-            .valueOf()}
-          renderer={status === 'start' ? renderer : () => null}
-          onTick={handlelTick}
-          // onComplete={() => handleComplete()}
-          autoStart={false}
-        />
       </div>
     </div>
   );

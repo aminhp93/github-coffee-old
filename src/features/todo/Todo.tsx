@@ -3,8 +3,6 @@ import { Divider, Empty, notification, Radio } from 'antd';
 import PostService from 'features/post/service';
 import { Post } from 'features/post/types';
 import { useCallback, useState, useEffect } from 'react';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import './Todo.less';
 import TodoCreate from './TodoCreate';
 import TodoListItem from './TodoListItem';
@@ -64,22 +62,20 @@ const Todo = () => {
         {listTodos.length === 0 ? (
           <Empty />
         ) : (
-          <DndProvider backend={HTML5Backend}>
-            <div className="TodoList">
-              {listTodos.map((i: Post, index) => {
-                return (
-                  <>
-                    <TodoListItem
-                      key={i.id}
-                      todoItem={i}
-                      onDeleteSuccess={handleDeleteSuccess}
-                    />
-                    <Divider />
-                  </>
-                );
-              })}
-            </div>
-          </DndProvider>
+          <div className="TodoList">
+            {listTodos.map((i: Post, index) => {
+              return (
+                <>
+                  <TodoListItem
+                    key={i.id}
+                    todoItem={i}
+                    onDeleteSuccess={handleDeleteSuccess}
+                  />
+                  <Divider />
+                </>
+              );
+            })}
+          </div>
         )}
       </div>
       <div className="flex" style={{ justifyContent: 'space-between' }}>
