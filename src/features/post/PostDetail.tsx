@@ -5,7 +5,7 @@ import {
   DeleteOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Select, Typography } from 'antd';
+import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState } from 'react';
 import './Post.less';
 import PostService from './service';
@@ -28,7 +28,6 @@ const MemoizedPostDetail = memo(function PostDetail({
   onDeleteSuccess,
 }: IProps) {
   const [loading, setLoading] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [listTags, setListTags] = useState<Tag[]>([]);
   const [post, setPost] = useState<Post | undefined>();
   const [lexicalData, setLexicalData] = useState<string | undefined>(
@@ -94,7 +93,7 @@ const MemoizedPostDetail = memo(function PostDetail({
 
     handleUpdate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncePostContent]);
+  }, [debouncePostContent, post?.title]);
 
   const getListTags = async () => {
     const res = await TagService.listTag();
@@ -124,88 +123,16 @@ const MemoizedPostDetail = memo(function PostDetail({
 
   return (
     <div className="PostDetail width-100">
-      {!loading ? (
-        <Button
-          size="small"
-          type="primary"
-          // danger
-          icon={<CheckCircleOutlined />}
-          style={{
-            position: 'absolute',
-            bottom: '20px',
-            right: '20px',
-            zIndex: 1,
-          }}
-        />
-      ) : (
-        <>
-          <Button
-            size="small"
-            // danger
-            className="btn-warning"
-            loading={loading}
-            onClick={handleUpdate}
-            icon={<WarningOutlined />}
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              right: '20px',
-              zIndex: 1,
-            }}
-          />
-        </>
-      )}
-
-      {confirmDelete ? (
-        <>
-          <Button
-            size="small"
-            type="primary"
-            danger
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              right: '160px',
-              zIndex: 1,
-            }}
-            onClick={() => handleDelete()}
-          >
-            Confirm delete
-          </Button>
-          <Button
-            size="small"
-            style={{
-              position: 'absolute',
-              bottom: '20px',
-              right: '20px',
-              zIndex: 1,
-            }}
-            onClick={() => setConfirmDelete(false)}
-          >
-            Cancel delete
-          </Button>
-        </>
-      ) : (
-        <Button
-          size="small"
-          type="primary"
-          danger
-          onClick={() => setConfirmDelete(true)}
-          icon={<DeleteOutlined />}
-          style={{
-            position: 'absolute',
-            bottom: '20px',
-            left: '180px',
-            zIndex: 1,
-          }}
-        ></Button>
-      )}
       <div
         className="flex"
         style={{ margin: '8px 16px', justifyContent: 'space-between' }}
       >
         <Paragraph
-          style={{ height: '20px' }}
+          style={{
+            flex: 1,
+            marginBottom: 0,
+            marginRight: 20,
+          }}
           editable={{
             // icon: <HighlightOutlined />,
             tooltip: 'click to edit text',
@@ -217,13 +144,35 @@ const MemoizedPostDetail = memo(function PostDetail({
         >
           {post?.title}
         </Paragraph>
-        <Select
-          style={{ width: '100px' }}
-          value={post?.tag}
-          placeholder="Tags Mode"
-          onChange={handleChangeTag}
-          options={listTags}
-        />
+        <div>
+          <Select
+            style={{ width: '100px', marginRight: '8px' }}
+            value={post?.tag}
+            placeholder="Tags"
+            onChange={handleChangeTag}
+            options={listTags}
+          />
+          {!loading ? (
+            <Button type="primary" icon={<CheckCircleOutlined />} />
+          ) : (
+            <>
+              <Button
+                className="btn-warning"
+                loading={loading}
+                onClick={handleUpdate}
+                icon={<WarningOutlined />}
+              />
+            </>
+          )}
+          <Popconfirm
+            title="Delete the task"
+            onConfirm={() => handleDelete()}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button style={{ marginLeft: '8px' }} icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         <CustomLexical data={lexicalData} onChange={handleChangeLexical} />
