@@ -18,6 +18,7 @@ const TodoTableColumns = () => {
       headerName: 'Title',
       field: 'title',
       suppressMenu: true,
+      width: 400,
     },
   ];
 };
@@ -95,8 +96,17 @@ const TodoTable = () => {
     console.log('cellEditingStarted', event);
   }, []);
 
-  const onCellEditingStopped = useCallback((event: any) => {
+  const onCellEditingStopped = useCallback(async (event: any) => {
     console.log('cellEditingStopped', event);
+    try {
+      const requestData = {
+        title: event.newValue,
+      };
+      await TodoService.updateTodo(event.data.id, requestData);
+      notification.success({ message: 'Update success' });
+    } catch (e: any) {
+      notification.error({ message: 'Error Update todo' });
+    }
   }, []);
 
   useEffect(() => {
