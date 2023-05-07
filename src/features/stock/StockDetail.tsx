@@ -11,6 +11,7 @@ import {
   InputNumber,
   notification,
   Select,
+  Spin,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
@@ -35,11 +36,12 @@ import {
 
 const { RangePicker } = DatePicker;
 
-const StockDetailChart = () => {
+const StockDetail = () => {
   // get store from redux
   const selectedSymbol = useSelector(selectSelectedSymbol);
   const dispatch = useDispatch();
 
+  const [loading, setLoading] = useState<boolean>(false);
   const [dataChart, setDataChart] = useState<any>(null);
   const [stockBase, setStockBase] = useState<any>({});
   const [stockData, setStockData] = useState<StockData | undefined>(undefined);
@@ -137,14 +139,20 @@ const StockDetailChart = () => {
   ) => {
     try {
       if (!dates || dates.length !== 2 || !symbol) return;
-      const resStockBase = await StockService.getStockBase(symbol);
+      setLoading(true);
+      const listPromise: any = [
+        StockService.getStockBase(symbol),
+        getTodayData(dates, [symbol]),
+        StockService.getStockDataFromSupabase({
+          startDate: dates[0].format(DATE_FORMAT),
+          endDate: dates[1].format(DATE_FORMAT),
+          listSymbols: [symbol],
+        }),
+      ];
 
-      let resFireant = await getTodayData(dates, [symbol]);
-      const res = await StockService.getStockDataFromSupabase({
-        startDate: dates[0].format(DATE_FORMAT),
-        endDate: dates[1].format(DATE_FORMAT),
-        listSymbols: [symbol],
-      });
+      const [resStockBase, resFireant, res] = await Promise.all(listPromise);
+
+      setLoading(false);
 
       let newStockBase: any = {};
       if (resStockBase.data && resStockBase.data.length === 1) {
@@ -171,6 +179,7 @@ const StockDetailChart = () => {
       }
       setStockBase(newStockBase);
     } catch (e) {
+      setLoading(false);
       console.log(e);
     }
   };
@@ -211,6 +220,18 @@ const StockDetailChart = () => {
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
 
   console.log('dataChart', dataChart, stockData, stockBase);
+
+  const renderChart = () => {
+    if (loading) {
+      return <Spin />;
+    } else {
+      if (dataChart) {
+        return <StockChart data={dataChart} />;
+      } else {
+        return <div>No data</div>;
+      }
+    }
+  };
 
   return (
     <div
@@ -318,12 +339,10 @@ const StockDetailChart = () => {
         </div>
       ) : null}
       <Divider />
-      <div style={{ flex: 1 }}>
-        {dataChart ? <StockChart data={dataChart} /> : <div>No data</div>}
-      </div>
+      <div style={{ flex: 1 }}>{renderChart()}</div>
       {footer()}
     </div>
   );
 };
 
-export default StockDetailChart;
+export default StockDetail;

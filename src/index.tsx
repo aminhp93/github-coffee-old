@@ -15,7 +15,9 @@ notification.config({
   duration: 3,
 });
 
-const root = ReactDOM.createRoot(document.getElementById('root') as any);
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
 
 const App = () => {
   const { authUser }: any = useAuth();

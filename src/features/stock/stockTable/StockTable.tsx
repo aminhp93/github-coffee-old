@@ -151,6 +151,22 @@ const StockTable = () => {
     init();
   }, []);
 
+  const handleResize = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
+  const handleGridReady = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.setFilterModel({
+      is_blacklist: {
+        type: 'set',
+        values: ['false'],
+      },
+    });
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
   const handleClickSymbol = (data: any) => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
@@ -222,6 +238,8 @@ const StockTable = () => {
           })}
           pinnedTopRowData={pinnedTopRowData}
           getRowClass={getRowClass}
+          onResize={handleResize}
+          onGridReady={handleGridReady}
           ref={gridRef}
         />
       </div>
