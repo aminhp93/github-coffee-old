@@ -2,9 +2,10 @@ import { useCallback, useState, useEffect, useRef } from 'react';
 import CustomAgGridReact from 'components/CustomAgGridReact';
 
 import { Todo } from './types';
-import { useAuth } from '@/context/SupabaseContext';
+import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import TodoService from './service';
 import { notification, Input } from 'antd';
+import { AgGridReact } from 'ag-grid-react';
 
 const createNewRowData = (title: string) => {
   return {
@@ -24,8 +25,8 @@ const TodoTableColumns = () => {
 };
 
 const TodoTable = () => {
-  const { authUser }: any = useAuth();
-  const gridRef: any = useRef();
+  const { authUser }: AuthUserContext = useAuth();
+  const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const inputRef: any = useRef(null);
 
   const [listTodo, setListTodo] = useState<Todo[]>([]);
@@ -65,7 +66,7 @@ const TodoTable = () => {
   const addItems = useCallback((addIndex: any, value: string) => {
     console.log(value, addIndex);
     const newItems = [createNewRowData(value)];
-    gridRef.current.api.applyTransaction({
+    gridRef.current?.api.applyTransaction({
       add: newItems,
       addIndex: addIndex,
     });
@@ -75,7 +76,7 @@ const TodoTable = () => {
     };
     handleCreate(requestData);
 
-    console.log(gridRef.current.api);
+    console.log(gridRef.current?.api);
     //  const onBtStartEditing = useCallback((key, char, pinned) => {
     // const key = 0;
     // gridRef.current.api.setFocusedCell(0, 'title');

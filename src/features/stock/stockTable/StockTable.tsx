@@ -24,6 +24,7 @@ import RefreshButton from './RefreshButton';
 import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
+import { AgGridReact } from 'ag-grid-react';
 
 const getRowClass = (params: any) => {
   if (params.node.data.potential) {
@@ -36,7 +37,7 @@ const { RangePicker } = DatePicker;
 const StockTable = () => {
   // hooks
   const dispatch = useDispatch();
-  const gridRef: any = useRef();
+  const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();

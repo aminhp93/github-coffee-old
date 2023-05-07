@@ -4,7 +4,7 @@ const UserService = {
   getAuthUser() {
     return supabase.from('user').select();
   },
-  getAccessToken(data: any) {
+  getAccessToken() {
     return supabase.from('user').select();
   },
   getPublic() {

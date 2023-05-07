@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import './Post.less';
 import PostService from './service';
 import { Post } from './types';
-import { useAuth } from '@/context/SupabaseContext';
+import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function PostCreate({ onCreateSuccess }: Props) {
-  const { authUser }: any = useAuth();
+  const { authUser }: AuthUserContext = useAuth();
   const [listTags, setListTags] = useState<Tag[]>([]);
   const [post, setPost] = useState<Partial<Post> | undefined>();
 

@@ -20,7 +20,7 @@ const Chat = ({ hideOnlineUsers }: Props) => {
   const getChat = async () => {
     try {
       const res = await ChatService.getChatList();
-      res?.data?.sort((a: any, b: any) =>
+      res.data?.sort((a: any, b: any) =>
         a.created_at.localeCompare(b.created_at)
       );
       setChats(res.data);

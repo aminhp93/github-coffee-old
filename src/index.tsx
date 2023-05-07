@@ -1,4 +1,8 @@
-import { SupabaseAuthProvider, useAuth } from '@/context/SupabaseContext';
+import {
+  SupabaseAuthProvider,
+  useAuth,
+  AuthUserContext,
+} from '@/context/SupabaseContext';
 import { notification } from 'antd';
 import 'antd/dist/reset.css';
 import * as React from 'react';
@@ -20,7 +24,7 @@ const root = ReactDOM.createRoot(
 );
 
 const App = () => {
-  const { authUser }: any = useAuth();
+  const { authUser }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
   const defaultElement = authUser?.email ? <Work /> : <div>Hello</div>;

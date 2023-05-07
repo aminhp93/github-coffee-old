@@ -1,6 +1,5 @@
 //  https://github.com/caplin/FlexLayout/blob/master/examples/demo/App.tsx
-
-import { Dropdown, Menu, Button, Select, Drawer } from 'antd';
+import { Dropdown, Button, Select, Drawer } from 'antd';
 import {
   BorderNode,
   IJsonModel,
@@ -17,20 +16,16 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { v4 as uuidv4 } from 'uuid';
-
+import { MenuInfo } from 'rc-menu/lib/interface';
 import { RefObject, createRef, useState } from 'react';
 
-interface IProps {
+interface Props {
   layoutName: string;
   defaultJson: IJsonModel;
-  componentObj: any;
+  componentObj: Record<string, JSX.Element>;
 }
 
-const CustomFlexLayout = ({
-  layoutName,
-  defaultJson,
-  componentObj,
-}: IProps) => {
+const CustomFlexLayout = ({ layoutName, defaultJson, componentObj }: Props) => {
   // const [layoutFile, setLayoutFile] = useState(null);
   // const [model, setModel] = useState(null);
   // const [adding, setAdding] = useState(false);
@@ -48,33 +43,32 @@ const CustomFlexLayout = ({
   if (!model) return null;
   let layoutRef: RefObject<Layout> = createRef();
 
-  const handleClickMenu = (e: any, node: TabSetNode | BorderNode) => {
-    onAddFromTabSetButton(node, e.key);
-  };
-
   const factory = (node: TabNode) => {
-    const component: any = node.getComponent();
-    return componentObj[component];
+    const component: string | undefined = node.getComponent();
+    return componentObj[component as string];
   };
 
   const onRenderTabSet = (
     node: TabSetNode | BorderNode,
     renderValues: ITabSetRenderValues
   ) => {
-    const menu = (
-      <Menu onClick={(e) => handleClickMenu(e, node)}>
-        {Object.values(componentObj).map((component, index) => {
-          return (
-            <Menu.Item key={Object.keys(componentObj)[index]}>
-              {Object.keys(componentObj)[index]}
-            </Menu.Item>
-          );
-        })}
-      </Menu>
-    );
+    const items = Object.values(componentObj).map((component, index) => {
+      return {
+        label: Object.keys(componentObj)[index],
+        key: Object.keys(componentObj)[index],
+      };
+    });
+
+    const handleClickMenu = (e: MenuInfo) => {
+      onAddFromTabSetButton(node, e.key);
+    };
 
     renderValues.stickyButtons.push(
-      <Dropdown key={uuidv4()} overlay={menu} trigger={['click']}>
+      <Dropdown
+        key={uuidv4()}
+        menu={{ items, onClick: handleClickMenu }}
+        trigger={['click']}
+      >
         <PlusOutlined />
       </Dropdown>
     );
