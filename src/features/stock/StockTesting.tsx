@@ -188,7 +188,9 @@ const StockTesting = ({ onClose }: Props) => {
     const init = async () => {
       const resStockBase = await StockService.getAllStockBase();
 
-      const { list_all } = mapDataFromStockBase(resStockBase.data || []);
+      const { list_all } = mapDataFromStockBase(
+        resStockBase.data || ([] as any)
+      );
       setListAllSymbols(list_all);
     };
     init();

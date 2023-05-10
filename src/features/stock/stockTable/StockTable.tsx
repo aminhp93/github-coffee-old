@@ -57,7 +57,7 @@ const StockTable = () => {
       const resStockBase = await StockService.getAllStockBase();
 
       const { list_active, list_blacklist, list_buyPoint } =
-        mapDataFromStockBase(resStockBase.data || []);
+        mapDataFromStockBase(resStockBase.data || ([] as any));
 
       let resFireant = await getTodayData(dates, list_active);
 
@@ -106,7 +106,9 @@ const StockTable = () => {
         const res: any = await StockService.getLastUpdated();
         const resStockBase = await StockService.getAllStockBase();
 
-        const { list_all } = mapDataFromStockBase(resStockBase.data || []);
+        const { list_all } = mapDataFromStockBase(
+          resStockBase.data || ([] as any)
+        );
         if (res.data && res.data.length && res.data.length === 1) {
           const lastUpdated = res.data[0].last_updated;
           let newLastUpdated = dayjs().format(DATE_FORMAT);

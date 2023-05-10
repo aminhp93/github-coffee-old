@@ -10,16 +10,8 @@ const Layout = () => {
       <div className="flex-1">
         <Outlet />
       </div>
-      <div
-        style={{
-          position: 'fixed',
-          height: '29px',
-          bottom: 0,
-          right: 0,
-        }}
-      >
-        <Header />
-      </div>
+
+      <Header />
     </div>
   );
 };

@@ -4,17 +4,11 @@ import CustomAgGridReact from 'components/CustomAgGridReact';
 import { Todo } from './types';
 import { useAuth } from '@/context/SupabaseContext';
 import TodoService from './service';
-import { notification } from 'antd';
-import CustomPlate from 'components/CustomPlate';
-import { DEFAULT_PLATE_VALUE } from 'components/CustomPlate/utils';
-import { CONFIG } from 'components/CustomPlate/config/config';
-import { v4 as uuidv4 } from 'uuid';
+import { notification, Input } from 'antd';
 
-const createNewRowData = () => {
+const createNewRowData = (title: string) => {
   return {
-    title: '',
-    description: '',
-    isDone: false,
+    title,
   };
 };
 
@@ -24,14 +18,7 @@ const TodoTableColumns = () => {
       headerName: 'Title',
       field: 'title',
       suppressMenu: true,
-      width: 80,
-      cellRenderer: (data: any) => {
-        if (!data.data.id) {
-          return <input />;
-        } else {
-          return data.data.title;
-        }
-      },
+      width: 400,
     },
   ];
 };
@@ -39,8 +26,7 @@ const TodoTableColumns = () => {
 const TodoTable = () => {
   const { authUser }: any = useAuth();
   const gridRef: any = useRef();
-  const [value, setValue] = useState(DEFAULT_PLATE_VALUE);
-  const [plateId, setPlateId] = useState(uuidv4());
+  const inputRef: any = useRef(null);
 
   const [listTodo, setListTodo] = useState<Todo[]>([]);
 
@@ -53,7 +39,7 @@ const TodoTable = () => {
 
         const res = await TodoService.listTodo(dataRequest);
         if (res?.data) {
-          setListTodo(res.data);
+          setListTodo(res.data as Todo[]);
         }
       } catch (e) {
         notification.error({ message: 'error' });
@@ -62,66 +48,85 @@ const TodoTable = () => {
     [authUser?.id]
   );
 
-  const addItems = useCallback((addIndex: any) => {
-    const newItems = [createNewRowData()];
+  const handleCreate = async (data: any) => {
+    if (!authUser || !authUser.id || !data) return;
+    try {
+      const requestData = {
+        ...data,
+        author: authUser.id,
+      };
+      await TodoService.createTodo(requestData);
+      notification.error({ message: 'Create success' });
+    } catch (e: any) {
+      notification.error({ message: 'Error create todo' });
+    }
+  };
+
+  const addItems = useCallback((addIndex: any, value: string) => {
+    console.log(value, addIndex);
+    const newItems = [createNewRowData(value)];
     gridRef.current.api.applyTransaction({
       add: newItems,
       addIndex: addIndex,
     });
+
+    const requestData = {
+      title: value,
+    };
+    handleCreate(requestData);
+
+    console.log(gridRef.current.api);
     //  const onBtStartEditing = useCallback((key, char, pinned) => {
-    const key = 0;
-    gridRef.current.api.setFocusedCell(0, 'title');
-    gridRef.current.api.startEditingCell({
-      rowIndex: 0,
-      colKey: 'title',
-      // set to 'top', 'bottom' or undefined
-      //  rowPinned: pinned,
-      key: key,
-      //  charPress: char,
-    });
+    // const key = 0;
+    // gridRef.current.api.setFocusedCell(0, 'title');
+    // gridRef.current.api.startEditingCell({
+    //   rowIndex: 0,
+    //   colKey: 'title',
+    //   // set to 'top', 'bottom' or undefined
+    //   //  rowPinned: pinned,
+    //   key: key,
+    //   //  charPress: char,
+    // });
     //  }, []);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onCellEditingStarted = useCallback((event: any) => {
     console.log('cellEditingStarted', event);
   }, []);
 
-  const onCellEditingStopped = useCallback((event: any) => {
+  const onCellEditingStopped = useCallback(async (event: any) => {
     console.log('cellEditingStopped', event);
-  }, []);
-
-  const handleChange = (data: any) => {
-    console.log(data);
-    setValue(data);
-  };
-
-  const handleKeyDown = (e: any) => {
-    if (e.key === 'Enter') {
-      console.log('enter');
-      setValue(DEFAULT_PLATE_VALUE);
-      setPlateId(uuidv4());
+    try {
+      const requestData = {
+        title: event.newValue,
+      };
+      await TodoService.updateTodo(event.data.id, requestData);
+      notification.success({ message: 'Update success' });
+    } catch (e: any) {
+      notification.error({ message: 'Error Update todo' });
     }
-  };
+  }, []);
 
   useEffect(() => {
     getListTodos();
   }, [getListTodos]);
+
+  console.log(inputRef);
 
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
         <div>
           <div>Todo</div>
-          <div onClick={() => addItems(undefined)}>New task</div>
+          <div onClick={() => addItems(undefined, 'hello')}>New task</div>
           <div>
-            <CustomPlate
-              hideToolBar
-              id={String(plateId)}
-              value={value}
-              onChange={handleChange}
-              editableProps={{
-                ...CONFIG.editableProps,
-                onKeyDown: handleKeyDown,
+            <Input
+              ref={inputRef}
+              onPressEnter={(e: any) => {
+                addItems(0, e.target.value);
+                inputRef.current.input.value = '';
               }}
             />
           </div>

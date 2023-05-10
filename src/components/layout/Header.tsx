@@ -4,11 +4,21 @@ import FullscreenButton from 'components/FullscreenButton';
 
 const Header = () => {
   return (
-    <div className="Header flex height-100">
+    <div
+      className="Header flex height-100"
+      style={{
+        position: 'fixed',
+        height: '100px',
+        width: '29px',
+        bottom: 0,
+        paddingBottom: '40px',
+        right: 0,
+        flexDirection: 'column',
+      }}
+    >
       <User />
-      <div style={{ marginLeft: '10px' }}>
-        <FullscreenButton />
-      </div>
+
+      <FullscreenButton />
     </div>
   );
 };

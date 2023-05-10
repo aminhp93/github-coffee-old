@@ -203,10 +203,10 @@ export const mapDataChart = ({
   );
 
   const prices = newData.map((i: StockCoreData) => [
-    i.priceOpen / i.adjRatio,
-    i.priceClose / i.adjRatio,
-    i.priceLow / i.adjRatio,
-    i.priceHigh / i.adjRatio,
+    i.priceOpen / (i.adjRatio || 1),
+    i.priceClose / (i.adjRatio || 1),
+    i.priceLow / (i.adjRatio || 1),
+    i.priceHigh / (i.adjRatio || 1),
     i[volumeField],
   ]);
 
@@ -344,7 +344,13 @@ export const getTodayData = async (
   return resFireant;
 };
 
-export const getMinTotalValue = (data: StockData | undefined) => {
+export const getMinTotalValue = (
+  data: StockData | undefined
+): {
+  minTotal: number | undefined;
+  maxTotal: number | undefined;
+  averageTotal: number | undefined;
+} => {
   let minTotal;
   let maxTotal;
   let averageTotal;
@@ -352,16 +358,16 @@ export const getMinTotalValue = (data: StockData | undefined) => {
   if (data && data.fullData) {
     minTotal = minBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
     if (minTotal) {
-      minTotal = (minTotal / UNIT_BILLION).toFixed(0);
+      minTotal = Number((minTotal / UNIT_BILLION).toFixed(0));
     }
     maxTotal = maxBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
     if (maxTotal) {
-      maxTotal = (maxTotal / UNIT_BILLION).toFixed(0);
+      maxTotal = Number((maxTotal / UNIT_BILLION).toFixed(0));
     }
 
     averageTotal = meanBy(data.fullData.slice(1, 20), 'totalValue');
     if (averageTotal) {
-      averageTotal = (averageTotal / UNIT_BILLION).toFixed(0);
+      averageTotal = Number((averageTotal / UNIT_BILLION).toFixed(0));
     }
   }
 
