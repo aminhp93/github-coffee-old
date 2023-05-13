@@ -1,0 +1,19 @@
+.container {
+  background: indianred;
+  height: 500px;
+  width: 500px;
+}
+
+.view {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  background: green;
+}
+
+.item {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  background: purple;
+}
