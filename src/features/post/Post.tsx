@@ -1,4 +1,4 @@
-import { useAuth } from '@/context/SupabaseContext';
+import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
@@ -15,7 +15,7 @@ const PostPage = () => {
   const [selectedPost, setSelectedPost] = useState({} as Post);
   const [listPosts, setListPosts] = useState([]);
   const [mode, setMode] = useState<ModeType>('list');
-  const { authUser }: any = useAuth();
+  const { authUser }: AuthUserContext = useAuth();
 
   const handleSelect = useCallback((data: any) => {
     setMode('list');

@@ -15,6 +15,7 @@ import {
   updateDataWithDate,
   checkValidCondition,
 } from './utils';
+import { AgGridReact } from 'ag-grid-react';
 
 const DEFAULT_ROW_DATA: any = [];
 
@@ -50,7 +51,7 @@ interface Props {
 }
 
 const StockTesting = ({ onClose }: Props) => {
-  const gridRef: any = useRef();
+  const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
     dayjs().add(-1, 'month'),
     dayjs(),
@@ -126,10 +127,10 @@ const StockTesting = ({ onClose }: Props) => {
       valid = result.filter((i: any) => !i.valid).length === 0;
     }
     const rowData: any = [];
-    gridRef.current.api.forEachNode((node: any) => {
+    gridRef.current?.api.forEachNode((node: any) => {
       rowData.push(node.data);
     });
-    gridRef.current?.api?.applyTransaction({
+    gridRef.current?.api.applyTransaction({
       add: [
         {
           symbol,
@@ -143,7 +144,7 @@ const StockTesting = ({ onClose }: Props) => {
   const handleTestAll = async () => {
     setLoading(true);
     setCount(0);
-    gridRef.current?.api?.setRowData([]);
+    gridRef.current?.api.setRowData([]);
     for (let i = 0; i < listAllSymbols.length; i++) {
       await handleTest(listAllSymbols[i]);
     }

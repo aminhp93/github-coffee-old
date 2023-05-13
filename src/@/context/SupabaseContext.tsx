@@ -3,10 +3,17 @@ import { createContext, ReactNode, useContext } from 'react';
 
 // ** Hooks Imports
 import useSupabaseAuth from '@/hooks/useSupabaseAuth';
+import type { User } from '@supabase/supabase-js';
 
-const authUserContext: any = createContext({
-  signOut: async () => Promise.resolve(),
-  signInWithOAuth: async () => Promise.resolve(),
+export type AuthUserContext = {
+  signOut: () => void;
+  signInWithOAuth: () => void;
+  authUser?: User;
+};
+
+const authUserContext = createContext<AuthUserContext>({
+  signOut: () => {},
+  signInWithOAuth: () => {},
   authUser: undefined,
 });
 

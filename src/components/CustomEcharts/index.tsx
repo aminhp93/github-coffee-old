@@ -39,7 +39,7 @@ const CustomEcharts = ({ size, option }: EchartsProps): React.ReactElement => {
     if (chartRef.current !== null) {
       const chart = getInstanceByDom(chartRef.current);
       const old = chart?.getOption();
-      const newOption: any = { ...option };
+      const newOption = { ...option };
       if (old?.dataZoom) {
         newOption.dataZoom = old?.dataZoom;
       }

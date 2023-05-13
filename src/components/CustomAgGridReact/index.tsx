@@ -1,4 +1,5 @@
-import { ColDef } from 'ag-grid-community';
+import React from 'react';
+import { GridOptions } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'ag-grid-enterprise';
@@ -7,25 +8,25 @@ import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
 interface Props {
-  rowData: any;
-  columnDefs: ColDef[];
-  pinnedTopRowData?: any;
-  getRowClass?: any;
-  getRowId?: any;
-  pagination?: boolean;
-  paginationAutoPageSize?: boolean;
+  rowData: GridOptions['rowData'];
+  columnDefs: GridOptions['columnDefs'];
+  pinnedTopRowData?: GridOptions['pinnedTopRowData'];
+  getRowClass?: GridOptions['getRowClass'];
+  getRowId?: GridOptions['getRowId'];
+  pagination?: GridOptions['pagination'];
+  paginationAutoPageSize?: GridOptions['paginationAutoPageSize'];
   size?: {
     width: number;
     height: number;
   };
-  onResize?: any;
-  onGridReady?: any;
-  onCellEditingStarted?: any;
-  onCellEditingStopped?: any;
+  onResize?: () => void;
+  onGridReady?: GridOptions['onGridReady'];
+  onCellEditingStarted?: GridOptions['onCellEditingStarted'];
+  onCellEditingStopped?: GridOptions['onCellEditingStopped'];
 }
 
 interface CustomAgGridReactProps extends Props {
-  gridRef: any;
+  gridRef: React.RefObject<AgGridReact>;
 }
 
 const CustomAgGridReact = ({
@@ -94,6 +95,9 @@ const WithSizeCustomAgGridReact = withSize({
 
 export default memo(
   forwardRef((props: Props, ref) => (
-    <WithSizeCustomAgGridReact {...props} gridRef={ref} />
+    <WithSizeCustomAgGridReact
+      {...props}
+      gridRef={ref as React.RefObject<AgGridReact>}
+    />
   ))
 );

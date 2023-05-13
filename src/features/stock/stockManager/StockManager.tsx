@@ -14,11 +14,12 @@ import { SupabaseData } from '../types';
 import { getStockDataFromSupabase } from '../utils';
 import './StockManager.less';
 import StockManagerColumns from './StockManagerColumns';
+import { AgGridReact } from 'ag-grid-react';
 
 const { RangePicker } = DatePicker;
 
 const StockManager = () => {
-  const gridRef: any = useRef();
+  const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const dispatch = useDispatch();
 
   const [listStocks, setListStocks] = useState<any[]>([]);

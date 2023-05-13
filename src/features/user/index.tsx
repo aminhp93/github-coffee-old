@@ -1,15 +1,16 @@
-import { useAuth } from '@/context/SupabaseContext';
-import { Button, Dropdown, Menu } from 'antd';
+import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
+import { Button, Dropdown } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
 export default function User() {
-  const { authUser, signOut, signInWithOAuth }: any = useAuth();
+  const { authUser, signOut, signInWithOAuth }: AuthUserContext = useAuth();
 
-  const menu = (
-    <Menu onClick={signOut}>
-      <Menu.Item>{authUser?.email} - Logout</Menu.Item>
-    </Menu>
-  );
+  const items = [
+    {
+      key: '1',
+      label: `${authUser?.email} - Logout`,
+    },
+  ];
 
   return (
     <div
@@ -21,7 +22,7 @@ export default function User() {
       }}
     >
       {authUser?.email ? (
-        <Dropdown overlay={menu} trigger={['hover']}>
+        <Dropdown menu={{ items, onClick: signOut }} trigger={['hover']}>
           <div style={{ cursor: 'pointer' }}>
             <UserOutlined />
           </div>
