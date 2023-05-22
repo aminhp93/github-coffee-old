@@ -10,8 +10,6 @@ import Test from 'features/test/Test';
 import TodoTable from 'features/todo/TodoTable';
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
-import { useHotkeys } from 'react-hotkeys-hook';
-import useEditorStore from 'features/test/store';
 
 const rowId = uuidv4();
 const tabSetId1 = uuidv4();
@@ -79,48 +77,6 @@ const defaultJson: IJsonModel = {
 };
 
 const Work: React.FunctionComponent = () => {
-  const mode = useEditorStore((state) => state.mode);
-  const setMode = useEditorStore((state) => state.setMode);
-
-  // isHotkeyPressed('ctrl');
-
-  useHotkeys(
-    'shift',
-    (event) => {
-      event.preventDefault();
-      console.log('ctrl pressed', event);
-      if (event.type === 'keydown') {
-        setMode('pan');
-      }
-
-      if (event.type === 'keyup') {
-        setMode('select');
-      }
-    },
-    {
-      keydown: true,
-      keyup: true,
-    }
-  );
-
-  useHotkeys(
-    'p',
-    () => {
-      console.log('p pressed');
-      setMode('pan');
-    },
-    []
-  );
-
-  useHotkeys(
-    's',
-    () => {
-      console.log('s pressed');
-      setMode('select');
-    },
-    []
-  );
-
   return (
     <>
       <CustomFlexLayout
@@ -132,15 +88,12 @@ const Work: React.FunctionComponent = () => {
           Chat: <Chat hideOnlineUsers />,
           Todo: <TodoTable />,
           Snippet: <Snippet />,
-          Test: <Test id={1} />,
+          Test: <Test />,
           StockTable: <StockTable />,
           StockDetail: <StockDetail />,
           StockManager: <StockManager />,
         }}
       />
-      <div style={{ position: 'fixed', bottom: 0, right: 100 }}>
-        Mode: {mode}
-      </div>
     </>
   );
 };

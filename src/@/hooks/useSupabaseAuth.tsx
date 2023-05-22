@@ -22,7 +22,7 @@ const useSupabaseAuth = () => {
         redirectTo:
           process.env.NODE_ENV === 'production'
             ? 'https://github-coffee.vercel.app/'
-            : 'http://localhost:3001/',
+            : 'http://localhost:3000/',
       },
     });
   };
