@@ -1,145 +1,216 @@
-import React, { useEffect } from 'react';
-import { useSpring, animated } from '@react-spring/web';
-import { createUseGesture, dragAction, pinchAction } from '@use-gesture/react';
-
-import styles from './styles.module.css';
+import { useEffect } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import useEditorStore from 'features/test/store';
+import useEditorStore from './store/EditorStore';
+import useHistoryStore from './store/HistoryStore';
+import Item from './Item';
+import { Button } from 'antd';
+import { LIST_ITEM } from './utils';
+import { keyBy } from 'lodash';
+import { ItemCollection } from './schema/item.schema';
+import Properties from './Properties';
 
-const useGesture = createUseGesture([dragAction, pinchAction]);
+console.log(LIST_ITEM);
+const objectItems = keyBy(LIST_ITEM, 'id');
 
-const Count = () => {
-  const [count, setCount] = React.useState(0);
-
-  useHotkeys(
-    'ctrl+k',
-    () => {
-      console.log('ctrl+k');
-      setCount(count + 1);
-    },
-    [count]
-  );
-
-  return <div>Count {count}</div>;
-};
-
-const STYLES: any = {
-  2: {
-    x: 10,
-    y: 10,
-  },
-  3: {
-    x: 100,
-    y: 100,
-  },
-  4: {
-    x: 200,
-    y: 200,
-  },
-};
-
-const getItem = (id: number) => {
-  if (id !== 1) {
-    return {
-      type: 'item',
-      id,
-      content: [],
-      component: <Count />,
-      style: STYLES[id],
-    };
-  }
-  return {
-    id: 1,
-    type: 'view',
-    content: [
-      {
-        id: 2,
-      },
-      {
-        id: 3,
-      },
-      {
-        id: 4,
-      },
-    ],
-  };
-};
-
-const Test = ({ id }: any) => {
-  const item: any = getItem(id);
+const Test = () => {
   const mode = useEditorStore((state) => state.mode);
+  const setMode = useEditorStore((state) => state.setMode);
+
+  const test = useEditorStore((state) => state.test);
+  const setTest = useEditorStore((state) => state.setTest);
+  const patchItems = useHistoryStore((state) => state.patchItems);
+
+  const undo = useHistoryStore((state) => state.undo);
+  const updateItems = useHistoryStore((state) => state.updateItems);
+  const redo = useHistoryStore((state) => state.redo);
+  const items = useHistoryStore((state) => state.items);
 
   useEffect(() => {
-    const handler = (e: Event) => e.preventDefault();
-    document.addEventListener('gesturestart', handler);
-    document.addEventListener('gesturechange', handler);
-    document.addEventListener('gestureend', handler);
-    return () => {
-      document.removeEventListener('gesturestart', handler);
-      document.removeEventListener('gesturechange', handler);
-      document.removeEventListener('gestureend', handler);
-    };
+    setTimeout(() => {
+      console.log('fetchData');
+      Object.keys(objectItems).forEach((id) => {
+        objectItems[id] = {
+          ...objectItems[id],
+          currentState: {
+            selected: false,
+            frame: {
+              x: 0,
+              y: 0,
+              width: 0,
+              height: 0,
+            },
+            itemSpring: null,
+          },
+        } as any;
+      });
+      updateItems(objectItems as ItemCollection);
+    }, 2000);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const [style, api] = useSpring(() => ({
-    x: item?.style?.x || 0,
-    y: item?.style?.y || 0,
-    scale: 1,
-    rotateZ: 0,
-  }));
+  useHotkeys(
+    'shift',
+    (event) => {
+      event.preventDefault();
+      console.log('ctrl pressed', event);
+      if (event.type === 'keydown') {
+        setMode('pan');
+      }
 
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  const handleClick = (e: any) => {
-    console.log('click', id);
-  };
-
-  useGesture(
-    {
-      onDrag: ({ offset: [x, y], event, tap }) => {
-        event.stopPropagation();
-        console.log('drag', item?.id, tap);
-        if (mode === 'pan') {
-          if (item.type === 'view') {
-            api.start({ x, y });
-          }
-        }
-
-        if (mode === 'select') {
-          if (item.type === 'item') {
-            api.start({ x, y });
-          }
-        }
-      },
+      if (event.type === 'keyup') {
+        setMode('select');
+      }
     },
     {
-      target: ref,
-      drag: {
-        from: () => [style.x.get(), style.y.get()],
-        // preventDefault: true,
-        // stopPropagation: true,
-        pointer: { lock: true },
-        // filterTaps: true,
-      },
+      keydown: true,
+      keyup: true,
     }
   );
 
-  console.log('test');
+  useHotkeys(
+    'p',
+    () => {
+      console.log('p pressed');
+      patchItems({
+        '1': {
+          legacy: {
+            itemProperties: {
+              transform: {
+                zIndex: 100000,
+              },
+            },
+          },
+        } as any,
+      });
+      setMode('pan');
+    },
+    []
+  );
 
-  if (!item) return null;
+  useHotkeys(
+    's',
+    () => {
+      patchItems({
+        '1': {
+          legacy: {
+            itemProperties: {
+              transform: {
+                zIndex: 0,
+              },
+            },
+          },
+        } as any,
+      });
+      console.log('s pressed');
+      setMode('select');
+    },
+    []
+  );
+
+  useHotkeys(
+    'v',
+    () => {
+      console.log('s pressed');
+      setMode('view');
+    },
+    []
+  );
+
+  useHotkeys(
+    'space',
+    (event) => {
+      event.preventDefault();
+      if (event.type === 'keydown') {
+        setMode('pan');
+      }
+
+      if (event.type === 'keyup') {
+        setMode('select');
+      }
+    },
+    {
+      keydown: true,
+      keyup: true,
+    }
+  );
+
+  const handlePaste = () => {
+    console.log('handlePaste');
+  };
+
+  const handleCopy = () => {
+    console.log('handleCopy');
+  };
+
+  const handlePrevious = () => {
+    console.log('handlePrevious');
+    undo();
+  };
+
+  const handleNext = () => {
+    console.log('handleNext');
+    redo();
+  };
+
+  const handleMerge = () => {
+    setTest({
+      2: {
+        currentState: {
+          frame: {
+            x: 99,
+            y: 99,
+            width: 99,
+            height: 99,
+          },
+        },
+      } as any,
+    });
+  };
+
+  console.log('Test', test, items);
 
   return (
-    <animated.div
-      className={item.type === 'view' ? styles.view : styles.item}
-      ref={ref}
-      style={style}
-      onClick={handleClick}
-    >
-      {item.content.map((item: any) => {
-        return <Test id={item.id} />;
-      })}
-      {item.component}
-    </animated.div>
+    <div style={{ position: 'relative', height: '100%', width: '100%' }}>
+      <Item id={'1'} />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+        }}
+      >
+        <div>Mode: {mode}</div>
+        <Button onClick={handlePaste}>Paste</Button>
+        <Button onClick={handleCopy}>Copy</Button>
+        <Button onClick={handlePrevious}>Previous</Button>
+        <Button onClick={handleNext}>Next</Button>
+        <Button onClick={handleMerge}>Merge</Button>
+      </div>
+
+      <Properties />
+      <div
+        style={{
+          transform: `scale(1.5) rotate(${30}deg)`,
+          border: '2px solid red',
+          position: 'absolute',
+          top: 100,
+          left: 900,
+        }}
+      >
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: `${100}px solid transparent`,
+            borderRight: `${100}px solid transparent`,
+            borderBottom: `${100}px solid lightblue`,
+          }}
+        >
+          <div>Triangle: </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

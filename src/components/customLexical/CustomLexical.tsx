@@ -32,6 +32,9 @@ function Placeholder() {
   return <div className="editor-placeholder">Enter some rich text...</div>;
 }
 
+const EMPTY_VALUE =
+  '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+
 const editorConfig: any = {
   // The editor theme
   theme: ExampleTheme,
@@ -76,7 +79,7 @@ const UpdatePlugin = (props: any) => {
     const editorState = editor.parseEditorState(props.data);
     editor.setEditorState(editorState);
     editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-  }, [editor, props]);
+  }, [editor, props.data]);
 
   return null;
 };
@@ -90,6 +93,9 @@ export default function Editor(props: Props) {
   const handleChange = (editorState: any) => {
     editorState.read(() => {
       const value = JSON.stringify(editorState);
+      console.log('change', props.data === value);
+      if (props.data === value || value === EMPTY_VALUE) return;
+
       props.onChange && props.onChange(value);
     });
   };

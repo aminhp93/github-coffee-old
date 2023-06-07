@@ -10,8 +10,11 @@ import Test from 'features/test/Test';
 import TodoTable from 'features/todo/TodoTable';
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
-import { useHotkeys } from 'react-hotkeys-hook';
-import useEditorStore from 'features/test/store';
+import { useEffect } from 'react';
+import TagService from 'features/tag/services';
+import { Tag } from 'features/tag/types';
+import useTagStore from 'features/tag/store';
+import { keyBy } from 'lodash';
 
 const rowId = uuidv4();
 const tabSetId1 = uuidv4();
@@ -79,47 +82,18 @@ const defaultJson: IJsonModel = {
 };
 
 const Work: React.FunctionComponent = () => {
-  const mode = useEditorStore((state) => state.mode);
-  const setMode = useEditorStore((state) => state.setMode);
+  const setTags = useTagStore((state) => state.setTags);
 
-  // isHotkeyPressed('ctrl');
+  useEffect(() => {
+    // Fetch init data
+    (async () => {
+      const res = await TagService.listTag();
 
-  useHotkeys(
-    'shift',
-    (event) => {
-      event.preventDefault();
-      console.log('ctrl pressed', event);
-      if (event.type === 'keydown') {
-        setMode('pan');
+      if (res && res.data) {
+        setTags(keyBy(res.data as Tag[], 'id'));
       }
-
-      if (event.type === 'keyup') {
-        setMode('select');
-      }
-    },
-    {
-      keydown: true,
-      keyup: true,
-    }
-  );
-
-  useHotkeys(
-    'p',
-    () => {
-      console.log('p pressed');
-      setMode('pan');
-    },
-    []
-  );
-
-  useHotkeys(
-    's',
-    () => {
-      console.log('s pressed');
-      setMode('select');
-    },
-    []
-  );
+    })();
+  }, [setTags]);
 
   return (
     <>
@@ -132,15 +106,12 @@ const Work: React.FunctionComponent = () => {
           Chat: <Chat hideOnlineUsers />,
           Todo: <TodoTable />,
           Snippet: <Snippet />,
-          Test: <Test id={1} />,
+          Test: <Test />,
           StockTable: <StockTable />,
           StockDetail: <StockDetail />,
           StockManager: <StockManager />,
         }}
       />
-      <div style={{ position: 'fixed', bottom: 0, right: 100 }}>
-        Mode: {mode}
-      </div>
     </>
   );
 };
