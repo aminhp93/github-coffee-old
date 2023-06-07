@@ -10,6 +10,11 @@ import Test from 'features/test/Test';
 import TodoTable from 'features/todo/TodoTable';
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from 'react';
+import TagService from 'features/tag/services';
+import { Tag } from 'features/tag/types';
+import useTagStore from 'features/tag/store';
+import { keyBy } from 'lodash';
 
 const rowId = uuidv4();
 const tabSetId1 = uuidv4();
@@ -77,6 +82,19 @@ const defaultJson: IJsonModel = {
 };
 
 const Work: React.FunctionComponent = () => {
+  const setTags = useTagStore((state) => state.setTags);
+
+  useEffect(() => {
+    // Fetch init data
+    (async () => {
+      const res = await TagService.listTag();
+
+      if (res && res.data) {
+        setTags(keyBy(res.data as Tag[], 'id'));
+      }
+    })();
+  }, [setTags]);
+
   return (
     <>
       <CustomFlexLayout

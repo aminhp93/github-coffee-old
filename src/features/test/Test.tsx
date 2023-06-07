@@ -189,6 +189,27 @@ const Test = () => {
       </div>
 
       <Properties />
+      <div
+        style={{
+          transform: `scale(1.5) rotate(${30}deg)`,
+          border: '2px solid red',
+          position: 'absolute',
+          top: 100,
+          left: 900,
+        }}
+      >
+        <div
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: `${100}px solid transparent`,
+            borderRight: `${100}px solid transparent`,
+            borderBottom: `${100}px solid lightblue`,
+          }}
+        >
+          <div>Triangle: </div>
+        </div>
+      </div>
     </div>
   );
 };

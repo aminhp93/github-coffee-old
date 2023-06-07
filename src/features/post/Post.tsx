@@ -1,77 +1,42 @@
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import './Post.less';
 import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
 import PostService from './service';
-import { Post } from './types';
-
-type ModeType = 'list' | 'create';
+import usePostStore from './store';
+import { keyBy } from 'lodash';
 
 const PostPage = () => {
-  const [selectedPost, setSelectedPost] = useState({} as Post);
-  const [listPosts, setListPosts] = useState([]);
-  const [mode, setMode] = useState<ModeType>('list');
+  const setPosts = usePostStore((state) => state.setPosts);
+  const mode = usePostStore((state) => state.mode);
+  const setMode = usePostStore((state) => state.setMode);
+  const selectedPost = usePostStore((state) => state.selectedPost);
+  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+
   const { authUser }: AuthUserContext = useAuth();
-
-  const handleSelect = useCallback((data: any) => {
-    setMode('list');
-    setSelectedPost(data);
-  }, []);
-
-  const handleUpdateSuccess = (updatedPost: Post) => {
-    const newListPosts = [...listPosts];
-    const mappedNewListPosts: any = newListPosts.map((i: any) => {
-      if (i.id === updatedPost.id) {
-        return updatedPost;
-      }
-      return i;
-    });
-    setListPosts(mappedNewListPosts);
-    setSelectedPost(updatedPost);
-  };
-
-  const handleDeleteSuccess = (postId: any) => {
-    setListPosts((old) => old.filter((i: Post) => i.id !== postId));
-    setSelectedPost({} as Post);
-  };
-
-  const handleCreateSuccess = (data: any) => {
-    const newListPosts: any = [...listPosts];
-    newListPosts.unshift(data);
-    setListPosts(newListPosts);
-
-    setMode('list');
-  };
-
   useEffect(() => {
     const init = async () => {
       try {
         const res: any = await PostService.listPost({ author: authUser?.id });
         if (res && res.data) {
-          setListPosts(res.data);
+          setPosts(keyBy(res.data, 'id'));
         }
       } catch (e) {
         notification.error({ message: 'error' });
       }
     };
     init();
-  }, [authUser]);
+  }, [authUser?.id, setPosts]);
 
-  const renderCreate = () => (
-    <PostCreate onCreateSuccess={handleCreateSuccess} />
-  );
+  const renderCreate = () => <PostCreate />;
 
   const renderList = () =>
-    selectedPost && selectedPost.id ? (
-      <PostDetail
-        postId={selectedPost.id}
-        onUpdateSuccess={handleUpdateSuccess}
-        onDeleteSuccess={handleDeleteSuccess}
-      />
+    selectedPost?.id ? (
+      <PostDetail />
     ) : (
       <div className="width-100">No post selected</div>
     );
@@ -94,12 +59,15 @@ const PostPage = () => {
               <Button
                 size="small"
                 icon={<PlusOutlined />}
-                onClick={() => setMode('create')}
+                onClick={() => {
+                  setMode('create');
+                  setSelectedPost(undefined);
+                }}
               />
             </Tooltip>
           )}
         </div>
-        <PostList listPosts={listPosts} cb={handleSelect} />
+        <PostList />
       </div>
 
       <div className="PostDetailContainer flex flex-1 height-100">

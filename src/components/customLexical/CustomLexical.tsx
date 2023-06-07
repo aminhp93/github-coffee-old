@@ -76,7 +76,7 @@ const UpdatePlugin = (props: any) => {
     const editorState = editor.parseEditorState(props.data);
     editor.setEditorState(editorState);
     editor.dispatchCommand(CLEAR_HISTORY_COMMAND, undefined);
-  }, [editor, props]);
+  }, [editor, props.data]);
 
   return null;
 };

@@ -1,21 +1,21 @@
-import TagService from '@/services/tag';
-import { Tag } from '@/types/tag';
 import { Button, Form, Input, notification, Select } from 'antd';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './Post.less';
 import PostService from './service';
 import { Post } from './types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
+import usePostStore from './store';
+import useTagStore from '../tag/store';
 
-interface Props {
-  onCreateSuccess: (data: any) => void;
-}
-
-export default function PostCreate({ onCreateSuccess }: Props) {
+export default function PostCreate() {
   const { authUser }: AuthUserContext = useAuth();
-  const [listTags, setListTags] = useState<Tag[]>([]);
   const [post, setPost] = useState<Partial<Post> | undefined>();
+  const posts = usePostStore((state) => state.posts);
+  const setPosts = usePostStore((state) => state.setPosts);
+  const setMode = usePostStore((state) => state.setMode);
+  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+  const tags = useTagStore((state) => state.tags);
 
   const onFinish = async () => {
     try {
@@ -26,17 +26,18 @@ export default function PostCreate({ onCreateSuccess }: Props) {
       };
       const res = await PostService.createPost(requestData);
       if (res.data && res.data.length === 1) {
-        onCreateSuccess(res.data[0]);
+        const newPosts = { ...posts };
+        const newPost = res.data[0] as Post;
+        newPosts[newPost.id] = newPost;
+        setPosts(newPosts);
+        setSelectedPost(newPost);
+        setMode('list');
       }
 
       notification.success({ message: 'Create success' });
     } catch (e) {
       notification.error({ message: 'Create failed' });
     }
-  };
-
-  const onFinishFailed = (errorInfo: any) => {
-    // console.log('Failed:', errorInfo);
   };
 
   const handleChangeTag = (value: any, data: any) => {
@@ -58,23 +59,7 @@ export default function PostCreate({ onCreateSuccess }: Props) {
     setPost({ ...post, content: value });
   };
 
-  const getListTags = async () => {
-    const res = await TagService.listTag();
-    if (res && res.data) {
-      const newTags: any = (res.data as Tag[]).map((i: Tag) => {
-        return {
-          label: i.title,
-          value: i.id,
-          data: i,
-        };
-      });
-      setListTags(newTags);
-    }
-  };
-
-  useEffect(() => {
-    getListTags();
-  }, []);
+  console.log('tags', tags);
 
   return (
     <div className="PostCreate width-100">
@@ -83,7 +68,6 @@ export default function PostCreate({ onCreateSuccess }: Props) {
         wrapperCol={{ span: 24 }}
         initialValues={{ remember: true }}
         onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
         <Form.Item
@@ -97,7 +81,11 @@ export default function PostCreate({ onCreateSuccess }: Props) {
             style={{ width: '100px' }}
             placeholder="Tags Mode"
             onChange={handleChangeTag}
-            options={listTags}
+            options={Object.values(tags).map((tag) => ({
+              label: tag.title,
+              value: tag.id,
+              data: tag,
+            }))}
           />
         </Form.Item>
 

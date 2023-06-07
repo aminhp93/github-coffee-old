@@ -1,17 +1,25 @@
 import { memo } from 'react';
 import './Post.less';
+import usePostStore from './store';
 
-interface IPostListItemProps {
+type Props = {
   data: any;
-  handleSelect: any;
-  selected?: boolean;
-}
+};
 
-function PostListItem({ data, handleSelect, selected }: IPostListItemProps) {
+function PostListItem({ data }: Props) {
+  const selectedPost = usePostStore((state) => state.selectedPost);
+  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+  const setMode = usePostStore((state) => state.setMode);
+
+  const selected = selectedPost?.id === data.id;
+
   return (
     <div
       className={`PostListItem ${selected ? 'selected' : ''}`}
-      onClick={() => handleSelect(data)}
+      onClick={() => {
+        setSelectedPost(data);
+        setMode('list');
+      }}
     >
       <div>{`${data.id} - ${data.title}`}</div>
     </div>

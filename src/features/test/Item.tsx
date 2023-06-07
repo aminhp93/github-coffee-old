@@ -108,54 +108,38 @@ const Item = ({ id }: any) => {
   if (!item) return null;
 
   return (
-    <animated.div
-      ref={ref}
-      style={{
-        // boxSizing: 'content-box',
-        // touchAction: 'none',
-        // userSelect: 'none',
-        // WebkitUserSelect: 'none',
-        position: 'absolute',
-        width:
-          item.type === 'view'
-            ? get(item, 'legacy.viewProperties.dimensions[0]')
-            : item?.currentState?.frame?.width,
-        height:
-          item.type === 'view'
-            ? get(item, 'legacy.viewProperties.dimensions[1]')
-            : item?.currentState?.frame?.height,
-        ...style,
-      }}
-      onClick={() => console.log(126)}
-    >
-      {item?.currentState?.selected && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            border: '2px solid red',
-            transform: 'translate(-2px, -2px)',
-            boxSizing: 'content-box',
-            // touchAction: 'none',
-            // userSelect: 'none',
-            // WebkitUserSelect: 'none',
-          }}
-          onClick={() => console.log(143)}
-        />
-      )}
-      {item.type === 'view' ? (
-        <ProcessView item={item}>
-          {item.content.map((itemId: any) => {
-            return <Item id={itemId} />;
-          })}
-        </ProcessView>
-      ) : (
-        <Component item={item} />
-      )}
-    </animated.div>
+    <div style={{}}>
+      <animated.div
+        ref={ref}
+        style={{
+          // boxSizing: 'content-box',
+          // touchAction: 'none',
+          // userSelect: 'none',
+          // WebkitUserSelect: 'none',
+          position: 'absolute',
+          width:
+            item.type === 'view'
+              ? get(item, 'legacy.viewProperties.dimensions[0]')
+              : 'unset',
+          height:
+            item.type === 'view'
+              ? get(item, 'legacy.viewProperties.dimensions[1]')
+              : 'unset',
+          border: `${item?.currentState?.selected ? '2px solid red' : 'none'}`,
+          ...style,
+        }}
+      >
+        {item.type === 'view' ? (
+          <ProcessView item={item}>
+            {item.content.map((itemId: any) => {
+              return <Item id={itemId} />;
+            })}
+          </ProcessView>
+        ) : (
+          <Component item={item} />
+        )}
+      </animated.div>
+    </div>
   );
 };
 

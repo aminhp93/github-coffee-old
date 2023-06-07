@@ -1,5 +1,5 @@
 import supabase from '@/services/supabase';
-import { Tag } from '@/types/tag';
+import { Tag } from './types';
 
 const TagService = {
   createTag(data: Partial<Tag>) {

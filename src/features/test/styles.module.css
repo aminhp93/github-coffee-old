@@ -1,19 +1,10 @@
 .container {
   background: indianred;
-  height: 500px;
-  width: 500px;
 }
 
-.view {
+.card {
   position: relative;
-  width: 200px;
-  height: 200px;
-  background: transparent;
-}
-
-.item {
-  position: relative;
-  width: 50px;
-  height: 50px;
-  background: purple;
+  width: 300px;
+  height: 300px;
+  background-color: green;
 }

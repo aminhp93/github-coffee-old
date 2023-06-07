@@ -33,30 +33,7 @@ const Component = ({ item }: Props) => {
         },
       } as Item,
     });
-  }, []);
-
-  const test = () => {
-    const element = ref.current;
-    if (!element || !element.firstChild) return;
-    const rect = (element.firstChild as Element).getBoundingClientRect();
-    const transform = item?.legacy?.itemProperties?.transform;
-    const x = transform.x || 0;
-    const y = transform.y || 0;
-    const scale = transform?.scale || 1;
-    console.log('useEffect', item.legacy?.itemType);
-    patchItems({
-      [item.id]: {
-        currentState: {
-          frame: {
-            x,
-            y,
-            width: rect.width / scale,
-            height: rect.height / scale,
-          },
-        },
-      } as Item,
-    });
-  };
+  }, [item.id, item?.legacy?.itemProperties?.transform, patchItems]);
 
   const renderComponent = () => {
     if (item?.legacy?.itemType === 'Rectangle') {
@@ -70,23 +47,7 @@ const Component = ({ item }: Props) => {
     return null;
   };
 
-  return (
-    <div
-      ref={ref}
-      className="component"
-      style={
-        {
-          // boxSizing: 'content-box',
-          // touchAction: 'none',
-          // userSelect: 'none',
-          // WebkitUserSelect: 'none',
-        }
-      }
-      onClick={() => console.log(61)}
-    >
-      {renderComponent()}
-    </div>
-  );
+  return renderComponent();
 };
 
 export default Component;

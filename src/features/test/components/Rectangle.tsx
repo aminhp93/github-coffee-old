@@ -8,7 +8,6 @@ const Rectangle = ({ item }: Props) => {
   return (
     <div
       style={{
-        position: 'absolute',
         // top: item.property.y,
         // left: item.property.x,
         width: item?.legacy?.itemProperties?.transform?.width,

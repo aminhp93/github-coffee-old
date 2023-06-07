@@ -8,7 +8,7 @@ const fakeItemsID = () => {
   return items;
 };
 
-const fakeItems = () => {
+export const fakeItems = () => {
   const items = [];
   for (let i = 0; i < 100; i++) {
     const item = {
@@ -133,12 +133,14 @@ export const LIST_ITEM = [
       itemType: 'Triangle',
       itemProperties: {
         transform: {
-          x: 200,
+          x: 500,
           y: 200,
+          rotation: 30,
           width: 84,
+          height: 200,
         },
       },
     },
   },
-  ...fakeItems(),
+  // ...fakeItems(),
 ];
