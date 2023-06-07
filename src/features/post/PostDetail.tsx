@@ -4,15 +4,15 @@ import {
   WarningOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useState, useMemo } from 'react';
 import './Post.less';
 import PostService from './service';
-import { Post } from './types';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import { useDebounce } from '@/hooks';
 import usePostStore from './store';
 import useTagStore from '../tag/store';
+import { Post, PostCollection } from './types';
+import { debounce } from 'lodash';
 
 const { Paragraph } = Typography;
 
@@ -28,59 +28,65 @@ const MemoizedPostDetail = memo(function PostDetail() {
     selectedPost ? selectedPost.content : JSON.stringify(DEFAULT_VALUE)
   );
 
-  const debouncePostContent = useDebounce(selectedPost?.content, 300);
-
-  const handleUpdate = async () => {
+  const handleUpdate = async (post?: Post) => {
+    if (!post) return;
     try {
-      if (!selectedPost?.id) return;
+      if (!post?.id) return;
       setLoading(true);
-      const res = await PostService.updatePost(selectedPost.id, selectedPost);
+      await PostService.updatePost(post.id, post);
       setLoading(false);
-
-      if (res.data && res.data.length === 1) {
-        const updatedPost = res.data[0] as Post;
-        const newPosts = { ...posts };
-        newPosts[updatedPost.id] = updatedPost;
-        setPosts(newPosts);
-        setSelectedPost(updatedPost);
-      }
     } catch (e) {
       setLoading(false);
       notification.error({ message: 'Error Update Post' });
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (post?: Post) => {
     try {
-      if (!selectedPost?.id) return;
-      await PostService.deletePost(selectedPost.id);
+      if (!post?.id) return;
+      await PostService.deletePost(post.id);
       const newPosts = { ...posts };
-      delete newPosts[selectedPost.id];
+      delete newPosts[post.id];
       setPosts(newPosts);
       setSelectedPost(undefined);
       notification.success({
-        message: `Delete ${selectedPost.title} successfully`,
+        message: `Delete ${post.title} successfully`,
       });
     } catch (e) {
       notification.error({ message: 'Error Delete Post' });
     }
   };
 
-  const handleChangeLexical = (value?: string) => {
-    if (!selectedPost?.id || !value) return;
-    setSelectedPost({
-      ...selectedPost,
-      content: value,
-    });
+  const handleChangeLexical = useMemo(
+    () =>
+      debounce(
+        ({
+          value,
+          posts,
+          selectedPost,
+        }: {
+          value?: string;
+          posts: PostCollection;
+          selectedPost?: Post;
+        }) => {
+          if (!selectedPost?.id || !value) return;
+          const updatedPost = {
+            ...selectedPost,
+            content: value,
+          };
+          setSelectedPost(updatedPost);
 
-    setPosts({
-      ...posts,
-      [selectedPost.id]: {
-        ...selectedPost,
-        content: value,
-      },
-    });
-  };
+          setPosts({
+            ...posts,
+            [updatedPost.id]: updatedPost,
+          });
+
+          handleUpdate(updatedPost);
+        },
+        300
+      ),
+    [setPosts, setSelectedPost]
+  );
 
   const handleChangeTag = (value: any, data: any) => {
     if (!selectedPost?.id) return;
@@ -96,18 +102,17 @@ const MemoizedPostDetail = memo(function PostDetail() {
   };
 
   useEffect(() => {
-    if (!debouncePostContent) return;
-    handleUpdate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncePostContent]);
-
-  useEffect(() => {
     if (!selectedPost?.id) return;
 
     setLexicalData(
-      selectedPost ? selectedPost.content : JSON.stringify(DEFAULT_VALUE)
+      selectedPost.content
+        ? selectedPost.content
+        : JSON.stringify(DEFAULT_VALUE)
     );
-  }, [selectedPost]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPost?.id]);
+
+  console.log('render', posts);
 
   return (
     <div className="PostDetail width-100">
@@ -126,10 +131,16 @@ const MemoizedPostDetail = memo(function PostDetail() {
             tooltip: 'click to edit text',
             onChange: (text: any) => {
               if (!selectedPost?.id) return;
+              const updatedPost = {
+                ...selectedPost,
+                title: text,
+              };
               setPosts({
                 ...posts,
-                [selectedPost.id]: { ...selectedPost, title: text },
+                [updatedPost.id]: updatedPost,
               });
+              setSelectedPost(updatedPost);
+              handleUpdate(updatedPost);
             },
             triggerType: ['text'],
           }}
@@ -155,14 +166,14 @@ const MemoizedPostDetail = memo(function PostDetail() {
               <Button
                 className="btn-warning"
                 loading={loading}
-                onClick={handleUpdate}
+                onClick={() => handleUpdate(selectedPost)}
                 icon={<WarningOutlined />}
               />
             </>
           )}
           <Popconfirm
             title="Delete the task"
-            onConfirm={handleDelete}
+            onConfirm={() => handleDelete(selectedPost)}
             okText="Yes"
             cancelText="No"
           >
@@ -171,7 +182,13 @@ const MemoizedPostDetail = memo(function PostDetail() {
         </div>
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
-        <CustomLexical data={lexicalData} onChange={handleChangeLexical} />
+        <CustomLexical
+          data={lexicalData}
+          onChange={(value?: string) => {
+            console.log('onchange', value);
+            handleChangeLexical({ value, posts, selectedPost });
+          }}
+        />
       </div>
     </div>
   );
