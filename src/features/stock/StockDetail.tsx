@@ -1,3 +1,4 @@
+import type { EChartsOption } from 'echarts';
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -14,7 +15,7 @@ import {
   Spin,
 } from 'antd';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
@@ -33,6 +34,7 @@ import {
   mapDataChart,
   mapDataFromStockBase,
 } from './utils';
+import { debounce, get } from 'lodash';
 
 const { RangePicker } = DatePicker;
 
@@ -221,12 +223,29 @@ const StockDetail = () => {
 
   console.log('dataChart', dataChart, stockData, stockBase);
 
+  const debounceZoom = useMemo(
+    () =>
+      debounce((params: any, oldOption: EChartsOption) => {
+        // Zoom using toolbox and call api with smaller resolution
+        console.log(params, get(params, 'batch[0].start'), params.start);
+        // Zoom using inside and slider
+      }, 300),
+    []
+  );
+
+  const handleZoom = useCallback(
+    (params: any, oldOption: EChartsOption) => {
+      debounceZoom(params, oldOption);
+    },
+    [debounceZoom]
+  );
+
   const renderChart = () => {
     if (loading) {
       return <Spin />;
     } else {
       if (dataChart) {
-        return <StockChart data={dataChart} />;
+        return <StockChart data={dataChart} handleZoom={handleZoom} />;
       } else {
         return <div>No data</div>;
       }
@@ -265,11 +284,18 @@ const StockDetail = () => {
             risk_b1: {risk_b1 && risk_b1.toFixed(0) + '%'}
           </div>
         </div>
-        <Button
-          size="small"
-          icon={showDetail ? <DownOutlined /> : <UpOutlined />}
-          onClick={() => setShowDetail(showDetail ? false : true)}
-        />
+        <div>
+          {showDetail && (
+            <Button size="small" onClick={updateStockBase}>
+              Update
+            </Button>
+          )}
+          <Button
+            size="small"
+            icon={showDetail ? <DownOutlined /> : <UpOutlined />}
+            onClick={() => setShowDetail(showDetail ? false : true)}
+          />
+        </div>
       </div>
 
       {showDetail ? (
@@ -314,9 +340,6 @@ const StockDetail = () => {
                     <CloseCircleOutlined style={{ color: '#ee5442' }} />
                   )}
                 </div>
-                <Button size="small" onClick={updateStockBase}>
-                  Update
-                </Button>
               </div>
             </div>
             <div>

@@ -7,7 +7,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
-interface Props {
+type Props = {
   rowData: GridOptions['rowData'];
   columnDefs: GridOptions['columnDefs'];
   pinnedTopRowData?: GridOptions['pinnedTopRowData'];
@@ -23,7 +23,7 @@ interface Props {
   onGridReady?: GridOptions['onGridReady'];
   onCellEditingStarted?: GridOptions['onCellEditingStarted'];
   onCellEditingStopped?: GridOptions['onCellEditingStopped'];
-}
+};
 
 interface CustomAgGridReactProps extends Props {
   gridRef: React.RefObject<AgGridReact>;

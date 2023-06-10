@@ -8,8 +8,6 @@ export type Post = {
   isDone: boolean;
 };
 
-export type PostCollection = {
-  [key: string]: Post;
-};
+export type PostCollection = Record<string, Post>;
 
 export type Mode = 'create' | 'list';

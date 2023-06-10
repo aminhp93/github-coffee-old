@@ -1,28 +1,17 @@
+// ** Import react
 import { useCallback, useState, useEffect, useRef } from 'react';
-import CustomAgGridReact from 'components/CustomAgGridReact';
 
-import { Todo } from './types';
-import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
-import TodoService from './service';
+// ** Import third-party libs
 import { notification, Input } from 'antd';
 import { AgGridReact } from 'ag-grid-react';
 
-const createNewRowData = (title: string) => {
-  return {
-    title,
-  };
-};
-
-const TodoTableColumns = () => {
-  return [
-    {
-      headerName: 'Title',
-      field: 'title',
-      suppressMenu: true,
-      width: 400,
-    },
-  ];
-};
+// ** Import components
+import CustomAgGridReact from 'components/CustomAgGridReact';
+import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
+import { Todo } from './Todo.types';
+import TodoService from './Todo.services';
+import { createNewRowData } from './Todo.utils';
+import TodoTableColumns from './TodoTableColumns';
 
 const TodoTable = () => {
   const { authUser }: AuthUserContext = useAuth();
@@ -57,7 +46,7 @@ const TodoTable = () => {
         author: authUser.id,
       };
       await TodoService.createTodo(requestData);
-      notification.error({ message: 'Create success' });
+      notification.success({ message: 'Create success' });
     } catch (e: any) {
       notification.error({ message: 'Error create todo' });
     }
@@ -75,6 +64,7 @@ const TodoTable = () => {
       title: value,
     };
     handleCreate(requestData);
+    inputRef.current.input.value = '';
 
     console.log(gridRef.current?.api);
     //  const onBtStartEditing = useCallback((key, char, pinned) => {
@@ -110,6 +100,15 @@ const TodoTable = () => {
     }
   }, []);
 
+  const handleDelete = () => {
+    console.log('delete');
+  };
+
+  const handleGridReady = () => {
+    if (!gridRef.current || !gridRef.current.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
   useEffect(() => {
     getListTodos();
   }, [getListTodos]);
@@ -126,18 +125,19 @@ const TodoTable = () => {
             <Input
               ref={inputRef}
               onPressEnter={(e: any) => {
+                e.preventDefault();
                 addItems(0, e.target.value);
-                inputRef.current.input.value = '';
               }}
             />
           </div>
         </div>
         <CustomAgGridReact
           rowData={listTodo}
-          columnDefs={TodoTableColumns()}
+          columnDefs={TodoTableColumns(handleDelete)}
           ref={gridRef}
           onCellEditingStarted={onCellEditingStarted}
           onCellEditingStopped={onCellEditingStopped}
+          onGridReady={handleGridReady}
         />
       </div>
     </div>

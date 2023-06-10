@@ -477,7 +477,7 @@ export const checkValidCondition = (
 ) => {
   let result: boolean[] = [];
   listFields.forEach((i: any) => {
-    if (item1[i] === item2[i]) {
+    if (item1[i].toFixed(2) === item2[i].toFixed(2)) {
       result.push(true);
     } else {
       result.push(false);
