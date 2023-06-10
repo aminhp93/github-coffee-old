@@ -7,7 +7,7 @@ import StockManager from 'features/stock/stockManager/StockManager';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/stockTable/StockTable';
 import Test from 'features/test/Test';
-import TodoTable from 'features/todo/TodoTable';
+import Todo from 'features/todo/Todo';
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from 'react';
@@ -104,7 +104,7 @@ const Work: React.FunctionComponent = () => {
           Post: <Post />,
           StockNews: <StockNews />,
           Chat: <Chat hideOnlineUsers />,
-          Todo: <TodoTable />,
+          Todo: <Todo />,
           Snippet: <Snippet />,
           Test: <Test />,
           StockTable: <StockTable />,

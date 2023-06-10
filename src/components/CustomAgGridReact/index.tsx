@@ -8,7 +8,7 @@ import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
 type Props = {
-  rowData: GridOptions['rowData'];
+  rowData?: GridOptions['rowData'];
   columnDefs: GridOptions['columnDefs'];
   pinnedTopRowData?: GridOptions['pinnedTopRowData'];
   getRowClass?: GridOptions['getRowClass'];
