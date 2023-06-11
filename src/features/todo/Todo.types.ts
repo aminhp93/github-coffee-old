@@ -1,4 +1,4 @@
-export interface Todo {
+export type Todo = {
   created_at: string;
   id: number;
   title: string;
@@ -6,4 +6,7 @@ export interface Todo {
   author: string | null;
   tag: number;
   isDone: boolean;
-}
+  status: number;
+};
+
+export type TodoCollection = Record<string, Todo>;

@@ -9,9 +9,14 @@ export interface EchartsProps {
     height: number;
   };
   option?: EChartsOption;
+  handleZoom?: (params: any, oldOption: EChartsOption) => void;
 }
 
-const CustomEcharts = ({ size, option }: EchartsProps): React.ReactElement => {
+const CustomEcharts = ({
+  size,
+  option,
+  handleZoom,
+}: EchartsProps): React.ReactElement => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,6 +52,18 @@ const CustomEcharts = ({ size, option }: EchartsProps): React.ReactElement => {
       option && chart && chart.setOption && chart.setOption(newOption);
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
+
+  useEffect(() => {
+    if (chartRef.current !== null) {
+      const chart = getInstanceByDom(chartRef.current);
+
+      chart &&
+        chart.on('datazoom', function (params: unknown) {
+          handleZoom &&
+            handleZoom(params as any, chart?.getOption() as EChartsOption);
+        });
+    }
+  }, [handleZoom]);
 
   return (
     <div

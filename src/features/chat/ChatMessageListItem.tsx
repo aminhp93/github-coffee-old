@@ -1,11 +1,11 @@
 import { Divider } from 'antd';
 import dayjs from 'dayjs';
-import './index.less';
-import { IChat } from './types';
+import './Chat.less';
+import { Chat } from './Chat.types';
 
-interface Props {
-  chat: IChat;
-}
+type Props = {
+  chat: Chat;
+};
 
 const ChatMessageListItem = ({ chat }: Props) => {
   return (

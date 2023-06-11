@@ -68,7 +68,7 @@ const Properties = () => {
       title="Properties"
       placement="right"
       mask={false}
-      open={true}
+      open={false}
       width={200}
     >
       <div>

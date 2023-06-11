@@ -1,4 +1,4 @@
-import CustomEcharts from 'components/CustomEcharts';
+import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import {
   color,
   dataZoom,
@@ -34,7 +34,7 @@ import {
   const volumes = [86160000, 79330000, 102600000, 104890000, 85230000];
 */
 
-interface Props {
+type Props = {
   data: {
     dates: string[];
     prices: number[];
@@ -43,9 +43,10 @@ interface Props {
     grid: any;
     markLine: any;
   };
-}
+  handleZoom?: any;
+};
 
-const StockChart = ({ data }: Props) => {
+const StockChart = ({ data, handleZoom }: Props) => {
   const { dates, prices, volumes, seriesMarkPoint, markLine } = data;
 
   const xAxis = [
@@ -148,7 +149,7 @@ const StockChart = ({ data }: Props) => {
 
   return (
     <div style={{ overflow: 'auto', width: '100%', height: '100%' }}>
-      <CustomEcharts option={option} />
+      <CustomEcharts option={option} handleZoom={handleZoom} />
     </div>
   );
 };

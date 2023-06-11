@@ -1,18 +1,31 @@
+// Import React
+import * as React from 'react';
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import ReactDOM from 'react-dom/client';
+
+// Import third-party libraries
+import { notification } from 'antd';
+import 'antd/dist/reset.css';
+import { Provider } from 'react-redux';
+
+// Import components
 import {
   SupabaseAuthProvider,
   useAuth,
   AuthUserContext,
 } from '@/context/SupabaseContext';
-import { notification } from 'antd';
-import 'antd/dist/reset.css';
-import * as React from 'react';
-import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import 'styles/index.less';
+import '@/styles/index.less';
 import { store } from './@/store';
-import Layout from 'components/layout';
+import Layout from 'components/layout/Layout';
 import Work from 'features/work/Work';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Figma from 'features/figma/Figma';
+import Post from 'features/post/Post';
+import Chat from 'features/chat/Chat';
+import Snippet from 'features/snippet/Snippet';
+import Todo from 'features/todo/Todo';
+import Test from 'features/test/Test';
+
+import { defaultJson, defaultOverviewJson } from 'features/work/Work.constants';
 
 notification.config({
   placement: 'bottomLeft',
@@ -27,26 +40,42 @@ const App = () => {
   const { authUser }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
-  const defaultElement = authUser?.email ? <Work /> : <div>Hello</div>;
+  if (!authUser?.email) {
+    return <div>Hello</div>;
+  }
 
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route
-              path="*"
-              element={
-                <main style={{ padding: '1rem' }}>
-                  <p>There's nothing here!</p>
-                </main>
-              }
-            />
-            <Route path="/" element={defaultElement} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route
+            path="/"
+            element={
+              <Work
+                layoutName="flexLayoutModel_Work"
+                defaultJson={defaultJson}
+              />
+            }
+          />
+          <Route path="/figma" element={<Figma />} />
+          <Route path="/post" element={<Post />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/snippet" element={<Snippet />} />
+          <Route path="/test" element={<Test />} />
+          <Route path="/todo" element={<Todo />} />
+          <Route
+            path="/overview"
+            element={
+              <Work
+                layoutName="flexLayoutModel_Overview"
+                defaultJson={defaultOverviewJson}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 

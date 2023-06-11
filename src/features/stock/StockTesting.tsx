@@ -1,6 +1,6 @@
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Drawer, notification, Select } from 'antd';
-import CustomAgGridReact from 'components/CustomAgGridReact';
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { keyBy } from 'lodash';
 import { useEffect, useRef, useState } from 'react';

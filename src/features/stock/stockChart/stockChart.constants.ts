@@ -82,9 +82,9 @@ export const visualMap = {
 export const yAxis = [
   {
     scale: true,
-    splitNumber: 2,
+    // splitNumber: 2,
     axisLine: { lineStyle: { color: '#777' } },
-    splitLine: { show: true },
+    splitLine: { show: false },
     axisTick: { show: false },
     axisLabel: {
       // inside: true,
@@ -95,7 +95,7 @@ export const yAxis = [
   {
     scale: true,
     gridIndex: 1,
-    splitNumber: 2,
+    // splitNumber: 2,
     axisLabel: { show: false },
     axisLine: { show: false },
     axisTick: { show: false },

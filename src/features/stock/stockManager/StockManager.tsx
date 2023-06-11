@@ -1,6 +1,6 @@
 import { WarningOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
-import CustomAgGridReact from 'components/CustomAgGridReact';
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
 import { useEffect, useRef, useState } from 'react';

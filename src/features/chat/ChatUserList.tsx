@@ -3,9 +3,9 @@ import { IUser } from 'features/user/types';
 import { v4 as uuidv4 } from 'uuid';
 import './index.less';
 
-interface Props {
+type Props = {
   users: IUser[];
-}
+};
 
 const ChatListUsers = ({ users }: Props) => {
   return (
