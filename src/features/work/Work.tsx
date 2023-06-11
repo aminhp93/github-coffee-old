@@ -1,5 +1,5 @@
-import CustomFlexLayout from 'components/CustomFlexLayout';
-import Chat from 'features/chat';
+import CustomFlexLayout from 'components/customFlexLayout/CustomFlexLayout';
+import Chat from 'features/chat/Chat';
 import Post from 'features/post/Post';
 import Snippet from 'features/snippet/Snippet';
 import StockDetail from 'features/stock/StockDetail';

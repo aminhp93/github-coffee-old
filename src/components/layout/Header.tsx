@@ -1,6 +1,6 @@
 import User from 'features/user';
 import './Header.less';
-import FullscreenButton from 'components/FullscreenButton';
+import FullscreenButton from 'components/fullscreenButton/FullscreenButton';
 
 const Header = () => {
   return (

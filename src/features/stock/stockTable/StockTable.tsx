@@ -5,7 +5,7 @@ import {
 } from '@ant-design/icons';
 
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
-import CustomAgGridReact from 'components/CustomAgGridReact';
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';

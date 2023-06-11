@@ -1,4 +1,4 @@
-import CustomEcharts from 'components/CustomEcharts';
+import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import {
   color,
   dataZoom,

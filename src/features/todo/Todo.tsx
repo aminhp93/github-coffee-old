@@ -6,7 +6,7 @@ import { notification, Input, InputRef } from 'antd';
 import { AgGridReact } from 'ag-grid-react';
 
 // ** Import components
-import CustomAgGridReact from 'components/CustomAgGridReact';
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { Todo } from './Todo.types';
 import TodoService from './Todo.services';
