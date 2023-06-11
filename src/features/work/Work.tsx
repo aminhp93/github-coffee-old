@@ -6,15 +6,20 @@ import StockDetail from 'features/stock/StockDetail';
 import StockManager from 'features/stock/stockManager/StockManager';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/stockTable/StockTable';
-import Test from 'features/figma/Figma';
+import Figma from 'features/figma/Figma';
 import Todo from 'features/todo/Todo';
+import Test from 'features/test/Test';
+import { IJsonModel } from 'flexlayout-react';
 
-import { defaultJson } from './Work.constants';
+type Props = {
+  defaultJson: IJsonModel;
+  layoutName: string;
+};
 
-const Work: React.FunctionComponent = () => {
+const Work = ({ layoutName, defaultJson }: Props) => {
   return (
     <CustomFlexLayout
-      layoutName="flexLayoutModel_Work"
+      layoutName={layoutName}
       defaultJson={defaultJson}
       componentObj={{
         Post: <Post />,
@@ -26,6 +31,7 @@ const Work: React.FunctionComponent = () => {
         StockTable: <StockTable />,
         StockDetail: <StockDetail />,
         StockManager: <StockManager />,
+        Figma: <Figma />,
       }}
     />
   );

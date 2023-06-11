@@ -19,11 +19,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { MenuInfo } from 'rc-menu/lib/interface';
 import { RefObject, createRef, useState } from 'react';
 
-interface Props {
+type Props = {
   layoutName: string;
   defaultJson: IJsonModel;
   componentObj: Record<string, JSX.Element>;
-}
+};
 
 const CustomFlexLayout = ({ layoutName, defaultJson, componentObj }: Props) => {
   // const [layoutFile, setLayoutFile] = useState(null);

@@ -65,3 +65,117 @@ export const defaultJson: IJsonModel = {
     ],
   },
 };
+
+export const defaultOverviewJson: IJsonModel = {
+  global: {
+    tabEnableFloat: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    borderMinSize: 100,
+  },
+  layout: {
+    type: 'row',
+    id: rowId,
+    children: [
+      {
+        type: 'row',
+        id: uuidv4(),
+        weight: 20,
+        children: [
+          {
+            type: 'row',
+            id: uuidv4(),
+            weight: 50,
+            children: [
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 25,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#Post',
+                    name: 'Post',
+                    component: 'Post',
+                  },
+                ],
+              },
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 25,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#Chat',
+                    name: 'Chat',
+                    component: 'Chat',
+                  },
+                ],
+              },
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 25,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#Todo',
+                    name: 'Todo',
+                    component: 'Todo',
+                  },
+                ],
+              },
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 25,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#Figma',
+                    name: 'Figma',
+                    component: 'Figma',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: 'row',
+            id: uuidv4(),
+            weight: 50,
+            children: [
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 50,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#StockTable',
+                    name: 'StockTable',
+                    component: 'StockTable',
+                  },
+                ],
+              },
+              {
+                type: 'tabset',
+                id: uuidv4(),
+                weight: 50,
+                children: [
+                  {
+                    type: 'tab',
+                    id: '#StockDetail',
+                    name: 'StockDetail',
+                    component: 'StockDetail',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+};

@@ -1,10 +1,10 @@
 import { Input } from 'antd';
 import { useState } from 'react';
-import './index.less';
+import './Chat.less';
 
-interface Props {
+type Props = {
   cb: any;
-}
+};
 
 const ChatBox = ({ cb }: Props) => {
   const [message, setMessage] = useState('');
