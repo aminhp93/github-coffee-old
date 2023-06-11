@@ -3,6 +3,4 @@ export type Tag = {
   title: string;
 };
 
-export type TagCollection = {
-  [key: string]: Tag;
-};
+export type TagCollection = Record<string, Tag>;

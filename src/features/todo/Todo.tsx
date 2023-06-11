@@ -129,6 +129,11 @@ const TodoPage = () => {
     }
   };
 
+  const handleResize = () => {
+    if (!gridRef?.current?.api) return;
+    gridRef.current.api.sizeColumnsToFit();
+  };
+
   useEffect(() => {
     (async () => {
       try {
@@ -150,17 +155,16 @@ const TodoPage = () => {
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
         <div>
-          <div>Todo</div>
-          <div>
-            <Input ref={inputRef} onPressEnter={handlePressEnter} />
-          </div>
+          <Input ref={inputRef} onPressEnter={handlePressEnter} />
         </div>
+
         <CustomAgGridReact
-          columnDefs={TodoTableColumns(handleDeleteCb)}
           ref={gridRef}
+          columnDefs={TodoTableColumns(handleDeleteCb)}
           onCellEditingStarted={onCellEditingStarted}
           onCellEditingStopped={onCellEditingStopped}
           onGridReady={handleGridReady}
+          onResize={handleResize}
         />
       </div>
     </div>

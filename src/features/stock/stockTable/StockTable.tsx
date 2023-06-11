@@ -153,12 +153,12 @@ const StockTable = () => {
   }, []);
 
   const handleResize = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.sizeColumnsToFit();
   };
 
   const handleGridReady = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.setFilterModel({
       is_blacklist: {
         type: 'set',
@@ -232,16 +232,16 @@ const StockTable = () => {
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
         <CustomAgGridReact
-          rowData={listStocks}
+          ref={gridRef}
           columnDefs={StockTableColumns({
             handleClickSymbol,
             listStockBase,
           })}
+          rowData={listStocks}
           pinnedTopRowData={pinnedTopRowData}
           getRowClass={getRowClass}
           onResize={handleResize}
           onGridReady={handleGridReady}
-          ref={gridRef}
         />
       </div>
       {footer()}

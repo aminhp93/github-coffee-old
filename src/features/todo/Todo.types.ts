@@ -6,6 +6,7 @@ export type Todo = {
   author: string | null;
   tag: number;
   isDone: boolean;
+  status: number;
 };
 
 export type TodoCollection = Record<string, Todo>;

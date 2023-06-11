@@ -27,26 +27,26 @@ const App = () => {
   const { authUser }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
-  const defaultElement = authUser?.email ? <Work /> : <div>Hello</div>;
+  if (!authUser?.email) {
+    return <div>Hello</div>;
+  }
 
   return (
-    <>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route
-              path="*"
-              element={
-                <main style={{ padding: '1rem' }}>
-                  <p>There's nothing here!</p>
-                </main>
-              }
-            />
-            <Route path="/" element={defaultElement} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route
+            path="*"
+            element={
+              <main style={{ padding: '1rem' }}>
+                <p>There's nothing here!</p>
+              </main>
+            }
+          />
+          <Route path="/" element={<Work />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 };
 
