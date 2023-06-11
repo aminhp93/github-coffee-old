@@ -9,6 +9,8 @@ type PostStore = {
   setMode: (mode: Mode) => void;
   selectedPost?: Post;
   setSelectedPost: (post?: Post) => void;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 };
 
 const usePostStore = create<PostStore>((set, get) => ({
@@ -31,6 +33,13 @@ const usePostStore = create<PostStore>((set, get) => ({
     set(
       produce((draft) => {
         draft.selectedPost = post;
+      })
+    ),
+  loading: false,
+  setLoading: (loading: boolean) =>
+    set(
+      produce((draft) => {
+        draft.loading = loading;
       })
     ),
 }));

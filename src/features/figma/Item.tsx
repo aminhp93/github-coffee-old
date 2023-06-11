@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { createUseGesture, dragAction, pinchAction } from '@use-gesture/react';
-import useEditorStore from 'features/test/store/EditorStore';
+import useEditorStore from 'features/figma/store/EditorStore';
 import { getTransformStyle } from './utils';
 import ProcessView from './ProcessView';
 import Component from './components/index';

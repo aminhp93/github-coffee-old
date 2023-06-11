@@ -16,21 +16,25 @@ const PostPage = () => {
   const setMode = usePostStore((state) => state.setMode);
   const selectedPost = usePostStore((state) => state.selectedPost);
   const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+  const setLoading = usePostStore((state) => state.setLoading);
 
   const { authUser }: AuthUserContext = useAuth();
   useEffect(() => {
     const init = async () => {
       try {
+        setLoading(true);
         const res: any = await PostService.listPost({ author: authUser?.id });
+        setLoading(false);
         if (res && res.data) {
           setPosts(keyBy(res.data, 'id'));
         }
       } catch (e) {
+        setLoading(false);
         notification.error({ message: 'error' });
       }
     };
     init();
-  }, [authUser?.id, setPosts]);
+  }, [authUser?.id, setPosts, setLoading]);
 
   const renderCreate = () => <PostCreate />;
 
@@ -45,7 +49,6 @@ const PostPage = () => {
     <div className="Post flex">
       <div className="PostListContainer">
         <div className="PostCreateButton flex">
-          <div>Post</div>
           {mode === 'create' ? (
             <Tooltip title="Back">
               <Button

@@ -6,7 +6,7 @@ import StockDetail from 'features/stock/StockDetail';
 import StockManager from 'features/stock/stockManager/StockManager';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/stockTable/StockTable';
-import Test from 'features/test/Test';
+import Test from 'features/figma/Figma';
 import Todo from 'features/todo/Todo';
 
 import { defaultJson } from './Work.constants';

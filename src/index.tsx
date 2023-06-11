@@ -8,7 +8,7 @@ import 'antd/dist/reset.css';
 import * as React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import 'styles/index.less';
+import '@/styles/index.less';
 import { store } from './@/store';
 import Layout from 'components/layout';
 import Work from 'features/work/Work';
