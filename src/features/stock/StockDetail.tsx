@@ -35,6 +35,7 @@ import {
   mapDataFromStockBase,
 } from './utils';
 import { debounce, get } from 'lodash';
+import { dataZoom } from 'features/stock/stockChart/stockChart.constants';
 
 const { RangePicker } = DatePicker;
 
@@ -200,6 +201,18 @@ const StockDetail = () => {
   };
 
   useEffect(() => {
+    try {
+      console.log('change');
+      if (stockBase && stockBase.id) {
+        StockService.updateStockBase(stockBase);
+      }
+      notification.success({ message: 'success' });
+    } catch (e) {
+      notification.error({ message: 'error' });
+    }
+  }, [stockBase]);
+
+  useEffect(() => {
     getData(selectedSymbol, dates, selectedVolumeField);
   }, [selectedSymbol, dates, selectedVolumeField]);
 
@@ -225,10 +238,59 @@ const StockDetail = () => {
 
   const debounceZoom = useMemo(
     () =>
-      debounce((params: any, oldOption: EChartsOption) => {
+      debounce(async (params: any, oldOption: EChartsOption) => {
         // Zoom using toolbox and call api with smaller resolution
-        console.log(params, get(params, 'batch[0].start'), params.start);
-        // Zoom using inside and slider
+        console.log(
+          params,
+          get(params, 'batch[0].start'),
+          params.start,
+          oldOption
+        );
+
+        const dataZoomId = params.dataZoomId;
+        if (dataZoomId === `\u0000series\u00002\u00000`) {
+          // left zoom
+          setStockBase((prev: any) => {
+            const newDataZoom = prev.config?.dataZoom || dataZoom;
+            newDataZoom[2].start = params.start;
+            newDataZoom[2].end = params.end;
+            return {
+              ...prev,
+              config: {
+                ...prev.config,
+                dataZoom: newDataZoom,
+              },
+            };
+          });
+        } else if (dataZoomId === `\u0000series\u00001\u00000`) {
+          // bottom zoom
+          setStockBase((prev: any) => {
+            const newDataZoom = prev.config?.dataZoom || dataZoom;
+            newDataZoom[1].start = params.start;
+            newDataZoom[1].end = params.end;
+            return {
+              ...prev,
+              config: {
+                ...prev.config,
+                dataZoom: newDataZoom,
+              },
+            };
+          });
+        } else {
+          // inside zoom
+          setStockBase((prev: any) => {
+            const newDataZoom = prev.config?.dataZoom || dataZoom;
+            newDataZoom[0].start = get(params, 'batch[0].start');
+            newDataZoom[0].end = get(params, 'batch[0].end');
+            return {
+              ...prev,
+              config: {
+                ...prev.config,
+                dataZoom: newDataZoom,
+              },
+            };
+          });
+        }
       }, 300),
     []
   );
