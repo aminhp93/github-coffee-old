@@ -44,9 +44,10 @@ type Props = {
     markLine: any;
   };
   handleZoom?: any;
+  config?: any;
 };
 
-const StockChart = ({ data, handleZoom }: Props) => {
+const StockChart = ({ data, handleZoom, config }: Props) => {
   const { dates, prices, volumes, seriesMarkPoint, markLine } = data;
 
   const xAxis = [
@@ -141,7 +142,7 @@ const StockChart = ({ data, handleZoom }: Props) => {
     grid,
     visualMap,
     tooltip,
-    dataZoom,
+    dataZoom: config?.dataZoom || dataZoom,
     toolbox,
     brush,
     axisPointer,

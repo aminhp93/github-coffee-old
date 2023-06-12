@@ -201,15 +201,17 @@ const StockDetail = () => {
   };
 
   useEffect(() => {
-    try {
-      console.log('change');
-      if (stockBase && stockBase.id) {
-        StockService.updateStockBase(stockBase);
+    const init = async () => {
+      try {
+        if (stockBase && stockBase.id) {
+          await StockService.updateStockBase(stockBase);
+        }
+        notification.success({ message: 'success' });
+      } catch (e) {
+        notification.error({ message: 'error' });
       }
-      notification.success({ message: 'success' });
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
+    };
+    init();
   }, [stockBase]);
 
   useEffect(() => {
@@ -307,7 +309,13 @@ const StockDetail = () => {
       return <Spin />;
     } else {
       if (dataChart) {
-        return <StockChart data={dataChart} handleZoom={handleZoom} />;
+        return (
+          <StockChart
+            config={stockBase?.config}
+            data={dataChart}
+            handleZoom={handleZoom}
+          />
+        );
       } else {
         return <div>No data</div>;
       }
