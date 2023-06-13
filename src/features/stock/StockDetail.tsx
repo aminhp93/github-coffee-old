@@ -1,7 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import {
   CheckCircleOutlined,
-  CloseCircleOutlined,
   DownOutlined,
   UpOutlined,
 } from '@ant-design/icons';
@@ -33,6 +32,7 @@ import {
   getTodayData,
   mapDataChart,
   mapDataFromStockBase,
+  analyse,
 } from './utils';
 import { debounce, get } from 'lodash';
 import { dataZoom } from 'features/stock/stockChart/stockChart.constants';
@@ -96,19 +96,6 @@ const StockDetail = () => {
       })
     );
     setStockBase(newStockBase);
-  };
-
-  const updateStockBase = async () => {
-    try {
-      if (stockBase && stockBase.id) {
-        await StockService.updateStockBase(stockBase);
-      } else {
-        await StockService.insertStockBase([stockBase]);
-      }
-      notification.success({ message: 'success' });
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
   };
 
   const footer = () => {
@@ -205,6 +192,8 @@ const StockDetail = () => {
       try {
         if (stockBase && stockBase.id) {
           await StockService.updateStockBase(stockBase);
+        } else {
+          await StockService.insertStockBase([stockBase]);
         }
         notification.success({ message: 'success' });
       } catch (e) {
@@ -235,6 +224,8 @@ const StockDetail = () => {
     stockData?.fullData
   );
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
+
+  const { listBigSell, countEstimate } = analyse(stockData, stockBase);
 
   console.log('dataChart', dataChart, stockData, stockBase);
 
@@ -355,11 +346,6 @@ const StockDetail = () => {
           </div>
         </div>
         <div>
-          {showDetail && (
-            <Button size="small" onClick={updateStockBase}>
-              Update
-            </Button>
-          )}
           <Button
             size="small"
             icon={showDetail ? <DownOutlined /> : <UpOutlined />}
@@ -403,17 +389,26 @@ const StockDetail = () => {
                     buyPoint={stockBase?.buy_point}
                     onCb={handleCbBuyPoint}
                   />
-                  is_blacklist :{' '}
-                  {stockBase?.is_blacklist ? (
-                    <CheckCircleOutlined style={{ color: '#00aa00' }} />
-                  ) : (
-                    <CloseCircleOutlined style={{ color: '#ee5442' }} />
+                  {stockBase?.is_blacklist && (
+                    <span>
+                      is_blacklist{' '}
+                      <CheckCircleOutlined style={{ color: '#00aa00' }} />
+                    </span>
                   )}
                 </div>
               </div>
             </div>
             <div>
-              Min total in 30 days: {minTotal} - {maxTotal} - {averageTotal}
+              <div>
+                {listBigSell.map((i: any) => {
+                  return <div>{i.date}</div>;
+                })}{' '}
+                {countEstimate}
+              </div>
+              <div>
+                {minTotal} - {maxTotal} - {averageTotal}
+              </div>
+
               <div>
                 <Select
                   size="small"
