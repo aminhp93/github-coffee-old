@@ -486,3 +486,38 @@ export const checkValidCondition = (
   const listInvalid = result.filter((i) => !i);
   return listInvalid.length === 0;
 };
+
+export const analyse = (stockData: any, stockBase: any) => {
+  // get full data as fullData
+  const fullData = stockData?.fullData;
+
+  // get buy_point
+  const buyPoint = stockBase?.buy_point?.date;
+
+  // filter data from buy_point
+  const filterData = fullData.filter((i: any) => i.date >= buyPoint);
+
+  const indexOfBuyPoint = fullData.findIndex((i: any) => i.date === buyPoint);
+  const listAverage = fullData.slice(indexOfBuyPoint, indexOfBuyPoint + 20);
+
+  const average_vol = meanBy(listAverage, 'totalVolume');
+
+  // 1. list all day with %change < -2% and volumn change ? avergate 2 weeks
+  const listBigSell = filterData.filter(
+    (i: any) => i.change_t0 < -2 && i.totalVolume > average_vol
+  );
+
+  // 2. Count all buy and sell volume
+  let countVolume = 0;
+  filterData.forEach((i: any) => {
+    if (i.change_t0 < 0) {
+      countVolume -= i.totalVolume;
+    } else {
+      countVolume += i.totalVolume;
+    }
+  });
+  return {
+    listBigSell,
+    countEstimate: (countVolume / average_vol).toFixed(1),
+  };
+};
