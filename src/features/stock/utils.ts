@@ -489,7 +489,7 @@ export const checkValidCondition = (
 
 export const analyse = (stockData: any, stockBase: any) => {
   // get full data as fullData
-  const fullData = stockData?.fullData;
+  const fullData = stockData?.fullData || [];
 
   // get buy_point
   const buyPoint = stockBase?.buy_point?.date;
