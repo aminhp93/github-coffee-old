@@ -4,10 +4,8 @@ import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { DATE_FORMAT, UNIT_BILLION } from '../constants';
 import StockService from '../service';
-import { updateSelectedSymbol } from '../stockSlice';
 import RefreshButton from '../stockTable/RefreshButton';
 import StockTesting from '../StockTesting';
 import { SupabaseData } from '../types';
@@ -15,12 +13,13 @@ import { getStockDataFromSupabase } from '../utils';
 import './StockManager.less';
 import StockManagerColumns from './StockManagerColumns';
 import { AgGridReact } from 'ag-grid-react';
+import useStockStore from '../Stock.store';
 
 const { RangePicker } = DatePicker;
 
 const StockManager = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
-  const dispatch = useDispatch();
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [listStocks, setListStocks] = useState<any[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
@@ -100,7 +99,7 @@ const StockManager = () => {
   const handleClickSymbol = (data: any) => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
-    dispatch(updateSelectedSymbol(data.data.symbol));
+    setSelectedSymbol(symbol);
   };
 
   const handleClickUpdate = async (data: any) => {

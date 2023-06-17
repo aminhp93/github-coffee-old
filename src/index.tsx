@@ -6,7 +6,6 @@ import ReactDOM from 'react-dom/client';
 // Import third-party libraries
 import { notification } from 'antd';
 import 'antd/dist/reset.css';
-import { Provider } from 'react-redux';
 
 // Import components
 import {
@@ -15,7 +14,6 @@ import {
   AuthUserContext,
 } from '@/context/SupabaseContext';
 import '@/styles/index.less';
-import { store } from './@/store';
 import Layout from 'components/layout/Layout';
 import Work from 'features/work/Work';
 import Figma from 'features/figma/Figma';
@@ -81,10 +79,8 @@ const App = () => {
 
 root.render(
   <React.Fragment>
-    <Provider store={store}>
-      <SupabaseAuthProvider>
-        <App />
-      </SupabaseAuthProvider>
-    </Provider>
+    <SupabaseAuthProvider>
+      <App />
+    </SupabaseAuthProvider>
   </React.Fragment>
 );

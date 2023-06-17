@@ -15,11 +15,9 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
 import StockChart from './stockChart/StockChart';
-import { selectSelectedSymbol, updateSelectedSymbol } from './stockSlice';
 import BuyPoint from './stockTable/BuyPoint';
 import RefreshButton from './stockTable/RefreshButton';
 import { StockData, SupabaseData } from './types';
@@ -36,13 +34,13 @@ import {
 } from './utils';
 import { debounce, get } from 'lodash';
 import { dataZoom } from 'features/stock/stockChart/stockChart.constants';
+import useStockStore from './Stock.store';
 
 const { RangePicker } = DatePicker;
 
 const StockDetail = () => {
-  // get store from redux
-  const selectedSymbol = useSelector(selectSelectedSymbol);
-  const dispatch = useDispatch();
+  const selectedSymbol = useStockStore((state) => state.selectedSymbol);
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [dataChart, setDataChart] = useState<any>(null);
@@ -63,24 +61,23 @@ const StockDetail = () => {
   };
 
   const handleChangeStockBase = (id: any, data: any) => {
-    const new_list_base =
-      stockBase && stockBase.list_base
-        ? stockBase.list_base.map((item: any) => {
-            return {
-              id: item.id,
-              value: id === item.id ? data : item.value,
-              startDate: item.startDate,
-              endDate: item.endDate,
-            };
-          })
-        : [1, 2, 3].map((item) => {
-            return {
-              id: item,
-              value: id === item ? data : 0,
-              startDate: null,
-              endDate: null,
-            };
-          });
+    const new_list_base = stockBase?.list_base
+      ? stockBase.list_base.map((item: any) => {
+          return {
+            id: item.id,
+            value: id === item.id ? data : item.value,
+            startDate: item.startDate,
+            endDate: item.endDate,
+          };
+        })
+      : [1, 2, 3].map((item) => {
+          return {
+            id: item,
+            value: id === item ? data : 0,
+            startDate: null,
+            endDate: null,
+          };
+        });
     const newStockBase = {
       ...stockBase,
       symbol: selectedSymbol,
@@ -188,19 +185,21 @@ const StockDetail = () => {
   };
 
   useEffect(() => {
-    const init = async () => {
+    if (!stockBase?.symbol) return;
+    (async () => {
       try {
-        if (stockBase && stockBase.id) {
+        if (stockBase?.id) {
+          console.log('194');
           await StockService.updateStockBase(stockBase);
         } else {
+          console.log('197');
           await StockService.insertStockBase([stockBase]);
         }
         notification.success({ message: 'success' });
       } catch (e) {
         notification.error({ message: 'error' });
       }
-    };
-    init();
+    })();
   }, [stockBase]);
 
   useEffect(() => {
@@ -208,15 +207,14 @@ const StockDetail = () => {
   }, [selectedSymbol, dates, selectedVolumeField]);
 
   useEffect(() => {
-    const init = async () => {
+    (async () => {
       const resStockBase = await StockService.getAllStockBase();
 
       const { list_all } = mapDataFromStockBase(
         resStockBase.data || ([] as any)
       );
       setListAllSymbols(list_all);
-    };
-    init();
+    })();
   }, []);
 
   const { risk_b1, risk_b2, target } = evaluateStockBase(
@@ -261,6 +259,8 @@ const StockDetail = () => {
             const newDataZoom = prev.config?.dataZoom || dataZoom;
             newDataZoom[1].start = params.start;
             newDataZoom[1].end = params.end;
+            newDataZoom[0].start = params.start;
+            newDataZoom[0].end = params.end;
             return {
               ...prev,
               config: {
@@ -275,6 +275,8 @@ const StockDetail = () => {
             const newDataZoom = prev.config?.dataZoom || dataZoom;
             newDataZoom[0].start = get(params, 'batch[0].start');
             newDataZoom[0].end = get(params, 'batch[0].end');
+            newDataZoom[1].start = get(params, 'batch[0].start');
+            newDataZoom[1].end = get(params, 'batch[0].end');
             return {
               ...prev,
               config: {
@@ -326,7 +328,7 @@ const StockDetail = () => {
             value={selectedSymbol}
             style={{ width: 120 }}
             onChange={(value: string) => {
-              dispatch(updateSelectedSymbol(value as any));
+              setSelectedSymbol(value);
               getData(value, dates);
             }}
             options={listAllSymbols.map((i) => {
@@ -401,8 +403,8 @@ const StockDetail = () => {
             <div>
               <div>
                 {listBigSell.map((i: any) => {
-                  return <div>{i.date}</div>;
-                })}{' '}
+                  return <div key={i.date}>{i.date}</div>;
+                })}
                 {countEstimate}
               </div>
               <div>

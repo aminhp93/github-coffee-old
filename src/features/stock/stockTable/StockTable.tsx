@@ -8,10 +8,8 @@ import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
-import { updateSelectedSymbol } from '../stockSlice';
 import { StockData, SupabaseData } from '../types';
 import {
   filterData,
@@ -25,6 +23,7 @@ import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
 import { AgGridReact } from 'ag-grid-react';
+import useStockStore from '../Stock.store';
 
 const getRowClass = (params: any) => {
   if (params.node.data.potential) {
@@ -36,7 +35,6 @@ const { RangePicker } = DatePicker;
 
 const StockTable = () => {
   // hooks
-  const dispatch = useDispatch();
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
@@ -44,6 +42,7 @@ const StockTable = () => {
   const [listStockBase, setListStockBase] = useState<any[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const handleChangeDate = (data: any) => {
     setDates(data);
@@ -89,7 +88,7 @@ const StockTable = () => {
           .sort((a, b) => (a.change_t0 > b.change_t0 ? -1 : 1))
       );
 
-      if (resStockBase.data && resStockBase.data.length) {
+      if (resStockBase?.data?.length) {
         setListStockBase(resStockBase.data);
       }
 
@@ -102,7 +101,7 @@ const StockTable = () => {
   };
 
   useEffect(() => {
-    const init = async () => {
+    (async () => {
       try {
         const res: any = await StockService.getLastUpdated();
         const resStockBase = await StockService.getAllStockBase();
@@ -110,7 +109,7 @@ const StockTable = () => {
         const { list_all } = mapDataFromStockBase(
           resStockBase.data || ([] as any)
         );
-        if (res.data && res.data.length && res.data.length === 1) {
+        if (res?.data?.length === 1) {
           const lastUpdated = res.data[0].last_updated;
           let newLastUpdated = dayjs().format(DATE_FORMAT);
           // check current time before 3pm
@@ -130,7 +129,7 @@ const StockTable = () => {
                 list_all
               );
               offset += 20;
-              if (res && res.length && res[0].length < 20) {
+              if (res?.length && res[0].length < 20) {
                 nextCall = false;
               }
             }
@@ -144,12 +143,10 @@ const StockTable = () => {
           setDates([dayjs().add(-1, 'month'), dayjs()]);
           getData([dayjs().add(-1, 'month'), dayjs()]);
         }
-        notification.success({ message: 'success' });
       } catch (e) {
         notification.error({ message: 'error' });
       }
-    };
-    init();
+    })();
   }, []);
 
   const handleResize = () => {
@@ -171,7 +168,7 @@ const StockTable = () => {
   const handleClickSymbol = (data: any) => {
     const symbol = data.data?.symbol;
     if (!symbol) return;
-    dispatch(updateSelectedSymbol(data.data.symbol));
+    setSelectedSymbol(symbol);
   };
 
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);

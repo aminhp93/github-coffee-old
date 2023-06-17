@@ -1,4 +1,4 @@
-export interface HistoricalQuote {
+export type HistoricalQuote = {
   adjRatio: number;
   buyCount: number;
   buyForeignQuantity: number;
@@ -26,39 +26,39 @@ export interface HistoricalQuote {
   symbol: string;
   totalValue: number;
   totalVolume: number;
-}
+};
 
-export interface HistoricalQuoteParams {
+export type HistoricalQuoteParams = {
   symbol: string;
   startDate?: string;
   endDate?: string;
   offset?: number;
   limit?: number;
   returnRequest?: boolean;
-}
+};
 
-export interface Base {
+export type Base = {
   base_max: number;
   base_min: number;
   base_percent: number;
   base_length: number;
   startBaseDate: string;
   endBaseDate: string;
-}
-export interface Watchlist {
+};
+export type Watchlist = {
   displayIndex: number;
   name: string;
   symbols: string[];
   userName: string;
   watchlistID: number;
-}
+};
 
 export type Filter = Pick<
   StockData,
   'change_t0' | 'estimated_vol_change' | 't0_over_base_max'
 >;
 
-export interface SupabaseData {
+export type SupabaseData = {
   date: string;
   dealVolume: number;
   priceClose: number;
@@ -68,9 +68,9 @@ export interface SupabaseData {
   symbol: string;
   totalValue: number;
   totalVolume: number;
-}
+};
 
-export interface StockCoreData {
+export type StockCoreData = {
   adjRatio: number;
   symbol: string;
   date: string;
@@ -81,7 +81,7 @@ export interface StockCoreData {
   totalVolume: number;
   dealVolume: number;
   totalValue: number;
-}
+};
 
 export interface StockData extends StockCoreData {
   potential?: boolean;
@@ -95,7 +95,7 @@ export interface StockData extends StockCoreData {
   fullData?: StockData[];
 }
 
-export interface StockBase {
+export type StockBase = {
   id: number;
   buy_point?: {
     date: string;
@@ -109,4 +109,4 @@ export interface StockBase {
     endDate?: string;
   }[];
   symbol: string;
-}
+};
