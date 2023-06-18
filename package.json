@@ -61,7 +61,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=261",
+      "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
       "react-scripts test --bail --watchAll=false --findRelatedTests --passWithNoTests"
     ]
   },
