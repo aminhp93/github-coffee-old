@@ -41,7 +41,7 @@
     "dev": "GENERATE_SOURCEMAP=false craco start",
     "start": "GENERATE_SOURCEMAP=false craco start",
     "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
-    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
     "lint:fix": "eslint --fix .",
     "prepare": "husky install",
     "test": "CI=true craco test",
@@ -51,7 +51,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "@typescript-eslint/no-explicit-any": "warn"
+    }
   },
   "gitHooks": {
     "pre-commit": "lint-staged"
