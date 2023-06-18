@@ -3,20 +3,16 @@ import { ECharts, getInstanceByDom, init } from 'echarts';
 import { memo, useEffect, useRef } from 'react';
 import { withSize } from 'react-sizeme';
 
-export interface EchartsProps {
+type Props = {
   size?: {
     width: number;
     height: number;
   };
   option?: EChartsOption;
   handleZoom?: (params: any, oldOption: EChartsOption) => void;
-}
+};
 
-const CustomEcharts = ({
-  size,
-  option,
-  handleZoom,
-}: EchartsProps): React.ReactElement => {
+const CustomEcharts = ({ size, option, handleZoom }: Props) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

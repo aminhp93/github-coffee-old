@@ -7,6 +7,8 @@ import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
+type TData = any;
+
 type Props = {
   rowData?: GridOptions['rowData'];
   columnDefs: GridOptions['columnDefs'];
@@ -45,7 +47,7 @@ const CustomAgGridReact = ({
   onCellEditingStopped,
 }: CustomAgGridReactProps) => {
   const onGridReady = useCallback(
-    (params: any) => {
+    (params: TData) => {
       onGridReadyProps && onGridReadyProps(params);
     },
     [onGridReadyProps]
@@ -56,35 +58,33 @@ const CustomAgGridReact = ({
   }, [size, onResize]);
 
   return (
-    <>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={columnDefs}
-        pinnedTopRowData={pinnedTopRowData}
-        pagination={pagination}
-        paginationAutoPageSize={paginationAutoPageSize}
-        getRowId={getRowId}
-        onGridReady={onGridReady}
-        onCellEditingStarted={onCellEditingStarted}
-        onCellEditingStopped={onCellEditingStopped}
-        getRowClass={getRowClass}
-        ref={gridRef}
-        overlayLoadingTemplate={
-          '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
-        }
-        sideBar={{
-          toolPanels: ['columns', 'filters'],
-        }}
-        rowHeight={30}
-        rowSelection={'single'}
-        defaultColDef={{
-          editable: true,
-          sortable: true,
-          filter: true,
-          resizable: true,
-        }}
-      />
-    </>
+    <AgGridReact
+      rowData={rowData}
+      columnDefs={columnDefs}
+      pinnedTopRowData={pinnedTopRowData}
+      pagination={pagination}
+      paginationAutoPageSize={paginationAutoPageSize}
+      getRowId={getRowId}
+      onGridReady={onGridReady}
+      onCellEditingStarted={onCellEditingStarted}
+      onCellEditingStopped={onCellEditingStopped}
+      getRowClass={getRowClass}
+      ref={gridRef}
+      overlayLoadingTemplate={
+        '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
+      }
+      sideBar={{
+        toolPanels: ['columns', 'filters'],
+      }}
+      rowHeight={30}
+      rowSelection={'single'}
+      defaultColDef={{
+        editable: true,
+        sortable: true,
+        filter: true,
+        resizable: true,
+      }}
+    />
   );
 };
 
