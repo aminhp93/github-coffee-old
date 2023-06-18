@@ -401,7 +401,7 @@ const StockDetail = () => {
                 <div style={{ marginBottom: '10px' }}>
                   <BuyPoint
                     buyPoint={{
-                      date: new dayjs.Dayjs(stockBase?.buy_point?.date),
+                      date: dayjs(stockBase?.buy_point?.date),
                     }}
                     onCb={handleCbBuyPoint}
                   />
