@@ -16,7 +16,7 @@ const ChatMessageListItem = ({ chat }: Props) => {
           <div className="ChatMessageListItem-message-container">
             {chat.message}{' '}
             <span className="ChatMessageListItem-message-time">
-              {dayjs(chat.createdAt).format('HH:mm')}
+              {dayjs(chat.created_at).format('HH:mm')}
             </span>
           </div>
         </div>

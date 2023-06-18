@@ -3,7 +3,7 @@ import { useState } from 'react';
 import './Chat.less';
 
 type Props = {
-  cb: any;
+  cb: (data: { message: string }) => void;
 };
 
 const ChatBox = ({ cb }: Props) => {
@@ -14,7 +14,7 @@ const ChatBox = ({ cb }: Props) => {
     setMessage('');
   };
 
-  const handleChange = (e: any) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessage(e.target.value);
   };
 

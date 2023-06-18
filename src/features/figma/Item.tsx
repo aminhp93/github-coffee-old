@@ -10,7 +10,11 @@ import { get, cloneDeep } from 'lodash';
 
 const useGesture = createUseGesture([dragAction, pinchAction]);
 
-const Item = ({ id }: any) => {
+type Props = {
+  id: string;
+};
+
+const Item = ({ id }: Props) => {
   const items = useHistoryStore((state) => state.items);
   const patchItems = useHistoryStore((state) => state.patchItems);
   const mode = useEditorStore((state) => state.mode);
@@ -131,7 +135,7 @@ const Item = ({ id }: any) => {
       >
         {item.type === 'view' ? (
           <ProcessView item={item}>
-            {item.content.map((itemId: any) => {
+            {item.content.map((itemId: string) => {
               return <Item id={itemId} />;
             })}
           </ProcessView>

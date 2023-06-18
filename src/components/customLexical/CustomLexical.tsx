@@ -29,7 +29,7 @@ import AutoLinkPlugin from './plugins/AutoLinkPlugin';
 import { useEffect } from 'react';
 import './CustomLexical.less';
 
-import { CLEAR_HISTORY_COMMAND } from 'lexical';
+import { CLEAR_HISTORY_COMMAND, EditorState } from 'lexical';
 
 function Placeholder() {
   return <div className="editor-placeholder">Enter some rich text...</div>;
@@ -43,7 +43,7 @@ const editorConfig: InitialConfigType = {
   // The editor theme
   theme: ExampleTheme,
   // Handling of errors during update
-  onError: (error: any) => {
+  onError: (error: Error) => {
     throw error;
   },
   // Any custom nodes go here
@@ -73,7 +73,7 @@ function MyCustomAutoFocusPlugin() {
   return null;
 }
 
-const UpdatePlugin = (props: any) => {
+const UpdatePlugin = (props: Props) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -88,13 +88,13 @@ const UpdatePlugin = (props: any) => {
   return null;
 };
 
-interface Props {
+type Props = {
   data?: string;
   onChange?: (value?: string) => void;
-}
+};
 
 export default function Editor(props: Props) {
-  const handleChange = (editorState: any) => {
+  const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
       const value = JSON.stringify(editorState);
       console.log('change', props.data === value);

@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import './Post.less';
 import usePostStore from './store';
+import { Post } from './types';
 
 type Props = {
-  data: any;
+  data: Post;
 };
 
 function PostListItem({ data }: Props) {

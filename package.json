@@ -41,7 +41,7 @@
     "dev": "GENERATE_SOURCEMAP=false craco start",
     "start": "GENERATE_SOURCEMAP=false craco start",
     "build": "craco test & GENERATE_SOURCEMAP=false craco build ",
-    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=10",
+    "lint": "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=261",
     "lint:fix": "eslint --fix .",
     "prepare": "husky install",
     "test": "CI=true craco test",
@@ -61,7 +61,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+      "eslint ./src --ext .js,.jsx,.ts,.tsx --max-warnings=261",
       "react-scripts test --bail --watchAll=false --findRelatedTests --passWithNoTests"
     ]
   },

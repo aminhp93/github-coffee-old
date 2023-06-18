@@ -112,8 +112,6 @@ const MemoizedPostDetail = memo(function PostDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPost?.id]);
 
-  console.log('render', posts);
-
   return (
     <div className="PostDetail width-100">
       <div
@@ -129,7 +127,7 @@ const MemoizedPostDetail = memo(function PostDetail() {
           editable={{
             // icon: <HighlightOutlined />,
             tooltip: 'click to edit text',
-            onChange: (text: any) => {
+            onChange: (text: string) => {
               if (!selectedPost?.id) return;
               const updatedPost = {
                 ...selectedPost,

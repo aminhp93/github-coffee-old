@@ -47,19 +47,17 @@ export default function PostCreate() {
     });
   };
 
-  const handleChangeTitle = (e: any) => {
+  const handleChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPost = {
       ...post,
       title: e.target.value,
     };
-    setPost(newPost as any);
+    setPost(newPost);
   };
 
-  const handleChangeLexical = (value: any) => {
+  const handleChangeLexical = (value: string | undefined) => {
     setPost({ ...post, content: value });
   };
-
-  console.log('tags', tags);
 
   return (
     <div className="PostCreate width-100">

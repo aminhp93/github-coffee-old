@@ -15,11 +15,7 @@ const objectItems = keyBy(LIST_ITEM, 'id');
 const Test = () => {
   const mode = useEditorStore((state) => state.mode);
   const setMode = useEditorStore((state) => state.setMode);
-
-  const test = useEditorStore((state) => state.test);
-  const setTest = useEditorStore((state) => state.setTest);
   const patchItems = useHistoryStore((state) => state.patchItems);
-
   const undo = useHistoryStore((state) => state.undo);
   const updateItems = useHistoryStore((state) => state.updateItems);
   const redo = useHistoryStore((state) => state.redo);
@@ -153,21 +149,6 @@ const Test = () => {
     redo();
   };
 
-  const handleMerge = () => {
-    setTest({
-      2: {
-        currentState: {
-          frame: {
-            x: 99,
-            y: 99,
-            width: 99,
-            height: 99,
-          },
-        },
-      } as any,
-    });
-  };
-
   console.log('Test', test, items);
 
   return (
@@ -185,7 +166,6 @@ const Test = () => {
         <Button onClick={handleCopy}>Copy</Button>
         <Button onClick={handlePrevious}>Previous</Button>
         <Button onClick={handleNext}>Next</Button>
-        <Button onClick={handleMerge}>Merge</Button>
       </div>
 
       <Properties />

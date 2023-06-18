@@ -9,7 +9,7 @@ const Properties = () => {
 
   console.log('selectedItems', selectedItems);
 
-  const handleChange = (key: any, value: any) => {
+  const handleChange = (key: string, value: number | string) => {
     const newItem = {
       [item.id]: {
         ...item,

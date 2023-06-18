@@ -9,6 +9,7 @@ import PostList from './PostList';
 import PostService from './service';
 import usePostStore from './store';
 import { keyBy } from 'lodash';
+import { PostCollection } from './types';
 
 const PostPage = () => {
   const setPosts = usePostStore((state) => state.setPosts);
@@ -23,10 +24,10 @@ const PostPage = () => {
     const init = async () => {
       try {
         setLoading(true);
-        const res: any = await PostService.listPost({ author: authUser?.id });
+        const res = await PostService.listPost({ author: authUser?.id });
         setLoading(false);
         if (res && res.data) {
-          setPosts(keyBy(res.data, 'id'));
+          setPosts(keyBy(res.data, 'id') as PostCollection);
         }
       } catch (e) {
         setLoading(false);
