@@ -4,6 +4,7 @@ import type { MenuProps } from 'antd';
 import { Todo } from './Todo.types';
 import useStatusStore from '../status/store';
 import { getStatusColor } from '../status/utils';
+import { ValueGetterParams } from 'ag-grid-community';
 
 const items: MenuProps['items'] = [
   {
@@ -12,7 +13,7 @@ const items: MenuProps['items'] = [
   },
 ];
 
-const TodoTableColumns = (handleDelete: any) => {
+const TodoTableColumns = (handleDelete: (data: string) => void) => {
   const status = useStatusStore((state) => state.status);
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
@@ -28,7 +29,7 @@ const TodoTableColumns = (handleDelete: any) => {
       field: 'title',
       suppressMenu: true,
       width: 800,
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         const todoData: Todo = data.data;
         const item2: MenuProps['items'] = Object.values(status).map((i) => {
           return {

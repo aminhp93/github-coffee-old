@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-export const b64toBlob = (b64Data: any, contentType?: any, sliceSize?: any) => {
+export const b64toBlob = (
+  b64Data: string,
+  contentType?: string,
+  sliceSize?: number
+) => {
   contentType = contentType || '';
   sliceSize = sliceSize || 512;
 
@@ -24,7 +28,7 @@ export const b64toBlob = (b64Data: any, contentType?: any, sliceSize?: any) => {
   return blob;
 };
 
-export const cbUploadImage = async (data: any) => {
+export const cbUploadImage = async (data: string) => {
   // Split the base64 string in data and contentType
   const block = data.split(';');
   // Get the content type of the image

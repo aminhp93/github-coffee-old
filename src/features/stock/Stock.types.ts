@@ -101,14 +101,16 @@ export type StockBase = {
   buy_point?: {
     date: string;
   };
-  created_at: string;
-  is_blacklist: boolean;
-  list_base?: {
-    id: number;
-    value: number;
-    startDate?: string;
-    endDate?: string;
-  }[];
+  created_at: string | null;
+  is_blacklist: boolean | null;
+  list_base?:
+    | {
+        id: number;
+        value: number;
+        startDate?: string;
+        endDate?: string;
+      }[]
+    | null;
   symbol: string;
   config: {
     dataZoom: any;

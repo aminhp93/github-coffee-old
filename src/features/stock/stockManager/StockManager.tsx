@@ -28,8 +28,9 @@ const StockManager = () => {
   ]);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
 
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
+  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
+    if (!data || !data[0] || !data[1]) return;
+    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
   const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
@@ -97,7 +98,7 @@ const StockManager = () => {
   };
 
   const handleClickSymbol = (data: any) => {
-    const symbol = data.data?.symbol;
+    const symbol = data?.symbol;
     if (!symbol) return;
     setSelectedSymbol(symbol);
   };
@@ -105,16 +106,14 @@ const StockManager = () => {
   const handleClickUpdate = async (data: any) => {
     try {
       const updatedData = {
-        symbol: data.data.symbol,
-        is_blacklist: !data.data.is_blacklist,
+        symbol: data.symbol,
+        is_blacklist: !data.is_blacklist,
       };
       await StockService.updateStockBase(updatedData);
 
       const newListStocks = cloneDeep(listStocks);
-      const index = newListStocks.findIndex(
-        (i) => i.symbol === data.data.symbol
-      );
-      newListStocks[index].is_blacklist = !data.data.is_blacklist;
+      const index = newListStocks.findIndex((i) => i.symbol === data.symbol);
+      newListStocks[index].is_blacklist = !data.is_blacklist;
       if (newListStocks[index].is_blacklist) {
         newListStocks[index].danger = false;
       } else {

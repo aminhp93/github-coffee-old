@@ -1,9 +1,11 @@
+import { TData } from 'components/customAgGridReact/CustomAgGridReact';
 import { UNIT_BILLION } from '../constants';
+import { CellClickedEvent, ValueGetterParams } from 'ag-grid-community';
 
-interface Props {
-  handleClickSymbol: (record: any) => void;
-  handleClickUpdate: (record: any) => void;
-}
+type Props = {
+  handleClickSymbol: (data: any) => void;
+  handleClickUpdate: (data: any) => void;
+};
 
 const StockManagerColumns = ({
   handleClickSymbol,
@@ -15,8 +17,10 @@ const StockManagerColumns = ({
       field: 'symbol',
       suppressMenu: true,
       width: 80,
-      onCellClicked: (data: any) => {
-        handleClickSymbol(data);
+      onCellClicked: (data: CellClickedEvent<TData>) => {
+        const stockData: any = data.data;
+
+        handleClickSymbol && handleClickSymbol(stockData);
       },
     },
     {
@@ -25,7 +29,7 @@ const StockManagerColumns = ({
       type: 'rightAligned',
       width: 100,
       suppressMenu: true,
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         return (data.data.minValue / UNIT_BILLION).toFixed(0);
       },
     },
@@ -35,7 +39,7 @@ const StockManagerColumns = ({
       width: 100,
       type: 'rightAligned',
       suppressMenu: true,
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         return (data.data.marketCap / UNIT_BILLION).toFixed(0);
       },
     },
@@ -45,7 +49,7 @@ const StockManagerColumns = ({
       field: 'averageChange',
       type: 'rightAligned',
       suppressMenu: true,
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         return data.data.averageChange.toFixed(1);
       },
     },
@@ -55,7 +59,7 @@ const StockManagerColumns = ({
       type: 'rightAligned',
       width: 100,
       suppressMenu: true,
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         return data.data.averageRangeChange.toFixed(1);
       },
     },
@@ -70,10 +74,11 @@ const StockManagerColumns = ({
       field: 'action',
       width: 100,
       suppressMenu: true,
-      onCellClicked: (data: any) => {
-        handleClickUpdate(data);
+      onCellClicked: (data: CellClickedEvent<TData>) => {
+        const stockData: any = data.data;
+        handleClickUpdate(stockData);
       },
-      cellRenderer: (data: any) => {
+      cellRenderer: (data: ValueGetterParams) => {
         let text = 'Add ';
         if (data.data.is_blacklist) {
           text = 'Remove';

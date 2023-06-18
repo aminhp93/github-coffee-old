@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
-import { StockData, SupabaseData } from '../Stock.types';
+import { StockData, SupabaseData, StockBase } from '../Stock.types';
 import {
   filterData,
   getStockDataFromSupabase,
@@ -24,8 +24,9 @@ import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
 import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
+import { RowClassParams } from 'ag-grid-community';
 
-const getRowClass = (params: any) => {
+const getRowClass = (params: RowClassParams) => {
   if (params.node.data.potential) {
     return 'potential-row';
   }
@@ -39,18 +40,18 @@ const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-  const [listStockBase, setListStockBase] = useState<any[]>([]);
+  const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
-  const handleChangeDate = (data: any) => {
-    setDates(data);
-    getData(data);
+  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
+    if (!data || !data[0] || !data[1]) return;
+    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
+    getData(data as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
   const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
-    console.log('get data');
     try {
       if (!dates || dates.length !== 2) return;
       gridRef.current?.api?.showLoadingOverlay();
@@ -90,7 +91,7 @@ const StockTable = () => {
       );
 
       if (resStockBase?.data?.length) {
-        setListStockBase(resStockBase.data);
+        setListStockBase(resStockBase.data as StockBase[]);
       }
 
       setAllStocks(newAllStocks);
@@ -104,7 +105,7 @@ const StockTable = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res: any = await StockService.getLastUpdated();
+        const res = await StockService.getLastUpdated();
         const resStockBase = await StockService.getAllStockBase();
 
         const { list_all } = mapDataFromStockBase(
@@ -166,8 +167,8 @@ const StockTable = () => {
     gridRef.current.api.sizeColumnsToFit();
   };
 
-  const handleClickSymbol = (data: any) => {
-    const symbol = data.data?.symbol;
+  const handleClickSymbol = (data: StockData) => {
+    const symbol = data.symbol;
     if (!symbol) return;
     setSelectedSymbol(symbol);
   };

@@ -7,7 +7,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
-type TData = any;
+export type TData = any;
 
 type Props = {
   rowData?: GridOptions['rowData'];

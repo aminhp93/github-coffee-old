@@ -70,7 +70,7 @@ const StockService = {
     listSymbols: string[];
   }) {
     const listPromises: any = [];
-    listSymbols.forEach((i: any) => {
+    listSymbols.forEach((i: string) => {
       listPromises.push(
         StockService.getHistoricalQuotes({
           symbol: i,

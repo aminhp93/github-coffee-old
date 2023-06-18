@@ -19,7 +19,7 @@ export default function StockNews() {
 
       const listWatching = listWatchlist['watching'];
       const listPromises: any = [];
-      ((listWatching || {}).symbols || []).forEach((i: any) => {
+      ((listWatching || {}).symbols || []).forEach((i: string) => {
         listPromises.push(StockService.getStockNews(i));
       });
       return Promise.all(listPromises).then((res2: any) => {
@@ -99,7 +99,9 @@ export default function StockNews() {
         >
           <Input
             placeholder="Search"
-            onChange={(e: any) => setSearchText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchText(e.target.value)
+            }
           />
           <List
             style={{ overflow: 'auto', flex: 1 }}

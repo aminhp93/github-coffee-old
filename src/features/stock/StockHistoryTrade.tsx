@@ -4,11 +4,11 @@ import { AccountService } from 'features/stock/service';
 import { sum, uniqBy } from 'lodash';
 import { useEffect, useState } from 'react';
 
-interface TProps {
-  onClose?: any;
-}
+type Props = {
+  onClose?: () => void;
+};
 
-function StockHistoryTrade(props: TProps) {
+function StockHistoryTrade(props: Props) {
   const filterObj = {
     startDate: '2020-07-01',
     endDate: dayjs().format('YYYY-MM-DD'),

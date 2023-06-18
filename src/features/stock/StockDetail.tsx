@@ -64,28 +64,21 @@ const StockDetail = () => {
     'dealVolume' | 'totalVolume'
   >('totalVolume');
 
-  const handleChangeDate = (dates: null | (dayjs.Dayjs | null)[]) => {
-    if (!dates || !dates[0] || !dates[1]) return;
-    setDates(dates as [dayjs.Dayjs, dayjs.Dayjs]);
+  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
+    if (!data || !data[0] || !data[1]) return;
+    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
   const handleChangeStockBase = (id: number, data: number) => {
     const new_list_base = stockBase?.list_base
-      ? stockBase.list_base.map(
-          (item: {
-            id: number;
-            value: number;
-            startDate?: string;
-            endDate?: string;
-          }) => {
-            return {
-              id: item.id,
-              value: id === item.id ? data : item.value,
-              startDate: item.startDate,
-              endDate: item.endDate,
-            };
-          }
-        )
+      ? stockBase.list_base.map((item) => {
+          return {
+            id: item.id,
+            value: id === item.id ? data : item.value,
+            startDate: item.startDate,
+            endDate: item.endDate,
+          };
+        })
       : [1, 2, 3].map((item) => {
           return {
             id: item,
@@ -407,7 +400,9 @@ const StockDetail = () => {
                 ))}
                 <div style={{ marginBottom: '10px' }}>
                   <BuyPoint
-                    buyPoint={stockBase?.buy_point}
+                    buyPoint={{
+                      date: new dayjs.Dayjs(stockBase?.buy_point?.date),
+                    }}
                     onCb={handleCbBuyPoint}
                   />
                   {stockBase?.is_blacklist && (

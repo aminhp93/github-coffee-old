@@ -12,6 +12,7 @@ import { Todo } from './Todo.types';
 import TodoService from './Todo.services';
 import { createNewRowData } from './Todo.utils';
 import TodoTableColumns from './TodoTableColumns';
+import { IRowNode } from 'ag-grid-community';
 
 const TodoPage = () => {
   const { authUser }: AuthUserContext = useAuth();
@@ -20,7 +21,7 @@ const TodoPage = () => {
 
   const handleCreate = async (data: any) => {
     try {
-      if (!authUser || !authUser.id || !data) return;
+      if (!authUser?.id || !data) return;
       if (!gridRef?.current?.api) return;
 
       const requestData = {
@@ -30,9 +31,7 @@ const TodoPage = () => {
       delete requestData.id;
       const res = await TodoService.createTodo(requestData);
 
-      //
-
-      const itemsToUpdate: any = [];
+      const itemsToUpdate: IRowNode[] = [];
       gridRef.current.api.forEachNodeAfterFilterAndSort(function (rowNode) {
         // only do item with id === -1
         if (rowNode.data.id === -1) {
@@ -44,10 +43,10 @@ const TodoPage = () => {
         remove: itemsToUpdate,
       });
 
-      addItems(undefined, res.data);
+      addItems(undefined, res.data as Todo[]);
 
       notification.success({ message: 'Create success' });
-    } catch (e: any) {
+    } catch (e) {
       notification.error({ message: 'Error create todo' });
     }
   };
@@ -62,8 +61,8 @@ const TodoPage = () => {
     }
   };
 
-  const addItems = useCallback((addIndex: any, data: any) => {
-    if (!gridRef?.current?.api) return;
+  const addItems = useCallback((addIndex?: number, data?: Todo[]) => {
+    if (!gridRef?.current?.api || !data) return;
 
     gridRef.current?.api.applyTransaction({
       add: data,
@@ -83,7 +82,7 @@ const TodoPage = () => {
       };
       await TodoService.updateTodo(event.data.id, requestData);
       notification.success({ message: 'Update success' });
-    } catch (e: any) {
+    } catch (e) {
       notification.error({ message: 'Error Update todo' });
     }
   }, []);
@@ -120,7 +119,7 @@ const TodoPage = () => {
   const handlePressEnter = (e: any) => {
     // add item to aggrid
     const item = createNewRowData(e.target.value);
-    addItems(0, [item]);
+    addItems(0, [item as Todo]);
 
     // call api create
     handleCreate(item);
@@ -142,8 +141,8 @@ const TodoPage = () => {
         };
 
         const res = await TodoService.listTodo(dataRequest);
-        if (res?.data as Todo[]) {
-          addItems(undefined, res.data);
+        if (res?.data) {
+          addItems(undefined, res.data as Todo[]);
         }
       } catch (e) {
         notification.error({ message: 'error' });
