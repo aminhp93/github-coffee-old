@@ -53,8 +53,7 @@
       "react-app/jest"
     ],
     "rules": {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "no-explicit-any": "warn"
+      "@typescript-eslint/no-explicit-any": "warn"
     }
   },
   "gitHooks": {
