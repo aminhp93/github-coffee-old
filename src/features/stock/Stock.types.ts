@@ -45,6 +45,7 @@ export type Base = {
   startBaseDate: string;
   endBaseDate: string;
 };
+
 export type Watchlist = {
   displayIndex: number;
   name: string;
@@ -109,4 +110,15 @@ export type StockBase = {
     endDate?: string;
   }[];
   symbol: string;
+  config: {
+    dataZoom: any;
+  };
+};
+
+export type StockChartData = {
+  dates: string[];
+  prices: number[][];
+  volumes: number[][];
+  seriesMarkPoint: any;
+  markLine: any;
 };

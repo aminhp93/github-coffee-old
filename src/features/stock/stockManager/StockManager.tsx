@@ -8,7 +8,7 @@ import { DATE_FORMAT, UNIT_BILLION } from '../constants';
 import StockService from '../service';
 import RefreshButton from '../stockTable/RefreshButton';
 import StockTesting from '../StockTesting';
-import { SupabaseData } from '../types';
+import { SupabaseData } from '../Stock.types';
 import { getStockDataFromSupabase } from '../utils';
 import './StockManager.less';
 import StockManagerColumns from './StockManagerColumns';

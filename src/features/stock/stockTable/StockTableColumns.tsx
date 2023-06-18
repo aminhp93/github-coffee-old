@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { DATE_FORMAT } from '../constants';
-import { StockData } from '../types';
+import { StockData } from '../Stock.types';
 import { evaluateStockBase, getColorStock, getMinTotalValue } from '../utils';
 
 interface Props {

@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
-import { StockData, SupabaseData } from '../types';
+import { StockData, SupabaseData } from '../Stock.types';
 import {
   filterData,
   getStockDataFromSupabase,
@@ -50,6 +50,7 @@ const StockTable = () => {
   };
 
   const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
+    console.log('get data');
     try {
       if (!dates || dates.length !== 2) return;
       gridRef.current?.api?.showLoadingOverlay();

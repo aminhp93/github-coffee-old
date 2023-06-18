@@ -3,7 +3,13 @@ import { cloneDeep, groupBy, max, maxBy, meanBy, min, minBy } from 'lodash';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
 import StockService from './service';
 import { getStockData } from './tests';
-import { StockBase, StockCoreData, StockData, SupabaseData } from './types';
+import {
+  StockBase,
+  StockChartData,
+  StockCoreData,
+  StockData,
+  SupabaseData,
+} from './Stock.types';
 
 export const filterData = (
   data: StockData[],
@@ -186,7 +192,7 @@ export const mapDataChart = ({
   listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
   volumeField?: 'dealVolume' | 'totalVolume';
-}) => {
+}): StockChartData | undefined => {
   const seriesMarkPoint = getSeriesMarkPoint({
     listMarkPoints,
     offset: 20,
@@ -226,7 +232,7 @@ export const mapDataChart = ({
 };
 
 export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
-  if (!stockBase || !stockBase.list_base || !data) {
+  if (!stockBase?.list_base || !data) {
     return {
       risk_b1: null,
       risk_b2: null,
@@ -312,7 +318,7 @@ export const getTodayData = async (
       listSymbols,
     });
     resFireant = res.map((i) => {
-      const item = i.data && i.data[0];
+      const item = i?.data[0];
       if (item) {
         const {
           date,
@@ -355,7 +361,7 @@ export const getMinTotalValue = (
   let maxTotal;
   let averageTotal;
 
-  if (data && data.fullData) {
+  if (data?.fullData) {
     minTotal = minBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
     if (minTotal) {
       minTotal = Number((minTotal / UNIT_BILLION).toFixed(0));

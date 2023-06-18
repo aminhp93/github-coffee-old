@@ -1,7 +1,7 @@
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { DATE_FORMAT, GET_FIELD_STOCK_SUPABASE } from './constants';
-import { HistoricalQuote, HistoricalQuoteParams } from './types';
+import { HistoricalQuote, HistoricalQuoteParams } from './Stock.types';
 import supabase from '@/services/supabase';
 
 const domain = 'https://restv2.fireant.vn';

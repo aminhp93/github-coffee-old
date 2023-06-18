@@ -4,7 +4,7 @@ import {
   getBase_min_max,
   getMaxPercentBase,
 } from './utils';
-import { StockData, StockCoreData, Base } from './types';
+import { StockData, StockCoreData, Base } from './Stock.types';
 import { min, max } from 'lodash';
 
 export const getStockData = (data: StockCoreData[]): StockData | undefined => {

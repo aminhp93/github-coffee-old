@@ -1,3 +1,4 @@
+// Import library
 import type { EChartsOption } from 'echarts';
 import {
   CheckCircleOutlined,
@@ -15,12 +16,20 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { debounce, get } from 'lodash';
+
+// Import components
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
 import StockChart from './stockChart/StockChart';
 import BuyPoint from './stockTable/BuyPoint';
 import RefreshButton from './stockTable/RefreshButton';
-import { StockData, SupabaseData } from './types';
+import {
+  StockData,
+  SupabaseData,
+  StockChartData,
+  StockBase,
+} from './Stock.types';
 import {
   evaluateStockBase,
   getListMarkLines,
@@ -32,8 +41,7 @@ import {
   mapDataFromStockBase,
   analyse,
 } from './utils';
-import { debounce, get } from 'lodash';
-import { dataZoom } from 'features/stock/stockChart/stockChart.constants';
+import { dataZoom } from 'features/stock/stockChart/StockChart.constants';
 import useStockStore from './Stock.store';
 
 const { RangePicker } = DatePicker;
@@ -43,9 +51,9 @@ const StockDetail = () => {
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [loading, setLoading] = useState<boolean>(false);
-  const [dataChart, setDataChart] = useState<any>(null);
-  const [stockBase, setStockBase] = useState<any>({});
-  const [stockData, setStockData] = useState<StockData | undefined>(undefined);
+  const [dataChart, setDataChart] = useState<StockChartData | undefined>();
+  const [stockBase, setStockBase] = useState<StockBase | undefined>(undefined);
+  const [stockData, setStockData] = useState<StockData | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(true);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
     dayjs().add(-18, 'months'),
@@ -56,20 +64,28 @@ const StockDetail = () => {
     'dealVolume' | 'totalVolume'
   >('totalVolume');
 
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
+  const handleChangeDate = (dates: null | (dayjs.Dayjs | null)[]) => {
+    if (!dates || !dates[0] || !dates[1]) return;
+    setDates(dates as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
-  const handleChangeStockBase = (id: any, data: any) => {
+  const handleChangeStockBase = (id: number, data: number) => {
     const new_list_base = stockBase?.list_base
-      ? stockBase.list_base.map((item: any) => {
-          return {
-            id: item.id,
-            value: id === item.id ? data : item.value,
-            startDate: item.startDate,
-            endDate: item.endDate,
-          };
-        })
+      ? stockBase.list_base.map(
+          (item: {
+            id: number;
+            value: number;
+            startDate?: string;
+            endDate?: string;
+          }) => {
+            return {
+              id: item.id,
+              value: id === item.id ? data : item.value,
+              startDate: item.startDate,
+              endDate: item.endDate,
+            };
+          }
+        )
       : [1, 2, 3].map((item) => {
           return {
             id: item,
@@ -92,7 +108,7 @@ const StockDetail = () => {
         listMarkLines: getListMarkLines(newStockBase, stockData),
       })
     );
-    setStockBase(newStockBase);
+    setStockBase(newStockBase as StockBase);
   };
 
   const footer = () => {
@@ -141,11 +157,11 @@ const StockDetail = () => {
 
       setLoading(false);
 
-      let newStockBase: any = {};
+      let newStockBase = {};
       if (resStockBase.data && resStockBase.data.length === 1) {
         newStockBase = resStockBase.data[0];
       }
-      let source: any = res.data;
+      let source = res.data;
       if (resFireant) {
         source = [...resFireant, ...source];
       }
@@ -164,7 +180,7 @@ const StockDetail = () => {
           })
         );
       }
-      setStockBase(newStockBase);
+      setStockBase(newStockBase as StockBase);
     } catch (e) {
       setLoading(false);
       console.log(e);
@@ -181,7 +197,7 @@ const StockDetail = () => {
           }
         : null,
     };
-    setStockBase(newStockBase);
+    setStockBase(newStockBase as StockBase);
   };
 
   useEffect(() => {
@@ -189,10 +205,8 @@ const StockDetail = () => {
     (async () => {
       try {
         if (stockBase?.id) {
-          console.log('194');
           await StockService.updateStockBase(stockBase);
         } else {
-          console.log('197');
           await StockService.insertStockBase([stockBase]);
         }
         notification.success({ message: 'success' });
@@ -211,7 +225,7 @@ const StockDetail = () => {
       const resStockBase = await StockService.getAllStockBase();
 
       const { list_all } = mapDataFromStockBase(
-        resStockBase.data || ([] as any)
+        resStockBase.data as StockBase[]
       );
       setListAllSymbols(list_all);
     })();
@@ -225,7 +239,7 @@ const StockDetail = () => {
 
   const { listBigSell, countEstimate } = analyse(stockData, stockBase);
 
-  console.log('dataChart', dataChart, stockData, stockBase);
+  console.log('dataChart', { dataChart, stockData, stockBase });
 
   const debounceZoom = useMemo(
     () =>
@@ -241,7 +255,8 @@ const StockDetail = () => {
         const dataZoomId = params.dataZoomId;
         if (dataZoomId === `\u0000series\u00002\u00000`) {
           // left zoom
-          setStockBase((prev: any) => {
+          setStockBase((prev) => {
+            if (!prev) return prev;
             const newDataZoom = prev.config?.dataZoom || dataZoom;
             newDataZoom[2].start = params.start;
             newDataZoom[2].end = params.end;
@@ -255,7 +270,8 @@ const StockDetail = () => {
           });
         } else if (dataZoomId === `\u0000series\u00001\u00000`) {
           // bottom zoom
-          setStockBase((prev: any) => {
+          setStockBase((prev) => {
+            if (!prev) return prev;
             const newDataZoom = prev.config?.dataZoom || dataZoom;
             newDataZoom[1].start = params.start;
             newDataZoom[1].end = params.end;
@@ -271,7 +287,8 @@ const StockDetail = () => {
           });
         } else {
           // inside zoom
-          setStockBase((prev: any) => {
+          setStockBase((prev) => {
+            if (!prev) return prev;
             const newDataZoom = prev.config?.dataZoom || dataZoom;
             newDataZoom[0].start = get(params, 'batch[0].start');
             newDataZoom[0].end = get(params, 'batch[0].end');
@@ -329,7 +346,6 @@ const StockDetail = () => {
             style={{ width: 120 }}
             onChange={(value: string) => {
               setSelectedSymbol(value);
-              getData(value, dates);
             }}
             options={listAllSymbols.map((i) => {
               return { value: i, label: i };
@@ -371,17 +387,20 @@ const StockDetail = () => {
           >
             <div>
               <div style={{ marginRight: '10px' }}>
-                {[1, 2, 3].map((i: any, index: number) => (
+                {[1, 2, 3].map((i: number, index: number) => (
                   <InputNumber
-                    key={i.key}
+                    key={i}
                     step={0.1}
                     size="small"
                     addonBefore={`b_${index + 1}`}
                     value={
-                      stockBase.list_base ? stockBase.list_base[index].value : 0
+                      stockBase?.list_base
+                        ? stockBase.list_base[index].value
+                        : 0
                     }
                     style={{ marginBottom: '10px', marginRight: '4px' }}
-                    onChange={(value: any) => {
+                    onChange={(value: number | null) => {
+                      if (!value) return;
                       handleChangeStockBase(index + 1, value);
                     }}
                   />
@@ -393,7 +412,7 @@ const StockDetail = () => {
                   />
                   {stockBase?.is_blacklist && (
                     <span>
-                      is_blacklist{' '}
+                      is_blacklist
                       <CheckCircleOutlined style={{ color: '#00aa00' }} />
                     </span>
                   )}
@@ -402,7 +421,7 @@ const StockDetail = () => {
             </div>
             <div>
               <div>
-                {listBigSell.map((i: any) => {
+                {listBigSell.map((i: { date: string }) => {
                   return <div key={i.date}>{i.date}</div>;
                 })}
                 {countEstimate}

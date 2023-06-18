@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 
 // Import third-party libraries
-import { notification } from 'antd';
+import { notification, Button } from 'antd';
 import 'antd/dist/reset.css';
 
 // Import components
@@ -35,11 +35,18 @@ const root = ReactDOM.createRoot(
 );
 
 const App = () => {
-  const { authUser }: AuthUserContext = useAuth();
+  const { authUser, signInWithOAuth }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
   if (!authUser?.email) {
-    return <div>Hello</div>;
+    return (
+      <div>
+        Hello
+        <Button size="small" onClick={signInWithOAuth}>
+          Login
+        </Button>
+      </div>
+    );
   }
 
   return (
