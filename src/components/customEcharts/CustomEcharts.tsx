@@ -1,4 +1,4 @@
-import type { EChartsOption } from 'echarts';
+import type { EChartsOption, DataZoomComponentOption } from 'echarts';
 import { ECharts, getInstanceByDom, init } from 'echarts';
 import { memo, useEffect, useRef } from 'react';
 import { withSize } from 'react-sizeme';
@@ -9,7 +9,10 @@ type Props = {
     height: number;
   };
   option?: EChartsOption;
-  handleZoom?: (params: any, oldOption: EChartsOption) => void;
+  handleZoom?: (
+    params: DataZoomComponentOption,
+    oldOption: EChartsOption
+  ) => void;
 };
 
 const CustomEcharts = ({ size, option, handleZoom }: Props) => {
@@ -56,7 +59,10 @@ const CustomEcharts = ({ size, option, handleZoom }: Props) => {
       chart &&
         chart.on('datazoom', function (params: unknown) {
           handleZoom &&
-            handleZoom(params as any, chart?.getOption() as EChartsOption);
+            handleZoom(
+              params as DataZoomComponentOption,
+              chart?.getOption() as EChartsOption
+            );
         });
     }
   }, [handleZoom]);

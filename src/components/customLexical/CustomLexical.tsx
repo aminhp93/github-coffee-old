@@ -1,5 +1,8 @@
 import ExampleTheme from './themes/ExampleTheme';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {
+  InitialConfigType,
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -35,7 +38,8 @@ function Placeholder() {
 const EMPTY_VALUE =
   '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
-const editorConfig: any = {
+const editorConfig: InitialConfigType = {
+  namespace: 'custom-lexical',
   // The editor theme
   theme: ExampleTheme,
   // Handling of errors during update

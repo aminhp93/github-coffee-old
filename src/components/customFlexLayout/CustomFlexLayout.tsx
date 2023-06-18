@@ -90,7 +90,7 @@ const CustomFlexLayout = ({ layoutName, defaultJson, componentObj }: Props) => {
     window.location.reload();
   };
 
-  const handleOnModelChange = (data: any) => {
+  const handleOnModelChange = (data: Model) => {
     localStorage.removeItem(layoutName);
     localStorage.setItem(layoutName, JSON.stringify(data.toJson()));
   };
