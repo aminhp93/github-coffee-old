@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const color = [
   '#c23531',
   '#2f4554',

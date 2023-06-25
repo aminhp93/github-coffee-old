@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useEditorStore from './store/EditorStore';

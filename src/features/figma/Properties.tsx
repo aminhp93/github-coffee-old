@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Drawer, InputNumber, Select } from 'antd';
 import useHistoryStore, { useItemSelected } from './store/HistoryStore';
 import { getTransformStyle } from './utils';

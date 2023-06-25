@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';

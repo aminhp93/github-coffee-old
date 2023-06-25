@@ -7,6 +7,7 @@ import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TData = any;
 
 type Props = {

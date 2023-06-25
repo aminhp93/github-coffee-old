@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
 import './Post.less';

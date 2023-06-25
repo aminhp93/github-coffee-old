@@ -48,6 +48,7 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
 
   // get estimated_vol_change
   const averageVolume_last5 =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.slice(1, 6).reduce((a: number, b: any) => a + b.totalVolume, 0) / 5;
   const estimated_vol = getEstimatedVol(last_data);
   const estimated_vol_change =

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { DATE_FORMAT, GET_FIELD_STOCK_SUPABASE } from './constants';

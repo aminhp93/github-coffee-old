@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Import library
 import type { EChartsOption } from 'echarts';
 import {

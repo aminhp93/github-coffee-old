@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs';
 import { cloneDeep, groupBy, max, maxBy, meanBy, min, minBy } from 'lodash';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';

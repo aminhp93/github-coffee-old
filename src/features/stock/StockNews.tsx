@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Input, List } from 'antd';
 import dayjs from 'dayjs';
 import parse from 'html-react-parser';

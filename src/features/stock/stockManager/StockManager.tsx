@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { WarningOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';

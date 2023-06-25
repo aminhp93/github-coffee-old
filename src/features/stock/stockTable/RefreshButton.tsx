@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useInterval } from '@/hooks/useInterval';
 import { CheckCircleOutlined } from '@ant-design/icons';
 import { Button, InputNumber, Popover, Statistic } from 'antd';

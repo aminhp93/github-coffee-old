@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TData } from 'components/customAgGridReact/CustomAgGridReact';
 import { UNIT_BILLION } from '../constants';
 import { CellClickedEvent, ValueGetterParams } from 'ag-grid-community';

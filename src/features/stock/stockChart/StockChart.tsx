@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import {
   color,

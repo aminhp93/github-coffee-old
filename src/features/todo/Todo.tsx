@@ -19,6 +19,7 @@ const TodoPage = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const inputRef = useRef<InputRef>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleCreate = async (data: any) => {
     try {
       if (!authUser?.id || !data) return;
@@ -70,10 +71,12 @@ const TodoPage = () => {
     });
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCellEditingStarted = useCallback((event: any) => {
     console.log('cellEditingStarted', event);
   }, []);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onCellEditingStopped = useCallback(async (event: any) => {
     console.log('cellEditingStopped', event);
     try {
@@ -116,6 +119,7 @@ const TodoPage = () => {
     gridRef.current.api.sizeColumnsToFit();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handlePressEnter = (e: any) => {
     // add item to aggrid
     const item = createNewRowData(e.target.value);
