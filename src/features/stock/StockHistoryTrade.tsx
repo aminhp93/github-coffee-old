@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, notification, Table } from 'antd';
 import dayjs from 'dayjs';
 import { AccountService } from 'features/stock/service';
