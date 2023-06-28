@@ -13,7 +13,12 @@ const items: MenuProps['items'] = [
   },
 ];
 
-const TodoTableColumns = (handleDelete: (data: string) => void) => {
+type Props = {
+  handleDelete?: (data: string) => void;
+  handleUpdate?: (key: string, data: Todo) => void;
+};
+
+const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
   const status = useStatusStore((state) => state.status);
 
   const onClick: MenuProps['onClick'] = ({ key }) => {
@@ -25,22 +30,40 @@ const TodoTableColumns = (handleDelete: (data: string) => void) => {
 
   return [
     {
+      headerName: 'status',
+      field: 'status',
+      hide: true,
+    },
+    {
       headerName: 'Title',
       field: 'title',
-      suppressMenu: true,
       width: 800,
       cellRenderer: (data: ValueGetterParams) => {
         const todoData: Todo = data.data;
+
         const item2: MenuProps['items'] = Object.values(status).map((i) => {
           return {
             key: i.id,
             label: i.label,
+            data: i,
+            icon: (
+              <Tag color={getStatusColor(i)} style={{ color: 'transparent' }}>
+                t
+              </Tag>
+            ),
           };
         });
 
+        const onClickTitle: MenuProps['onClick'] = ({ key }) => {
+          handleUpdate && handleUpdate(key, todoData);
+        };
+
         return (
           <div>
-            <Dropdown menu={{ items: item2, onClick }} trigger={['click']}>
+            <Dropdown
+              menu={{ items: item2, onClick: onClickTitle }}
+              trigger={['click']}
+            >
               <Tag
                 color={getStatusColor(status[todoData.status])}
                 style={{ color: 'transparent' }}

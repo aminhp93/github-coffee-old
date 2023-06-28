@@ -243,6 +243,8 @@ const StockTable = () => {
           getRowClass={getRowClass}
           onResize={handleResize}
           onGridReady={handleGridReady}
+          enableRangeSelection={true}
+          enableCharts={true}
         />
       </div>
       {footer()}

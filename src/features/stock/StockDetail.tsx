@@ -395,8 +395,7 @@ const StockDetail = () => {
                     }
                     style={{ marginBottom: '10px', marginRight: '4px' }}
                     onChange={(value: number | null) => {
-                      if (!value) return;
-                      handleChangeStockBase(index + 1, value);
+                      handleChangeStockBase(index + 1, value!);
                     }}
                   />
                 ))}

@@ -154,6 +154,44 @@ const TodoPage = () => {
     })();
   }, [addItems, authUser?.id]);
 
+  const handleUpdate = async (key: string, todo: Todo) => {
+    if (!gridRef?.current?.api) return;
+
+    const itemsToUpdate: IRowNode[] = [];
+    const rows: IRowNode[] = [];
+
+    gridRef.current.api.forEachNodeAfterFilterAndSort(function (
+      rowNode: IRowNode
+    ) {
+      if (rowNode.data.id === todo.id) {
+        // only do item with id === -1
+        rowNode.data.status = Number(key);
+        itemsToUpdate.push(rowNode.data);
+        const row = gridRef.current!.api.getDisplayedRowAtIndex(
+          rowNode.rowIndex!
+        );
+        if (row) {
+          rows.push(row);
+        }
+      }
+    });
+
+    gridRef.current.api.applyTransaction({
+      update: itemsToUpdate,
+    });
+
+    gridRef.current.api.redrawRows({ rowNodes: rows });
+    try {
+      const requestData = {
+        status: Number(key),
+      };
+      await TodoService.updateTodo(todo.id, requestData);
+      notification.success({ message: 'Update success' });
+    } catch (e) {
+      notification.error({ message: 'Error Update todo' });
+    }
+  };
+
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
@@ -163,7 +201,10 @@ const TodoPage = () => {
 
         <CustomAgGridReact
           ref={gridRef}
-          columnDefs={TodoTableColumns(handleDeleteCb)}
+          columnDefs={TodoTableColumns({
+            handleDelete: handleDeleteCb,
+            handleUpdate,
+          })}
           onCellEditingStarted={onCellEditingStarted}
           onCellEditingStopped={onCellEditingStopped}
           onGridReady={handleGridReady}

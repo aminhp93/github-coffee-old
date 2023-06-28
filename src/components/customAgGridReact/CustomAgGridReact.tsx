@@ -26,6 +26,8 @@ type Props = {
   onGridReady?: GridOptions['onGridReady'];
   onCellEditingStarted?: GridOptions['onCellEditingStarted'];
   onCellEditingStopped?: GridOptions['onCellEditingStopped'];
+  enableRangeSelection?: boolean;
+  enableCharts?: boolean;
 };
 
 interface CustomAgGridReactProps extends Props {
@@ -46,6 +48,8 @@ const CustomAgGridReact = ({
   onGridReady: onGridReadyProps,
   onCellEditingStarted,
   onCellEditingStopped,
+  enableRangeSelection,
+  enableCharts,
 }: CustomAgGridReactProps) => {
   const onGridReady = useCallback(
     (params: TData) => {
@@ -79,6 +83,8 @@ const CustomAgGridReact = ({
       }}
       rowHeight={30}
       rowSelection={'single'}
+      enableRangeSelection={enableRangeSelection}
+      enableCharts={enableCharts}
       defaultColDef={{
         editable: true,
         sortable: true,
