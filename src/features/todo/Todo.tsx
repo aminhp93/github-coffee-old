@@ -1,12 +1,14 @@
 // ** Import react
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useMemo } from 'react';
 
 // ** Import third-party libs
 import { notification, Input, InputRef } from 'antd';
 import { AgGridReact } from 'ag-grid-react';
 
 // ** Import components
-import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
+import CustomAgGridReact, {
+  TData,
+} from 'components/customAgGridReact/CustomAgGridReact';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { Todo } from './Todo.types';
 import TodoService from './Todo.services';
@@ -69,6 +71,12 @@ const TodoPage = () => {
       add: data,
       addIndex: addIndex,
     });
+    gridRef.current.api.setFilterModel({
+      status: {
+        type: 'set',
+        values: [null, '2', '1'],
+      },
+    });
   }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,7 +123,10 @@ const TodoPage = () => {
   }, []);
 
   const handleGridReady = () => {
+    console.log(gridRef?.current?.api);
     if (!gridRef?.current?.api) return;
+    console.log(120);
+
     gridRef.current.api.sizeColumnsToFit();
   };
 
@@ -160,16 +171,14 @@ const TodoPage = () => {
     const itemsToUpdate: IRowNode[] = [];
     const rows: IRowNode[] = [];
 
-    gridRef.current.api.forEachNodeAfterFilterAndSort(function (
-      rowNode: IRowNode
-    ) {
-      if (rowNode.data.id === todo.id) {
+    const selectedNodes = gridRef.current.api.getSelectedNodes();
+
+    selectedNodes.forEach((node) => {
+      if (node.data.id === todo.id) {
         // only do item with id === -1
-        rowNode.data.status = Number(key);
-        itemsToUpdate.push(rowNode.data);
-        const row = gridRef.current!.api.getDisplayedRowAtIndex(
-          rowNode.rowIndex!
-        );
+        node.data.status = Number(key);
+        itemsToUpdate.push(node.data);
+        const row = gridRef.current!.api.getDisplayedRowAtIndex(node.rowIndex!);
         if (row) {
           rows.push(row);
         }
@@ -192,6 +201,18 @@ const TodoPage = () => {
     }
   };
 
+  const autoGroupColumnDef = useMemo(() => {
+    return {
+      cellRendererSelector: (params: TData) => {
+        if (['Australia', 'Norway'].includes(params.node.key)) {
+          return; // use Default Cell Renderer
+        }
+        return { component: 'agGroupCellRenderer' };
+      },
+      minWidth: 150,
+    };
+  }, []);
+
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
@@ -209,6 +230,8 @@ const TodoPage = () => {
           onCellEditingStopped={onCellEditingStopped}
           onGridReady={handleGridReady}
           onResize={handleResize}
+          autoGroupColumnDef={autoGroupColumnDef}
+          groupDefaultExpanded={1}
         />
       </div>
     </div>

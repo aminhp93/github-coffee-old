@@ -1,4 +1,3 @@
-import React from 'react';
 import { GridOptions } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -28,53 +27,33 @@ type Props = {
   onCellEditingStopped?: GridOptions['onCellEditingStopped'];
   enableRangeSelection?: boolean;
   enableCharts?: boolean;
+  autoGroupColumnDef?: GridOptions['autoGroupColumnDef'];
+  groupDefaultExpanded?: GridOptions['groupDefaultExpanded'];
 };
 
 interface CustomAgGridReactProps extends Props {
   gridRef: React.RefObject<AgGridReact>;
 }
 
-const CustomAgGridReact = ({
-  rowData,
-  columnDefs,
-  pinnedTopRowData,
-  getRowClass,
-  getRowId,
-  pagination,
-  paginationAutoPageSize,
-  size,
-  gridRef,
-  onResize,
-  onGridReady: onGridReadyProps,
-  onCellEditingStarted,
-  onCellEditingStopped,
-  enableRangeSelection,
-  enableCharts,
-}: CustomAgGridReactProps) => {
+const CustomAgGridReact = (props: CustomAgGridReactProps) => {
+  const { onGridReady: onGridReadyProps, onResize, size, gridRef } = props;
+
   const onGridReady = useCallback(
     (params: TData) => {
-      onGridReadyProps && onGridReadyProps(params);
+      if (onGridReadyProps) onGridReadyProps(params);
     },
     [onGridReadyProps]
   );
 
   useEffect(() => {
-    onResize && onResize();
+    if (onResize) onResize();
   }, [size, onResize]);
 
   return (
     <AgGridReact
-      rowData={rowData}
-      columnDefs={columnDefs}
-      pinnedTopRowData={pinnedTopRowData}
-      pagination={pagination}
-      paginationAutoPageSize={paginationAutoPageSize}
-      getRowId={getRowId}
-      onGridReady={onGridReady}
-      onCellEditingStarted={onCellEditingStarted}
-      onCellEditingStopped={onCellEditingStopped}
-      getRowClass={getRowClass}
+      {...props}
       ref={gridRef}
+      onGridReady={onGridReady}
       overlayLoadingTemplate={
         '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
       }
@@ -83,8 +62,6 @@ const CustomAgGridReact = ({
       }}
       rowHeight={30}
       rowSelection={'single'}
-      enableRangeSelection={enableRangeSelection}
-      enableCharts={enableCharts}
       defaultColDef={{
         editable: true,
         sortable: true,

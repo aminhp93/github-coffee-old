@@ -5,6 +5,7 @@ import { Todo } from './Todo.types';
 import useStatusStore from '../status/store';
 import { getStatusColor } from '../status/utils';
 import { ValueGetterParams } from 'ag-grid-community';
+import { TData } from 'components/customAgGridReact/CustomAgGridReact';
 
 const items: MenuProps['items'] = [
   {
@@ -15,7 +16,7 @@ const items: MenuProps['items'] = [
 
 type Props = {
   handleDelete?: (data: string) => void;
-  handleUpdate?: (key: string, data: Todo) => void;
+  handleUpdate?: (key: string, data: Todo) => Promise<void>;
 };
 
 const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
@@ -24,7 +25,8 @@ const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
   const onClick: MenuProps['onClick'] = ({ key }) => {
     message.info(`Click on item ${key}`);
     if (key === 'delete') {
-      handleDelete && handleDelete(key);
+      if (!handleDelete) return;
+      handleDelete(key);
     }
   };
 
@@ -33,13 +35,20 @@ const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
       headerName: 'status',
       field: 'status',
       hide: true,
+      filter: true,
+      rowGroup: true,
+      cellRenderer: (data: TData) => {
+        return status[data.value].label;
+      },
     },
     {
       headerName: 'Title',
       field: 'title',
       width: 800,
+
       cellRenderer: (data: ValueGetterParams) => {
         const todoData: Todo = data.data;
+        if (!todoData) return null;
 
         const item2: MenuProps['items'] = Object.values(status).map((i) => {
           return {
@@ -55,7 +64,8 @@ const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
         });
 
         const onClickTitle: MenuProps['onClick'] = ({ key }) => {
-          handleUpdate && handleUpdate(key, todoData);
+          if (!handleUpdate) return;
+          handleUpdate(key, todoData);
         };
 
         return (
