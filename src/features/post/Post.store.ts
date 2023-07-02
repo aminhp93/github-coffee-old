@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { create } from 'zustand';
-import { PostCollection, Mode, Post } from './types';
+import { PostCollection, Mode, Post } from './Post.types';
 
 type PostStore = {
   posts: PostCollection;

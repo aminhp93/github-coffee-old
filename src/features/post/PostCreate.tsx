@@ -3,11 +3,11 @@
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
 import './Post.less';
-import PostService from './service';
-import { Post } from './types';
+import PostService from './Post.service';
+import { Post } from './Post.types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import usePostStore from './store';
+import usePostStore from './Post.store';
 import useTagStore from '../tag/store';
 
 export default function PostCreate() {
@@ -21,7 +21,7 @@ export default function PostCreate() {
 
   const onFinish = async () => {
     try {
-      if (!authUser || !authUser.id || !post) return;
+      if (!authUser?.id || !post) return;
       const requestData = {
         ...post,
         author: authUser.id,

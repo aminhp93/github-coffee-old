@@ -8,12 +8,12 @@ import {
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
 import './Post.less';
-import PostService from './service';
+import PostService from './Post.service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import usePostStore from './store';
+import usePostStore from './Post.store';
 import useTagStore from '../tag/store';
-import { Post, PostCollection } from './types';
+import { Post, PostCollection } from './Post.types';
 import { debounce } from 'lodash';
 
 const { Paragraph } = Typography;

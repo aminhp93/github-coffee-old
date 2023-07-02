@@ -9,6 +9,7 @@ import StockTable from 'features/stock/stockTable/StockTable';
 import Figma from 'features/figma/Figma';
 import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
+import Booking from 'features/booking/Booking';
 import { IJsonModel } from 'flexlayout-react';
 
 type Props = {
@@ -32,6 +33,7 @@ const Work = ({ layoutName, defaultJson }: Props) => {
         StockDetail: <StockDetail />,
         StockManager: <StockManager />,
         Figma: <Figma />,
+        Booking: <Booking />,
       }}
     />
   );

@@ -6,10 +6,10 @@ import './Post.less';
 import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
-import PostService from './service';
-import usePostStore from './store';
+import PostService from './Post.service';
+import usePostStore from './Post.store';
 import { keyBy } from 'lodash';
-import { PostCollection } from './types';
+import { PostCollection } from './Post.types';
 
 const PostPage = () => {
   const setPosts = usePostStore((state) => state.setPosts);
@@ -26,7 +26,7 @@ const PostPage = () => {
         setLoading(true);
         const res = await PostService.listPost({ author: authUser?.id });
         setLoading(false);
-        if (res && res.data) {
+        if (res?.data) {
           setPosts(keyBy(res.data, 'id') as PostCollection);
         }
       } catch (e) {
