@@ -13,14 +13,12 @@ type Props = {
 const BuyPoint = ({ onCb, buyPoint }: Props) => {
   const [date, setDate] = useState<dayjs.Dayjs | undefined>(buyPoint?.date);
 
-  const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    if (!date) return;
-    setDate(date);
-    onCb(date);
+  const onChange: DatePickerProps['onChange'] = (date) => {
+    setDate(date!);
+    onCb(date!);
   };
 
   useEffect(() => {
-    if (!buyPoint) return;
     setDate(buyPoint?.date);
   }, [buyPoint]);
 
