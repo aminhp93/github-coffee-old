@@ -29,16 +29,20 @@ const TodoPage = () => {
 
       const requestData = {
         ...data,
+        status: 1,
         author: authUser.id,
       };
       delete requestData.id;
       const res = await TodoService.createTodo(requestData);
 
       const itemsToUpdate: IRowNode[] = [];
-      gridRef.current.api.forEachNodeAfterFilterAndSort(function (rowNode) {
-        // only do item with id === -1
-        if (rowNode.data.id === -1) {
-          itemsToUpdate.push(rowNode.data);
+
+      const selectedNodes = gridRef.current.api.getSelectedNodes();
+
+      selectedNodes.forEach((node) => {
+        if (node.data.id === -1) {
+          // only do item with id === -1
+          itemsToUpdate.push(node.data);
         }
       });
 
@@ -50,6 +54,7 @@ const TodoPage = () => {
 
       notification.success({ message: 'Create success' });
     } catch (e) {
+      console.log(e);
       notification.error({ message: 'Error create todo' });
     }
   };
@@ -65,7 +70,8 @@ const TodoPage = () => {
   };
 
   const addItems = useCallback((addIndex?: number, data?: Todo[]) => {
-    if (!gridRef?.current?.api || !data) return;
+    if (!gridRef?.current?.api || !data || data[0].id === -1) return;
+    console.log(data);
 
     gridRef.current?.api.applyTransaction({
       add: data,

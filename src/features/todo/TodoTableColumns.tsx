@@ -38,6 +38,7 @@ const TodoTableColumns = ({ handleDelete, handleUpdate }: Props) => {
       filter: true,
       rowGroup: true,
       cellRenderer: (data: TData) => {
+        if (!data.value || !status[data.value]) return null;
         return status[data.value].label;
       },
     },
