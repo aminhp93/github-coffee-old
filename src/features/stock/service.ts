@@ -156,7 +156,7 @@ const StockService = {
     const res = await axios({
       method: 'GET',
       headers,
-      url: `https://restv2.fireant.vn/symbols/${symbol}/financial-indicators`,
+      url: `${domain}/symbols/${symbol}/financial-indicators`,
     });
     if (res.data) {
       const newData: any = {};
@@ -251,6 +251,29 @@ const StockService = {
         console.log(e);
         reject({ status: 'error', date });
       }
+    });
+  },
+  getStockPost: ({
+    symbol,
+    type,
+    offset,
+    limit,
+  }: {
+    symbol: string;
+    type: number;
+    offset: number;
+    limit: number;
+  }) => {
+    return axios({
+      url: `${domain}/posts`,
+      method: 'GET',
+      headers,
+      params: {
+        symbol,
+        type,
+        offset,
+        limit,
+      },
     });
   },
 };

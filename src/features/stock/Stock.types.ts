@@ -56,6 +56,8 @@ export type Watchlist = {
   watchlistID: number;
 };
 
+export type WatchlistCollection = Record<string, Watchlist>;
+
 export type Filter = Pick<
   StockData,
   'change_t0' | 'estimated_vol_change' | 't0_over_base_max'

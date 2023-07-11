@@ -4,6 +4,7 @@ import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   SettingOutlined,
+  StockOutlined,
 } from '@ant-design/icons';
 
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
@@ -26,6 +27,7 @@ import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
 import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
+import StockTrendingDrawer from './StockTrendingDrawer';
 import { RowClassParams } from 'ag-grid-community';
 
 const getRowClass = (params: RowClassParams) => {
@@ -40,6 +42,8 @@ const StockTable = () => {
   // hooks
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
+  const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
+    useState(false);
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
@@ -197,6 +201,15 @@ const StockTable = () => {
               onClick={() => setOpenDrawerSettings(true)}
             />
           </Tooltip>
+          <Tooltip title="Stock Trending">
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              icon={<StockOutlined />}
+              onClick={() => setOpenDrawerStockTrendingD(true)}
+            />
+          </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
           <RefreshButton onClick={() => getData(dates)} />
@@ -251,6 +264,12 @@ const StockTable = () => {
 
       {openDrawerSettings && (
         <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />
+      )}
+
+      {openDrawerStockAnalysis && (
+        <StockTrendingDrawer
+          onClose={() => setOpenDrawerStockTrendingD(false)}
+        />
       )}
     </div>
   );

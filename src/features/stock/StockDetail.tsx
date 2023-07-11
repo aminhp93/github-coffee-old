@@ -56,7 +56,7 @@ const StockDetail = () => {
   const [dataChart, setDataChart] = useState<StockChartData | undefined>();
   const [stockBase, setStockBase] = useState<StockBase | undefined>(undefined);
   const [stockData, setStockData] = useState<StockData | undefined>();
-  const [showDetail, setShowDetail] = useState<boolean>(true);
+  const [showDetail, setShowDetail] = useState<boolean>(false);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
     dayjs().add(-18, 'months'),
     dayjs(),
@@ -117,6 +117,14 @@ const StockDetail = () => {
         }}
       >
         <div className="flex" style={{ alignItems: 'center' }}>
+          <div>
+            <Button
+              size="small"
+              style={{ marginRight: 8 }}
+              icon={showDetail ? <DownOutlined /> : <UpOutlined />}
+              onClick={() => setShowDetail(showDetail ? false : true)}
+            />
+          </div>
           <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
           <RangePicker
             style={{ marginLeft: 8 }}
@@ -231,22 +239,12 @@ const StockDetail = () => {
     stockData?.fullData
   );
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
-
   const { listBigSell, countEstimate } = analyse(stockData, stockBase);
-
-  console.log('dataChart', { dataChart, stockData, stockBase });
 
   const debounceZoom = useMemo(
     () =>
       debounce(async (params: any, oldOption: EChartsOption) => {
         // Zoom using toolbox and call api with smaller resolution
-        console.log(
-          params,
-          get(params, 'batch[0].start'),
-          params.start,
-          oldOption
-        );
-
         const dataZoomId = params.dataZoomId;
         if (dataZoomId === `\u0000series\u00002\u00000`) {
           // left zoom
@@ -327,6 +325,85 @@ const StockDetail = () => {
     }
   };
 
+  const renderDetail = () => {
+    return showDetail ? (
+      <div
+        className="flex"
+        style={{ height: '120px', flexDirection: 'column' }}
+      >
+        <div
+          className="flex flex-1"
+          style={{
+            overflow: 'auto',
+            justifyContent: 'space-between',
+            marginTop: '10px',
+          }}
+        >
+          <div>
+            <div style={{ marginRight: '10px' }}>
+              {[1, 2, 3].map((i: number, index: number) => (
+                <InputNumber
+                  key={i}
+                  step={0.1}
+                  size="small"
+                  addonBefore={`b_${index + 1}`}
+                  value={
+                    stockBase?.list_base ? stockBase.list_base[index].value : 0
+                  }
+                  style={{ marginBottom: '10px', marginRight: '4px' }}
+                  onChange={(value: number | null) => {
+                    handleChangeStockBase(index + 1, value!);
+                  }}
+                />
+              ))}
+              <div style={{ marginBottom: '10px' }}>
+                <BuyPoint
+                  buyPoint={{
+                    date: stockBase?.buy_point?.date
+                      ? dayjs(stockBase.buy_point.date)
+                      : undefined,
+                  }}
+                  onCb={handleCbBuyPoint}
+                />
+                {stockBase?.is_blacklist && (
+                  <span>
+                    is_blacklist
+                    <CheckCircleOutlined style={{ color: '#00aa00' }} />
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div>
+              {listBigSell.map((i: { date: string }) => {
+                return <div key={i.date}>{i.date}</div>;
+              })}
+              {countEstimate}
+            </div>
+            <div>
+              {minTotal} - {maxTotal} - {averageTotal}
+            </div>
+
+            <div>
+              <Select
+                size="small"
+                value={selectedVolumeField}
+                style={{ width: 120 }}
+                onChange={(value) => {
+                  setSelectedVolumeField(value);
+                }}
+                options={['dealVolume', 'totalVolume'].map((i) => {
+                  return { value: i, label: i };
+                })}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : null;
+  };
+
   return (
     <div
       className="StockDetailChart flex height-100 width-100"
@@ -349,104 +426,20 @@ const StockDetail = () => {
         </div>
         <div className="flex">
           <div style={{ marginLeft: '10px' }}>
-            target: {target && target.toFixed(0) + '%'}
+            T: {target && target.toFixed(0) + '%'}
           </div>
           <div style={{ marginLeft: '10px' }}>
-            risk_b2: {risk_b2 && risk_b2.toFixed(0) + '%'}
+            R2: {risk_b2 && risk_b2.toFixed(0) + '%'}
           </div>
           <div style={{ marginLeft: '10px' }}>
-            risk_b1: {risk_b1 && risk_b1.toFixed(0) + '%'}
+            R1: {risk_b1 && risk_b1.toFixed(0) + '%'}
           </div>
-        </div>
-        <div>
-          <Button
-            size="small"
-            icon={showDetail ? <DownOutlined /> : <UpOutlined />}
-            onClick={() => setShowDetail(showDetail ? false : true)}
-          />
         </div>
       </div>
 
-      {showDetail ? (
-        <div
-          className="flex"
-          style={{ height: '120px', flexDirection: 'column' }}
-        >
-          <div
-            className="flex flex-1"
-            style={{
-              overflow: 'auto',
-              justifyContent: 'space-between',
-              marginTop: '10px',
-            }}
-          >
-            <div>
-              <div style={{ marginRight: '10px' }}>
-                {[1, 2, 3].map((i: number, index: number) => (
-                  <InputNumber
-                    key={i}
-                    step={0.1}
-                    size="small"
-                    addonBefore={`b_${index + 1}`}
-                    value={
-                      stockBase?.list_base
-                        ? stockBase.list_base[index].value
-                        : 0
-                    }
-                    style={{ marginBottom: '10px', marginRight: '4px' }}
-                    onChange={(value: number | null) => {
-                      handleChangeStockBase(index + 1, value!);
-                    }}
-                  />
-                ))}
-                <div style={{ marginBottom: '10px' }}>
-                  <BuyPoint
-                    buyPoint={{
-                      date: stockBase?.buy_point?.date
-                        ? dayjs(stockBase.buy_point.date)
-                        : undefined,
-                    }}
-                    onCb={handleCbBuyPoint}
-                  />
-                  {stockBase?.is_blacklist && (
-                    <span>
-                      is_blacklist
-                      <CheckCircleOutlined style={{ color: '#00aa00' }} />
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div>
-              <div>
-                {listBigSell.map((i: { date: string }) => {
-                  return <div key={i.date}>{i.date}</div>;
-                })}
-                {countEstimate}
-              </div>
-              <div>
-                {minTotal} - {maxTotal} - {averageTotal}
-              </div>
-
-              <div>
-                <Select
-                  size="small"
-                  value={selectedVolumeField}
-                  style={{ width: 120 }}
-                  onChange={(value) => {
-                    setSelectedVolumeField(value);
-                  }}
-                  options={['dealVolume', 'totalVolume'].map((i) => {
-                    return { value: i, label: i };
-                  })}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
       <Divider />
       <div style={{ flex: 1 }}>{renderChart()}</div>
+      {renderDetail()}
       {footer()}
     </div>
   );
