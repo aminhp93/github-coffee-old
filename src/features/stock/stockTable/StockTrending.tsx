@@ -1,27 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import dayjs from 'dayjs';
 import { Select, Button, notification } from 'antd';
 import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import { EChartsOption } from 'echarts';
 import StockService from '../service';
-import { groupBy } from 'lodash';
+import { groupBy, uniqBy } from 'lodash';
 import useStockStore from '../Stock.store';
 
-const option: EChartsOption = {
-  title: {
-    text: 'Stacked Line',
-  },
+const DEFAULT_OPTION: EChartsOption = {
   tooltip: {
     trigger: 'axis',
-  },
-  legend: {
-    data: ['Email', 'Union Ads', 'Video Ads', 'Direct', 'Search Engine'],
-  },
-  grid: {
-    left: '3%',
-    right: '4%',
-    bottom: '3%',
-    containLabel: true,
   },
   toolbox: {
     feature: {
@@ -30,8 +18,6 @@ const option: EChartsOption = {
   },
   xAxis: {
     type: 'category',
-    boundaryGap: false,
-    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
   },
   yAxis: {
     type: 'value',
@@ -40,32 +26,7 @@ const option: EChartsOption = {
     {
       name: 'Email',
       type: 'line',
-      stack: 'Total',
-      data: [120, 132, 101, 134, 90, 230, 210],
-    },
-    {
-      name: 'Union Ads',
-      type: 'line',
-      stack: 'Total',
-      data: [220, 182, 191, 234, 290, 330, 310],
-    },
-    {
-      name: 'Video Ads',
-      type: 'line',
-      stack: 'Total',
-      data: [150, 232, 201, 154, 190, 330, 410],
-    },
-    {
-      name: 'Direct',
-      type: 'line',
-      stack: 'Total',
-      data: [320, 332, 301, 334, 390, 330, 320],
-    },
-    {
-      name: 'Search Engine',
-      type: 'line',
-      stack: 'Total',
-      data: [820, 932, 901, 934, 1290, 1330, 1320],
+      data: [],
     },
   ],
 };
@@ -74,6 +35,7 @@ const StockTrending = () => {
   const watchlist = useStockStore((state) => state.watchlist);
 
   const [filter, setFilter] = useState('day');
+  const [option, setOption] = useState<EChartsOption>(DEFAULT_OPTION);
   const [data, setData] = useState<any>([]);
 
   const handleChange = (value: string) => {
@@ -87,22 +49,44 @@ const StockTrending = () => {
 
     const listPromise = [];
 
+    thanh_khoan_vua_Wl.symbols = ['VPB', 'STB', 'TCB', 'MBB'];
+
     for (let i = 0; i < thanh_khoan_vua_Wl.symbols.length; i++) {
-      listPromise.push(
-        StockService.getStockPost({
-          type: 0,
-          offset: 0,
-          limit: 20,
-          symbol: thanh_khoan_vua_Wl.symbols[i],
-        })
-      );
+      for (let j = 0; j < 10; j++) {
+        listPromise.push(
+          StockService.getStockPost({
+            type: 0,
+            offset: j * 20,
+            limit: 20,
+            symbol: thanh_khoan_vua_Wl.symbols[i],
+          })
+        );
+      }
     }
 
     Promise.all(listPromise)
       .then((res: any) => {
         console.log(res);
-        const flattenData = res.map((i: any) => i.data).flat();
+        const flattenData = uniqBy(
+          res.map((i: any) => i.data).flat(),
+          (item: any) => item.postID
+        );
+        console.log(flattenData);
+
+        const newSeries = getSeries(flattenData, filter);
         setData(flattenData);
+        const newOption: any = {
+          ...option,
+          series: [
+            {
+              name: 'Email',
+              type: 'line',
+              data: newSeries.reverse(),
+            },
+          ],
+        };
+
+        setOption(newOption);
       })
       .catch((err: any) => {
         notification.error({
@@ -112,7 +96,7 @@ const StockTrending = () => {
       });
   };
 
-  const filterData = useMemo(() => {
+  const getSeries = (data: any, filter: any) => {
     let format = '';
     if (filter === 'day') {
       format = 'YYYY-MM-DD';
@@ -127,12 +111,14 @@ const StockTrending = () => {
       i.mappedDate = dayjs(i.date).format(format);
       return i;
     });
-    console.log(newData);
 
-    return groupBy(newData, 'mappedDate');
-  }, [data, filter]);
+    const groupData = groupBy(newData, 'mappedDate');
+    return Object.keys(groupData).map((i) => {
+      return [i, groupData[i].length];
+    });
+  };
 
-  console.log({ filterData });
+  console.log(option);
 
   return (
     <div
