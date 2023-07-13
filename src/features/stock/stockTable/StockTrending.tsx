@@ -6,6 +6,9 @@ import { EChartsOption } from 'echarts';
 import StockService from '../service';
 import { groupBy, uniqBy } from 'lodash';
 import useStockStore from '../Stock.store';
+import { Watchlist } from '../Stock.types';
+import { Tabs } from 'antd';
+import type { TabsProps } from 'antd';
 
 const DEFAULT_OPTION: EChartsOption = {
   tooltip: {
@@ -31,72 +34,106 @@ const DEFAULT_OPTION: EChartsOption = {
   ],
 };
 
+const items: TabsProps['items'] = [
+  {
+    key: 'post',
+    label: `Post`,
+  },
+  {
+    key: 'news',
+    label: `News`,
+  },
+];
+
 const StockTrending = () => {
   const watchlist = useStockStore((state) => state.watchlist);
+  const selectedWatchlist = useStockStore((state) => state.selectedWatchlist);
+  const setSelectedWatchlist = useStockStore(
+    (state) => state.setSelectedWatchlist
+  );
 
   const [filter, setFilter] = useState('day');
-  const [option, setOption] = useState<EChartsOption>(DEFAULT_OPTION);
+  const [option, setOption] = useState<any>(DEFAULT_OPTION);
   const [data, setData] = useState<any>([]);
+  const [tab, setTab] = useState('post');
 
   const handleChange = (value: string) => {
     console.log(`selected ${value}`);
     setFilter(value);
   };
 
-  const handleGetData = () => {
-    const thanh_khoan_vua_Wl = watchlist ? watchlist[737544] : null;
-    if (!thanh_khoan_vua_Wl) return;
+  const handleChangeWl = (value: string) => {
+    console.log(`selected wl ${value}`);
+    if (!watchlist) return;
+    setSelectedWatchlist(watchlist[Number(value)]);
+  };
 
-    const listPromise = [];
+  const handleChangeTab = (value: string) => {
+    console.log(`selected tab ${value}`);
+    setTab(value);
+    setOption(null);
+  };
 
-    thanh_khoan_vua_Wl.symbols = ['VPB', 'STB', 'TCB', 'MBB'];
+  const handleGetData = async () => {
+    if (!selectedWatchlist) return;
 
-    for (let i = 0; i < thanh_khoan_vua_Wl.symbols.length; i++) {
-      for (let j = 0; j < 10; j++) {
-        listPromise.push(
-          StockService.getStockPost({
-            type: 0,
-            offset: j * 20,
-            limit: 20,
-            symbol: thanh_khoan_vua_Wl.symbols[i],
-          })
-        );
+    for (let i = 0; i < selectedWatchlist.symbols.length; i++) {
+      const listPromise = [];
+
+      for (let j = 0; j < 50; j++) {
+        let type = -1;
+        if (tab === 'post') {
+          type = 0;
+        } else if (tab === 'news') {
+          type = 1;
+        }
+        if (type !== -1) {
+          listPromise.push(
+            StockService.getStockPost({
+              type,
+              offset: j * 20,
+              limit: 20,
+              symbol: selectedWatchlist.symbols[i],
+            })
+          );
+        }
       }
-    }
+      // wait 5s
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await Promise.all(listPromise)
+        .then((res: any) => {
+          const flattenData = uniqBy(
+            res.map((i: any) => i.data).flat(),
+            (item: any) => item.postID
+          );
 
-    Promise.all(listPromise)
-      .then((res: any) => {
-        console.log(res);
-        const flattenData = uniqBy(
-          res.map((i: any) => i.data).flat(),
-          (item: any) => item.postID
-        );
-        console.log(flattenData);
+          const newSeriesData = getSeries(flattenData, filter);
+          // setData(flattenData);
+          const newSeries: any = option.series || [];
+          console.log(newSeriesData);
+          newSeries.push({
+            name: selectedWatchlist.symbols[i],
+            type: 'line',
+            data: newSeriesData,
+          });
+          const newOption: any = {
+            ...option,
+            series: newSeries,
+          };
 
-        const newSeries = getSeries(flattenData, filter);
-        setData(flattenData);
-        const newOption: any = {
-          ...option,
-          series: [
-            {
-              name: 'Email',
-              type: 'line',
-              data: newSeries.reverse(),
-            },
-          ],
-        };
-
-        setOption(newOption);
-      })
-      .catch((err: any) => {
-        notification.error({
-          message: 'Error',
-          description: err.message,
+          setOption(newOption);
+        })
+        .catch((err: any) => {
+          notification.error({
+            message: 'Error',
+            description: err.message,
+          });
         });
-      });
+    }
   };
 
   const getSeries = (data: any, filter: any) => {
+    const result: [string, number][] = [];
     let format = '';
     if (filter === 'day') {
       format = 'YYYY-MM-DD';
@@ -113,12 +150,12 @@ const StockTrending = () => {
     });
 
     const groupData = groupBy(newData, 'mappedDate');
-    return Object.keys(groupData).map((i) => {
-      return [i, groupData[i].length];
-    });
+    for (let i = -13; i < 1; i++) {
+      const date = dayjs().add(i, 'day').format(format);
+      result.push([date, groupData[date]?.length || 0]);
+    }
+    return result;
   };
-
-  console.log(option);
 
   return (
     <div
@@ -129,7 +166,23 @@ const StockTrending = () => {
       }}
     >
       <div>
+        <Tabs
+          defaultActiveKey="post"
+          items={items}
+          onChange={handleChangeTab}
+        />
         <Button onClick={handleGetData}>Get Data</Button>
+        {watchlist && (
+          <Select
+            value={selectedWatchlist ? selectedWatchlist?.name : null}
+            style={{ width: 120 }}
+            onChange={handleChangeWl}
+            options={Object.values(watchlist).map((i: Watchlist) => ({
+              value: i.watchlistID,
+              label: i.name,
+            }))}
+          />
+        )}
       </div>
       <Select
         value={filter}
@@ -142,7 +195,7 @@ const StockTrending = () => {
         ]}
       />
       <div style={{ overflow: 'auto', flex: 1 }}>
-        <CustomEcharts option={option} />
+        {option && <CustomEcharts option={option} />}
       </div>
     </div>
   );
