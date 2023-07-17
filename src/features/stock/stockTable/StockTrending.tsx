@@ -1,13 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 import dayjs from 'dayjs';
-import { Select, Button, notification } from 'antd';
+import { Select, Button, notification, Tabs } from 'antd';
 import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import { EChartsOption } from 'echarts';
 import StockService from '../service';
 import { groupBy, uniqBy } from 'lodash';
 import useStockStore from '../Stock.store';
 import { Watchlist } from '../Stock.types';
-import { Tabs } from 'antd';
 import type { TabsProps } from 'antd';
 
 const DEFAULT_OPTION: EChartsOption = {
@@ -54,7 +54,6 @@ const StockTrending = () => {
 
   const [filter, setFilter] = useState('day');
   const [option, setOption] = useState<any>(DEFAULT_OPTION);
-  const [data, setData] = useState<any>([]);
   const [tab, setTab] = useState('post');
 
   const handleChange = (value: string) => {
@@ -102,26 +101,41 @@ const StockTrending = () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       await Promise.all(listPromise)
         .then((res: any) => {
+          console.log(res);
           const flattenData = uniqBy(
             res.map((i: any) => i.data).flat(),
             (item: any) => item.postID
           );
 
           const newSeriesData = getSeries(flattenData, filter);
-          // setData(flattenData);
-          const newSeries: any = option.series || [];
-          console.log(newSeriesData);
-          newSeries.push({
-            name: selectedWatchlist.symbols[i],
-            type: 'line',
-            data: newSeriesData,
+          setOption((prevOption: any) => {
+            let newOption: any;
+            if (prevOption) {
+              const newSeries: any = prevOption.series || [];
+              newSeries.push({
+                name: selectedWatchlist.symbols[i],
+                type: 'line',
+                data: newSeriesData,
+              });
+              newOption = {
+                ...prevOption,
+                series: newSeries,
+              };
+            } else {
+              const newSeries: any = [];
+              console.log(newSeriesData);
+              newSeries.push({
+                name: selectedWatchlist.symbols[i],
+                type: 'line',
+                data: newSeriesData,
+              });
+              newOption = {
+                ...DEFAULT_OPTION,
+                series: newSeries,
+              };
+            }
+            return newOption;
           });
-          const newOption: any = {
-            ...option,
-            series: newSeries,
-          };
-
-          setOption(newOption);
         })
         .catch((err: any) => {
           notification.error({
@@ -156,6 +170,7 @@ const StockTrending = () => {
     }
     return result;
   };
+  console.log({ option });
 
   return (
     <div
@@ -175,7 +190,7 @@ const StockTrending = () => {
         {watchlist && (
           <Select
             value={selectedWatchlist ? selectedWatchlist?.name : null}
-            style={{ width: 120 }}
+            style={{ width: 200 }}
             onChange={handleChangeWl}
             options={Object.values(watchlist).map((i: Watchlist) => ({
               value: i.watchlistID,

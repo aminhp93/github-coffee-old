@@ -48,7 +48,10 @@ const CustomEcharts = ({ size, option, handleZoom }: Props) => {
         newOption.dataZoom = old?.dataZoom;
       }
 
-      option && chart && chart.setOption && chart.setOption(newOption);
+      option &&
+        chart &&
+        chart.setOption &&
+        chart.setOption(newOption, { notMerge: true });
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
