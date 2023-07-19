@@ -91,6 +91,7 @@ const MemoizedPostDetail = memo(function PostDetail() {
   );
 
   const handleChangeTag = (value: any, data: any) => {
+    console.log(value, data, selectedPost);
     if (!selectedPost?.id) return;
     const updatedPost = {
       ...selectedPost,
@@ -101,6 +102,8 @@ const MemoizedPostDetail = memo(function PostDetail() {
       ...posts,
       [selectedPost.id]: updatedPost,
     });
+    setSelectedPost(updatedPost);
+    handleUpdate(updatedPost);
   };
 
   useEffect(() => {

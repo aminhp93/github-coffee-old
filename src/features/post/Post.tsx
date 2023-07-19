@@ -1,6 +1,6 @@
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
-import { Button, notification, Tooltip } from 'antd';
+import { Button, notification, Tooltip, Select } from 'antd';
 import { useEffect } from 'react';
 import './Post.less';
 import PostCreate from './PostCreate';
@@ -10,6 +10,7 @@ import PostService from './Post.service';
 import usePostStore from './Post.store';
 import { keyBy } from 'lodash';
 import { PostCollection } from './Post.types';
+import useTagStore from '../tag/store';
 
 const PostPage = () => {
   const setPosts = usePostStore((state) => state.setPosts);
@@ -18,8 +19,33 @@ const PostPage = () => {
   const selectedPost = usePostStore((state) => state.selectedPost);
   const setSelectedPost = usePostStore((state) => state.setSelectedPost);
   const setLoading = usePostStore((state) => state.setLoading);
+  const tags = useTagStore((state) => state.tags);
 
   const { authUser }: AuthUserContext = useAuth();
+
+  const handleChangeTag = async (value: number) => {
+    try {
+      setLoading(true);
+      const dataRequest: {
+        author?: string;
+        tag?: number;
+      } = {
+        author: authUser?.id,
+      };
+      if (value) {
+        dataRequest.tag = value;
+      }
+      const res = await PostService.listPost(dataRequest);
+      setLoading(false);
+      if (res?.data) {
+        setPosts(keyBy(res.data, 'id') as PostCollection);
+      }
+    } catch (e) {
+      setLoading(false);
+      notification.error({ message: 'error' });
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -59,16 +85,31 @@ const PostPage = () => {
               />
             </Tooltip>
           ) : (
-            <Tooltip title="Create post">
-              <Button
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setMode('create');
-                  setSelectedPost(undefined);
-                }}
+            <>
+              <Tooltip title="Create post">
+                <Button
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setMode('create');
+                    setSelectedPost(undefined);
+                  }}
+                />
+              </Tooltip>
+              <Select
+                style={{ width: '100px', marginRight: '8px' }}
+                placeholder="Tags"
+                onChange={handleChangeTag}
+                options={[
+                  { label: 'None', value: '' },
+                  ...Object.values(tags).map((tag) => ({
+                    label: tag.title,
+                    value: tag.id,
+                    data: tag,
+                  })),
+                ]}
               />
-            </Tooltip>
+            </>
           )}
         </div>
         <PostList />
