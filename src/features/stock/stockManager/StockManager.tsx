@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+// Import libaries
 import { WarningOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
-import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+
+// Import services
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import { DATE_FORMAT, UNIT_BILLION } from '../constants';
 import StockService from '../service';
 import RefreshButton from '../stockTable/RefreshButton';
@@ -14,8 +17,8 @@ import { SupabaseData } from '../Stock.types';
 import { getStockDataFromSupabase } from '../utils';
 import './StockManager.less';
 import StockManagerColumns from './StockManagerColumns';
-import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
+import { getRowClass } from './StockManager.utils';
 
 const { RangePicker } = DatePicker;
 
@@ -35,7 +38,7 @@ const StockManager = () => {
     setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
-  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
+  const getData = async (dates: dayjs.Dayjs[] | undefined) => {
     if (!dates || dates.length !== 2) return;
     const resStockBase = await StockService.getAllStockBase();
     if (resStockBase.data) {
@@ -93,12 +96,6 @@ const StockManager = () => {
     getData(dates);
   }, [dates]);
 
-  const getRowClass = (params: any) => {
-    if (params.node.data.danger) {
-      return 'danger-row';
-    }
-  };
-
   const handleClickSymbol = (data: any) => {
     const symbol = data?.symbol;
     if (!symbol) return;
@@ -149,24 +146,20 @@ const StockManager = () => {
   const footer = () => {
     return (
       <div
-        className="flex"
+        className="flex-default"
         style={{
-          justifyContent: 'space-between',
           height: '50px',
-          alignItems: 'center',
         }}
       >
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <Tooltip title="Testing">
-            <Button
-              size="small"
-              type="primary"
-              icon={<WarningOutlined />}
-              style={{ marginLeft: 8 }}
-              onClick={() => setOpenDrawerTesting(true)}
-            />
-          </Tooltip>
-        </div>
+        <Tooltip title="Testing">
+          <Button
+            size="small"
+            type="primary"
+            icon={<WarningOutlined />}
+            style={{ marginLeft: 8 }}
+            onClick={() => setOpenDrawerTesting(true)}
+          />
+        </Tooltip>
         <div className="flex" style={{ alignItems: 'center' }}>
           <RefreshButton onClick={() => getData(dates)} />
           <RangePicker

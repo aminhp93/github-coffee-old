@@ -11,6 +11,7 @@ import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
 import Booking from 'features/booking/Booking';
 import { IJsonModel } from 'flexlayout-react';
+import NewTodo from 'features/newTodo/NewTodo';
 
 type Props = {
   defaultJson: IJsonModel;
@@ -34,6 +35,7 @@ const Work = ({ layoutName, defaultJson }: Props) => {
         StockManager: <StockManager />,
         Figma: <Figma />,
         Booking: <Booking />,
+        NewTodo: <NewTodo />,
       }}
     />
   );

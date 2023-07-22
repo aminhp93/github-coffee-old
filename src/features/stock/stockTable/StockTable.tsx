@@ -212,6 +212,7 @@ const StockTable = () => {
           </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
+          {listStocks.length}
           <RefreshButton onClick={() => getData(dates)} />
 
           <RangePicker

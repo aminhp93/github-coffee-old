@@ -5,14 +5,19 @@
 }
 
 .PostListContainer {
-  width: 10rem;
+  width: 20rem;
   overflow: auto;
   border-right: 1px solid @gray-100;
+  position: relative;
+}
+
+.PostListContainer.fullWidth {
+  width: 100%;
 }
 
 .PostCreateButton {
   justify-content: space-between;
-  border-bottom: 1px solid @gray-100;
+  margin: 8px 16px;
 }
 .PostDetailContainer {
   overflow: auto;
@@ -38,10 +43,19 @@
 .PostListItem {
   cursor: pointer;
   padding: 8px;
+  justify-content: space-between;
+  align-items: center;
+
+  .toolbox {
+    display: none;
+  }
 }
 
 .PostListItem:hover {
   background: @gray-100;
+  .toolbox {
+    display: block;
+  }
 }
 
 .PostListItem.selected {

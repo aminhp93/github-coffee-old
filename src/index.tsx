@@ -22,6 +22,7 @@ import Chat from 'features/chat/Chat';
 import Snippet from 'features/snippet/Snippet';
 import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
+import NewTodo from 'features/newTodo/NewTodo';
 
 import { defaultJson, defaultOverviewJson } from 'features/work/Work.constants';
 
@@ -68,6 +69,7 @@ const App = () => {
           <Route path="/snippet" element={<Snippet />} />
           <Route path="/test" element={<Test />} />
           <Route path="/todo" element={<Todo />} />
+          <Route path="/newTodo" element={<NewTodo />} />
           <Route
             path="/overview"
             element={
