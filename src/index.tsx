@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom/client';
 // Import third-party libraries
 import { notification, Button } from 'antd';
 import 'antd/dist/reset.css';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import components
 import {
@@ -34,6 +35,9 @@ notification.config({
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
+// Create a client
+const queryClient = new QueryClient();
 
 const App = () => {
   const { authUser, signInWithOAuth }: AuthUserContext = useAuth();
@@ -89,7 +93,9 @@ const App = () => {
 root.render(
   <React.Fragment>
     <SupabaseAuthProvider>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </SupabaseAuthProvider>
   </React.Fragment>
 );

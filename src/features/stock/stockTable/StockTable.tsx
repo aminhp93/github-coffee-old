@@ -113,7 +113,7 @@ const StockTable = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await StockService.getLastUpdated();
+        const res = await StockService.getStockInfo();
         const resStockBase = await StockService.getAllStockBase();
 
         const { list_all } = mapDataFromStockBase(

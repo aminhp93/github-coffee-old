@@ -184,7 +184,7 @@ const StockService = {
         .in('symbol', symbols);
     }
   },
-  getLastUpdated: () => {
+  getStockInfo: () => {
     return supabase.from('stock_info').select('*');
   },
   insertStockData: (data: any) => {

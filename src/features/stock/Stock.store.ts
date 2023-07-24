@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { create } from 'zustand';
-import { WatchlistCollection, Watchlist } from './Stock.types';
+import { WatchlistCollection, Watchlist, StockInfo } from './Stock.types';
 
 type StockStore = {
   selectedSymbol: string;
@@ -9,6 +9,8 @@ type StockStore = {
   setWatchlist: (watchlist: WatchlistCollection) => void;
   selectedWatchlist: Watchlist | null;
   setSelectedWatchlist: (watchlist: Watchlist) => void;
+  stockInfo: StockInfo | null;
+  setStockInfo: (stockInfo: StockInfo) => void;
 };
 
 const useStockStore = create<StockStore>((set, get) => ({
@@ -31,6 +33,13 @@ const useStockStore = create<StockStore>((set, get) => ({
     set(
       produce((draft) => {
         draft.selectedWatchlist = watchlist;
+      })
+    ),
+  stockInfo: null,
+  setStockInfo: (stockInfo: StockInfo) =>
+    set(
+      produce((draft) => {
+        draft.stockInfo = stockInfo;
       })
     ),
 }));

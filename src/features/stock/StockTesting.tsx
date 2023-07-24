@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+// Import libraries
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { keyBy } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+
+// Import components
 import {
   DATE_FORMAT,
   LIST_TESTING_FIELDS,
@@ -17,7 +20,7 @@ import {
   updateDataWithDate,
   checkValidCondition,
 } from './utils';
-import { AgGridReact } from 'ag-grid-react';
+import useStockStore from './Stock.store';
 
 const DEFAULT_ROW_DATA: any = [];
 
@@ -58,22 +61,11 @@ const StockTesting = ({ onClose }: Props) => {
     dayjs().add(-1, 'month'),
     dayjs(),
   ]);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [count, setCount] = useState<number>(0);
-
-  const getLastUpdated = async () => {
-    try {
-      const res: any = await StockService.getLastUpdated();
-      if (res.data && res.data.length && res.data.length === 1) {
-        setLastUpdated(res.data[0].last_updated);
-      }
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
-  };
+  const stockInfo = useStockStore((state) => state.stockInfo);
 
   const handleTest = async (symbol: string) => {
     setCount((oldCount) => oldCount + 1);
@@ -95,11 +87,8 @@ const StockTesting = ({ onClose }: Props) => {
     await new Promise((resolve) => setTimeout(resolve, 100));
     let valid = false;
     if (
-      res &&
-      res[0] &&
-      res[0].data &&
-      res2 &&
-      res2.data &&
+      res[0]?.data &&
+      res2?.data &&
       res2.data.slice(0, 20).length === res[0].data.length
     ) {
       const mappedFireant = res[0].data.map((i: any) => {
@@ -170,7 +159,7 @@ const StockTesting = ({ onClose }: Props) => {
           listSymbols
         );
         offset += 20;
-        if (res && res.length && res[0].length < 20) {
+        if (res?.length && res[0].length < 20) {
           nextCall = false;
         }
       }
@@ -187,16 +176,14 @@ const StockTesting = ({ onClose }: Props) => {
   };
 
   useEffect(() => {
-    getLastUpdated();
-    const init = async () => {
+    (async () => {
       const resStockBase = await StockService.getAllStockBase();
 
       const { list_all } = mapDataFromStockBase(
         resStockBase.data || ([] as any)
       );
       setListAllSymbols(list_all);
-    };
-    init();
+    })();
   }, []);
 
   return (
@@ -227,7 +214,7 @@ const StockTesting = ({ onClose }: Props) => {
           }}
         >
           <div>
-            Last updated: {lastUpdated}
+            Last updated: {stockInfo?.last_updated}
             <Button
               size="small"
               onClick={() => handleForceUpdate(listAllSymbols)}

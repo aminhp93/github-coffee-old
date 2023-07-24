@@ -1,23 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+// Import library
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
-import { Button, DatePicker, Drawer, notification, Select } from 'antd';
+import { Button, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
-import dayjs from 'dayjs';
-import { keyBy, chunk } from 'lodash';
+import { chunk } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
-import {
-  DATE_FORMAT,
-  LIST_TESTING_FIELDS,
-  START_DATE_STOCK_SUPABASE,
-} from './constants';
-import StockService from './service';
-import {
-  mapDataFromStockBase,
-  updateDataWithDate,
-  checkValidCondition,
-} from './utils';
 import { AgGridReact } from 'ag-grid-react';
+
+// Import components
+import StockService from './service';
+import { mapDataFromStockBase } from './utils';
 
 const DEFAULT_ROW_DATA: any = [];
 
@@ -34,9 +26,25 @@ const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
     headerName: 'count',
     field: 'count',
   },
+  {
+    headerName: 'action',
+    field: 'action',
+    cellRenderer: (data: any) => {
+      return (
+        <div>
+          {data.value ? (
+            <CheckOutlined style={{ color: 'green' }} />
+          ) : (
+            <CloseOutlined style={{ color: 'red' }} />
+          )}
+          <Button onClick={() => handleForceUpdate([data.data.symbol])}>
+            Update
+          </Button>
+        </div>
+      );
+    },
+  },
 ];
-
-const { RangePicker } = DatePicker;
 
 type Props = {
   onClose: () => void;
@@ -44,26 +52,10 @@ type Props = {
 
 const StockLastUpdated = ({ onClose }: Props) => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
-    dayjs().add(-1, 'month'),
-    dayjs(),
-  ]);
-  const [lastUpdated, setLastUpdated] = useState<string>('');
+
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [count, setCount] = useState<number>(0);
-
-  const getLastUpdated = async () => {
-    try {
-      const res: any = await StockService.getLastUpdated();
-      if (res.data && res.data.length && res.data.length === 1) {
-        setLastUpdated(res.data[0].last_updated);
-      }
-    } catch (e) {
-      notification.error({ message: 'error' });
-    }
-  };
 
   const handleTest = async (symbol: string) => {
     try {
@@ -85,11 +77,11 @@ const StockLastUpdated = ({ onClose }: Props) => {
     }
   };
 
-  const handleTestAll = async () => {
+  const handleTestAll = async (listSymbol: string[]) => {
     try {
       gridRef.current?.api.setRowData([]);
       let result: any = [];
-      const chunkedListSymbols = chunk(listAllSymbols, 25);
+      const chunkedListSymbols = chunk(listSymbol, 25);
       for (let i = 0; i < chunkedListSymbols.length; i++) {
         const listPromises = [];
         for (let j = 0; j < chunkedListSymbols[i].length; j++) {
@@ -112,32 +104,14 @@ const StockLastUpdated = ({ onClose }: Props) => {
     }
   };
 
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
-  };
-
   const handleForceUpdate = async (listSymbols: string[]) => {
     try {
       // if no selected date, update from last updated date to today, update selected date
-      let nextCall = true;
-      let offset = 0;
-      while (nextCall) {
-        const res = await updateDataWithDate(
-          dayjs(START_DATE_STOCK_SUPABASE).format(DATE_FORMAT),
-          dayjs().format(DATE_FORMAT),
-          offset,
-          listSymbols
-        );
-        offset += 20;
-        if (res && res.length && res[0].length < 20) {
-          nextCall = false;
-        }
-      }
 
-      await StockService.updateLastUpdated({
-        column: 'last_updated',
-        value: dayjs().format(DATE_FORMAT),
-      });
+      // await StockService.updateLastUpdated({
+      //   column: 'last_updated',
+      //   value: dayjs().format(DATE_FORMAT),
+      // });
 
       notification.success({ message: 'success' });
     } catch (e) {
@@ -146,7 +120,6 @@ const StockLastUpdated = ({ onClose }: Props) => {
   };
 
   useEffect(() => {
-    getLastUpdated();
     const init = async () => {
       const resStockBase = await StockService.getAllStockBase();
 
@@ -188,16 +161,15 @@ const StockLastUpdated = ({ onClose }: Props) => {
                 return { value: i, label: i };
               })}
             />
-            <Button size="small" onClick={() => handleTest(symbol)}>
+            <Button size="small" onClick={() => handleTestAll([symbol])}>
               Test
             </Button>
           </div>
           <div>
-            {`${count} / ${listAllSymbols.length}`}
             <Button
               disabled={loading}
               size="small"
-              onClick={() => handleTestAll()}
+              onClick={() => handleTestAll(listAllSymbols)}
             >
               Test All Symbols
             </Button>

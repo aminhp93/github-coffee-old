@@ -128,3 +128,11 @@ export type StockChartData = {
   seriesMarkPoint: any;
   markLine: any;
 };
+
+export type StockInfo = {
+  created_at: string;
+  updated_at: string;
+  start_date: string;
+  last_updated: string;
+  id: number;
+};
