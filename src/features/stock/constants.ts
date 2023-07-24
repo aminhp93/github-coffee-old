@@ -1,4 +1,3 @@
-export const START_DATE_STOCK_SUPABASE = '2021-01-01';
 export const UNIT_BILLION = 1_000_000_000;
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const TIME_FRAME = '1';

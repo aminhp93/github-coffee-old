@@ -9,11 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 
 // Import components
-import {
-  DATE_FORMAT,
-  LIST_TESTING_FIELDS,
-  START_DATE_STOCK_SUPABASE,
-} from './constants';
+import { DATE_FORMAT, LIST_TESTING_FIELDS } from './constants';
 import StockService from './service';
 import {
   mapDataFromStockBase,
@@ -149,11 +145,16 @@ const StockTesting = ({ onClose }: Props) => {
   const handleForceUpdate = async (listSymbols: string[]) => {
     try {
       // if no selected date, update from last updated date to today, update selected date
+      const start_date = stockInfo?.start_date;
+      if (!start_date) {
+        notification.error({ message: 'No start date' });
+        return;
+      }
       let nextCall = true;
       let offset = 0;
       while (nextCall) {
         const res = await updateDataWithDate(
-          dayjs(START_DATE_STOCK_SUPABASE).format(DATE_FORMAT),
+          dayjs(start_date).format(DATE_FORMAT),
           dayjs().format(DATE_FORMAT),
           offset,
           listSymbols

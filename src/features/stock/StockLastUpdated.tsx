@@ -6,10 +6,13 @@ import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import { chunk } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
+import dayjs from 'dayjs';
 
 // Import components
 import StockService from './service';
-import { mapDataFromStockBase } from './utils';
+import { mapDataFromStockBase, updateDataWithDate } from './utils';
+import { DATE_FORMAT } from './constants';
+import useStockStore from './Stock.store';
 
 const DEFAULT_ROW_DATA: any = [];
 
@@ -56,6 +59,7 @@ const StockLastUpdated = ({ onClose }: Props) => {
   const [symbol, setSymbol] = useState<string>('VPB');
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const stockInfo = useStockStore((state) => state.stockInfo);
 
   const handleTest = async (symbol: string) => {
     try {
@@ -103,15 +107,33 @@ const StockLastUpdated = ({ onClose }: Props) => {
       console.log(e);
     }
   };
-
   const handleForceUpdate = async (listSymbols: string[]) => {
     try {
       // if no selected date, update from last updated date to today, update selected date
+      const start_date = stockInfo?.start_date;
+      if (!start_date) {
+        notification.error({ message: 'No start date' });
+        return;
+      }
+      let nextCall = true;
+      let offset = 0;
+      while (nextCall) {
+        const res = await updateDataWithDate(
+          dayjs(start_date).format(DATE_FORMAT),
+          dayjs().format(DATE_FORMAT),
+          offset,
+          listSymbols
+        );
+        offset += 20;
+        if (res?.length && res[0].length < 20) {
+          nextCall = false;
+        }
+      }
 
-      // await StockService.updateLastUpdated({
-      //   column: 'last_updated',
-      //   value: dayjs().format(DATE_FORMAT),
-      // });
+      await StockService.updateLastUpdated({
+        column: 'last_updated',
+        value: dayjs().format(DATE_FORMAT),
+      });
 
       notification.success({ message: 'success' });
     } catch (e) {
