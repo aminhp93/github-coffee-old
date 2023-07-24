@@ -1,24 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Import libaries
-import { WarningOutlined } from '@ant-design/icons';
+import { WarningOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
 import dayjs from 'dayjs';
-import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import { useEffect, useRef, useState } from 'react';
+import { cloneDeep } from 'lodash';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 
 // Import services
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
-import { DATE_FORMAT, UNIT_BILLION } from '../constants';
+import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import RefreshButton from '../stockTable/RefreshButton';
 import StockTesting from '../StockTesting';
-import { SupabaseData } from '../Stock.types';
-import { getStockDataFromSupabase } from '../utils';
 import './StockManager.less';
 import StockManagerColumns from './StockManagerColumns';
 import useStockStore from '../Stock.store';
-import { getRowClass } from './StockManager.utils';
+import { getRowClass, getData } from './StockManager.utils';
+import StockLastUpdated from '../StockLastUpdated';
 
 const { RangePicker } = DatePicker;
 
@@ -32,74 +31,39 @@ const StockManager = () => {
     dayjs(),
   ]);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
+  const [openDrawerLastUpdated, setOpenDrawerLastUpdated] = useState(false);
 
   const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
     if (!data || !data[0] || !data[1]) return;
     setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
   };
 
-  const getData = async (dates: dayjs.Dayjs[] | undefined) => {
-    if (!dates || dates.length !== 2) return;
-    const resStockBase = await StockService.getAllStockBase();
-    if (resStockBase.data) {
-      const res = await StockService.getStockDataFromSupabase({
-        startDate: dates[0].format(DATE_FORMAT),
-        endDate: dates[1].format(DATE_FORMAT),
-        listSymbols: resStockBase.data.map((i) => i.symbol),
-      });
+  const handleGetData = useCallback(
+    async (dates: dayjs.Dayjs[] | undefined) => {
+      try {
+        gridRef.current?.api?.showLoadingOverlay();
 
-      let fundamental = await StockService.getFundamentalsDataFromFireant(
-        resStockBase.data.map((i) => i.symbol)
-      );
+        const res: any = await getData(dates);
+        gridRef.current?.api?.hideOverlay();
 
-      const stockBaseObj = keyBy(resStockBase.data, 'symbol');
+        setListStocks(res);
+      } catch (e) {
+        gridRef.current?.api?.hideOverlay();
 
-      const keyByFundamental = keyBy(fundamental, 'symbol');
-
-      const newAllStocks = getStockDataFromSupabase(res.data as SupabaseData[]);
-
-      const newListStocks = newAllStocks.map((i) => {
-        return {
-          symbol: i.symbol,
-          minValue: minBy(i.fullData, 'totalValue')?.totalValue,
-          marketCap: keyByFundamental[i.symbol]?.marketCap,
-          is_blacklist: stockBaseObj[i.symbol]?.is_blacklist,
-          averageChange: meanBy(i.fullData, (i) =>
-            i.change_t0 > 0 ? i.change_t0 : -i.change_t0
-          ),
-          averageRangeChange: meanBy(i.fullData, 'rangeChange_t0'),
-        };
-      });
-
-      newListStocks.forEach((i: any) => {
-        if (
-          i.minValue < 2 * UNIT_BILLION &&
-          i.marketCap < 1000 * UNIT_BILLION &&
-          !i.is_blacklist
-        ) {
-          i.danger = true;
-        } else {
-          i.danger = false;
-        }
-      });
-
-      // sort by minValue
-      newListStocks.sort((a: any, b: any) => {
-        return a.minValue - b.minValue;
-      });
-
-      setListStocks(newListStocks);
-    }
-  };
+        console.log(e);
+        notification.error({ message: 'error' });
+      }
+    },
+    []
+  );
 
   useEffect(() => {
-    getData(dates);
-  }, [dates]);
+    handleGetData(dates);
+  }, [dates, handleGetData]);
 
   const handleClickSymbol = (data: any) => {
-    const symbol = data?.symbol;
-    if (!symbol) return;
-    setSelectedSymbol(symbol);
+    if (!data?.symbol) return;
+    setSelectedSymbol(data.symbol);
   };
 
   const handleClickUpdate = async (data: any) => {
@@ -123,17 +87,18 @@ const StockManager = () => {
 
       notification.success({ message: 'success' });
     } catch (e) {
+      console.log(e);
       notification.error({ message: 'error' });
     }
   };
 
   const handleResize = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.sizeColumnsToFit();
   };
 
   const handleGridReady = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.setFilterModel({
       is_blacklist: {
         type: 'set',
@@ -151,17 +116,29 @@ const StockManager = () => {
           height: '50px',
         }}
       >
-        <Tooltip title="Testing">
-          <Button
-            size="small"
-            type="primary"
-            icon={<WarningOutlined />}
-            style={{ marginLeft: 8 }}
-            onClick={() => setOpenDrawerTesting(true)}
-          />
-        </Tooltip>
+        <div>
+          <Tooltip title="Testing">
+            <Button
+              size="small"
+              type="primary"
+              icon={<WarningOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerTesting(true)}
+            />
+          </Tooltip>
+
+          <Tooltip title="Last updated check">
+            <Button
+              size="small"
+              type="primary"
+              icon={<FieldTimeOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerLastUpdated(true)}
+            />
+          </Tooltip>
+        </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton onClick={() => getData(dates)} />
+          <RefreshButton onClick={() => handleGetData(dates)} />
           <RangePicker
             style={{ marginLeft: 8 }}
             size="small"
@@ -197,6 +174,9 @@ const StockManager = () => {
       {footer()}
       {openDrawerTesting && (
         <StockTesting onClose={() => setOpenDrawerTesting(false)} />
+      )}
+      {openDrawerLastUpdated && (
+        <StockLastUpdated onClose={() => setOpenDrawerLastUpdated(false)} />
       )}
     </div>
   );

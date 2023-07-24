@@ -4,7 +4,7 @@ import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Drawer, notification, Select } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
-import { keyBy } from 'lodash';
+import { keyBy, chunk } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import {
   DATE_FORMAT,
@@ -27,22 +27,12 @@ const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
     field: 'symbol',
   },
   {
-    headerName: 'valid',
-    field: 'valid',
-    cellRenderer: (data: any) => {
-      return (
-        <div>
-          {data.value ? (
-            <CheckOutlined style={{ color: 'green' }} />
-          ) : (
-            <CloseOutlined style={{ color: 'red' }} />
-          )}
-          <Button onClick={() => handleForceUpdate([data.data.symbol])}>
-            Force Update
-          </Button>
-        </div>
-      );
-    },
+    headerName: 'date',
+    field: 'date',
+  },
+  {
+    headerName: 'count',
+    field: 'count',
   },
 ];
 
@@ -52,7 +42,7 @@ type Props = {
   onClose: () => void;
 };
 
-const StockTesting = ({ onClose }: Props) => {
+const StockLastUpdated = ({ onClose }: Props) => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
     dayjs().add(-1, 'month'),
@@ -76,81 +66,50 @@ const StockTesting = ({ onClose }: Props) => {
   };
 
   const handleTest = async (symbol: string) => {
-    setCount((oldCount) => oldCount + 1);
-    if (dates.length !== 2) return;
-    const startDate = dates[0].format(DATE_FORMAT);
-    const endDate = dates[1].format(DATE_FORMAT);
-    const res = await StockService.getStockDataFromFireant({
-      listSymbols: [symbol],
-      startDate,
-      endDate,
-    });
-    const res2 = await StockService.getStockDataFromSupabase({
-      listSymbols: [symbol],
-      startDate,
-      endDate,
-    });
-
-    // wait 5 seconds
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    let valid = false;
-    if (
-      res &&
-      res[0] &&
-      res[0].data &&
-      res2 &&
-      res2.data &&
-      res2.data.slice(0, 20).length === res[0].data.length
-    ) {
-      const mappedFireant = res[0].data.map((i: any) => {
-        i.date = dayjs(i.date).format(DATE_FORMAT);
-        return i;
-      });
-
-      const objFireant = keyBy(mappedFireant, 'date');
-      const objSupabase = keyBy(res2.data.slice(0, 20), 'date');
-      const result: any = [];
-
-      Object.keys(objFireant).forEach((key) => {
-        const itemFireant = objFireant[key];
-        const itemSupabase = objSupabase[key];
-
-        const validCondition = checkValidCondition(
-          itemFireant,
-          itemSupabase,
-          LIST_TESTING_FIELDS
-        );
-        result.push({
-          date: key,
-          valid: validCondition,
-        });
-      });
-
-      valid = result.filter((i: any) => !i.valid).length === 0;
-    }
-    const rowData: any = [];
-    gridRef.current?.api.forEachNode((node: any) => {
-      rowData.push(node.data);
-    });
-    gridRef.current?.api.applyTransaction({
-      add: [
-        {
+    try {
+      console.log(`start getting last updated of symbol: ${symbol}`);
+      const res: any = await StockService.getLastUpdatedStock(symbol);
+      const res2 = await StockService.getCountStock(symbol);
+      if (res.status === 200 && res2.status === 200) {
+        return {
           symbol,
-          valid,
-        },
-      ],
-      addIndex: rowData.length,
-    });
+          date: res.data[0].date,
+          count: res2.count,
+        };
+      }
+      return {
+        symbol,
+      };
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const handleTestAll = async () => {
-    setLoading(true);
-    setCount(0);
-    gridRef.current?.api.setRowData([]);
-    for (let i = 0; i < listAllSymbols.length; i++) {
-      await handleTest(listAllSymbols[i]);
+    try {
+      gridRef.current?.api.setRowData([]);
+      let result: any = [];
+      const chunkedListSymbols = chunk(listAllSymbols, 25);
+      for (let i = 0; i < chunkedListSymbols.length; i++) {
+        const listPromises = [];
+        for (let j = 0; j < chunkedListSymbols[i].length; j++) {
+          listPromises.push(handleTest(chunkedListSymbols[i][j]));
+        }
+        setLoading(true);
+        // wait 1s
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const res = await Promise.all(listPromises);
+        result = [...result, ...res];
+        setLoading(false);
+        console.log(res);
+      }
+
+      gridRef.current?.api.setRowData(result);
+    } catch (e) {
+      setLoading(false);
+      notification.error({ message: 'error' });
+      console.log(e);
     }
-    setLoading(false);
   };
 
   const handleChangeDate = (dates: any) => {
@@ -201,17 +160,7 @@ const StockTesting = ({ onClose }: Props) => {
 
   return (
     <Drawer
-      title={
-        <div className="flex" style={{ justifyContent: 'space-between' }}>
-          <div>Testing</div>
-          <RangePicker
-            size="small"
-            onChange={handleChangeDate}
-            defaultValue={dates}
-            format={DATE_FORMAT}
-          />
-        </div>
-      }
+      title={'Last updated check'}
       placement="bottom"
       height="60%"
       onClose={onClose}
@@ -226,15 +175,6 @@ const StockTesting = ({ onClose }: Props) => {
             height: '50px',
           }}
         >
-          <div>
-            Last updated: {lastUpdated}
-            <Button
-              size="small"
-              onClick={() => handleForceUpdate(listAllSymbols)}
-            >
-              Update All data
-            </Button>
-          </div>
           <div>
             <Select
               showSearch
@@ -276,4 +216,4 @@ const StockTesting = ({ onClose }: Props) => {
   );
 };
 
-export default StockTesting;
+export default StockLastUpdated;

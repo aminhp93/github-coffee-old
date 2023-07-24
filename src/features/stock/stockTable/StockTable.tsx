@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+// Import libaries
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   SettingOutlined,
   StockOutlined,
 } from '@ant-design/icons';
-
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { RowClassParams } from 'ag-grid-community';
+
+// Import components
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
 import { StockData, SupabaseData, StockBase } from '../Stock.types';
@@ -28,7 +31,6 @@ import StockTableSetting from './StockTableSetting';
 import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
 import StockTrendingDrawer from './StockTrendingDrawer';
-import { RowClassParams } from 'ag-grid-community';
 
 const getRowClass = (params: RowClassParams) => {
   if (params.node.data.potential) {
@@ -174,9 +176,8 @@ const StockTable = () => {
   };
 
   const handleClickSymbol = (data: StockData) => {
-    const symbol = data.symbol;
-    if (!symbol) return;
-    setSelectedSymbol(symbol);
+    if (!data?.symbol) return;
+    setSelectedSymbol(data?.symbol);
   };
 
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);

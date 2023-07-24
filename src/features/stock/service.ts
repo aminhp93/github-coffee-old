@@ -276,6 +276,26 @@ const StockService = {
       },
     });
   },
+  getLastUpdatedStock: (symbol: string) => {
+    return supabase
+      .from('stock')
+      .select(
+        GET_FIELD_STOCK_SUPABASE
+        // '*'
+      )
+      .in('symbol', [symbol])
+      .order('date', { ascending: true })
+      .limit(1);
+  },
+  getCountStock: (symbol: string) => {
+    return supabase
+      .from('stock')
+      .select('* ', {
+        count: 'exact',
+        head: true,
+      })
+      .in('symbol', [symbol]);
+  },
 };
 
 export default StockService;
