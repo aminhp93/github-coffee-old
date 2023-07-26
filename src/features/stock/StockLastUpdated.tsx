@@ -11,12 +11,12 @@ import dayjs from 'dayjs';
 // Import components
 import StockService from './service';
 import { mapDataFromStockBase, updateDataWithDate } from './utils';
-import { DATE_FORMAT } from './constants';
+import { DATE_FORMAT, START_DATE } from './constants';
 import useStockStore from './Stock.store';
 
 const DEFAULT_ROW_DATA: any = [];
 
-const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
+const COLUMN_DEFS = ({ handleForceUpdate, stockInfo }: any) => [
   {
     headerName: 'symbol',
     field: 'symbol',
@@ -24,6 +24,25 @@ const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
   {
     headerName: 'date',
     field: 'date',
+    cellRenderer: (data: any) => {
+      const date = START_DATE[data.data.symbol];
+      let valid = true;
+      if (!date) {
+        if (data.data.date !== stockInfo.start_date) {
+          valid = false;
+        }
+      }
+      return (
+        <div>
+          {data.data.date}
+          {valid ? (
+            <CheckOutlined style={{ color: 'green' }} />
+          ) : (
+            <CloseOutlined style={{ color: 'red' }} />
+          )}
+        </div>
+      );
+    },
   },
   {
     headerName: 'count',
@@ -34,16 +53,9 @@ const COLUMN_DEFS = ({ handleForceUpdate }: any) => [
     field: 'action',
     cellRenderer: (data: any) => {
       return (
-        <div>
-          {data.value ? (
-            <CheckOutlined style={{ color: 'green' }} />
-          ) : (
-            <CloseOutlined style={{ color: 'red' }} />
-          )}
-          <Button onClick={() => handleForceUpdate([data.data.symbol])}>
-            Update
-          </Button>
-        </div>
+        <Button onClick={() => handleForceUpdate([data.data.symbol])}>
+          Update
+        </Button>
       );
     },
   },
@@ -202,7 +214,7 @@ const StockLastUpdated = ({ onClose }: Props) => {
             ref={gridRef}
             rowData={DEFAULT_ROW_DATA}
             getRowId={(params: any) => params.data.symbol}
-            columnDefs={COLUMN_DEFS({ handleForceUpdate })}
+            columnDefs={COLUMN_DEFS({ handleForceUpdate, stockInfo })}
           />
         </div>
       </div>
