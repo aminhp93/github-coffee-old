@@ -31,6 +31,7 @@ import StockTableSetting from './StockTableSetting';
 import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
 import StockTrendingDrawer from './StockTrendingDrawer';
+import StockResultUpdateDrawer from './StockResultUpdateDrawer';
 
 const getRowClass = (params: RowClassParams) => {
   if (params.node.data.potential) {
@@ -46,12 +47,15 @@ const StockTable = () => {
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
     useState(false);
+  const [openDrawerResultUpdate, setOpenDrawerResultUpdate] = useState(false);
+
   const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
+  const [resultUpdate, setResultUpdate] = useState<any>({});
 
   const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
     if (!data || !data[0] || !data[1]) return;
@@ -119,6 +123,7 @@ const StockTable = () => {
         const { list_all } = mapDataFromStockBase(
           resStockBase.data || ([] as any)
         );
+
         if (res?.data?.length === 1) {
           const lastUpdated = res.data[0].last_updated;
           let newLastUpdated = dayjs().format(DATE_FORMAT);
@@ -130,7 +135,10 @@ const StockTable = () => {
           if (lastUpdated !== newLastUpdated) {
             let nextCall = true;
             let offset = 0;
-
+            setResultUpdate((pre: any) => {
+              return { ...pre, list_all };
+            });
+            setOpenDrawerResultUpdate(true);
             while (nextCall) {
               const res = await updateDataWithDate(
                 dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
@@ -138,6 +146,12 @@ const StockTable = () => {
                 offset,
                 list_all
               );
+              console.log(res);
+              setResultUpdate((pre: any) => ({
+                ...pre,
+                res: [...(pre.res || []), ...res],
+              }));
+
               offset += 20;
               if (res?.length && res[0].length < 20) {
                 nextCall = false;
@@ -262,7 +276,15 @@ const StockTable = () => {
           enableCharts={true}
         />
       </div>
+
       {footer()}
+
+      {openDrawerResultUpdate && (
+        <StockResultUpdateDrawer
+          data={resultUpdate}
+          onClose={() => setOpenDrawerResultUpdate(false)}
+        />
+      )}
 
       {openDrawerSettings && (
         <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />

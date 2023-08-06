@@ -173,9 +173,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
         if (!extra) return;
         const percent_extra = (100 * extra) / stockData.dealVolume;
 
-        return `${percent_extra.toFixed(0)}% (${extra}/${
-          stockData.dealVolume
-        })`;
+        return `${percent_extra.toFixed(0)}%`;
       },
     },
     {

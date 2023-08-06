@@ -15,11 +15,13 @@ import useTodoStore from './Todo.store';
 import useTagStore from '../tag/store';
 import { Todo, TodoCollection } from './Todo.types';
 import { debounce } from 'lodash';
+import useStatusStore from 'features/status/store';
 
 const { Paragraph } = Typography;
 
 const MemoizedTodoDetail = memo(function TodoDetail() {
   const tags = useTagStore((state) => state.tags);
+  const status = useStatusStore((state) => state.status);
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
   const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
   const setTodos = useTodoStore((state) => state.setTodos);
@@ -106,6 +108,22 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
     handleUpdate(updatedTodo);
   };
 
+  const handleChangeStatus = (value: any, data: any) => {
+    console.log(value, data, selectedTodo);
+    if (!selectedTodo?.id) return;
+    const updatedTodo = {
+      ...selectedTodo,
+      status: data.data.id,
+    };
+
+    setTodos({
+      ...todos,
+      [selectedTodo.id]: updatedTodo,
+    });
+    setSelectedTodo(updatedTodo);
+    handleUpdate(updatedTodo);
+  };
+
   useEffect(() => {
     if (!selectedTodo?.id) return;
 
@@ -160,6 +178,18 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
             label: tag.title,
             value: tag.id,
             data: tag,
+          }))}
+        />
+        <Select
+          size="small"
+          style={{ width: '100px', marginRight: '8px' }}
+          value={selectedTodo?.status}
+          placeholder="Status"
+          onChange={handleChangeStatus}
+          options={Object.values(status).map((i) => ({
+            label: i.label,
+            value: i.id,
+            data: i,
           }))}
         />
         {!loading ? (

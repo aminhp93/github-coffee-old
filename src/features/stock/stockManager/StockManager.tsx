@@ -27,7 +27,7 @@ const StockManager = () => {
 
   const [listStocks, setListStocks] = useState<any[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
-    dayjs().add(-1, 'years'),
+    dayjs().add(-3, 'month'),
     dayjs(),
   ]);
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
