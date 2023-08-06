@@ -1,0 +1,63 @@
+@import '@/styles';
+
+.Todo {
+  height: 100%;
+}
+
+.TodoListContainer {
+  width: 20rem;
+  overflow: auto;
+  border-right: 1px solid @gray-100;
+  position: relative;
+}
+
+.TodoListContainer.fullWidth {
+  width: 100%;
+}
+
+.TodoCreateButton {
+  justify-content: space-between;
+  margin: 8px 16px;
+}
+.TodoDetailContainer {
+  overflow: auto;
+}
+
+.TodoCreate {
+  .CustomPlate {
+    background: @white;
+  }
+}
+
+.TodoDetail {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.TodoList {
+  flex-direction: column;
+  overflow: auto;
+}
+
+.TodoListItem {
+  cursor: pointer;
+  padding: 8px;
+  justify-content: space-between;
+  align-items: center;
+
+  .toolbox {
+    display: none;
+  }
+}
+
+.TodoListItem:hover {
+  background: @gray-100;
+  .toolbox {
+    display: block;
+  }
+}
+
+.TodoListItem.selected {
+  background: @gray-100;
+}

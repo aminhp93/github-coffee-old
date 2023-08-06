@@ -1,6 +1,6 @@
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
-import { Button, notification, Tooltip, Select } from 'antd';
+import { Button, notification, Tooltip, Radio } from 'antd';
 import { useEffect, useState } from 'react';
 import './Post.less';
 import PostCreate from './PostCreate';
@@ -12,6 +12,7 @@ import { keyBy } from 'lodash';
 import { PostCollection } from './Post.types';
 import useTagStore from '../tag/store';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import type { RadioChangeEvent } from 'antd';
 
 type Props = {
   tag?: string;
@@ -37,7 +38,8 @@ const PostPage = (props: Props) => {
   }`;
   const iconOpenDetail = openDetail ? <LeftOutlined /> : <RightOutlined />;
 
-  const handleChangeTag = async (value: number) => {
+  const handleChangeTag = async (e: RadioChangeEvent) => {
+    const value = e.target.value;
     try {
       setLoading(true);
       const dataRequest: {
@@ -98,20 +100,14 @@ const PostPage = (props: Props) => {
         </Tooltip>
       ) : (
         <>
-          <Select
-            size="small"
-            style={{ width: '100px', marginRight: '8px' }}
-            placeholder="Tags"
-            onChange={handleChangeTag}
-            options={[
-              { label: 'None', value: '' },
-              ...Object.values(tags).map((tag) => ({
-                label: tag.title,
-                value: tag.id,
-                data: tag,
-              })),
+          <Radio.Group size="small" onChange={handleChangeTag}>
+            <Radio.Button value={''}>None</Radio.Button>;
+            {[
+              ...Object.values(tags).map((tag) => {
+                return <Radio.Button value={tag.id}>{tag.title}</Radio.Button>;
+              }),
             ]}
-          />
+          </Radio.Group>
 
           <Tooltip title="Create post">
             <Button

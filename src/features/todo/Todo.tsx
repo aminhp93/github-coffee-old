@@ -1,245 +1,162 @@
-// ** Import react
-import { useCallback, useEffect, useRef, useMemo } from 'react';
-
-// ** Import third-party libs
-import { notification, Input, InputRef } from 'antd';
-import { AgGridReact } from 'ag-grid-react';
-
-// ** Import components
-import CustomAgGridReact, {
-  TData,
-} from 'components/customAgGridReact/CustomAgGridReact';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
-import { Todo } from './Todo.types';
-import TodoService from './Todo.services';
-import { createNewRowData } from './Todo.utils';
-import TodoTableColumns from './TodoTableColumns';
-import { IRowNode } from 'ag-grid-community';
+import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
+import { Button, notification, Tooltip, Radio } from 'antd';
+import { useEffect, useState } from 'react';
+import './Todo.less';
+import TodoCreate from './TodoCreate';
+import TodoDetail from './TodoDetail';
+import TodoList from './TodoList';
+import TodoService from './Todo.service';
+import useTodoStore from './Todo.store';
+import { keyBy } from 'lodash';
+import { TodoCollection } from './Todo.types';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import useStatusStore from 'features/status/store';
+import type { RadioChangeEvent } from 'antd';
 
-const TodoPage = () => {
+type Props = {
+  tag?: string;
+};
+
+const TodoPage = (props: Props) => {
+  const { tag } = props;
+
+  const setTodos = useTodoStore((state) => state.setTodos);
+  const mode = useTodoStore((state) => state.mode);
+  const setMode = useTodoStore((state) => state.setMode);
+  const selectedTodo = useTodoStore((state) => state.selectedTodo);
+  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
+  const setLoading = useTodoStore((state) => state.setLoading);
+  const status = useStatusStore((state) => state.status);
+  const [openDetail, setOpenDetail] = useState(true);
+
   const { authUser }: AuthUserContext = useAuth();
-  const gridRef: React.RefObject<AgGridReact> = useRef(null);
-  const inputRef = useRef<InputRef>(null);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleCreate = async (data: any) => {
+  // variable
+  const TodoListContainerClassName = `TodoListContainer ${
+    openDetail ? '' : 'fullWidth'
+  }`;
+  const iconOpenDetail = openDetail ? <LeftOutlined /> : <RightOutlined />;
+
+  const handleChangeStatus = async (e: RadioChangeEvent) => {
+    const value = e.target.value;
+
     try {
-      if (!authUser?.id || !data) return;
-      if (!gridRef?.current?.api) return;
-
-      const requestData = {
-        ...data,
-        status: 1,
-        author: authUser.id,
+      setLoading(true);
+      const dataRequest: {
+        author?: string;
+        status?: number;
+      } = {
+        author: authUser?.id,
+        status: value,
       };
-      delete requestData.id;
-      const res = await TodoService.createTodo(requestData);
 
-      const itemsToUpdate: IRowNode[] = [];
-
-      const selectedNodes = gridRef.current.api.getSelectedNodes();
-
-      selectedNodes.forEach((node) => {
-        if (node.data.id === -1) {
-          // only do item with id === -1
-          itemsToUpdate.push(node.data);
-        }
-      });
-
-      gridRef.current.api.applyTransaction({
-        remove: itemsToUpdate,
-      });
-
-      addItems(undefined, res.data as Todo[]);
-
-      notification.success({ message: 'Create success' });
+      const res = await TodoService.listTodo(dataRequest);
+      setLoading(false);
+      if (res?.data) {
+        setTodos(keyBy(res.data, 'id') as TodoCollection);
+      }
     } catch (e) {
-      console.log(e);
-      notification.error({ message: 'Error create todo' });
+      setLoading(false);
+      notification.error({ message: 'error' });
     }
-  };
-
-  const handleDelete = async (todo: Todo) => {
-    try {
-      if (!todo) return;
-      await TodoService.deleteTodo(todo.id);
-      notification.success({ message: 'Delete success' });
-    } catch (e) {
-      notification.error({ message: 'Error delete todo' });
-    }
-  };
-
-  const addItems = useCallback((addIndex?: number, data?: Todo[]) => {
-    if (!gridRef?.current?.api || !data || data[0].id === -1) return;
-    console.log(data);
-
-    gridRef.current?.api.applyTransaction({
-      add: data,
-      addIndex: addIndex,
-    });
-    gridRef.current.api.setFilterModel({
-      status: {
-        type: 'set',
-        values: [null, '2', '1'],
-      },
-    });
-  }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onCellEditingStarted = useCallback((event: any) => {
-    console.log('cellEditingStarted', event);
-  }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onCellEditingStopped = useCallback(async (event: any) => {
-    console.log('cellEditingStopped', event);
-    try {
-      const requestData = {
-        title: event.newValue,
-      };
-      await TodoService.updateTodo(event.data.id, requestData);
-      notification.success({ message: 'Update success' });
-    } catch (e) {
-      notification.error({ message: 'Error Update todo' });
-    }
-  }, []);
-
-  const handleDeleteCb = () => {
-    console.log('handleDelete');
-    if (!gridRef?.current?.api) return;
-    const selectedData = gridRef.current.api.getSelectedRows();
-    if (!selectedData || selectedData.length === 0) return;
-
-    // remove items from aggrid
-    onRemoveSelected();
-
-    // call api delete
-    if (selectedData.length === 1) {
-      handleDelete(selectedData[0]);
-    }
-  };
-
-  const onRemoveSelected = useCallback(() => {
-    if (!gridRef?.current?.api) return;
-
-    const selectedData = gridRef.current.api.getSelectedRows();
-    gridRef.current.api.applyTransaction({
-      remove: selectedData,
-    });
-  }, []);
-
-  const handleGridReady = () => {
-    console.log(gridRef?.current?.api);
-    if (!gridRef?.current?.api) return;
-    console.log(120);
-
-    gridRef.current.api.sizeColumnsToFit();
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handlePressEnter = (e: any) => {
-    // add item to aggrid
-    const item = createNewRowData(e.target.value);
-    addItems(0, [item as Todo]);
-
-    // call api create
-    handleCreate(item);
-    if (inputRef?.current?.input) {
-      inputRef.current.input.value = '';
-    }
-  };
-
-  const handleResize = () => {
-    if (!gridRef?.current?.api) return;
-    gridRef.current.api.sizeColumnsToFit();
   };
 
   useEffect(() => {
-    (async () => {
+    const init = async () => {
       try {
-        const dataRequest: Partial<Todo> = {
+        setLoading(true);
+        const dataRequest: {
+          author?: string;
+        } = {
           author: authUser?.id,
         };
 
         const res = await TodoService.listTodo(dataRequest);
+        setLoading(false);
         if (res?.data) {
-          addItems(undefined, res.data as Todo[]);
+          setTodos(keyBy(res.data, 'id') as TodoCollection);
         }
       } catch (e) {
+        setLoading(false);
         notification.error({ message: 'error' });
       }
-    })();
-  }, [addItems, authUser?.id]);
+    };
+    init();
+  }, [authUser?.id, setTodos, setLoading, tag]);
 
-  const handleUpdate = async (key: string, todo: Todo) => {
-    if (!gridRef?.current?.api) return;
+  const renderHeader = (
+    <div className="TodoCreateButton flex">
+      {mode === 'create' ? (
+        <Tooltip title="Back">
+          <Button
+            size="small"
+            icon={<RollbackOutlined />}
+            onClick={() => setMode('list')}
+          />
+        </Tooltip>
+      ) : (
+        <>
+          <Radio.Group
+            defaultValue={1}
+            size="small"
+            onChange={handleChangeStatus}
+          >
+            {[
+              ...Object.values(status).map((i) => {
+                return <Radio.Button value={i.id}>{i.label}</Radio.Button>;
+              }),
+            ]}
+          </Radio.Group>
 
-    const itemsToUpdate: IRowNode[] = [];
-    const rows: IRowNode[] = [];
+          <Tooltip title="Create todo">
+            <Button
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setMode('create');
+                setSelectedTodo(undefined);
+              }}
+            />
+          </Tooltip>
+        </>
+      )}
+      <Button
+        size="small"
+        onClick={() => setOpenDetail(!openDetail)}
+        icon={iconOpenDetail}
+      />
+    </div>
+  );
 
-    const selectedNodes = gridRef.current.api.getSelectedNodes();
-
-    selectedNodes.forEach((node) => {
-      if (node.data.id === todo.id) {
-        // only do item with id === -1
-        node.data.status = Number(key);
-        itemsToUpdate.push(node.data);
-        const row = gridRef.current!.api.getDisplayedRowAtIndex(node.rowIndex!);
-        if (row) {
-          rows.push(row);
+  const renderDetail = () => {
+    if (openDetail) {
+      let content = <div className="width-100">No todo selected</div>;
+      if (mode === 'create') {
+        content = <TodoCreate />;
+      } else {
+        if (selectedTodo?.id) {
+          content = <TodoDetail />;
         }
       }
-    });
 
-    gridRef.current.api.applyTransaction({
-      update: itemsToUpdate,
-    });
-
-    gridRef.current.api.redrawRows({ rowNodes: rows });
-    try {
-      const requestData = {
-        status: Number(key),
-      };
-      await TodoService.updateTodo(todo.id, requestData);
-      notification.success({ message: 'Update success' });
-    } catch (e) {
-      notification.error({ message: 'Error Update todo' });
+      return (
+        <div className="TodoDetailContainer flex flex-1 height-100">
+          {content}
+        </div>
+      );
     }
+    return null;
   };
 
-  const autoGroupColumnDef = useMemo(() => {
-    return {
-      cellRendererSelector: (params: TData) => {
-        if (['Australia', 'Norway'].includes(params.node.key)) {
-          return; // use Default Cell Renderer
-        }
-        return { component: 'agGroupCellRenderer' };
-      },
-      minWidth: 150,
-    };
-  }, []);
-
   return (
-    <div className="StockTable height-100 flex">
-      <div className="height-100 width-100 ag-theme-alpine flex-1">
-        <div>
-          <Input ref={inputRef} onPressEnter={handlePressEnter} />
-        </div>
-
-        <CustomAgGridReact
-          ref={gridRef}
-          columnDefs={TodoTableColumns({
-            handleDelete: handleDeleteCb,
-            handleUpdate,
-          })}
-          onCellEditingStarted={onCellEditingStarted}
-          onCellEditingStopped={onCellEditingStopped}
-          onGridReady={handleGridReady}
-          onResize={handleResize}
-          autoGroupColumnDef={autoGroupColumnDef}
-          groupDefaultExpanded={1}
-        />
+    <div className="Todo flex">
+      <div className={TodoListContainerClassName}>
+        {renderHeader}
+        <TodoList />
       </div>
+
+      {renderDetail()}
     </div>
   );
 };
