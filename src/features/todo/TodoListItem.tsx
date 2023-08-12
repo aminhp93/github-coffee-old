@@ -23,7 +23,7 @@ function TodoListItem({ data }: Props) {
           setMode('list');
         }}
         style={{ flex: 1 }}
-      >{`${data.id} - ${data.title}`}</div>
+      >{`- ${data.title}`}</div>
       <div className="toolbox">
         <CheckOutlined />
       </div>

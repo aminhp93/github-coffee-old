@@ -1,6 +1,6 @@
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
-import { Button, notification, Tooltip, Radio } from 'antd';
+import { Button, notification, Tooltip, Select } from 'antd';
 import { useEffect, useState } from 'react';
 import './Todo.less';
 import TodoCreate from './TodoCreate';
@@ -10,13 +10,13 @@ import TodoService from './Todo.service';
 import useTodoStore from './Todo.store';
 import { keyBy } from 'lodash';
 import { TodoCollection } from './Todo.types';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import useStatusStore from 'features/status/store';
-import type { RadioChangeEvent } from 'antd';
 
 type Props = {
   tag?: string;
 };
+
+const DEFAULT_SELECTED_STATUS = [1, 2];
 
 const TodoPage = (props: Props) => {
   const { tag } = props;
@@ -28,25 +28,27 @@ const TodoPage = (props: Props) => {
   const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
   const setLoading = useTodoStore((state) => state.setLoading);
   const status = useStatusStore((state) => state.status);
-  const [openDetail, setOpenDetail] = useState(true);
+
+  const [selectedStatus, setSelectedStatus] = useState<number[]>(
+    DEFAULT_SELECTED_STATUS
+  );
 
   const { authUser }: AuthUserContext = useAuth();
 
+  const isOpenDetail = selectedTodo?.id || mode === 'create';
+
   // variable
   const TodoListContainerClassName = `TodoListContainer ${
-    openDetail ? '' : 'fullWidth'
+    isOpenDetail ? '' : 'fullWidth'
   }`;
-  const iconOpenDetail = openDetail ? <LeftOutlined /> : <RightOutlined />;
 
-  const handleChangeStatus = async (e: RadioChangeEvent) => {
-    const value = e.target.value;
+  const handleChangeStatus = async (value: number[]) => {
+    console.log(value);
 
     try {
       setLoading(true);
-      const dataRequest: {
-        author?: string;
-        status?: number;
-      } = {
+      setSelectedStatus(value);
+      const dataRequest = {
         author: authUser?.id,
         status: value,
       };
@@ -66,10 +68,9 @@ const TodoPage = (props: Props) => {
     const init = async () => {
       try {
         setLoading(true);
-        const dataRequest: {
-          author?: string;
-        } = {
+        const dataRequest = {
           author: authUser?.id,
+          status: DEFAULT_SELECTED_STATUS,
         };
 
         const res = await TodoService.listTodo(dataRequest);
@@ -97,17 +98,21 @@ const TodoPage = (props: Props) => {
         </Tooltip>
       ) : (
         <>
-          <Radio.Group
-            defaultValue={1}
+          <Select
+            mode="multiple"
+            allowClear
             size="small"
+            style={{ width: '300px' }}
+            placeholder="Please select"
+            defaultValue={selectedStatus}
             onChange={handleChangeStatus}
-          >
-            {[
-              ...Object.values(status).map((i) => {
-                return <Radio.Button value={i.id}>{i.label}</Radio.Button>;
-              }),
-            ]}
-          </Radio.Group>
+            options={Object.values(status).map((i) => {
+              return {
+                label: i.label,
+                value: i.id,
+              };
+            })}
+          />
 
           <Tooltip title="Create todo">
             <Button
@@ -121,31 +126,25 @@ const TodoPage = (props: Props) => {
           </Tooltip>
         </>
       )}
-      <Button
-        size="small"
-        onClick={() => setOpenDetail(!openDetail)}
-        icon={iconOpenDetail}
-      />
     </div>
   );
 
   const renderDetail = () => {
-    if (openDetail) {
-      let content = <div className="width-100">No todo selected</div>;
-      if (mode === 'create') {
-        content = <TodoCreate />;
-      } else {
-        if (selectedTodo?.id) {
-          content = <TodoDetail />;
-        }
-      }
-
+    if (mode === 'create') {
       return (
         <div className="TodoDetailContainer flex flex-1 height-100">
-          {content}
+          <TodoCreate />;
         </div>
       );
     }
+    if (selectedTodo?.id) {
+      return (
+        <div className="TodoDetailContainer flex flex-1 height-100">
+          <TodoDetail />;
+        </div>
+      );
+    }
+
     return null;
   };
 
@@ -153,7 +152,9 @@ const TodoPage = (props: Props) => {
     <div className="Todo flex">
       <div className={TodoListContainerClassName}>
         {renderHeader}
-        <TodoList />
+        {selectedStatus.map((i) => {
+          return <TodoList status={i} key={i} />;
+        })}
       </div>
 
       {renderDetail()}

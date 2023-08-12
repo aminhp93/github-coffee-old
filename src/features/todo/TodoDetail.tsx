@@ -4,6 +4,7 @@ import {
   CheckCircleOutlined,
   DeleteOutlined,
   WarningOutlined,
+  LeftOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
@@ -140,33 +141,46 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
       className="flex"
       style={{ margin: '8px 16px', justifyContent: 'space-between' }}
     >
-      <Paragraph
-        style={{
-          flex: 1,
-          marginBottom: 0,
-          marginRight: 20,
-        }}
-        editable={{
-          // icon: <HighlightOutlined />,
-          tooltip: 'click to edit text',
-          onChange: (text: string) => {
-            if (!selectedTodo?.id) return;
-            const updatedTodo = {
-              ...selectedTodo,
-              title: text,
-            };
-            setTodos({
-              ...todos,
-              [updatedTodo.id]: updatedTodo,
-            });
-            setSelectedTodo(updatedTodo);
-            handleUpdate(updatedTodo);
-          },
-          triggerType: ['text'],
-        }}
-      >
-        {selectedTodo?.title}
-      </Paragraph>
+      <div className="flex">
+        <Button
+          size="small"
+          style={{
+            marginRight: 8,
+          }}
+          onClick={() => {
+            setSelectedTodo(undefined);
+          }}
+          icon={<LeftOutlined />}
+        />
+
+        <Paragraph
+          style={{
+            flex: 1,
+            marginBottom: 0,
+            marginRight: 20,
+          }}
+          editable={{
+            // icon: <HighlightOutlined />,
+            tooltip: 'click to edit text',
+            onChange: (text: string) => {
+              if (!selectedTodo?.id) return;
+              const updatedTodo = {
+                ...selectedTodo,
+                title: text,
+              };
+              setTodos({
+                ...todos,
+                [updatedTodo.id]: updatedTodo,
+              });
+              setSelectedTodo(updatedTodo);
+              handleUpdate(updatedTodo);
+            },
+            triggerType: ['text'],
+          }}
+        >
+          {selectedTodo?.title}
+        </Paragraph>
+      </div>
       <div>
         <Select
           size="small"
