@@ -11,7 +11,6 @@ import { keyBy } from 'lodash';
 import { ItemCollection } from './schema/item.schema';
 import Properties from './Properties';
 
-console.log(LIST_ITEM);
 const objectItems = keyBy(LIST_ITEM, 'id');
 
 const Test = () => {
@@ -21,7 +20,6 @@ const Test = () => {
   const undo = useHistoryStore((state) => state.undo);
   const updateItems = useHistoryStore((state) => state.updateItems);
   const redo = useHistoryStore((state) => state.redo);
-  const items = useHistoryStore((state) => state.items);
 
   useEffect(() => {
     setTimeout(() => {
@@ -150,8 +148,6 @@ const Test = () => {
     console.log('handleNext');
     redo();
   };
-
-  console.log('Test', test, items);
 
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>

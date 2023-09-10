@@ -15,7 +15,7 @@ const TodoList = ({ status }: { status: number }) => {
 
   return (
     <div className="TodoList flex">
-      <div>{statusStore[status].label}</div>
+      <div>{statusStore[status]?.label}</div>
       {Object.values(todos)
         .filter((i) => i.status === status)
         .map((i) => {

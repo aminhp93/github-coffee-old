@@ -24,7 +24,7 @@ import Snippet from 'features/snippet/Snippet';
 import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
 
-import { defaultJson, defaultOverviewJson } from 'features/work/Work.constants';
+import { JSON_MODEL_RESET } from 'features/work/Work.constants';
 
 notification.config({
   placement: 'bottomLeft',
@@ -62,7 +62,7 @@ const App = () => {
             element={
               <Work
                 layoutName="flexLayoutModel_Work"
-                defaultJson={defaultJson}
+                defaultJson={JSON_MODEL_RESET}
               />
             }
           />
@@ -72,15 +72,6 @@ const App = () => {
           <Route path="/snippet" element={<Snippet />} />
           <Route path="/test" element={<Test />} />
           <Route path="/todo" element={<Todo />} />
-          <Route
-            path="/overview"
-            element={
-              <Work
-                layoutName="flexLayoutModel_Overview"
-                defaultJson={defaultOverviewJson}
-              />
-            }
-          />
           <Route path="*" element={<Navigate to="/" />} />
         </Route>
       </Routes>
