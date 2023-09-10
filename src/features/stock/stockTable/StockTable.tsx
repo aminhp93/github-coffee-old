@@ -12,6 +12,7 @@ import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { RowClassParams } from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
 
 // Import components
 import { DATE_FORMAT } from '../constants';
@@ -23,12 +24,12 @@ import {
   getTodayData,
   mapDataFromStockBase,
   updateDataWithDate,
+  mapNewAllStocks,
 } from '../utils';
 import RefreshButton from './RefreshButton';
 import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
-import { AgGridReact } from 'ag-grid-react';
 import useStockStore from '../Stock.store';
 import StockTrendingDrawer from './StockTrendingDrawer';
 import StockResultUpdateDrawer from './StockResultUpdateDrawer';
@@ -49,13 +50,15 @@ const StockTable = () => {
     useState(false);
   const [openDrawerResultUpdate, setOpenDrawerResultUpdate] = useState(false);
 
-  const [listStocks, setListStocks] = useState<StockData[]>([]);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
-  const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
   const [resultUpdate, setResultUpdate] = useState<any>({});
+
+  const [filter] = useState({
+    exclude_blacklist: true,
+  });
 
   const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
     if (!data || !data[0] || !data[1]) return;
@@ -90,24 +93,27 @@ const StockTable = () => {
 
       const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
 
-      const filterdData = filterData(
-        newAllStocks,
-        [...list_buyPoint, ...list_blacklist],
-        resStockBase.data
-      );
+      const mappedNewAllStocks = mapNewAllStocks({
+        stockData: newAllStocks,
+        stockBase: resStockBase.data,
+      });
 
-      setPinnedTopRowData(
-        newAllStocks
-          .filter((i) => list_buyPoint.includes(i.symbol))
-          .sort((a, b) => (a.change_t0 > b.change_t0 ? -1 : 1))
-      );
+      let excludeList: string[] = [];
+
+      if (filter.exclude_blacklist) {
+        excludeList = [...list_buyPoint, ...list_blacklist];
+      }
+
+      const filterdData = filterData({
+        stockData: mappedNewAllStocks,
+        exclude: excludeList,
+      });
 
       if (resStockBase?.data?.length) {
         setListStockBase(resStockBase.data as StockBase[]);
       }
 
-      setAllStocks(newAllStocks);
-      setListStocks(filterdData);
+      setAllStocks(filterdData);
     } catch (e) {
       gridRef.current?.api?.hideOverlay();
       notification.error({ message: 'error' });
@@ -171,6 +177,7 @@ const StockTable = () => {
         notification.error({ message: 'error' });
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleResize = () => {
@@ -227,7 +234,7 @@ const StockTable = () => {
           </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          {listStocks.length}
+          {allStocks.length}
           <RefreshButton onClick={() => getData(dates)} />
 
           <RangePicker
@@ -258,6 +265,8 @@ const StockTable = () => {
     );
   };
 
+  console.log({ allStocks });
+
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
@@ -267,8 +276,7 @@ const StockTable = () => {
             handleClickSymbol,
             listStockBase,
           })}
-          rowData={listStocks}
-          pinnedTopRowData={pinnedTopRowData}
+          rowData={allStocks}
           getRowClass={getRowClass}
           onResize={handleResize}
           onGridReady={handleGridReady}

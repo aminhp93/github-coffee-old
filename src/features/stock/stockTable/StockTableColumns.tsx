@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { DATE_FORMAT } from '../constants';
 import { StockBase, StockData } from '../Stock.types';
-import { evaluateStockBase, getColorStock, getMinTotalValue } from '../utils';
+import { getColorStock, getMinTotalValue } from '../utils';
 import { CellClickedEvent, ValueGetterParams } from 'ag-grid-community';
 import { TData } from 'components/customAgGridReact/CustomAgGridReact';
 
@@ -39,7 +39,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'P (%)',
+      headerName: 'P',
       field: 'change_t0',
       type: 'rightAligned',
       suppressMenu: true,
@@ -64,7 +64,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       suppressMenu: true,
       width: 74,
       type: 'rightAligned',
-      headerName: 'V (%)',
+      headerName: 'V',
       filter: 'agNumberColumnFilter',
       cellRenderer: (data: ValueGetterParams) => {
         const stockData: StockData = data.data;
@@ -82,7 +82,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'T (%)',
+      headerName: 'T',
       field: 'target',
       suppressMenu: true,
       type: 'rightAligned',
@@ -91,15 +91,8 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
         if (!listStockBase) return;
 
         const stockData: StockData = data.data;
-        const filter = listStockBase.filter(
-          (i) => i.symbol === stockData.symbol
-        );
-        if (!filter.length || filter.length !== 1) return;
-
-        const { target, risk_b2, risk_b1 } = evaluateStockBase(
-          filter[0],
-          stockData.fullData
-        );
+        if (!stockData) return;
+        const { target, risk_b1, risk_b2 } = stockData;
         if (!target) return;
         let color = '';
         if (risk_b2 && target > risk_b2) {
@@ -122,7 +115,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       },
     },
     {
-      headerName: 'R_2 (%)',
+      headerName: 'R_2',
       suppressMenu: true,
       field: 'risk_b2',
       type: 'rightAligned',
@@ -130,18 +123,12 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       cellRenderer: (data: ValueGetterParams) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
-        const filter = listStockBase.filter(
-          (i) => i.symbol === stockData.symbol
-        );
-        if (!filter.length || filter.length !== 1) return;
-
-        const { risk_b2 } = evaluateStockBase(filter[0], stockData.fullData);
-        if (!risk_b2) return;
-        return risk_b2 && risk_b2.toFixed(0);
+        if (!stockData?.risk_b2) return;
+        return stockData.risk_b2.toFixed(0);
       },
     },
     {
-      headerName: 'R_1(%)',
+      headerName: 'R_1',
       field: 'risk_b1',
       type: 'rightAligned',
       suppressMenu: true,
@@ -149,14 +136,8 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
       cellRenderer: (data: ValueGetterParams) => {
         if (!listStockBase) return;
         const stockData: StockData = data.data;
-        const filter = listStockBase.filter(
-          (i) => i.symbol === stockData.symbol
-        );
-        if (!filter.length || filter.length !== 1) return;
-
-        const { risk_b1 } = evaluateStockBase(filter[0], stockData.fullData);
-        if (!risk_b1) return;
-        return risk_b1 && risk_b1.toFixed(0);
+        if (!stockData?.risk_b1) return;
+        return stockData.risk_b1.toFixed(0);
       },
     },
 
@@ -173,7 +154,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
         if (!extra) return;
         const percent_extra = (100 * extra) / stockData.dealVolume;
 
-        return `${percent_extra.toFixed(0)}%`;
+        return `${percent_extra.toFixed(0)}`;
       },
     },
     {

@@ -12,24 +12,26 @@ import {
   SupabaseData,
 } from './Stock.types';
 
-export const filterData = (
-  data: StockData[],
-  exclude: string[],
-  stockBase: any
-) => {
-  const result = data.filter((i: StockData) => {
+export const filterData = ({
+  stockData,
+  exclude,
+}: {
+  stockData: StockData[];
+  exclude: string[];
+}): StockData[] => {
+  const result = stockData.filter((i: StockData) => {
     if (exclude.includes(i.symbol)) {
       return false;
     }
 
-    if (i.change_t0 < 2) {
-      return false;
-    }
+    // if (i.change_t0 < 2) {
+    //   return false;
+    // }
 
-    const { minTotal } = getMinTotalValue(i);
-    if (minTotal && minTotal < 2) {
-      return false;
-    }
+    // const { minTotal } = getMinTotalValue(i);
+    // if (minTotal && minTotal < 2) {
+    //   return false;
+    // }
 
     return true;
   });
@@ -38,30 +40,58 @@ export const filterData = (
   const rest: StockData[] = [];
 
   result.forEach((i: StockData) => {
-    const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
-    const { target, risk_b2, risk_b1 } = evaluateStockBase(
-      filter[0],
-      i.fullData
-    );
-
-    if (
-      i.estimated_vol_change > 50 &&
-      ((target && risk_b2 && target > risk_b2) ||
-        (!risk_b2 && risk_b1 && target && target > risk_b1))
-    ) {
-      i.potential = true;
+    if (i.potential) {
       top1.push(i);
     } else {
       rest.push(i);
     }
   });
 
-  rest.sort(
-    (a: StockData, b: StockData) =>
-      b.estimated_vol_change - a.estimated_vol_change
-  );
+  // rest.sort((a: StockData, b: StockData) => a.target && b.target && b.target - a.target);
+  // sort rest by target
+  rest.sort((a: StockData, b: StockData) => {
+    if (a.target && b.target) {
+      return b.target - a.target;
+    } else if (a.target && !b.target) {
+      return -1;
+    } else if (!a.target && b.target) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
 
   return top1.concat(rest);
+};
+
+export const mapNewAllStocks = ({
+  stockData,
+  stockBase,
+}: {
+  stockData: StockData[];
+  stockBase: any;
+}): StockData[] => {
+  return stockData.map((i: StockData) => {
+    const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
+    const { target, risk_b2, risk_b1 } = evaluateStockBase(
+      filter[0],
+      i.fullData
+    );
+
+    i.target = target;
+    i.risk_b2 = risk_b2;
+    i.risk_b1 = risk_b1;
+
+    // if (
+    //   i.estimated_vol_change > 50 &&
+    //   ((target && risk_b2 && target > risk_b2) ||
+    //     (!risk_b2 && risk_b1 && target && target > risk_b1))
+    // ) {
+    //   i.potential = true;
+    // }
+
+    return i;
+  });
 };
 
 const getMarkLine = (listMarkLines: any) => {
@@ -235,9 +265,9 @@ export const mapDataChart = ({
 export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   if (!stockBase?.list_base || !data) {
     return {
-      risk_b1: null,
-      risk_b2: null,
-      target: null,
+      risk_b1: undefined,
+      risk_b2: undefined,
+      target: undefined,
       big_sell: [],
     };
   }

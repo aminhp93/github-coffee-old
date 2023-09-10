@@ -89,6 +89,9 @@ export type StockCoreData = {
 };
 
 export interface StockData extends StockCoreData {
+  target?: number;
+  risk_b1?: number;
+  risk_b2?: number;
   potential?: boolean;
   change_t0: number;
   rangeChange_t0: number;
