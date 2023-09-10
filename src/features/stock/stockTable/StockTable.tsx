@@ -22,7 +22,6 @@ import {
   filterData,
   getStockDataFromSupabase,
   getTodayData,
-  mapDataFromStockBase,
   updateDataWithDate,
   mapNewAllStocks,
 } from '../utils';
@@ -43,7 +42,6 @@ const getRowClass = (params: RowClassParams) => {
 const { RangePicker } = DatePicker;
 
 const StockTable = () => {
-  // hooks
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
@@ -56,8 +54,9 @@ const StockTable = () => {
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
   const [resultUpdate, setResultUpdate] = useState<any>({});
 
-  const [filter] = useState({
-    exclude_blacklist: true,
+  const [filter, setFilter] = useState({
+    exclude_is_blacklist: true,
+    exclude_is_unpotential: true,
   });
 
   const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
@@ -73,15 +72,24 @@ const StockTable = () => {
 
       const resStockBase = await StockService.getAllStockBase();
 
-      const { list_active, list_blacklist, list_buyPoint } =
-        mapDataFromStockBase(resStockBase.data || ([] as any));
+      let listData = (resStockBase.data || []) as StockBase[];
 
-      let resFireant = await getTodayData(dates, list_active);
+      if (filter.exclude_is_blacklist) {
+        listData = listData.filter((i) => !i.is_blacklist);
+      }
+
+      if (filter.exclude_is_unpotential) {
+        listData = listData.filter((i) => !i.is_unpotential);
+      }
+
+      const listSymbols = listData.map((i) => i.symbol);
+
+      let resFireant = await getTodayData(dates, listSymbols);
 
       const res = await StockService.getStockDataFromSupabase({
         startDate: dates[0].format(DATE_FORMAT),
         endDate: dates[1].format(DATE_FORMAT),
-        listSymbols: list_active,
+        listSymbols,
       });
 
       gridRef.current?.api?.hideOverlay();
@@ -98,16 +106,7 @@ const StockTable = () => {
         stockBase: resStockBase.data,
       });
 
-      let excludeList: string[] = [];
-
-      if (filter.exclude_blacklist) {
-        excludeList = [...list_buyPoint, ...list_blacklist];
-      }
-
-      const filterdData = filterData({
-        stockData: mappedNewAllStocks,
-        exclude: excludeList,
-      });
+      const filterdData = filterData(mappedNewAllStocks);
 
       if (resStockBase?.data?.length) {
         setListStockBase(resStockBase.data as StockBase[]);
@@ -126,9 +125,9 @@ const StockTable = () => {
         const res = await StockService.getStockInfo();
         const resStockBase = await StockService.getAllStockBase();
 
-        const { list_all } = mapDataFromStockBase(
-          resStockBase.data || ([] as any)
-        );
+        if (!resStockBase.data) return;
+
+        const list_all = resStockBase.data.map((i) => i.symbol);
 
         if (res?.data?.length === 1) {
           const lastUpdated = res.data[0].last_updated;
@@ -201,6 +200,11 @@ const StockTable = () => {
     setSelectedSymbol(data?.symbol);
   };
 
+  useEffect(() => {
+    getData(dates);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
   const _filter_2 = allStocks.filter(
     (i: StockData) => i.change_t0 >= -0.02 && i.change_t0 <= 0.02
@@ -265,8 +269,6 @@ const StockTable = () => {
     );
   };
 
-  console.log({ allStocks });
-
   return (
     <div className="StockTable height-100 flex">
       <div className="height-100 width-100 ag-theme-alpine flex-1">
@@ -295,7 +297,13 @@ const StockTable = () => {
       )}
 
       {openDrawerSettings && (
-        <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />
+        <StockTableSetting
+          defaultFilter={filter}
+          onClose={() => setOpenDrawerSettings(false)}
+          onChangeFilter={(newFilter) => {
+            setFilter(newFilter);
+          }}
+        />
       )}
 
       {openDrawerStockAnalysis && (

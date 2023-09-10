@@ -5,41 +5,17 @@ import { DATE_FORMAT, UNIT_BILLION } from './constants';
 import StockService from './service';
 import { getStockData } from './tests';
 import {
-  StockBase,
   StockChartData,
   StockCoreData,
   StockData,
   SupabaseData,
 } from './Stock.types';
 
-export const filterData = ({
-  stockData,
-  exclude,
-}: {
-  stockData: StockData[];
-  exclude: string[];
-}): StockData[] => {
-  const result = stockData.filter((i: StockData) => {
-    if (exclude.includes(i.symbol)) {
-      return false;
-    }
-
-    // if (i.change_t0 < 2) {
-    //   return false;
-    // }
-
-    // const { minTotal } = getMinTotalValue(i);
-    // if (minTotal && minTotal < 2) {
-    //   return false;
-    // }
-
-    return true;
-  });
-
+export const filterData = (stockData: StockData[]): StockData[] => {
   const top1: StockData[] = [];
   const rest: StockData[] = [];
 
-  result.forEach((i: StockData) => {
+  stockData.forEach((i: StockData) => {
     if (i.potential) {
       top1.push(i);
     } else {
@@ -426,24 +402,6 @@ export const getColorStock = (data: StockData | undefined) => {
   } else if (data.change_t0 < -6.5) {
     return '#00cccc';
   }
-};
-
-export const mapDataFromStockBase = (data: StockBase[]) => {
-  const list_all = data.map((i) => i.symbol);
-  const list_buyPoint = data.filter((i) => i.buy_point).map((i) => i.symbol);
-
-  const list_blacklist = data
-    .filter((i) => i.is_blacklist)
-    .map((i) => i.symbol);
-
-  const list_active = data.filter((i) => !i.is_blacklist).map((i) => i.symbol);
-
-  return {
-    list_all,
-    list_active,
-    list_blacklist,
-    list_buyPoint,
-  };
 };
 
 export const getEstimatedVol = (data: StockCoreData) => {

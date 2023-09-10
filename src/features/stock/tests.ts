@@ -107,10 +107,7 @@ export const getBacktestData = (
     }
   });
 
-  const backtestData = filterData({
-    stockData: fullData,
-    exclude: [],
-  });
+  const backtestData = filterData(fullData);
 
   return {
     backtestData,

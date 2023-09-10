@@ -11,11 +11,7 @@ import { AgGridReact } from 'ag-grid-react';
 // Import components
 import { DATE_FORMAT, LIST_TESTING_FIELDS } from './constants';
 import StockService from './service';
-import {
-  mapDataFromStockBase,
-  updateDataWithDate,
-  checkValidCondition,
-} from './utils';
+import { updateDataWithDate, checkValidCondition } from './utils';
 import useStockStore from './Stock.store';
 
 const DEFAULT_ROW_DATA: any = [];
@@ -177,14 +173,12 @@ const StockTesting = ({ onClose }: Props) => {
   };
 
   useEffect(() => {
-    (async () => {
-      const resStockBase = await StockService.getAllStockBase();
-
-      const { list_all } = mapDataFromStockBase(
-        resStockBase.data || ([] as any)
-      );
-      setListAllSymbols(list_all);
-    })();
+    const init = async () => {
+      const res = await StockService.getAllStockBase();
+      if (!res.data) return;
+      setListAllSymbols(res.data.map((i) => i.symbol));
+    };
+    init();
   }, []);
 
   return (

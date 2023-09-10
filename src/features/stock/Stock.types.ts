@@ -122,6 +122,7 @@ export type StockBase = {
   config: {
     dataZoom: any;
   };
+  is_unpotential: boolean | null;
 };
 
 export type StockChartData = {

@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Import library
-import type { EChartsOption } from 'echarts';
-import {
-  CheckCircleOutlined,
-  DownOutlined,
-  UpOutlined,
-} from '@ant-design/icons';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import {
   Button,
   DatePicker,
@@ -15,6 +10,7 @@ import {
   notification,
   Select,
   Spin,
+  Switch,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -40,7 +36,6 @@ import {
   getStockDataFromSupabase,
   getTodayData,
   mapDataChart,
-  mapDataFromStockBase,
   analyse,
 } from './utils';
 import { dataZoom } from 'features/stock/stockChart/StockChart.constants';
@@ -122,7 +117,7 @@ const StockDetail = () => {
               size="small"
               style={{ marginRight: 8 }}
               icon={showDetail ? <DownOutlined /> : <UpOutlined />}
-              onClick={() => setShowDetail(showDetail ? false : true)}
+              onClick={() => setShowDetail(!showDetail)}
             />
           </div>
           <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
@@ -191,16 +186,18 @@ const StockDetail = () => {
   };
 
   const handleCbBuyPoint = (data: dayjs.Dayjs | undefined) => {
-    const newStockBase = {
-      ...stockBase,
-      symbol: selectedSymbol,
-      buy_point: data
-        ? {
-            date: data.format(DATE_FORMAT),
-          }
-        : null,
-    };
-    setStockBase(newStockBase as StockBase);
+    setStockBase((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        symbol: selectedSymbol,
+        buy_point: data
+          ? {
+              date: data.format(DATE_FORMAT),
+            }
+          : undefined,
+      };
+    });
   };
 
   useEffect(() => {
@@ -225,12 +222,9 @@ const StockDetail = () => {
 
   useEffect(() => {
     (async () => {
-      const resStockBase = await StockService.getAllStockBase();
-
-      const { list_all } = mapDataFromStockBase(
-        resStockBase.data as StockBase[]
-      );
-      setListAllSymbols(list_all);
+      const res = await StockService.getAllStockBase();
+      if (!res.data) return;
+      setListAllSymbols(res.data.map((i) => i.symbol));
     })();
   }, []);
 
@@ -243,7 +237,7 @@ const StockDetail = () => {
 
   const debounceZoom = useMemo(
     () =>
-      debounce(async (params: any, oldOption: EChartsOption) => {
+      debounce(async (params: any) => {
         // Zoom using toolbox and call api with smaller resolution
         const dataZoomId = params.dataZoomId;
         if (dataZoomId === `\u0000series\u00002\u00000`) {
@@ -301,8 +295,8 @@ const StockDetail = () => {
   );
 
   const handleZoom = useCallback(
-    (params: any, oldOption: EChartsOption) => {
-      debounceZoom(params, oldOption);
+    (params: any) => {
+      debounceZoom(params);
     },
     [debounceZoom]
   );
@@ -310,19 +304,17 @@ const StockDetail = () => {
   const renderChart = () => {
     if (loading) {
       return <Spin />;
-    } else {
-      if (dataChart) {
-        return (
-          <StockChart
-            config={stockBase?.config}
-            data={dataChart}
-            handleZoom={handleZoom}
-          />
-        );
-      } else {
-        return <div>No data</div>;
-      }
     }
+    if (dataChart) {
+      return (
+        <StockChart
+          config={stockBase?.config}
+          data={dataChart}
+          handleZoom={handleZoom}
+        />
+      );
+    }
+    return <div>No data</div>;
   };
 
   const renderDetail = () => {
@@ -365,12 +357,35 @@ const StockDetail = () => {
                   }}
                   onCb={handleCbBuyPoint}
                 />
-                {stockBase?.is_blacklist && (
-                  <span>
-                    is_blacklist
-                    <CheckCircleOutlined style={{ color: '#00aa00' }} />
-                  </span>
-                )}
+
+                <Switch
+                  checkedChildren="is_blacklist"
+                  unCheckedChildren="is_blacklist"
+                  defaultChecked={!!stockBase?.is_blacklist}
+                  onChange={(checked) => {
+                    setStockBase((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        is_unpotential: checked,
+                      };
+                    });
+                  }}
+                />
+                <Switch
+                  checkedChildren="is_unpotential"
+                  unCheckedChildren="is_unpotential"
+                  defaultChecked={!!stockBase?.is_unpotential}
+                  onChange={(checked) => {
+                    setStockBase((prev) => {
+                      if (!prev) return prev;
+                      return {
+                        ...prev,
+                        is_unpotential: checked,
+                      };
+                    });
+                  }}
+                />
               </div>
             </div>
           </div>

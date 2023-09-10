@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 
 // Import components
 import StockService from './service';
-import { mapDataFromStockBase, updateDataWithDate } from './utils';
+import { updateDataWithDate } from './utils';
 import { DATE_FORMAT, START_DATE } from './constants';
 import useStockStore from './Stock.store';
 
@@ -155,12 +155,9 @@ const StockLastUpdated = ({ onClose }: Props) => {
 
   useEffect(() => {
     const init = async () => {
-      const resStockBase = await StockService.getAllStockBase();
-
-      const { list_all } = mapDataFromStockBase(
-        resStockBase.data || ([] as any)
-      );
-      setListAllSymbols(list_all);
+      const res = await StockService.getAllStockBase();
+      if (!res.data) return;
+      setListAllSymbols(res.data.map((i) => i.symbol));
     };
     init();
   }, []);
