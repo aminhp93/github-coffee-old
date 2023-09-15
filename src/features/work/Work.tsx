@@ -66,7 +66,7 @@ const Work = ({ layoutName, defaultJson }: Props) => {
       >
         <Button
           size="small"
-          style={{ position: 'fixed', bottom: '6px', right: '2px', zIndex: 1 }}
+          style={{ position: 'fixed', top: '1px', right: '0', zIndex: 1 }}
           icon={<SettingOutlined />}
         />
       </Dropdown>

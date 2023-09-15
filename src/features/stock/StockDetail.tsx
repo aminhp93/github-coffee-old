@@ -51,7 +51,7 @@ const StockDetail = () => {
   const [dataChart, setDataChart] = useState<StockChartData | undefined>();
   const [stockBase, setStockBase] = useState<StockBase | undefined>(undefined);
   const [stockData, setStockData] = useState<StockData | undefined>();
-  const [showDetail, setShowDetail] = useState<boolean>(false);
+  const [showDetail, setShowDetail] = useState<boolean>(true);
   const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
     dayjs().add(-18, 'months'),
     dayjs(),
@@ -228,10 +228,7 @@ const StockDetail = () => {
     })();
   }, []);
 
-  const { risk_b1, risk_b2, target } = evaluateStockBase(
-    stockBase,
-    stockData?.fullData
-  );
+  const { risk, target } = evaluateStockBase(stockBase, stockData?.fullData);
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
   const { listBigSell, countEstimate } = analyse(stockData, stockBase);
 
@@ -319,104 +316,63 @@ const StockDetail = () => {
 
   const renderDetail = () => {
     return showDetail ? (
-      <div
-        className="flex"
-        style={{ height: '120px', flexDirection: 'column' }}
-      >
-        <div
-          className="flex flex-1"
-          style={{
-            overflow: 'auto',
-            justifyContent: 'space-between',
-            marginTop: '10px',
-          }}
-        >
-          <div>
-            <div style={{ marginRight: '10px' }}>
-              {[1, 2, 3].map((i: number, index: number) => (
-                <InputNumber
-                  key={i}
-                  step={0.1}
-                  size="small"
-                  addonBefore={`b_${index + 1}`}
-                  value={
-                    stockBase?.list_base ? stockBase.list_base[index].value : 0
-                  }
-                  style={{ marginBottom: '10px', marginRight: '4px' }}
-                  onChange={(value: number | null) => {
-                    handleChangeStockBase(index + 1, value!);
-                  }}
-                />
-              ))}
-              <div style={{ marginBottom: '10px' }}>
-                <BuyPoint
-                  buyPoint={{
-                    date: stockBase?.buy_point?.date
-                      ? dayjs(stockBase.buy_point.date)
-                      : undefined,
-                  }}
-                  onCb={handleCbBuyPoint}
-                />
+      <div className="flex">
+        {[1, 2].map((i: number, index: number) => (
+          <InputNumber
+            key={i}
+            step={0.1}
+            size="small"
+            addonBefore={`b_${index + 1}`}
+            value={stockBase?.list_base ? stockBase.list_base[index].value : 0}
+            style={{ marginBottom: '10px', marginRight: '4px' }}
+            onChange={(value: number | null) => {
+              handleChangeStockBase(index + 1, value!);
+            }}
+          />
+        ))}
+        <div style={{ marginBottom: '10px' }}>
+          <BuyPoint
+            buyPoint={{
+              date: stockBase?.buy_point?.date
+                ? dayjs(stockBase.buy_point.date)
+                : undefined,
+            }}
+            onCb={handleCbBuyPoint}
+          />
 
-                <Switch
-                  checkedChildren="is_blacklist"
-                  unCheckedChildren="is_blacklist"
-                  defaultChecked={!!stockBase?.is_blacklist}
-                  onChange={(checked) => {
-                    setStockBase((prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        is_unpotential: checked,
-                      };
-                    });
-                  }}
-                />
-                <Switch
-                  checkedChildren="is_unpotential"
-                  unCheckedChildren="is_unpotential"
-                  defaultChecked={!!stockBase?.is_unpotential}
-                  onChange={(checked) => {
-                    setStockBase((prev) => {
-                      if (!prev) return prev;
-                      return {
-                        ...prev,
-                        is_unpotential: checked,
-                      };
-                    });
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-          <div>
-            <div>
-              {listBigSell.map((i: { date: string }) => {
-                return <div key={i.date}>{i.date}</div>;
-              })}
-              {countEstimate}
-            </div>
-            <div>
-              {minTotal} - {maxTotal} - {averageTotal}
-            </div>
-
-            <div>
-              <Select
-                size="small"
-                value={selectedVolumeField}
-                style={{ width: 120 }}
-                onChange={(value) => {
-                  setSelectedVolumeField(value);
-                }}
-                options={['dealVolume', 'totalVolume'].map((i) => {
-                  return { value: i, label: i };
-                })}
-              />
-            </div>
-          </div>
+          <Switch
+            checkedChildren="is_blacklist"
+            unCheckedChildren="is_blacklist"
+            defaultChecked={!!stockBase?.is_blacklist}
+            onChange={(checked) => {
+              setStockBase((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  is_unpotential: checked,
+                };
+              });
+            }}
+          />
+          <Switch
+            checkedChildren="is_unpotential"
+            unCheckedChildren="is_unpotential"
+            defaultChecked={!!stockBase?.is_unpotential}
+            onChange={(checked) => {
+              setStockBase((prev) => {
+                if (!prev) return prev;
+                return {
+                  ...prev,
+                  is_unpotential: checked,
+                };
+              });
+            }}
+          />
         </div>
       </div>
-    ) : null;
+    ) : (
+      <div />
+    );
   };
 
   return (
@@ -438,24 +394,48 @@ const StockDetail = () => {
               return { value: i, label: i };
             })}
           />
+
+          <Select
+            size="small"
+            value={selectedVolumeField}
+            style={{ width: 120 }}
+            onChange={(value) => {
+              setSelectedVolumeField(value);
+            }}
+            options={['dealVolume', 'totalVolume'].map((i) => {
+              return { value: i, label: i };
+            })}
+          />
         </div>
         <div className="flex">
           <div style={{ marginLeft: '10px' }}>
             T: {target && target.toFixed(0) + '%'}
           </div>
           <div style={{ marginLeft: '10px' }}>
-            R2: {risk_b2 && risk_b2.toFixed(0) + '%'}
+            R: {risk && risk.toFixed(0) + '%'}
           </div>
-          <div style={{ marginLeft: '10px' }}>
-            R1: {risk_b1 && risk_b1.toFixed(0) + '%'}
-          </div>
+        </div>
+        <div>
+          {listBigSell.map((i: { date: string }) => {
+            return <div key={i.date}>{i.date}</div>;
+          })}
+          {countEstimate}
+          {minTotal} - {maxTotal} - {averageTotal}
         </div>
       </div>
 
       <Divider />
       <div style={{ flex: 1 }}>{renderChart()}</div>
-      {renderDetail()}
-      {footer()}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        {renderDetail()}
+        {footer()}
+      </div>
     </div>
   );
 };

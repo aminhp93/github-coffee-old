@@ -49,23 +49,10 @@ export const mapNewAllStocks = ({
 }): StockData[] => {
   return stockData.map((i: StockData) => {
     const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
-    const { target, risk_b2, risk_b1 } = evaluateStockBase(
-      filter[0],
-      i.fullData
-    );
+    const { target, risk } = evaluateStockBase(filter[0], i.fullData);
 
     i.target = target;
-    i.risk_b2 = risk_b2;
-    i.risk_b1 = risk_b1;
-
-    // if (
-    //   i.estimated_vol_change > 50 &&
-    //   ((target && risk_b2 && target > risk_b2) ||
-    //     (!risk_b2 && risk_b1 && target && target > risk_b1))
-    // ) {
-    //   i.potential = true;
-    // }
-
+    i.risk = risk;
     return i;
   });
 };
@@ -248,23 +235,20 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
     };
   }
 
-  let risk_b1;
-  let risk_b2;
+  let risk;
   let target;
 
   const base_1 = stockBase.list_base[0].value;
   const base_2 = stockBase.list_base[1].value;
-  const base_3 = stockBase.list_base[2].value;
 
   const t0_price = data[0].priceClose;
 
-  if (base_1 && base_2 && t0_price && t0_price >= base_1 && t0_price < base_2) {
-    risk_b1 = (100 * (t0_price - base_1)) / base_1;
+  if (base_1) {
+    risk = (100 * (t0_price - base_1)) / base_1;
+  }
+
+  if (base_2) {
     target = (100 * (base_2 - t0_price)) / t0_price;
-  } else if (base_1 && base_3 && base_2 && t0_price && t0_price >= base_2) {
-    risk_b1 = (100 * (t0_price - base_1)) / base_1;
-    risk_b2 = (100 * (t0_price - base_2)) / base_2;
-    target = (100 * (base_3 - t0_price)) / t0_price;
   }
 
   const startIndex = data.findIndex(
@@ -278,8 +262,7 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
 
   return {
-    risk_b2,
-    risk_b1,
+    risk,
     target,
     big_sell: [],
   };
