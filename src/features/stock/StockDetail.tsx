@@ -47,7 +47,7 @@ const StockDetail = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [dataChart, setDataChart] = useState<StockChartData | undefined>();
-  const [stockBase, setStockBase] = useState<StockBase | undefined>(undefined);
+  const [stockBase, setStockBase] = useState<StockBase | undefined>();
   const [stockData, setStockData] = useState<StockData | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(true);
   const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());

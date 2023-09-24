@@ -41,19 +41,18 @@ const getRowClass = (params: RowClassParams) => {
 
 const StockTable = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
+
+  const stockInfo = useStockStore((state) => state.stockInfo);
+
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
     useState(false);
   const [openDrawerResultUpdate, setOpenDrawerResultUpdate] = useState(false);
-
-  // const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-  const [date, setDate] = useState<dayjs.Dayjs | undefined>();
-
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
   const [resultUpdate, setResultUpdate] = useState<any>({});
-
   const [filter, setFilter] = useState({
     exclude_is_blacklist: true,
     exclude_is_unpotential: true,
@@ -124,62 +123,55 @@ const StockTable = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await StockService.getStockInfo();
+        if (!stockInfo) return;
         const resStockBase = await StockService.getAllStockBase();
-
         if (!resStockBase.data) return;
 
         const list_all = resStockBase.data.map((i) => i.symbol);
 
-        if (res?.data?.length === 1) {
-          const lastUpdated = res.data[0].last_updated;
-          let newLastUpdated = dayjs().format(DATE_FORMAT);
-          // check current time before 3pm
-          if (dayjs().hour() < 15) {
-            newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
-          }
+        const lastUpdated = stockInfo.last_updated;
+        let newLastUpdated = dayjs().format(DATE_FORMAT);
+        // check current time before 3pm
+        if (dayjs().hour() < 15) {
+          newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
+        }
 
-          if (lastUpdated !== newLastUpdated) {
-            let nextCall = true;
-            let offset = 0;
-            setResultUpdate((pre: any) => {
-              return { ...pre, list_all };
-            });
-            setOpenDrawerResultUpdate(true);
-            while (nextCall) {
-              const res = await updateDataWithDate(
-                dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-                newLastUpdated,
-                offset,
-                list_all
-              );
-              console.log(res);
-              setResultUpdate((pre: any) => ({
-                ...pre,
-                res: [...(pre.res || []), ...res],
-              }));
+        if (lastUpdated !== newLastUpdated) {
+          let nextCall = true;
+          let offset = 0;
+          setResultUpdate((pre: any) => {
+            return { ...pre, list_all };
+          });
+          setOpenDrawerResultUpdate(true);
+          while (nextCall) {
+            const res = await updateDataWithDate(
+              dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+              newLastUpdated,
+              offset,
+              list_all
+            );
+            console.log(res);
+            setResultUpdate((pre: any) => ({
+              ...pre,
+              res: [...(pre.res || []), ...res],
+            }));
 
-              offset += 20;
-              if (res?.length && res[0].length < 20) {
-                nextCall = false;
-              }
+            offset += 20;
+            if (res?.length && res[0].length < 20) {
+              nextCall = false;
             }
-
-            await StockService.updateLastUpdated({
-              column: 'last_updated',
-              value: newLastUpdated,
-            });
           }
-          const newDate = dayjs();
-          setDate(newDate);
-          getData(newDate);
+
+          await StockService.updateLastUpdated({
+            column: 'last_updated',
+            value: newLastUpdated,
+          });
         }
       } catch (e) {
         notification.error({ message: 'error' });
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [stockInfo]);
 
   const handleResize = () => {
     if (!gridRef?.current?.api) return;
