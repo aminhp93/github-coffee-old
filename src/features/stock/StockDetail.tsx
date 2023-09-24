@@ -20,7 +20,7 @@ import { debounce, get } from 'lodash';
 import { DATE_FORMAT } from './constants';
 import StockService from './service';
 import StockChart from './stockChart/StockChart';
-import BuyPoint from './stockTable/BuyPoint';
+// import BuyPoint from './stockTable/BuyPoint';
 import RefreshButton from './stockTable/RefreshButton';
 import {
   StockData,
@@ -36,7 +36,7 @@ import {
   getStockDataFromSupabase,
   getTodayData,
   mapDataChart,
-  analyse,
+  // analyse,
 } from './utils';
 import { dataZoom } from 'features/stock/stockChart/StockChart.constants';
 import useStockStore from './Stock.store';
@@ -101,38 +101,6 @@ const StockDetail = () => {
     setStockBase(newStockBase as StockBase);
   };
 
-  const footer = () => {
-    return (
-      <div
-        className="flex"
-        style={{
-          justifyContent: 'flex-end',
-          height: '50px',
-          alignItems: 'center',
-        }}
-      >
-        <div className="flex" style={{ alignItems: 'center' }}>
-          <div>
-            <Button
-              size="small"
-              style={{ marginRight: 8 }}
-              icon={showDetail ? <DownOutlined /> : <UpOutlined />}
-              onClick={() => setShowDetail(!showDetail)}
-            />
-          </div>
-          <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
-          <RangePicker
-            style={{ marginLeft: 8 }}
-            size="small"
-            onChange={handleChangeDate}
-            value={dates}
-            format={DATE_FORMAT}
-          />
-        </div>
-      </div>
-    );
-  };
-
   const getData = async (
     symbol: string,
     dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined,
@@ -156,7 +124,7 @@ const StockDetail = () => {
       setLoading(false);
 
       let newStockBase = {};
-      if (resStockBase.data && resStockBase.data.length === 1) {
+      if (resStockBase.data?.length === 1) {
         newStockBase = resStockBase.data[0];
       }
       let source = res.data;
@@ -185,26 +153,34 @@ const StockDetail = () => {
     }
   };
 
-  const handleCbBuyPoint = (data: dayjs.Dayjs | undefined) => {
-    setStockBase((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        symbol: selectedSymbol,
-        buy_point: data
-          ? {
-              date: data.format(DATE_FORMAT),
-            }
-          : undefined,
-      };
-    });
-  };
+  // const handleCbBuyPoint = (data: dayjs.Dayjs | undefined) => {
+  //   setStockBase((prev) => {
+  //     if (!prev) return prev;
+  //     return {
+  //       ...prev,
+  //       symbol: selectedSymbol,
+  //       buy_point: data
+  //         ? {
+  //             date: data.format(DATE_FORMAT),
+  //           }
+  //         : undefined,
+  //     };
+  //   });
+  // };
 
   useEffect(() => {
     if (!stockBase?.symbol) return;
     (async () => {
       try {
         if (stockBase?.id) {
+          stockBase.buy_point = {
+            date: '',
+          };
+          if (stockBase?.list_base && stockBase.list_base[2]) {
+            // remove list_base[2] because it is not used
+            stockBase.list_base = stockBase.list_base.filter((i) => i.id !== 3);
+          }
+
           await StockService.updateStockBase(stockBase);
         } else {
           await StockService.insertStockBase([stockBase]);
@@ -230,7 +206,7 @@ const StockDetail = () => {
 
   const { risk, target } = evaluateStockBase(stockBase, stockData?.fullData);
   const { minTotal, maxTotal, averageTotal } = getMinTotalValue(stockData);
-  const { listBigSell, countEstimate } = analyse(stockData, stockBase);
+  // const { listBigSell, countEstimate } = analyse(stockData, stockBase);
 
   const debounceZoom = useMemo(
     () =>
@@ -314,7 +290,7 @@ const StockDetail = () => {
     return <div>No data</div>;
   };
 
-  const renderDetail = () => {
+  const renderStockBase = () => {
     return showDetail ? (
       <div className="flex">
         {[1, 2].map((i: number, index: number) => (
@@ -331,19 +307,19 @@ const StockDetail = () => {
           />
         ))}
         <div style={{ marginBottom: '10px' }}>
-          <BuyPoint
+          {/* <BuyPoint
             buyPoint={{
               date: stockBase?.buy_point?.date
                 ? dayjs(stockBase.buy_point.date)
                 : undefined,
             }}
             onCb={handleCbBuyPoint}
-          />
+          /> */}
 
           <Switch
             checkedChildren="is_blacklist"
             unCheckedChildren="is_blacklist"
-            defaultChecked={!!stockBase?.is_blacklist}
+            checked={!!stockBase?.is_blacklist}
             onChange={(checked) => {
               setStockBase((prev) => {
                 if (!prev) return prev;
@@ -357,7 +333,7 @@ const StockDetail = () => {
           <Switch
             checkedChildren="is_unpotential"
             unCheckedChildren="is_unpotential"
-            defaultChecked={!!stockBase?.is_unpotential}
+            checked={!!stockBase?.is_unpotential}
             onChange={(checked) => {
               setStockBase((prev) => {
                 if (!prev) return prev;
@@ -375,67 +351,100 @@ const StockDetail = () => {
     );
   };
 
+  const header = (
+    <div className="flex" style={{ justifyContent: 'space-between' }}>
+      <div>
+        <Select
+          showSearch
+          size="small"
+          value={selectedSymbol}
+          style={{ width: 120 }}
+          onChange={(value: string) => {
+            setSelectedSymbol(value);
+          }}
+          options={listAllSymbols.map((i) => {
+            return { value: i, label: i };
+          })}
+        />
+
+        <Select
+          size="small"
+          value={selectedVolumeField}
+          style={{ width: 120 }}
+          onChange={(value) => {
+            setSelectedVolumeField(value);
+          }}
+          options={['dealVolume', 'totalVolume'].map((i) => {
+            return { value: i, label: i };
+          })}
+        />
+      </div>
+      <div className="flex">
+        <div style={{ marginLeft: '10px' }}>
+          T: {target && target.toFixed(0) + '%'}
+        </div>
+        <div style={{ marginLeft: '10px' }}>
+          R: {risk && risk.toFixed(0) + '%'}
+        </div>
+      </div>
+      <div>
+        {/* {listBigSell.map((i: { date: string }) => {
+          return <div key={i.date}>{i.date}</div>;
+        })}
+        {countEstimate} */}
+        {minTotal} - {maxTotal} - {averageTotal}
+      </div>
+    </div>
+  );
+
+  const footer = (
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+      }}
+    >
+      {renderStockBase()}
+      <div
+        className="flex"
+        style={{
+          justifyContent: 'flex-end',
+          height: '50px',
+          alignItems: 'center',
+        }}
+      >
+        <div className="flex" style={{ alignItems: 'center' }}>
+          <div>
+            <Button
+              size="small"
+              style={{ marginRight: 8 }}
+              icon={showDetail ? <DownOutlined /> : <UpOutlined />}
+              onClick={() => setShowDetail(!showDetail)}
+            />
+          </div>
+          <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
+          <RangePicker
+            style={{ marginLeft: 8 }}
+            size="small"
+            onChange={handleChangeDate}
+            value={dates}
+            format={DATE_FORMAT}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div
       className="StockDetailChart flex height-100 width-100"
       style={{ flexDirection: 'column' }}
     >
-      <div className="flex" style={{ justifyContent: 'space-between' }}>
-        <div>
-          <Select
-            showSearch
-            size="small"
-            value={selectedSymbol}
-            style={{ width: 120 }}
-            onChange={(value: string) => {
-              setSelectedSymbol(value);
-            }}
-            options={listAllSymbols.map((i) => {
-              return { value: i, label: i };
-            })}
-          />
-
-          <Select
-            size="small"
-            value={selectedVolumeField}
-            style={{ width: 120 }}
-            onChange={(value) => {
-              setSelectedVolumeField(value);
-            }}
-            options={['dealVolume', 'totalVolume'].map((i) => {
-              return { value: i, label: i };
-            })}
-          />
-        </div>
-        <div className="flex">
-          <div style={{ marginLeft: '10px' }}>
-            T: {target && target.toFixed(0) + '%'}
-          </div>
-          <div style={{ marginLeft: '10px' }}>
-            R: {risk && risk.toFixed(0) + '%'}
-          </div>
-        </div>
-        <div>
-          {listBigSell.map((i: { date: string }) => {
-            return <div key={i.date}>{i.date}</div>;
-          })}
-          {countEstimate}
-          {minTotal} - {maxTotal} - {averageTotal}
-        </div>
-      </div>
-
+      {header}
       <Divider />
       <div style={{ flex: 1 }}>{renderChart()}</div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        {renderDetail()}
-        {footer()}
-      </div>
+      {footer}
     </div>
   );
 };
