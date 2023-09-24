@@ -71,15 +71,7 @@ const StockTableColumns = ({ handleClickSymbol, listStockBase }: Props) => {
         const stockData: StockData = data.data;
         if (!stockData.estimated_vol_change) return;
 
-        return (
-          <div
-            style={{
-              color: stockData.estimated_vol_change > 0.5 ? '#00aa00' : '',
-            }}
-          >
-            {stockData.estimated_vol_change.toFixed(0)}
-          </div>
-        );
+        return stockData.estimated_vol_change.toFixed(0);
       },
     },
     {

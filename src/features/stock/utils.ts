@@ -293,12 +293,12 @@ export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
 };
 
 export const getTodayData = async (
-  dates: [dayjs.Dayjs, dayjs.Dayjs],
+  date: dayjs.Dayjs,
   listSymbols: string[]
 ) => {
   let resFireant;
   if (
-    dates[1].format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
+    date.format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
     dayjs().hour() < 15 &&
     !localStorage.getItem('turnOffFetchTodayData')
   ) {

@@ -41,8 +41,6 @@ import {
 import { dataZoom } from 'features/stock/stockChart/StockChart.constants';
 import useStockStore from './Stock.store';
 
-const { RangePicker } = DatePicker;
-
 const StockDetail = () => {
   const selectedSymbol = useStockStore((state) => state.selectedSymbol);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
@@ -52,18 +50,15 @@ const StockDetail = () => {
   const [stockBase, setStockBase] = useState<StockBase | undefined>(undefined);
   const [stockData, setStockData] = useState<StockData | undefined>();
   const [showDetail, setShowDetail] = useState<boolean>(true);
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
-    dayjs().add(-18, 'months'),
-    dayjs(),
-  ]);
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
   const [listAllSymbols, setListAllSymbols] = useState<string[]>([]);
   const [selectedVolumeField, setSelectedVolumeField] = useState<
     'dealVolume' | 'totalVolume'
   >('totalVolume');
 
-  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
-    if (!data || !data[0] || !data[1]) return;
-    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
+  const handleChangeDate = (data: dayjs.Dayjs | null) => {
+    if (!data) return;
+    setDate(data);
   };
 
   const handleChangeStockBase = (id: number, data: number) => {
@@ -103,18 +98,18 @@ const StockDetail = () => {
 
   const getData = async (
     symbol: string,
-    dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined,
+    date: dayjs.Dayjs | undefined,
     volumeField: 'dealVolume' | 'totalVolume' = 'dealVolume'
   ) => {
     try {
-      if (!dates || dates.length !== 2 || !symbol) return;
+      if (!date || !symbol) return;
       setLoading(true);
       const listPromise: any = [
         StockService.getStockBase(symbol),
-        getTodayData(dates, [symbol]),
+        getTodayData(date, [symbol]),
         StockService.getStockDataFromSupabase({
-          startDate: dates[0].format(DATE_FORMAT),
-          endDate: dates[1].format(DATE_FORMAT),
+          startDate: date.add(-18, 'month').format(DATE_FORMAT),
+          endDate: date.format(DATE_FORMAT),
           listSymbols: [symbol],
         }),
       ];
@@ -193,8 +188,8 @@ const StockDetail = () => {
   }, [stockBase]);
 
   useEffect(() => {
-    getData(selectedSymbol, dates, selectedVolumeField);
-  }, [selectedSymbol, dates, selectedVolumeField]);
+    getData(selectedSymbol, date, selectedVolumeField);
+  }, [selectedSymbol, date, selectedVolumeField]);
 
   useEffect(() => {
     (async () => {
@@ -423,12 +418,12 @@ const StockDetail = () => {
               onClick={() => setShowDetail(!showDetail)}
             />
           </div>
-          <RefreshButton onClick={() => getData(selectedSymbol, dates)} />
-          <RangePicker
+          <RefreshButton onClick={() => getData(selectedSymbol, date)} />
+          <DatePicker
             style={{ marginLeft: 8 }}
             size="small"
+            value={date}
             onChange={handleChangeDate}
-            value={dates}
             format={DATE_FORMAT}
           />
         </div>

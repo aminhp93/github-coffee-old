@@ -10,7 +10,7 @@ import {
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { RowClassParams } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 
@@ -39,8 +39,6 @@ const getRowClass = (params: RowClassParams) => {
   }
 };
 
-const { RangePicker } = DatePicker;
-
 const StockTable = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
@@ -48,7 +46,9 @@ const StockTable = () => {
     useState(false);
   const [openDrawerResultUpdate, setOpenDrawerResultUpdate] = useState(false);
 
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+  // const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>();
+
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
@@ -59,65 +59,67 @@ const StockTable = () => {
     exclude_is_unpotential: true,
   });
 
-  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
-    if (!data || !data[0] || !data[1]) return;
-    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
-    getData(data as [dayjs.Dayjs, dayjs.Dayjs]);
+  const handleChangeDate = (data: dayjs.Dayjs | null) => {
+    if (!data) return;
+    setDate(data);
   };
 
-  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
-    try {
-      if (!dates || dates.length !== 2) return;
-      gridRef.current?.api?.showLoadingOverlay();
+  const getData = useCallback(
+    async (data: dayjs.Dayjs | undefined) => {
+      try {
+        if (!data) return;
+        gridRef.current?.api?.showLoadingOverlay();
 
-      const resStockBase = await StockService.getAllStockBase();
+        const resStockBase = await StockService.getAllStockBase();
 
-      let listData = (resStockBase.data || []) as StockBase[];
+        let listData = (resStockBase.data ?? []) as StockBase[];
 
-      if (filter.exclude_is_blacklist) {
-        listData = listData.filter((i) => !i.is_blacklist);
+        if (filter.exclude_is_blacklist) {
+          listData = listData.filter((i) => !i.is_blacklist);
+        }
+
+        if (filter.exclude_is_unpotential) {
+          listData = listData.filter((i) => !i.is_unpotential);
+        }
+
+        const listSymbols = listData.map((i) => i.symbol);
+
+        let resFireant = await getTodayData(data, listSymbols);
+
+        const res = await StockService.getStockDataFromSupabase({
+          startDate: data.add(-1, 'month').format(DATE_FORMAT),
+          endDate: data.format(DATE_FORMAT),
+          listSymbols,
+        });
+
+        gridRef.current?.api?.hideOverlay();
+
+        let source: any = res.data;
+        if (resFireant) {
+          source = [...resFireant, ...source];
+        }
+
+        const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
+
+        const mappedNewAllStocks = mapNewAllStocks({
+          stockData: newAllStocks,
+          stockBase: resStockBase.data,
+        });
+
+        const filterdData = filterData(mappedNewAllStocks);
+
+        if (resStockBase?.data?.length) {
+          setListStockBase(resStockBase.data as StockBase[]);
+        }
+
+        setAllStocks(filterdData);
+      } catch (e) {
+        gridRef.current?.api?.hideOverlay();
+        notification.error({ message: 'error' });
       }
-
-      if (filter.exclude_is_unpotential) {
-        listData = listData.filter((i) => !i.is_unpotential);
-      }
-
-      const listSymbols = listData.map((i) => i.symbol);
-
-      let resFireant = await getTodayData(dates, listSymbols);
-
-      const res = await StockService.getStockDataFromSupabase({
-        startDate: dates[0].format(DATE_FORMAT),
-        endDate: dates[1].format(DATE_FORMAT),
-        listSymbols,
-      });
-
-      gridRef.current?.api?.hideOverlay();
-
-      let source: any = res.data;
-      if (resFireant) {
-        source = [...resFireant, ...source];
-      }
-
-      const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
-
-      const mappedNewAllStocks = mapNewAllStocks({
-        stockData: newAllStocks,
-        stockBase: resStockBase.data,
-      });
-
-      const filterdData = filterData(mappedNewAllStocks);
-
-      if (resStockBase?.data?.length) {
-        setListStockBase(resStockBase.data as StockBase[]);
-      }
-
-      setAllStocks(filterdData);
-    } catch (e) {
-      gridRef.current?.api?.hideOverlay();
-      notification.error({ message: 'error' });
-    }
-  };
+    },
+    [filter.exclude_is_blacklist, filter.exclude_is_unpotential]
+  );
 
   useEffect(() => {
     (async () => {
@@ -168,9 +170,9 @@ const StockTable = () => {
               value: newLastUpdated,
             });
           }
-
-          setDates([dayjs().add(-1, 'month'), dayjs()]);
-          getData([dayjs().add(-1, 'month'), dayjs()]);
+          const newDate = dayjs();
+          setDate(newDate);
+          getData(newDate);
         }
       } catch (e) {
         notification.error({ message: 'error' });
@@ -201,9 +203,8 @@ const StockTable = () => {
   };
 
   useEffect(() => {
-    getData(dates);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
+    getData(date);
+  }, [filter, date, getData]);
 
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
   const _filter_2 = allStocks.filter(
@@ -239,15 +240,16 @@ const StockTable = () => {
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
           {allStocks.length}
-          <RefreshButton onClick={() => getData(dates)} />
+          <RefreshButton onClick={() => getData(date)} />
 
-          <RangePicker
+          <DatePicker
             style={{ marginLeft: 8 }}
             size="small"
+            value={date}
             onChange={handleChangeDate}
-            value={dates}
             format={DATE_FORMAT}
           />
+
           <Statistic
             style={{ marginLeft: 8 }}
             value={_filter_3.length}
