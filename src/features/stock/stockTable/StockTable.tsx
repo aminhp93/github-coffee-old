@@ -58,10 +58,10 @@ const StockTable = () => {
     exclude_is_unpotential: true,
   });
 
-  const handleChangeDate = (data: dayjs.Dayjs | null) => {
+  const handleChangeDate = useCallback((data: dayjs.Dayjs | null) => {
     if (!data) return;
     setDate(data);
-  };
+  }, []);
 
   const getData = useCallback(
     async (data: dayjs.Dayjs | undefined) => {

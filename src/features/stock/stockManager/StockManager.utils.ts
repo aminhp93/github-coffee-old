@@ -15,14 +15,14 @@ export const getRowClass = (params: any) => {
   }
 };
 
-export const getData = async (dates: dayjs.Dayjs[] | undefined) => {
-  if (!dates || dates.length !== 2) return;
+export const getData = async (date: dayjs.Dayjs | undefined) => {
+  if (!date) return;
 
   const resStockBase = await StockService.getAllStockBase();
   if (resStockBase.data) {
     const res = await StockService.getStockDataFromSupabase({
-      startDate: dates[0].format(DATE_FORMAT),
-      endDate: dates[1].format(DATE_FORMAT),
+      startDate: date.add(-1, 'month').format(DATE_FORMAT),
+      endDate: date.format(DATE_FORMAT),
       listSymbols: resStockBase.data.map((i) => i.symbol),
     });
 

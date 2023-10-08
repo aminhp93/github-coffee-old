@@ -302,6 +302,15 @@ export const getTodayData = async (
     dayjs().hour() < 15 &&
     !localStorage.getItem('turnOffFetchTodayData')
   ) {
+    const testSampleData = await StockService.getHistoricalQuotes({
+      symbol: 'VPB',
+      startDate: dayjs().format(DATE_FORMAT),
+      endDate: dayjs().format(DATE_FORMAT),
+      offset: 0,
+    });
+
+    if (!testSampleData?.length) return [];
+
     const res = await StockService.getStockDataFromFireant({
       startDate: dayjs().format(DATE_FORMAT),
       endDate: dayjs().format(DATE_FORMAT),

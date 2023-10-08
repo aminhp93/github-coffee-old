@@ -19,47 +19,39 @@ import useStockStore from '../Stock.store';
 import { getRowClass, getData } from './StockManager.utils';
 import StockLastUpdated from '../StockLastUpdated';
 
-const { RangePicker } = DatePicker;
-
 const StockManager = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
   const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [listStocks, setListStocks] = useState<any[]>([]);
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
-    dayjs().add(-3, 'month'),
-    dayjs(),
-  ]);
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
   const [openDrawerLastUpdated, setOpenDrawerLastUpdated] = useState(false);
 
-  const handleChangeDate = (data: null | (dayjs.Dayjs | null)[]) => {
-    if (!data || !data[0] || !data[1]) return;
-    setDates(data as [dayjs.Dayjs, dayjs.Dayjs]);
+  const handleChangeDate = (data: dayjs.Dayjs | null) => {
+    if (!data) return;
+    setDate(data);
   };
 
-  const handleGetData = useCallback(
-    async (dates: dayjs.Dayjs[] | undefined) => {
-      try {
-        gridRef.current?.api?.showLoadingOverlay();
+  const handleGetData = useCallback(async (data: dayjs.Dayjs | undefined) => {
+    try {
+      gridRef.current?.api?.showLoadingOverlay();
 
-        const res: any = await getData(dates);
-        gridRef.current?.api?.hideOverlay();
+      const res: any = await getData(data);
+      gridRef.current?.api?.hideOverlay();
 
-        setListStocks(res);
-      } catch (e) {
-        gridRef.current?.api?.hideOverlay();
+      setListStocks(res);
+    } catch (e) {
+      gridRef.current?.api?.hideOverlay();
 
-        console.log(e);
-        notification.error({ message: 'error' });
-      }
-    },
-    []
-  );
+      console.log(e);
+      notification.error({ message: 'error' });
+    }
+  }, []);
 
   useEffect(() => {
-    handleGetData(dates);
-  }, [dates, handleGetData]);
+    handleGetData(date);
+  }, [date, handleGetData]);
 
   const handleClickSymbol = (data: any) => {
     if (!data?.symbol) return;
@@ -138,12 +130,12 @@ const StockManager = () => {
           </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton onClick={() => handleGetData(dates)} />
-          <RangePicker
+          <RefreshButton onClick={() => handleGetData(date)} />
+          <DatePicker
             style={{ marginLeft: 8 }}
             size="small"
             onChange={handleChangeDate}
-            value={dates}
+            value={date}
             format={DATE_FORMAT}
           />
         </div>
