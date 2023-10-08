@@ -6,7 +6,7 @@ const BookingService = {
     return supabase.from('booking').insert([data]).select();
   },
   listBooking(params?: Partial<Booking>) {
-    const tag = params && Object.hasOwnProperty.call(params, 'tag');
+    const tag = params && Object.hasOwn(params, 'tag');
 
     return supabase
       .from('booking')

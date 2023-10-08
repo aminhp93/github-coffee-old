@@ -11,8 +11,8 @@ const TodoService = {
     tag?: number;
     status?: number[];
   }) {
-    const isDone = params && Object.hasOwnProperty.call(params, 'isDone');
-    const tag = params && Object.hasOwnProperty.call(params, 'tag');
+    const isDone = params && Object.hasOwn(params, 'isDone');
+    const tag = params && Object.hasOwn(params, 'tag');
 
     // let authorQuery = 'author.is.null';
     // if (params?.author) {

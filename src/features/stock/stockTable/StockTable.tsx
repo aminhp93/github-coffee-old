@@ -43,6 +43,7 @@ const StockTable = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
 
   const stockInfo = useStockStore((state) => state.stockInfo);
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
   const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
@@ -51,7 +52,6 @@ const StockTable = () => {
   const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
   const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
-  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
   const [resultUpdate, setResultUpdate] = useState<any>({});
   const [filter, setFilter] = useState({
     exclude_is_blacklist: true,

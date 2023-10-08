@@ -42,7 +42,7 @@ export default function PostCreate() {
     }
   };
 
-  const handleChangeTag = (value: any, data: any) => {
+  const handleChangeTag = (_: any, data: any) => {
     setPost({
       ...post,
       tag: data.data.id,

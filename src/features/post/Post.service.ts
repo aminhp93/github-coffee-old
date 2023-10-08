@@ -6,8 +6,8 @@ const PostService = {
     return supabase.from('post').insert([data]).select();
   },
   listPost(params?: Partial<Post>) {
-    const isDone = params && Object.hasOwnProperty.call(params, 'isDone');
-    const tag = params && Object.hasOwnProperty.call(params, 'tag');
+    const isDone = params && Object.hasOwn(params, 'isDone');
+    const tag = params && Object.hasOwn(params, 'tag');
     // let authorQuery = 'author.is.null';
     // if (params?.author) {
     //   authorQuery = `author.is.null,author.eq.${params.author}`;

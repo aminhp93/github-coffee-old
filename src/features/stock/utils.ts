@@ -156,7 +156,7 @@ export const updateDataWithDate = async (
     const flattenData = resListPromises.flat();
     const objData: any = groupBy(flattenData, 'date');
     for (const key in objData) {
-      if (Object.prototype.hasOwnProperty.call(objData, key)) {
+      if (Object.hasOwn(objData, key)) {
         const element = objData[key];
         objData[key] = element.map((i: any) => {
           i.key = `${i.symbol}_${i.date}`;
