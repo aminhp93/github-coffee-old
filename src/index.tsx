@@ -40,9 +40,9 @@ const App = () => {
   const { authUser }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
-  if (!authUser?.email) {
-    return <div>Hello</div>;
-  }
+  // if (!authUser?.email) {
+  //   return <div>Hello</div>;
+  // }
 
   return (
     <BrowserRouter>
