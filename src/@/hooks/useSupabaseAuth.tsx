@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react';
-
+import supabase from '@/services/supabase';
 import type { User } from '@supabase/supabase-js';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.REACT_APP_SUPABASE_URL!,
-  process.env.REACT_APP_SUPABASE_KEY!
-);
 
 const useSupabaseAuth = () => {
   const [authUser, setAuthUser] = useState<User>();
@@ -30,13 +24,13 @@ const useSupabaseAuth = () => {
     // Listen for auth changes on:
     // SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED, USER_UPDATED, USER_DELETED, PASSWORD_RECOVERY
     supabase.auth.getUser().then((res) => {
-      if (res && res.data && res.data.user) {
+      if (res?.data?.user) {
         setAuthUser(res.data.user);
       }
     });
-    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       console.log(event, session);
-      if (session && session.user) {
+      if (session?.user) {
         setAuthUser(session.user);
       }
     });

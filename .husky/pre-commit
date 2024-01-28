@@ -2,3 +2,7 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 yarn lint-staged && yarn test
+
+chmod +x ./scripts/eslint-comments.sh
+
+./scripts/eslint-comments.sh

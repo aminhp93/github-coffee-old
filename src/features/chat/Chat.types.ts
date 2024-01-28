@@ -1,9 +1,8 @@
 export type Chat = {
-  createdAt: string;
+  created_at: string;
   id: number;
   message: string;
   sender: string;
-  updatedAt: string;
 };
 
 export type ChatCollection = Record<string, Chat>;

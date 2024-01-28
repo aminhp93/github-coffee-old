@@ -1,40 +1,20 @@
 import { IJsonModel } from 'flexlayout-react';
 import { v4 as uuidv4 } from 'uuid';
 
-const rowId = uuidv4();
-const tabSetId1 = uuidv4();
-const tabSetId2 = uuidv4();
-
-export const defaultJson: IJsonModel = {
+export const JSON_MODEL_WORKING: IJsonModel = {
   global: {
     tabEnableFloat: true,
     tabSetMinWidth: 100,
     tabSetMinHeight: 100,
     borderMinSize: 100,
   },
-  borders: [
-    {
-      type: 'border',
-      size: 467,
-      location: 'right',
-      children: [
-        {
-          type: 'tab',
-          id: '#Todo',
-          name: 'Todo',
-          component: 'Todo',
-          enableClose: false,
-        },
-      ],
-    },
-  ],
   layout: {
     type: 'row',
-    id: rowId,
+    id: uuidv4(),
     children: [
       {
         type: 'tabset',
-        id: tabSetId1,
+        id: uuidv4(),
         weight: 12.5,
         width: 620,
         children: [
@@ -50,7 +30,7 @@ export const defaultJson: IJsonModel = {
       },
       {
         type: 'tabset',
-        id: tabSetId2,
+        id: uuidv4(),
         weight: 12.5,
         children: [
           {
@@ -59,14 +39,19 @@ export const defaultJson: IJsonModel = {
             name: 'StockDetail',
             component: 'StockDetail',
           },
+          {
+            type: 'tab',
+            id: '#Todo',
+            name: 'Todo',
+            component: 'Todo',
+          },
         ],
-        active: true,
       },
     ],
   },
 };
 
-export const defaultOverviewJson: IJsonModel = {
+export const JSON_MODEL_INFO: IJsonModel = {
   global: {
     tabEnableFloat: true,
     tabSetMinWidth: 100,
@@ -75,107 +60,218 @@ export const defaultOverviewJson: IJsonModel = {
   },
   layout: {
     type: 'row',
-    id: rowId,
+    id: uuidv4(),
     children: [
       {
         type: 'row',
         id: uuidv4(),
-        weight: 20,
+        weight: 50,
         children: [
           {
-            type: 'row',
+            type: 'tabset',
             id: uuidv4(),
-            weight: 50,
+            weight: 12.5,
+            width: 620,
             children: [
               {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 25,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#Post',
-                    name: 'Post',
-                    component: 'Post',
-                  },
-                ],
-              },
-              {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 25,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#Chat',
-                    name: 'Chat',
-                    component: 'Chat',
-                  },
-                ],
-              },
-              {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 25,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#Todo',
-                    name: 'Todo',
-                    component: 'Todo',
-                  },
-                ],
-              },
-              {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 25,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#Figma',
-                    name: 'Figma',
-                    component: 'Figma',
-                  },
-                ],
+                type: 'tab',
+
+                id: '#Post',
+                name: 'Post',
+                component: 'Post',
               },
             ],
+            active: true,
           },
           {
-            type: 'row',
+            type: 'tabset',
             id: uuidv4(),
-            weight: 50,
+            weight: 12.5,
             children: [
               {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 50,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#StockTable',
-                    name: 'StockTable',
-                    component: 'StockTable',
-                  },
-                ],
-              },
-              {
-                type: 'tabset',
-                id: uuidv4(),
-                weight: 50,
-                children: [
-                  {
-                    type: 'tab',
-                    id: '#StockDetail',
-                    name: 'StockDetail',
-                    component: 'StockDetail',
-                  },
-                ],
+                type: 'tab',
+                id: '#StockNews',
+                name: 'StockNews',
+                component: 'StockNews',
               },
             ],
+            active: true,
+          },
+        ],
+      },
+      {
+        type: 'row',
+        id: uuidv4(),
+        weight: 50,
+        children: [
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            width: 620,
+            children: [
+              {
+                type: 'tab',
+
+                id: '#StockManager',
+                name: 'StockManager',
+                component: 'StockManager',
+              },
+            ],
+            active: true,
           },
         ],
       },
     ],
   },
 };
+
+export const JSON_MODEL_TOOLS: IJsonModel = {
+  global: {
+    tabEnableFloat: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    borderMinSize: 100,
+  },
+  layout: {
+    type: 'row',
+    id: uuidv4(),
+    children: [
+      {
+        type: 'row',
+        id: uuidv4(),
+        weight: 50,
+        children: [
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            width: 620,
+            children: [
+              {
+                type: 'tab',
+
+                id: '#Chat',
+                name: 'Chat',
+                component: 'Chat',
+              },
+            ],
+            active: true,
+          },
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            children: [
+              {
+                type: 'tab',
+                id: '#Figma',
+                name: 'Figma',
+                component: 'Figma',
+              },
+            ],
+            active: true,
+          },
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            children: [
+              {
+                type: 'tab',
+                id: '#Booking',
+                name: 'Booking',
+                component: 'Booking',
+              },
+            ],
+            active: true,
+          },
+        ],
+      },
+      {
+        type: 'row',
+        id: uuidv4(),
+        weight: 50,
+        children: [
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            width: 620,
+            children: [
+              {
+                type: 'tab',
+                id: '#Test',
+                name: 'Test',
+                component: 'Test',
+              },
+            ],
+            active: true,
+          },
+          {
+            type: 'tabset',
+            id: uuidv4(),
+            weight: 12.5,
+            width: 620,
+            children: [
+              {
+                type: 'tab',
+                id: '#Snippet',
+                name: 'Snippet',
+                component: 'Snippet',
+              },
+            ],
+            active: true,
+          },
+        ],
+      },
+    ],
+  },
+};
+
+export const JSON_MODEL_RESET: IJsonModel = {
+  global: {
+    tabEnableFloat: true,
+    tabSetMinWidth: 100,
+    tabSetMinHeight: 100,
+    borderMinSize: 100,
+  },
+  layout: {
+    type: 'row',
+    id: uuidv4(),
+    children: [
+      {
+        type: 'tabset',
+        id: uuidv4(),
+        weight: 12.5,
+        width: 620,
+        children: [],
+
+        active: true,
+      },
+    ],
+  },
+};
+
+export const DROPDOWN_LIST = [
+  {
+    key: 'working',
+    label: `working layout`,
+    layoutName: JSON_MODEL_WORKING,
+  },
+  {
+    key: 'info',
+    label: `info layout`,
+    layoutName: JSON_MODEL_INFO,
+  },
+  {
+    key: 'tools',
+    label: `tools layout`,
+    layoutName: JSON_MODEL_TOOLS,
+  },
+  {
+    key: 'reset',
+    label: `reset layout`,
+    layoutName: JSON_MODEL_RESET,
+  },
+];

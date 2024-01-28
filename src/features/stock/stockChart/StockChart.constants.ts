@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export const color = [
   '#c23531',
   '#2f4554',
@@ -103,7 +105,7 @@ export const yAxis = [
   },
 ];
 
-export const toolbox = {
+export const toolbox: any = {
   feature: {
     brush: {
       type: ['lineX', 'clear'],
@@ -111,7 +113,7 @@ export const toolbox = {
   },
 };
 
-export const brush = {
+export const brush: any = {
   xAxisIndex: 'all',
   brushLink: 'all',
   outOfBrush: {
@@ -119,7 +121,7 @@ export const brush = {
   },
 };
 
-export const axisPointer = {
+export const axisPointer: any = {
   link: [
     {
       xAxisIndex: 'all',
@@ -130,7 +132,7 @@ export const axisPointer = {
   },
 };
 
-export const tooltip = {
+export const tooltip: any = {
   trigger: 'axis',
   axisPointer: {
     type: 'cross',

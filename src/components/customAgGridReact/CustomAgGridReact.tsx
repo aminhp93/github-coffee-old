@@ -1,4 +1,3 @@
-import React from 'react';
 import { GridOptions } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -6,6 +5,9 @@ import 'ag-grid-enterprise';
 import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, memo, useCallback, useEffect } from 'react';
 import { withSize } from 'react-sizeme';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TData = any;
 
 type Props = {
   rowData?: GridOptions['rowData'];
@@ -23,68 +25,50 @@ type Props = {
   onGridReady?: GridOptions['onGridReady'];
   onCellEditingStarted?: GridOptions['onCellEditingStarted'];
   onCellEditingStopped?: GridOptions['onCellEditingStopped'];
+  enableRangeSelection?: boolean;
+  enableCharts?: boolean;
+  autoGroupColumnDef?: GridOptions['autoGroupColumnDef'];
+  groupDefaultExpanded?: GridOptions['groupDefaultExpanded'];
 };
 
 interface CustomAgGridReactProps extends Props {
   gridRef: React.RefObject<AgGridReact>;
 }
 
-const CustomAgGridReact = ({
-  rowData,
-  columnDefs,
-  pinnedTopRowData,
-  getRowClass,
-  getRowId,
-  pagination,
-  paginationAutoPageSize,
-  size,
-  gridRef,
-  onResize,
-  onGridReady: onGridReadyProps,
-  onCellEditingStarted,
-  onCellEditingStopped,
-}: CustomAgGridReactProps) => {
+const CustomAgGridReact = (props: CustomAgGridReactProps) => {
+  const { onGridReady: onGridReadyProps, onResize, size, gridRef } = props;
+
   const onGridReady = useCallback(
-    (params: any) => {
-      onGridReadyProps && onGridReadyProps(params);
+    (params: TData) => {
+      if (onGridReadyProps) onGridReadyProps(params);
     },
     [onGridReadyProps]
   );
 
   useEffect(() => {
-    onResize && onResize();
+    if (onResize) onResize();
   }, [size, onResize]);
 
   return (
-    <>
-      <AgGridReact
-        rowData={rowData}
-        columnDefs={columnDefs}
-        pinnedTopRowData={pinnedTopRowData}
-        pagination={pagination}
-        paginationAutoPageSize={paginationAutoPageSize}
-        getRowId={getRowId}
-        onGridReady={onGridReady}
-        onCellEditingStarted={onCellEditingStarted}
-        onCellEditingStopped={onCellEditingStopped}
-        getRowClass={getRowClass}
-        ref={gridRef}
-        overlayLoadingTemplate={
-          '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
-        }
-        sideBar={{
-          toolPanels: ['columns', 'filters'],
-        }}
-        rowHeight={30}
-        rowSelection={'single'}
-        defaultColDef={{
-          editable: true,
-          sortable: true,
-          filter: true,
-          resizable: true,
-        }}
-      />
-    </>
+    <AgGridReact
+      {...props}
+      ref={gridRef}
+      onGridReady={onGridReady}
+      overlayLoadingTemplate={
+        '<span class="ag-overlay-loading-center">Please wait while your rows are loading</span>'
+      }
+      sideBar={{
+        toolPanels: ['columns', 'filters'],
+      }}
+      rowHeight={30}
+      rowSelection={'single'}
+      defaultColDef={{
+        editable: true,
+        sortable: true,
+        filter: true,
+        resizable: true,
+      }}
+    />
   );
 };
 

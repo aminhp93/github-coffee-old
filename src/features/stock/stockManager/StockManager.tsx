@@ -1,121 +1,74 @@
-import { WarningOutlined } from '@ant-design/icons';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Import libaries
+import { WarningOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import { Button, DatePicker, notification, Tooltip } from 'antd';
-import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
-import { cloneDeep, keyBy, meanBy, minBy } from 'lodash';
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { DATE_FORMAT, UNIT_BILLION } from '../constants';
-import StockService from '../service';
-import { updateSelectedSymbol } from '../stockSlice';
-import RefreshButton from '../stockTable/RefreshButton';
-import StockTesting from '../StockTesting';
-import { SupabaseData } from '../types';
-import { getStockDataFromSupabase } from '../utils';
-import './StockManager.less';
-import StockManagerColumns from './StockManagerColumns';
+import { cloneDeep } from 'lodash';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 
-const { RangePicker } = DatePicker;
+// Import services
+import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
+import { DATE_FORMAT } from '../constants';
+import StockService from '../service';
+import RefreshButton from '../stockTable/RefreshButton';
+import StockTesting from '../StockTesting';
+import './StockManager.less';
+import StockManagerColumns from './StockManagerColumns';
+import useStockStore from '../Stock.store';
+import { getRowClass, getData } from './StockManager.utils';
+import StockLastUpdated from '../StockLastUpdated';
 
 const StockManager = () => {
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
-  const dispatch = useDispatch();
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
 
   const [listStocks, setListStocks] = useState<any[]>([]);
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>([
-    dayjs().add(-1, 'years'),
-    dayjs(),
-  ]);
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
   const [openDrawerTesting, setOpenDrawerTesting] = useState(false);
+  const [openDrawerLastUpdated, setOpenDrawerLastUpdated] = useState(false);
 
-  const handleChangeDate = (dates: any) => {
-    setDates(dates);
+  const handleChangeDate = (data: dayjs.Dayjs | null) => {
+    if (!data) return;
+    setDate(data);
   };
 
-  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
-    if (!dates || dates.length !== 2) return;
-    const resStockBase = await StockService.getAllStockBase();
-    if (resStockBase.data) {
-      const res = await StockService.getStockDataFromSupabase({
-        startDate: dates[0].format(DATE_FORMAT),
-        endDate: dates[1].format(DATE_FORMAT),
-        listSymbols: resStockBase.data.map((i) => i.symbol),
-      });
+  const handleGetData = useCallback(async (data: dayjs.Dayjs | undefined) => {
+    try {
+      gridRef.current?.api?.showLoadingOverlay();
 
-      let fundamental = await StockService.getFundamentalsDataFromFireant(
-        resStockBase.data.map((i) => i.symbol)
-      );
+      const res: any = await getData(data);
+      gridRef.current?.api?.hideOverlay();
 
-      const stockBaseObj = keyBy(resStockBase.data, 'symbol');
+      setListStocks(res);
+    } catch (e) {
+      gridRef.current?.api?.hideOverlay();
 
-      const keyByFundamental = keyBy(fundamental, 'symbol');
-
-      const newAllStocks = getStockDataFromSupabase(res.data as SupabaseData[]);
-
-      const newListStocks = newAllStocks.map((i) => {
-        return {
-          symbol: i.symbol,
-          minValue: minBy(i.fullData, 'totalValue')?.totalValue,
-          marketCap: keyByFundamental[i.symbol]?.marketCap,
-          is_blacklist: stockBaseObj[i.symbol]?.is_blacklist,
-          averageChange: meanBy(i.fullData, (i) =>
-            i.change_t0 > 0 ? i.change_t0 : -i.change_t0
-          ),
-          averageRangeChange: meanBy(i.fullData, 'rangeChange_t0'),
-        };
-      });
-
-      newListStocks.forEach((i: any) => {
-        if (
-          i.minValue < 2 * UNIT_BILLION &&
-          i.marketCap < 1000 * UNIT_BILLION &&
-          !i.is_blacklist
-        ) {
-          i.danger = true;
-        } else {
-          i.danger = false;
-        }
-      });
-
-      // sort by minValue
-      newListStocks.sort((a: any, b: any) => {
-        return a.minValue - b.minValue;
-      });
-
-      setListStocks(newListStocks);
+      console.log(e);
+      notification.error({ message: 'error' });
     }
-  };
+  }, []);
 
   useEffect(() => {
-    getData(dates);
-  }, [dates]);
-
-  const getRowClass = (params: any) => {
-    if (params.node.data.danger) {
-      return 'danger-row';
-    }
-  };
+    handleGetData(date);
+  }, [date, handleGetData]);
 
   const handleClickSymbol = (data: any) => {
-    const symbol = data.data?.symbol;
-    if (!symbol) return;
-    dispatch(updateSelectedSymbol(data.data.symbol));
+    if (!data?.symbol) return;
+    setSelectedSymbol(data.symbol);
   };
 
   const handleClickUpdate = async (data: any) => {
     try {
       const updatedData = {
-        symbol: data.data.symbol,
-        is_blacklist: !data.data.is_blacklist,
+        symbol: data.symbol,
+        is_blacklist: !data.is_blacklist,
       };
       await StockService.updateStockBase(updatedData);
 
       const newListStocks = cloneDeep(listStocks);
-      const index = newListStocks.findIndex(
-        (i) => i.symbol === data.data.symbol
-      );
-      newListStocks[index].is_blacklist = !data.data.is_blacklist;
+      const index = newListStocks.findIndex((i) => i.symbol === data.symbol);
+      newListStocks[index].is_blacklist = !data.is_blacklist;
       if (newListStocks[index].is_blacklist) {
         newListStocks[index].danger = false;
       } else {
@@ -126,17 +79,18 @@ const StockManager = () => {
 
       notification.success({ message: 'success' });
     } catch (e) {
+      console.log(e);
       notification.error({ message: 'error' });
     }
   };
 
   const handleResize = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.sizeColumnsToFit();
   };
 
   const handleGridReady = () => {
-    if (!gridRef.current || !gridRef.current.api) return;
+    if (!gridRef?.current?.api) return;
     gridRef.current.api.setFilterModel({
       is_blacklist: {
         type: 'set',
@@ -149,14 +103,12 @@ const StockManager = () => {
   const footer = () => {
     return (
       <div
-        className="flex"
+        className="flex-default"
         style={{
-          justifyContent: 'space-between',
           height: '50px',
-          alignItems: 'center',
         }}
       >
-        <div className="flex" style={{ alignItems: 'center' }}>
+        <div>
           <Tooltip title="Testing">
             <Button
               size="small"
@@ -166,14 +118,24 @@ const StockManager = () => {
               onClick={() => setOpenDrawerTesting(true)}
             />
           </Tooltip>
+
+          <Tooltip title="Last updated check">
+            <Button
+              size="small"
+              type="primary"
+              icon={<FieldTimeOutlined />}
+              style={{ marginLeft: 8 }}
+              onClick={() => setOpenDrawerLastUpdated(true)}
+            />
+          </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton onClick={() => getData(dates)} />
-          <RangePicker
+          <RefreshButton onClick={() => handleGetData(date)} />
+          <DatePicker
             style={{ marginLeft: 8 }}
             size="small"
             onChange={handleChangeDate}
-            value={dates}
+            value={date}
             format={DATE_FORMAT}
           />
         </div>
@@ -204,6 +166,9 @@ const StockManager = () => {
       {footer()}
       {openDrawerTesting && (
         <StockTesting onClose={() => setOpenDrawerTesting(false)} />
+      )}
+      {openDrawerLastUpdated && (
+        <StockLastUpdated onClose={() => setOpenDrawerLastUpdated(false)} />
       )}
     </div>
   );

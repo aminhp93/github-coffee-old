@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Input, List } from 'antd';
 import dayjs from 'dayjs';
 import parse from 'html-react-parser';
@@ -14,12 +16,12 @@ export default function StockNews() {
 
   const fetch = async () => {
     const res = await StockService.getWatchlist();
-    if (res && res.data) {
+    if (res?.data) {
       const listWatchlist = keyBy(res.data, 'name');
 
       const listWatching = listWatchlist['watching'];
       const listPromises: any = [];
-      ((listWatching || {}).symbols || []).forEach((i: any) => {
+      (listWatching?.symbols || []).forEach((i: string) => {
         listPromises.push(StockService.getStockNews(i));
       });
       return Promise.all(listPromises).then((res2: any) => {
@@ -43,7 +45,7 @@ export default function StockNews() {
 
   const fetchNewsDetail = async (id: number) => {
     const res = await StockService.getStockNewsDetail(id);
-    if (res && res.data) {
+    if (res?.data) {
       setNewsDetail(res.data.content);
     }
   };
@@ -67,9 +69,8 @@ export default function StockNews() {
     return clearInterval(interval);
   }, []);
 
-  const filterList = list.filter(
-    (i: any) =>
-      i.symbol && i.symbol.toLowerCase().includes(searchText.toLowerCase())
+  const filterList = list.filter((i: any) =>
+    i.symbol?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   return (
@@ -99,7 +100,9 @@ export default function StockNews() {
         >
           <Input
             placeholder="Search"
-            onChange={(e: any) => setSearchText(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchText(e.target.value)
+            }
           />
           <List
             style={{ overflow: 'auto', flex: 1 }}

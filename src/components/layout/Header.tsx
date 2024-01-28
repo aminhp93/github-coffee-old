@@ -8,12 +8,10 @@ const Header = () => {
       className="Header flex height-100"
       style={{
         position: 'fixed',
-        height: '100px',
-        width: '29px',
-        bottom: 0,
-        paddingBottom: '40px',
+        height: '26px',
+        top: 0,
         right: 0,
-        flexDirection: 'column',
+        paddingRight: '30px',
       }}
     >
       <User />

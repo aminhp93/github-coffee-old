@@ -10,3 +10,5 @@ export type Todo = {
 };
 
 export type TodoCollection = Record<string, Todo>;
+
+export type Mode = 'create' | 'list';

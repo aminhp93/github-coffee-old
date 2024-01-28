@@ -1,5 +1,8 @@
 import ExampleTheme from './themes/ExampleTheme';
-import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {
+  InitialConfigType,
+  LexicalComposer,
+} from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -26,7 +29,7 @@ import AutoLinkPlugin from './plugins/AutoLinkPlugin';
 import { useEffect } from 'react';
 import './CustomLexical.less';
 
-import { CLEAR_HISTORY_COMMAND } from 'lexical';
+import { CLEAR_HISTORY_COMMAND, EditorState } from 'lexical';
 
 function Placeholder() {
   return <div className="editor-placeholder">Enter some rich text...</div>;
@@ -35,11 +38,12 @@ function Placeholder() {
 const EMPTY_VALUE =
   '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
-const editorConfig: any = {
+const editorConfig: InitialConfigType = {
+  namespace: 'custom-lexical',
   // The editor theme
   theme: ExampleTheme,
   // Handling of errors during update
-  onError: (error: any) => {
+  onError: (error: Error) => {
     throw error;
   },
   // Any custom nodes go here
@@ -69,7 +73,7 @@ function MyCustomAutoFocusPlugin() {
   return null;
 }
 
-const UpdatePlugin = (props: any) => {
+const UpdatePlugin = (props: Props) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
@@ -84,13 +88,13 @@ const UpdatePlugin = (props: any) => {
   return null;
 };
 
-interface Props {
+type Props = {
   data?: string;
   onChange?: (value?: string) => void;
-}
+};
 
 export default function Editor(props: Props) {
-  const handleChange = (editorState: any) => {
+  const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
       const value = JSON.stringify(editorState);
       console.log('change', props.data === value);

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useEffect } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import useEditorStore from './store/EditorStore';
@@ -9,21 +11,15 @@ import { keyBy } from 'lodash';
 import { ItemCollection } from './schema/item.schema';
 import Properties from './Properties';
 
-console.log(LIST_ITEM);
 const objectItems = keyBy(LIST_ITEM, 'id');
 
 const Test = () => {
   const mode = useEditorStore((state) => state.mode);
   const setMode = useEditorStore((state) => state.setMode);
-
-  const test = useEditorStore((state) => state.test);
-  const setTest = useEditorStore((state) => state.setTest);
   const patchItems = useHistoryStore((state) => state.patchItems);
-
   const undo = useHistoryStore((state) => state.undo);
   const updateItems = useHistoryStore((state) => state.updateItems);
   const redo = useHistoryStore((state) => state.redo);
-  const items = useHistoryStore((state) => state.items);
 
   useEffect(() => {
     setTimeout(() => {
@@ -153,23 +149,6 @@ const Test = () => {
     redo();
   };
 
-  const handleMerge = () => {
-    setTest({
-      2: {
-        currentState: {
-          frame: {
-            x: 99,
-            y: 99,
-            width: 99,
-            height: 99,
-          },
-        },
-      } as any,
-    });
-  };
-
-  console.log('Test', test, items);
-
   return (
     <div style={{ position: 'relative', height: '100%', width: '100%' }}>
       <Item id={'1'} />
@@ -185,7 +164,6 @@ const Test = () => {
         <Button onClick={handleCopy}>Copy</Button>
         <Button onClick={handlePrevious}>Previous</Button>
         <Button onClick={handleNext}>Next</Button>
-        <Button onClick={handleMerge}>Merge</Button>
       </div>
 
       <Properties />

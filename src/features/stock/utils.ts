@@ -1,60 +1,60 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import dayjs from 'dayjs';
 import { cloneDeep, groupBy, max, maxBy, meanBy, min, minBy } from 'lodash';
 import { DATE_FORMAT, UNIT_BILLION } from './constants';
 import StockService from './service';
 import { getStockData } from './tests';
-import { StockBase, StockCoreData, StockData, SupabaseData } from './types';
+import {
+  StockChartData,
+  StockCoreData,
+  StockData,
+  SupabaseData,
+} from './Stock.types';
 
-export const filterData = (
-  data: StockData[],
-  exclude: string[],
-  stockBase: any
-) => {
-  const result = data.filter((i: StockData) => {
-    if (exclude.includes(i.symbol)) {
-      return false;
-    }
-
-    if (i.change_t0 < 2) {
-      return false;
-    }
-
-    const { minTotal } = getMinTotalValue(i);
-    if (minTotal && minTotal < 2) {
-      return false;
-    }
-
-    return true;
-  });
-
+export const filterData = (stockData: StockData[]): StockData[] => {
   const top1: StockData[] = [];
   const rest: StockData[] = [];
 
-  result.forEach((i: StockData) => {
-    const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
-    const { target, risk_b2, risk_b1 } = evaluateStockBase(
-      filter[0],
-      i.fullData
-    );
-
-    if (
-      i.estimated_vol_change > 50 &&
-      ((target && risk_b2 && target > risk_b2) ||
-        (!risk_b2 && risk_b1 && target && target > risk_b1))
-    ) {
-      i.potential = true;
+  stockData.forEach((i: StockData) => {
+    if (i.potential) {
       top1.push(i);
     } else {
       rest.push(i);
     }
   });
 
-  rest.sort(
-    (a: StockData, b: StockData) =>
-      b.estimated_vol_change - a.estimated_vol_change
-  );
+  // rest.sort((a: StockData, b: StockData) => a.target && b.target && b.target - a.target);
+  // sort rest by target
+  rest.sort((a: StockData, b: StockData) => {
+    if (a.target && b.target) {
+      return b.target - a.target;
+    } else if (a.target && !b.target) {
+      return -1;
+    } else if (!a.target && b.target) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
 
   return top1.concat(rest);
+};
+
+export const mapNewAllStocks = ({
+  stockData,
+  stockBase,
+}: {
+  stockData: StockData[];
+  stockBase: any;
+}): StockData[] => {
+  return stockData.map((i: StockData) => {
+    const filter = stockBase.filter((j: any) => i.symbol === j.symbol);
+    const { target, risk } = evaluateStockBase(filter[0], i.fullData);
+
+    i.target = target;
+    i.risk = risk;
+    return i;
+  });
 };
 
 const getMarkLine = (listMarkLines: any) => {
@@ -156,7 +156,7 @@ export const updateDataWithDate = async (
     const flattenData = resListPromises.flat();
     const objData: any = groupBy(flattenData, 'date');
     for (const key in objData) {
-      if (Object.prototype.hasOwnProperty.call(objData, key)) {
+      if (Object.hasOwn(objData, key)) {
         const element = objData[key];
         objData[key] = element.map((i: any) => {
           i.key = `${i.symbol}_${i.date}`;
@@ -186,7 +186,7 @@ export const mapDataChart = ({
   listMarkPoints?: StockCoreData[];
   listMarkLines?: any;
   volumeField?: 'dealVolume' | 'totalVolume';
-}) => {
+}): StockChartData | undefined => {
   const seriesMarkPoint = getSeriesMarkPoint({
     listMarkPoints,
     offset: 20,
@@ -226,32 +226,29 @@ export const mapDataChart = ({
 };
 
 export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
-  if (!stockBase || !stockBase.list_base || !data) {
+  if (!stockBase?.list_base || !data) {
     return {
-      risk_b1: null,
-      risk_b2: null,
-      target: null,
+      risk_b1: undefined,
+      risk_b2: undefined,
+      target: undefined,
       big_sell: [],
     };
   }
 
-  let risk_b1;
-  let risk_b2;
+  let risk;
   let target;
 
   const base_1 = stockBase.list_base[0].value;
   const base_2 = stockBase.list_base[1].value;
-  const base_3 = stockBase.list_base[2].value;
 
   const t0_price = data[0].priceClose;
 
-  if (base_1 && base_2 && t0_price && t0_price >= base_1 && t0_price < base_2) {
-    risk_b1 = (100 * (t0_price - base_1)) / base_1;
+  if (base_1) {
+    risk = (100 * (t0_price - base_1)) / base_1;
+  }
+
+  if (base_2) {
     target = (100 * (base_2 - t0_price)) / t0_price;
-  } else if (base_1 && base_3 && base_2 && t0_price && t0_price >= base_2) {
-    risk_b1 = (100 * (t0_price - base_1)) / base_1;
-    risk_b2 = (100 * (t0_price - base_2)) / base_2;
-    target = (100 * (base_3 - t0_price)) / t0_price;
   }
 
   const startIndex = data.findIndex(
@@ -265,8 +262,7 @@ export const evaluateStockBase = (stockBase: any, data?: StockData[]) => {
   listData.filter((i: StockData) => i.totalVolume > average_50 * 1.2);
 
   return {
-    risk_b2,
-    risk_b1,
+    risk,
     target,
     big_sell: [],
   };
@@ -297,22 +293,31 @@ export const getListMarkLines = (stockBase?: any, stockData?: StockData) => {
 };
 
 export const getTodayData = async (
-  dates: [dayjs.Dayjs, dayjs.Dayjs],
+  date: dayjs.Dayjs,
   listSymbols: string[]
 ) => {
   let resFireant;
   if (
-    dates[1].format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
+    date.format(DATE_FORMAT) === dayjs().format(DATE_FORMAT) &&
     dayjs().hour() < 15 &&
     !localStorage.getItem('turnOffFetchTodayData')
   ) {
+    const testSampleData = await StockService.getHistoricalQuotes({
+      symbol: 'VPB',
+      startDate: dayjs().format(DATE_FORMAT),
+      endDate: dayjs().format(DATE_FORMAT),
+      offset: 0,
+    });
+
+    if (!testSampleData?.length) return [];
+
     const res = await StockService.getStockDataFromFireant({
       startDate: dayjs().format(DATE_FORMAT),
       endDate: dayjs().format(DATE_FORMAT),
       listSymbols,
     });
     resFireant = res.map((i) => {
-      const item = i.data && i.data[0];
+      const item = i?.data[0];
       if (item) {
         const {
           date,
@@ -355,7 +360,7 @@ export const getMinTotalValue = (
   let maxTotal;
   let averageTotal;
 
-  if (data && data.fullData) {
+  if (data?.fullData) {
     minTotal = minBy(data.fullData.slice(1, 20), 'totalValue')?.totalValue;
     if (minTotal) {
       minTotal = Number((minTotal / UNIT_BILLION).toFixed(0));
@@ -389,24 +394,6 @@ export const getColorStock = (data: StockData | undefined) => {
   } else if (data.change_t0 < -6.5) {
     return '#00cccc';
   }
-};
-
-export const mapDataFromStockBase = (data: StockBase[]) => {
-  const list_all = data.map((i) => i.symbol);
-  const list_buyPoint = data.filter((i) => i.buy_point).map((i) => i.symbol);
-
-  const list_blacklist = data
-    .filter((i) => i.is_blacklist)
-    .map((i) => i.symbol);
-
-  const list_active = data.filter((i) => !i.is_blacklist).map((i) => i.symbol);
-
-  return {
-    list_all,
-    list_active,
-    list_blacklist,
-    list_buyPoint,
-  };
 };
 
 export const getEstimatedVol = (data: StockCoreData) => {

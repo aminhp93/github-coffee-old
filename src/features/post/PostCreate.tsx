@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
 import './Post.less';
-import PostService from './service';
-import { Post } from './types';
+import PostService from './Post.service';
+import { Post } from './Post.types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import usePostStore from './store';
+import usePostStore from './Post.store';
 import useTagStore from '../tag/store';
 
 export default function PostCreate() {
@@ -19,7 +21,7 @@ export default function PostCreate() {
 
   const onFinish = async () => {
     try {
-      if (!authUser || !authUser.id || !post) return;
+      if (!authUser?.id || !post) return;
       const requestData = {
         ...post,
         author: authUser.id,
@@ -40,26 +42,24 @@ export default function PostCreate() {
     }
   };
 
-  const handleChangeTag = (value: any, data: any) => {
+  const handleChangeTag = (_: any, data: any) => {
     setPost({
       ...post,
       tag: data.data.id,
     });
   };
 
-  const handleChangeTitle = (e: any) => {
+  const handleChangeTitle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPost = {
       ...post,
       title: e.target.value,
     };
-    setPost(newPost as any);
+    setPost(newPost);
   };
 
-  const handleChangeLexical = (value: any) => {
+  const handleChangeLexical = (value: string | undefined) => {
     setPost({ ...post, content: value });
   };
-
-  console.log('tags', tags);
 
   return (
     <div className="PostCreate width-100">

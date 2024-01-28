@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { Button, Input, notification, Spin } from 'antd';
 import axios from 'axios';
 import dayjs from 'dayjs';

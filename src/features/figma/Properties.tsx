@@ -1,15 +1,14 @@
 import { Drawer, InputNumber, Select } from 'antd';
 import useHistoryStore, { useItemSelected } from './store/HistoryStore';
 import { getTransformStyle } from './utils';
+import { ItemCollection } from './schema/item.schema';
 
 const Properties = () => {
   const selectedItems = useItemSelected();
   const patchItems = useHistoryStore((state) => state.patchItems);
   const item = Object.values(selectedItems)[0];
 
-  console.log('selectedItems', selectedItems);
-
-  const handleChange = (key: any, value: any) => {
+  const handleChange = (key: string, value: number | string) => {
     const newItem = {
       [item.id]: {
         ...item,
@@ -35,8 +34,8 @@ const Properties = () => {
             },
           },
         },
-      } as any,
-    });
+      },
+    } as unknown as ItemCollection);
 
     const itemSpring = item.currentState?.itemSpring;
     if (itemSpring) {

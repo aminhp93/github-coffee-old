@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { DATE_FORMAT, GET_FIELD_STOCK_SUPABASE } from './constants';
-import { HistoricalQuote, HistoricalQuoteParams } from './types';
+import { HistoricalQuote, HistoricalQuoteParams } from './Stock.types';
 import supabase from '@/services/supabase';
 
 const domain = 'https://restv2.fireant.vn';
@@ -70,7 +72,7 @@ const StockService = {
     listSymbols: string[];
   }) {
     const listPromises: any = [];
-    listSymbols.forEach((i: any) => {
+    listSymbols.forEach((i: string) => {
       listPromises.push(
         StockService.getHistoricalQuotes({
           symbol: i,
@@ -154,7 +156,7 @@ const StockService = {
     const res = await axios({
       method: 'GET',
       headers,
-      url: `https://restv2.fireant.vn/symbols/${symbol}/financial-indicators`,
+      url: `${domain}/symbols/${symbol}/financial-indicators`,
     });
     if (res.data) {
       const newData: any = {};
@@ -182,7 +184,7 @@ const StockService = {
         .in('symbol', symbols);
     }
   },
-  getLastUpdated: () => {
+  getStockInfo: () => {
     return supabase.from('stock_info').select('*');
   },
   insertStockData: (data: any) => {
@@ -250,6 +252,49 @@ const StockService = {
         reject({ status: 'error', date });
       }
     });
+  },
+  getStockPost: ({
+    symbol,
+    type,
+    offset,
+    limit,
+  }: {
+    symbol: string;
+    type: number;
+    offset: number;
+    limit: number;
+  }) => {
+    return axios({
+      url: `${domain}/posts`,
+      method: 'GET',
+      headers,
+      params: {
+        symbol,
+        type,
+        offset,
+        limit,
+      },
+    });
+  },
+  getLastUpdatedStock: (symbol: string) => {
+    return supabase
+      .from('stock')
+      .select(
+        GET_FIELD_STOCK_SUPABASE
+        // '*'
+      )
+      .in('symbol', [symbol])
+      .order('date', { ascending: true })
+      .limit(1);
+  },
+  getCountStock: (symbol: string) => {
+    return supabase
+      .from('stock')
+      .select('* ', {
+        count: 'exact',
+        head: true,
+      })
+      .in('symbol', [symbol]);
   },
 };
 

@@ -1,22 +1,21 @@
-import type { EChartsOption } from 'echarts';
+import type { EChartsOption, DataZoomComponentOption } from 'echarts';
 import { ECharts, getInstanceByDom, init } from 'echarts';
 import { memo, useEffect, useRef } from 'react';
 import { withSize } from 'react-sizeme';
 
-export interface EchartsProps {
+type Props = {
   size?: {
     width: number;
     height: number;
   };
   option?: EChartsOption;
-  handleZoom?: (params: any, oldOption: EChartsOption) => void;
-}
+  handleZoom?: (
+    params: DataZoomComponentOption,
+    oldOption: EChartsOption
+  ) => void;
+};
 
-const CustomEcharts = ({
-  size,
-  option,
-  handleZoom,
-}: EchartsProps): React.ReactElement => {
+const CustomEcharts = ({ size, option, handleZoom }: Props) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,7 +48,10 @@ const CustomEcharts = ({
         newOption.dataZoom = old?.dataZoom;
       }
 
-      option && chart && chart.setOption && chart.setOption(newOption);
+      option &&
+        chart &&
+        chart.setOption &&
+        chart.setOption(newOption, { notMerge: true });
     }
   }, [option]); // Whenever theme changes we need to add option and setting due to it being deleted in cleanup function
 
@@ -60,7 +62,10 @@ const CustomEcharts = ({
       chart &&
         chart.on('datazoom', function (params: unknown) {
           handleZoom &&
-            handleZoom(params as any, chart?.getOption() as EChartsOption);
+            handleZoom(
+              params as DataZoomComponentOption,
+              chart?.getOption() as EChartsOption
+            );
         });
     }
   }, [handleZoom]);

@@ -6,13 +6,16 @@ import { DELAY_TIME } from '../constants';
 
 const { Countdown } = Statistic;
 
-const RefreshButton = ({ onClick }: any) => {
+type Props = {
+  onClick: () => void;
+};
+
+const RefreshButton = ({ onClick }: Props) => {
   const [isPlaying, setPlaying] = useState<boolean>(false);
   const [delay, setDelay] = useState<number>(DELAY_TIME);
 
   useInterval(
     () => {
-      // Your custom logic here
       onClick();
     },
     // Delay in milliseconds or null to stop it
@@ -34,7 +37,7 @@ const RefreshButton = ({ onClick }: any) => {
           style={{ marginLeft: '8px' }}
           disabled={isPlaying}
           value={delay}
-          onChange={(value: any) => setDelay(value)}
+          onChange={(value: number | null) => value !== null && setDelay(value)}
         />
       </>
     );

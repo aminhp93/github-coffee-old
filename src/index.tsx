@@ -4,9 +4,9 @@ import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 
 // Import third-party libraries
-import { notification } from 'antd';
+import { notification, Button } from 'antd';
 import 'antd/dist/reset.css';
-import { Provider } from 'react-redux';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Import components
 import {
@@ -15,7 +15,6 @@ import {
   AuthUserContext,
 } from '@/context/SupabaseContext';
 import '@/styles/index.less';
-import { store } from './@/store';
 import Layout from 'components/layout/Layout';
 import Work from 'features/work/Work';
 import Figma from 'features/figma/Figma';
@@ -25,7 +24,7 @@ import Snippet from 'features/snippet/Snippet';
 import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
 
-import { defaultJson, defaultOverviewJson } from 'features/work/Work.constants';
+import { JSON_MODEL_RESET } from 'features/work/Work.constants';
 
 notification.config({
   placement: 'bottomLeft',
@@ -36,13 +35,23 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+// Create a client
+const queryClient = new QueryClient();
+
 const App = () => {
-  const { authUser }: AuthUserContext = useAuth();
+  const { authUser, signInWithOAuth }: AuthUserContext = useAuth();
   console.log('authUser', authUser);
 
-  // if (!authUser?.email) {
-  //   return <div>Hello</div>;
-  // }
+  if (!authUser?.email) {
+    return (
+      <div>
+        Hello
+        <Button size="small" onClick={signInWithOAuth}>
+          Login
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -53,7 +62,7 @@ const App = () => {
             element={
               <Work
                 layoutName="flexLayoutModel_Work"
-                defaultJson={defaultJson}
+                defaultJson={JSON_MODEL_RESET}
               />
             }
           />
@@ -63,15 +72,6 @@ const App = () => {
           <Route path="/snippet" element={<Snippet />} />
           <Route path="/test" element={<Test />} />
           <Route path="/todo" element={<Todo />} />
-          <Route
-            path="/overview"
-            element={
-              <Work
-                layoutName="flexLayoutModel_Overview"
-                defaultJson={defaultOverviewJson}
-              />
-            }
-          />
           <Route path="*" element={<Navigate to="/" />} />
         </Route>
       </Routes>
@@ -81,10 +81,10 @@ const App = () => {
 
 root.render(
   <React.Fragment>
-    <Provider store={store}>
-      <SupabaseAuthProvider>
+    <SupabaseAuthProvider>
+      <QueryClientProvider client={queryClient}>
         <App />
-      </SupabaseAuthProvider>
-    </Provider>
+      </QueryClientProvider>
+    </SupabaseAuthProvider>
   </React.Fragment>
 );

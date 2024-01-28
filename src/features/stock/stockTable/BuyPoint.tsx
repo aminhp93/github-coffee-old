@@ -3,12 +3,19 @@ import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
-const BuyPoint = ({ onCb, buyPoint }: any) => {
-  const [date, setDate] = useState<any>(buyPoint?.date);
+type Props = {
+  onCb: (date: dayjs.Dayjs | undefined) => void;
+  buyPoint: {
+    date: dayjs.Dayjs | undefined;
+  };
+};
 
-  const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    setDate(date);
-    onCb(date);
+const BuyPoint = ({ onCb, buyPoint }: Props) => {
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(buyPoint?.date);
+
+  const onChange: DatePickerProps['onChange'] = (date) => {
+    setDate(date!);
+    onCb(date!);
   };
 
   useEffect(() => {

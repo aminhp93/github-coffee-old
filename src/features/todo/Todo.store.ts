@@ -1,24 +1,24 @@
 import produce from 'immer';
 import { create } from 'zustand';
-import { PostCollection, Mode, Post } from './types';
+import { TodoCollection, Mode, Todo } from './Todo.types';
 
-type PostStore = {
-  posts: PostCollection;
-  setPosts: (posts: PostCollection) => void;
+type TodoStore = {
+  todos: TodoCollection;
+  setTodos: (todos: TodoCollection) => void;
   mode: Mode;
   setMode: (mode: Mode) => void;
-  selectedPost?: Post;
-  setSelectedPost: (post?: Post) => void;
+  selectedTodo?: Todo;
+  setSelectedTodo: (todo?: Todo) => void;
   loading: boolean;
   setLoading: (loading: boolean) => void;
 };
 
-const usePostStore = create<PostStore>((set, get) => ({
-  posts: {},
-  setPosts: (posts: PostCollection) =>
+const useTodoStore = create<TodoStore>((set, get) => ({
+  todos: {},
+  setTodos: (todos: TodoCollection) =>
     set(
       produce((draft) => {
-        draft.posts = posts;
+        draft.todos = todos;
       })
     ),
   mode: 'list',
@@ -28,11 +28,11 @@ const usePostStore = create<PostStore>((set, get) => ({
         draft.mode = mode;
       })
     ),
-  selectedPost: undefined,
-  setSelectedPost: (post?: Post) =>
+  selectedTodo: undefined,
+  setSelectedTodo: (todo?: Todo) =>
     set(
       produce((draft) => {
-        draft.selectedPost = post;
+        draft.selectedTodo = todo;
       })
     ),
   loading: false,
@@ -44,4 +44,4 @@ const usePostStore = create<PostStore>((set, get) => ({
     ),
 }));
 
-export default usePostStore;
+export default useTodoStore;

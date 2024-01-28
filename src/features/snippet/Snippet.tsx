@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -7,13 +9,15 @@ import './Snippet.less';
 export default function Snippet() {
   const [text, setText] = useState('');
 
-  const handleClick = async (event: any) => {
+  const handleClick = async (event: MouseEvent) => {
     const copyButtonLabel = 'Copy';
 
-    const button = event.srcElement;
+    const button = event.target as HTMLButtonElement;
+    if (!button) return;
     const pre = button.parentElement;
-    let code = pre.querySelector('code');
-    let text = code.innerText;
+    let code = pre?.querySelector('code');
+    let text = code?.innerText;
+    if (!text) return;
 
     await navigator.clipboard.writeText(text);
     button.innerText = 'Copied';
@@ -31,7 +35,7 @@ export default function Snippet() {
     });
 
     if (res && res.data) {
-      res.data.tree.forEach((i: any) => {
+      res.data.tree.forEach((i: { path: string }) => {
         if (i.path.includes('.md')) {
           LIST_MARKDOWN_URL.push(
             `https://raw.githubusercontent.com/aminhp93/terminal-command/master/${i.path}`
@@ -43,7 +47,7 @@ export default function Snippet() {
     if (LIST_MARKDOWN_URL.length === 0) return;
 
     const listPromises: any = [];
-    LIST_MARKDOWN_URL.forEach((i: any) => {
+    LIST_MARKDOWN_URL.forEach((i: string) => {
       listPromises.push(fetch(i).then((res) => res.text()));
     });
     Promise.all(listPromises)

@@ -19,14 +19,14 @@ type Props = {
 };
 
 const ChatPage = ({ hideOnlineUsers }: Props) => {
-  const bottomRef = useRef(null as any);
+  const bottomRef: React.RefObject<HTMLDivElement> = useRef(null);
   const { authUser }: AuthUserContext = useAuth();
 
   const chats = useChatStore((state) => state.chats);
   const setChats = useChatStore((state) => state.setChats);
   const addChats = useChatStore((state) => state.addChats);
 
-  const handleCb = async (data: any) => {
+  const handleCb = async (data: { message: string }) => {
     try {
       const payload = {
         message: data.message,
@@ -48,11 +48,11 @@ const ChatPage = ({ hideOnlineUsers }: Props) => {
     (async () => {
       try {
         const res = await ChatService.listChat();
-        res.data?.sort((a: any, b: any) =>
-          a.created_at.localeCompare(b.created_at)
-        );
+        res.data?.sort((a, b) => a.created_at!.localeCompare(b.created_at!));
 
-        setChats(keyBy(res.data, 'id') as ChatCollection);
+        const xxx = keyBy(res.data, 'id');
+
+        setChats(xxx as ChatCollection);
       } catch (e) {
         //
       }
@@ -61,13 +61,13 @@ const ChatPage = ({ hideOnlineUsers }: Props) => {
 
   useEffect(() => {
     // 👇️ scroll to bottom every time messages change
-    bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chats]);
 
   useEffect(() => {
     // 👇️ scroll to bottom every time messages change
     const timeoutId = setTimeout(() => {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 1000);
 
     return () => {

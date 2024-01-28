@@ -4,7 +4,7 @@ import {
   getBase_min_max,
   getMaxPercentBase,
 } from './utils';
-import { StockData, StockCoreData, Base } from './types';
+import { StockData, StockCoreData, Base } from './Stock.types';
 import { min, max } from 'lodash';
 
 export const getStockData = (data: StockCoreData[]): StockData | undefined => {
@@ -48,6 +48,7 @@ export const mapStockData = (data: StockCoreData[]): StockData | undefined => {
 
   // get estimated_vol_change
   const averageVolume_last5 =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data.slice(1, 6).reduce((a: number, b: any) => a + b.totalVolume, 0) / 5;
   const estimated_vol = getEstimatedVol(last_data);
   const estimated_vol_change =
@@ -106,7 +107,8 @@ export const getBacktestData = (
     }
   });
 
-  const backtestData = filterData(fullData, [], []);
+  const backtestData = filterData(fullData);
+
   return {
     backtestData,
     fullData,

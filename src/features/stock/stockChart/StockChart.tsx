@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import CustomEcharts from 'components/customEcharts/CustomEcharts';
 import {
   color,
@@ -11,7 +13,9 @@ import {
   brush,
   axisPointer,
   tooltip,
-} from './stockChart.constants';
+} from './StockChart.constants';
+import { StockChartData } from '../Stock.types';
+import { EChartsOption } from 'echarts';
 
 /*
   const dates = [
@@ -35,14 +39,7 @@ import {
 */
 
 type Props = {
-  data: {
-    dates: string[];
-    prices: number[];
-    volumes: number[];
-    seriesMarkPoint: any;
-    grid: any;
-    markLine: any;
-  };
+  data: StockChartData;
   handleZoom?: any;
   config?: any;
 };
@@ -50,7 +47,7 @@ type Props = {
 const StockChart = ({ data, handleZoom, config }: Props) => {
   const { dates, prices, volumes, seriesMarkPoint, markLine } = data;
 
-  const xAxis = [
+  const xAxis: any = [
     {
       type: 'category',
       data: dates,
@@ -94,7 +91,7 @@ const StockChart = ({ data, handleZoom, config }: Props) => {
     },
   ];
 
-  const series = [
+  const series: any = [
     {
       type: 'candlestick',
       name: '日K',
@@ -133,7 +130,7 @@ const StockChart = ({ data, handleZoom, config }: Props) => {
     },
   ];
 
-  const option: any = {
+  const option: EChartsOption = {
     animation: false,
     color,
     xAxis,

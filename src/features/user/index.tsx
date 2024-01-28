@@ -17,14 +17,15 @@ export default function User() {
       style={{
         display: 'flex',
         justifyContent: 'end',
-        height: '32px',
+        marginRight: '6px',
+        marginLeft: '6px',
         alignItems: 'center',
       }}
     >
       {authUser?.email ? (
         <Dropdown menu={{ items, onClick: signOut }} trigger={['hover']}>
           <div style={{ cursor: 'pointer' }}>
-            <UserOutlined />
+            <Button size="small" icon={<UserOutlined />} />
           </div>
         </Dropdown>
       ) : (

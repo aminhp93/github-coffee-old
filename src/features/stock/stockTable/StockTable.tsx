@@ -1,156 +1,177 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+// Import libaries
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
   SettingOutlined,
+  StockOutlined,
 } from '@ant-design/icons';
-
 import { Button, DatePicker, notification, Statistic, Tooltip } from 'antd';
 import CustomAgGridReact from 'components/customAgGridReact/CustomAgGridReact';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { RowClassParams } from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+
+// Import components
 import { DATE_FORMAT } from '../constants';
 import StockService from '../service';
-import { updateSelectedSymbol } from '../stockSlice';
-import { StockData, SupabaseData } from '../types';
+import { StockData, SupabaseData, StockBase } from '../Stock.types';
 import {
   filterData,
   getStockDataFromSupabase,
   getTodayData,
-  mapDataFromStockBase,
   updateDataWithDate,
+  mapNewAllStocks,
 } from '../utils';
 import RefreshButton from './RefreshButton';
 import './StockTable.less';
 import StockTableColumns from './StockTableColumns';
 import StockTableSetting from './StockTableSetting';
-import { AgGridReact } from 'ag-grid-react';
+import useStockStore from '../Stock.store';
+import StockTrendingDrawer from './StockTrendingDrawer';
+import StockResultUpdateDrawer from './StockResultUpdateDrawer';
 
-const getRowClass = (params: any) => {
+const getRowClass = (params: RowClassParams) => {
   if (params.node.data.potential) {
     return 'potential-row';
   }
 };
 
-const { RangePicker } = DatePicker;
-
 const StockTable = () => {
-  // hooks
-  const dispatch = useDispatch();
   const gridRef: React.RefObject<AgGridReact> = useRef(null);
+
+  const stockInfo = useStockStore((state) => state.stockInfo);
+  const setSelectedSymbol = useStockStore((state) => state.setSelectedSymbol);
+
   const [openDrawerSettings, setOpenDrawerSettings] = useState(false);
-  const [listStocks, setListStocks] = useState<StockData[]>([]);
-  const [dates, setDates] = useState<[dayjs.Dayjs, dayjs.Dayjs] | undefined>();
-  const [listStockBase, setListStockBase] = useState<any[]>([]);
+  const [openDrawerStockAnalysis, setOpenDrawerStockTrendingD] =
+    useState(false);
+  const [openDrawerResultUpdate, setOpenDrawerResultUpdate] = useState(false);
+  const [date, setDate] = useState<dayjs.Dayjs | undefined>(dayjs());
+  const [listStockBase, setListStockBase] = useState<StockBase[]>([]);
   const [allStocks, setAllStocks] = useState<StockData[]>([]);
-  const [pinnedTopRowData, setPinnedTopRowData] = useState<StockData[]>([]);
+  const [resultUpdate, setResultUpdate] = useState<any>({});
+  const [filter, setFilter] = useState({
+    exclude_is_blacklist: true,
+    exclude_is_unpotential: true,
+  });
 
-  const handleChangeDate = (data: any) => {
-    setDates(data);
-    getData(data);
-  };
+  const handleChangeDate = useCallback((data: dayjs.Dayjs | null) => {
+    if (!data) return;
+    setDate(data);
+  }, []);
 
-  const getData = async (dates: [dayjs.Dayjs, dayjs.Dayjs] | undefined) => {
-    try {
-      if (!dates || dates.length !== 2) return;
-      gridRef.current?.api?.showLoadingOverlay();
-
-      const resStockBase = await StockService.getAllStockBase();
-
-      const { list_active, list_blacklist, list_buyPoint } =
-        mapDataFromStockBase(resStockBase.data || ([] as any));
-
-      let resFireant = await getTodayData(dates, list_active);
-
-      const res = await StockService.getStockDataFromSupabase({
-        startDate: dates[0].format(DATE_FORMAT),
-        endDate: dates[1].format(DATE_FORMAT),
-        listSymbols: list_active,
-      });
-
-      gridRef.current?.api?.hideOverlay();
-
-      let source: any = res.data;
-      if (resFireant) {
-        source = [...resFireant, ...source];
-      }
-
-      const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
-
-      const filterdData = filterData(
-        newAllStocks,
-        [...list_buyPoint, ...list_blacklist],
-        resStockBase.data
-      );
-
-      setPinnedTopRowData(
-        newAllStocks
-          .filter((i) => list_buyPoint.includes(i.symbol))
-          .sort((a, b) => (a.change_t0 > b.change_t0 ? -1 : 1))
-      );
-
-      if (resStockBase.data && resStockBase.data.length) {
-        setListStockBase(resStockBase.data);
-      }
-
-      setAllStocks(newAllStocks);
-      setListStocks(filterdData);
-    } catch (e) {
-      gridRef.current?.api?.hideOverlay();
-      notification.error({ message: 'error' });
-    }
-  };
-
-  useEffect(() => {
-    const init = async () => {
+  const getData = useCallback(
+    async (data: dayjs.Dayjs | undefined) => {
       try {
-        const res: any = await StockService.getLastUpdated();
+        if (!data) return;
+        gridRef.current?.api?.showLoadingOverlay();
+
         const resStockBase = await StockService.getAllStockBase();
 
-        const { list_all } = mapDataFromStockBase(
-          resStockBase.data || ([] as any)
-        );
-        if (res.data && res.data.length && res.data.length === 1) {
-          const lastUpdated = res.data[0].last_updated;
-          let newLastUpdated = dayjs().format(DATE_FORMAT);
-          // check current time before 3pm
-          if (dayjs().hour() < 15) {
-            newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
-          }
+        let listData = (resStockBase.data ?? []) as StockBase[];
 
-          if (lastUpdated !== newLastUpdated) {
-            let nextCall = true;
-            let offset = 0;
-
-            while (nextCall) {
-              const res = await updateDataWithDate(
-                dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
-                newLastUpdated,
-                offset,
-                list_all
-              );
-              offset += 20;
-              if (res && res.length && res[0].length < 20) {
-                nextCall = false;
-              }
-            }
-
-            await StockService.updateLastUpdated({
-              column: 'last_updated',
-              value: newLastUpdated,
-            });
-          }
-
-          setDates([dayjs().add(-1, 'month'), dayjs()]);
-          getData([dayjs().add(-1, 'month'), dayjs()]);
+        if (filter.exclude_is_blacklist) {
+          listData = listData.filter((i) => !i.is_blacklist);
         }
-        notification.success({ message: 'success' });
+
+        if (filter.exclude_is_unpotential) {
+          listData = listData.filter((i) => !i.is_unpotential);
+        }
+
+        const listSymbols = listData.map((i) => i.symbol);
+
+        let resFireant = await getTodayData(data, listSymbols);
+
+        const res = await StockService.getStockDataFromSupabase({
+          startDate: data.add(-1, 'month').format(DATE_FORMAT),
+          endDate: data.format(DATE_FORMAT),
+          listSymbols,
+        });
+
+        gridRef.current?.api?.hideOverlay();
+
+        let source: any = res.data;
+        if (resFireant) {
+          source = [...resFireant, ...source];
+        }
+
+        const newAllStocks = getStockDataFromSupabase(source as SupabaseData[]);
+
+        const mappedNewAllStocks = mapNewAllStocks({
+          stockData: newAllStocks,
+          stockBase: resStockBase.data,
+        });
+
+        const filterdData = filterData(mappedNewAllStocks);
+
+        if (resStockBase?.data?.length) {
+          setListStockBase(resStockBase.data as StockBase[]);
+        }
+
+        setAllStocks(filterdData);
+      } catch (e) {
+        gridRef.current?.api?.hideOverlay();
+        notification.error({ message: 'error' });
+      }
+    },
+    [filter.exclude_is_blacklist, filter.exclude_is_unpotential]
+  );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        if (!stockInfo) return;
+        const resStockBase = await StockService.getAllStockBase();
+        if (!resStockBase.data) return;
+
+        const list_all = resStockBase.data.map((i) => i.symbol);
+
+        const lastUpdated = stockInfo.last_updated;
+        let newLastUpdated = dayjs().format(DATE_FORMAT);
+        // check current time before 3pm
+        if (dayjs().hour() < 15) {
+          newLastUpdated = dayjs().add(-1, 'days').format(DATE_FORMAT);
+        }
+
+        if (lastUpdated !== newLastUpdated) {
+          let nextCall = true;
+          let offset = 0;
+          setResultUpdate((pre: any) => {
+            return { ...pre, list_all };
+          });
+          setOpenDrawerResultUpdate(true);
+          while (nextCall) {
+            const res = await updateDataWithDate(
+              dayjs(lastUpdated).add(1, 'days').format(DATE_FORMAT),
+              newLastUpdated,
+              offset,
+              list_all
+            );
+            console.log(res);
+            setResultUpdate((pre: any) => ({
+              ...pre,
+              res: [...(pre.res || []), ...res],
+            }));
+
+            offset += 20;
+            if (res?.length && res[0].length < 20) {
+              nextCall = false;
+            }
+          }
+
+          await StockService.updateLastUpdated({
+            column: 'last_updated',
+            value: newLastUpdated,
+          });
+        }
       } catch (e) {
         notification.error({ message: 'error' });
       }
-    };
-    init();
-  }, []);
+    })();
+  }, [stockInfo]);
 
   const handleResize = () => {
     if (!gridRef?.current?.api) return;
@@ -168,11 +189,14 @@ const StockTable = () => {
     gridRef.current.api.sizeColumnsToFit();
   };
 
-  const handleClickSymbol = (data: any) => {
-    const symbol = data.data?.symbol;
-    if (!symbol) return;
-    dispatch(updateSelectedSymbol(data.data.symbol));
+  const handleClickSymbol = (data: StockData) => {
+    if (!data?.symbol) return;
+    setSelectedSymbol(data?.symbol);
   };
+
+  useEffect(() => {
+    getData(date);
+  }, [filter, date, getData]);
 
   const _filter_1 = allStocks.filter((i: StockData) => i.change_t0 < -0.02);
   const _filter_2 = allStocks.filter(
@@ -196,17 +220,28 @@ const StockTable = () => {
               onClick={() => setOpenDrawerSettings(true)}
             />
           </Tooltip>
+          <Tooltip title="Stock Trending">
+            <Button
+              size="small"
+              type="primary"
+              style={{ marginLeft: 8 }}
+              icon={<StockOutlined />}
+              onClick={() => setOpenDrawerStockTrendingD(true)}
+            />
+          </Tooltip>
         </div>
         <div className="flex" style={{ alignItems: 'center' }}>
-          <RefreshButton onClick={() => getData(dates)} />
+          {allStocks.length}
+          <RefreshButton onClick={() => getData(date)} />
 
-          <RangePicker
+          <DatePicker
             style={{ marginLeft: 8 }}
             size="small"
+            value={date}
             onChange={handleChangeDate}
-            value={dates}
             format={DATE_FORMAT}
           />
+
           <Statistic
             style={{ marginLeft: 8 }}
             value={_filter_3.length}
@@ -237,17 +272,38 @@ const StockTable = () => {
             handleClickSymbol,
             listStockBase,
           })}
-          rowData={listStocks}
-          pinnedTopRowData={pinnedTopRowData}
+          rowData={allStocks}
           getRowClass={getRowClass}
           onResize={handleResize}
           onGridReady={handleGridReady}
+          enableRangeSelection={true}
+          enableCharts={true}
         />
       </div>
+
       {footer()}
 
+      {openDrawerResultUpdate && (
+        <StockResultUpdateDrawer
+          data={resultUpdate}
+          onClose={() => setOpenDrawerResultUpdate(false)}
+        />
+      )}
+
       {openDrawerSettings && (
-        <StockTableSetting onClose={() => setOpenDrawerSettings(false)} />
+        <StockTableSetting
+          defaultFilter={filter}
+          onClose={() => setOpenDrawerSettings(false)}
+          onChangeFilter={(newFilter) => {
+            setFilter(newFilter);
+          }}
+        />
+      )}
+
+      {openDrawerStockAnalysis && (
+        <StockTrendingDrawer
+          onClose={() => setOpenDrawerStockTrendingD(false)}
+        />
       )}
     </div>
   );

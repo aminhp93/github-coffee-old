@@ -1,3 +1,11 @@
+// Import libraries
+import { Button, Dropdown } from 'antd';
+import { IJsonModel } from 'flexlayout-react';
+import { SettingOutlined } from '@ant-design/icons';
+import { keyBy } from 'lodash';
+import type { MenuProps } from 'antd';
+
+// Import local files
 import CustomFlexLayout from 'components/customFlexLayout/CustomFlexLayout';
 import Chat from 'features/chat/Chat';
 import Post from 'features/post/Post';
@@ -9,7 +17,8 @@ import StockTable from 'features/stock/stockTable/StockTable';
 import Figma from 'features/figma/Figma';
 import Todo from 'features/todo/Todo';
 import Test from 'features/test/Test';
-import { IJsonModel } from 'flexlayout-react';
+import Booking from 'features/booking/Booking';
+import { DROPDOWN_LIST } from './Work.constants';
 
 type Props = {
   defaultJson: IJsonModel;
@@ -17,23 +26,51 @@ type Props = {
 };
 
 const Work = ({ layoutName, defaultJson }: Props) => {
+  const onChangeLayout = (layout: string) => {
+    if (!layout) return;
+    const DROPDOWN_LIST_OBJ = keyBy(DROPDOWN_LIST, 'key');
+    const layoutNameData = DROPDOWN_LIST_OBJ[layout]?.layoutName;
+    if (!layoutNameData) return;
+    localStorage.setItem(layoutName, JSON.stringify(layoutNameData));
+    window.location.reload();
+  };
+
+  const handleClickDropdown: MenuProps['onClick'] = ({ key }) => {
+    if (key) {
+      onChangeLayout(key);
+    }
+  };
+
   return (
-    <CustomFlexLayout
-      layoutName={layoutName}
-      defaultJson={defaultJson}
-      componentObj={{
-        Post: <Post />,
-        StockNews: <StockNews />,
-        Chat: <Chat hideOnlineUsers />,
-        Todo: <Todo />,
-        Snippet: <Snippet />,
-        Test: <Test />,
-        StockTable: <StockTable />,
-        StockDetail: <StockDetail />,
-        StockManager: <StockManager />,
-        Figma: <Figma />,
-      }}
-    />
+    <>
+      <CustomFlexLayout
+        layoutName={layoutName}
+        defaultJson={defaultJson}
+        componentObj={{
+          Post: <Post />,
+          StockNews: <StockNews />,
+          Chat: <Chat hideOnlineUsers />,
+          Todo: <Todo />,
+          Snippet: <Snippet />,
+          Test: <Test />,
+          StockTable: <StockTable />,
+          StockDetail: <StockDetail />,
+          StockManager: <StockManager />,
+          Figma: <Figma />,
+          Booking: <Booking />,
+        }}
+      />
+      <Dropdown
+        menu={{ items: DROPDOWN_LIST, onClick: handleClickDropdown }}
+        trigger={['hover']}
+      >
+        <Button
+          size="small"
+          style={{ position: 'fixed', top: '1px', right: '0', zIndex: 1 }}
+          icon={<SettingOutlined />}
+        />
+      </Dropdown>
+    </>
   );
 };
 

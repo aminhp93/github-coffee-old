@@ -1,4 +1,6 @@
-export interface HistoricalQuote {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+export type HistoricalQuote = {
   adjRatio: number;
   buyCount: number;
   buyForeignQuantity: number;
@@ -26,39 +28,42 @@ export interface HistoricalQuote {
   symbol: string;
   totalValue: number;
   totalVolume: number;
-}
+};
 
-export interface HistoricalQuoteParams {
+export type HistoricalQuoteParams = {
   symbol: string;
   startDate?: string;
   endDate?: string;
   offset?: number;
   limit?: number;
   returnRequest?: boolean;
-}
+};
 
-export interface Base {
+export type Base = {
   base_max: number;
   base_min: number;
   base_percent: number;
   base_length: number;
   startBaseDate: string;
   endBaseDate: string;
-}
-export interface Watchlist {
+};
+
+export type Watchlist = {
   displayIndex: number;
   name: string;
   symbols: string[];
   userName: string;
   watchlistID: number;
-}
+};
+
+export type WatchlistCollection = Record<string, Watchlist>;
 
 export type Filter = Pick<
   StockData,
   'change_t0' | 'estimated_vol_change' | 't0_over_base_max'
 >;
 
-export interface SupabaseData {
+export type SupabaseData = {
   date: string;
   dealVolume: number;
   priceClose: number;
@@ -68,9 +73,9 @@ export interface SupabaseData {
   symbol: string;
   totalValue: number;
   totalVolume: number;
-}
+};
 
-export interface StockCoreData {
+export type StockCoreData = {
   adjRatio: number;
   symbol: string;
   date: string;
@@ -81,9 +86,11 @@ export interface StockCoreData {
   totalVolume: number;
   dealVolume: number;
   totalValue: number;
-}
+};
 
 export interface StockData extends StockCoreData {
+  target?: number;
+  risk?: number;
   potential?: boolean;
   change_t0: number;
   rangeChange_t0: number;
@@ -95,18 +102,40 @@ export interface StockData extends StockCoreData {
   fullData?: StockData[];
 }
 
-export interface StockBase {
+export type StockBase = {
   id: number;
   buy_point?: {
     date: string;
   };
-  created_at: string;
-  is_blacklist: boolean;
-  list_base?: {
-    id: number;
-    value: number;
-    startDate?: string;
-    endDate?: string;
-  }[];
+  created_at: string | null;
+  is_blacklist: boolean | null;
+  list_base?:
+    | {
+        id: number;
+        value: number;
+        startDate?: string;
+        endDate?: string;
+      }[]
+    | null;
   symbol: string;
-}
+  config: {
+    dataZoom: any;
+  };
+  is_unpotential: boolean | null;
+};
+
+export type StockChartData = {
+  dates: string[];
+  prices: number[][];
+  volumes: number[][];
+  seriesMarkPoint: any;
+  markLine: any;
+};
+
+export type StockInfo = {
+  created_at: string;
+  updated_at: string;
+  start_date: string;
+  last_updated: string;
+  id: number;
+};
