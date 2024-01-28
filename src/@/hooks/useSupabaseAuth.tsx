@@ -14,10 +14,7 @@ const useSupabaseAuth = () => {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo:
-          process.env.NODE_ENV === 'production'
-            ? 'https://github-coffee-old.vercel.app/'
-            : 'http://localhost:3333/',
+        redirectTo: '/',
       },
     });
   };
