@@ -49,15 +49,15 @@ const Work = ({ layoutName, defaultJson }: Props) => {
         componentObj={{
           Post: <Post />,
           StockNews: <StockNews />,
-          Chat: <Chat hideOnlineUsers />,
-          Todo: <Todo />,
-          Snippet: <Snippet />,
-          Test: <Test />,
-          StockTable: <StockTable />,
-          StockDetail: <StockDetail />,
-          StockManager: <StockManager />,
           Figma: <Figma />,
-          Booking: <Booking />,
+          Test: <Test />,
+          '[Deprecated] Snippet': <Snippet />,
+          '[Deprecated] Todo': <Todo />,
+          '[Deprecated] Booking': <Booking />,
+          '[Deprecated] Chat': <Chat hideOnlineUsers />,
+          '[Deprecated] StockTable': <StockTable />,
+          '[Deprecated] StockDetail': <StockDetail />,
+          '[Deprecated] StockManager': <StockManager />,
         }}
       />
       <Dropdown

@@ -99,29 +99,6 @@ export const JSON_MODEL_INFO: IJsonModel = {
           },
         ],
       },
-      {
-        type: 'row',
-        id: uuidv4(),
-        weight: 50,
-        children: [
-          {
-            type: 'tabset',
-            id: uuidv4(),
-            weight: 12.5,
-            width: 620,
-            children: [
-              {
-                type: 'tab',
-
-                id: '#StockManager',
-                name: 'StockManager',
-                component: 'StockManager',
-              },
-            ],
-            active: true,
-          },
-        ],
-      },
     ],
   },
 };
@@ -256,19 +233,19 @@ export const JSON_MODEL_RESET: IJsonModel = {
 export const DROPDOWN_LIST = [
   {
     key: 'working',
-    label: `working layout`,
-    layoutName: JSON_MODEL_WORKING,
-  },
-  {
-    key: 'info',
-    label: `info layout`,
+    label: `working`,
     layoutName: JSON_MODEL_INFO,
   },
-  {
-    key: 'tools',
-    label: `tools layout`,
-    layoutName: JSON_MODEL_TOOLS,
-  },
+  // {
+  //   key: 'info',
+  //   label: `info layout`,
+  //   layoutName: JSON_MODEL_INFO,
+  // },
+  // {
+  //   key: 'tools',
+  //   label: `tools layout`,
+  //   layoutName: JSON_MODEL_TOOLS,
+  // },
   {
     key: 'reset',
     label: `reset layout`,
