@@ -16,6 +16,8 @@ import useTagStore from '../tag/store';
 import { Post, PostCollection } from './Post.types';
 import { debounce } from 'lodash';
 
+const IS_AUTO_UPDATE = false;
+
 const { Paragraph } = Typography;
 
 const MemoizedPostDetail = memo(function PostDetail() {
@@ -31,6 +33,7 @@ const MemoizedPostDetail = memo(function PostDetail() {
   );
 
   const handleUpdate = async (post?: Post) => {
+    console.log('handleUpdate', post);
     if (!post) return;
     try {
       if (!post?.id) return;
@@ -83,7 +86,7 @@ const MemoizedPostDetail = memo(function PostDetail() {
             [updatedPost.id]: updatedPost,
           });
 
-          handleUpdate(updatedPost);
+          IS_AUTO_UPDATE && handleUpdate(updatedPost);
         },
         300
       ),
@@ -162,18 +165,27 @@ const MemoizedPostDetail = memo(function PostDetail() {
             data: tag,
           }))}
         />
-        {!loading ? (
-          <Button type="primary" icon={<CheckCircleOutlined />} size="small" />
-        ) : (
+        {loading ? (
           <>
             <Button
               className="btn-warning"
               size="small"
-              loading={loading}
-              onClick={() => handleUpdate(selectedPost)}
+              loading
+              // onClick={() => {
+              //   handleUpdate(selectedPost);
+              // }}
               icon={<WarningOutlined />}
             />
           </>
+        ) : (
+          <Button
+            onClick={() => {
+              handleUpdate(selectedPost);
+            }}
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            size="small"
+          />
         )}
         <Popconfirm
           title="Delete the task"
