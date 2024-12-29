@@ -18,6 +18,8 @@ import { Todo, TodoCollection } from './Todo.types';
 import { debounce } from 'lodash';
 import useStatusStore from 'features/status/store';
 
+const IS_AUTO_UPDATE = false;
+
 const { Paragraph } = Typography;
 
 const MemoizedTodoDetail = memo(function TodoDetail() {
@@ -86,7 +88,7 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
             [updatedTodo.id]: updatedTodo,
           });
 
-          handleUpdate(updatedTodo);
+          IS_AUTO_UPDATE && handleUpdate(updatedTodo);
         },
         300
       ),
@@ -206,18 +208,21 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
             data: i,
           }))}
         />
-        {!loading ? (
-          <Button type="primary" icon={<CheckCircleOutlined />} size="small" />
+        {loading ? (
+          <Button
+            className="btn-warning"
+            size="small"
+            loading
+            // onClick={() => handleUpdate(selectedTodo)}
+            icon={<WarningOutlined />}
+          />
         ) : (
-          <>
-            <Button
-              className="btn-warning"
-              size="small"
-              loading={loading}
-              onClick={() => handleUpdate(selectedTodo)}
-              icon={<WarningOutlined />}
-            />
-          </>
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={() => handleUpdate(selectedTodo)}
+            size="small"
+          />
         )}
         <Popconfirm
           title="Delete the task"

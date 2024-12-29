@@ -9,14 +9,14 @@ import TodoList from './TodoList';
 import TodoService from './Todo.service';
 import useTodoStore from './Todo.store';
 import { keyBy } from 'lodash';
-import { TodoCollection } from './Todo.types';
 import useStatusStore from 'features/status/store';
+import { Todo, TodoCollection } from './Todo.types';
 
 type Props = {
   tag?: string;
 };
 
-const DEFAULT_SELECTED_STATUS = [1, 2];
+const DEFAULT_SELECTED_STATUS = [1];
 
 const TodoPage = (props: Props) => {
   const { tag } = props;
@@ -54,6 +54,7 @@ const TodoPage = (props: Props) => {
       };
 
       const res = await TodoService.listTodo(dataRequest);
+
       setLoading(false);
       if (res?.data) {
         setTodos(keyBy(res.data, 'id') as TodoCollection);
@@ -64,6 +65,29 @@ const TodoPage = (props: Props) => {
     }
   };
 
+  const handleUpdate = async (todo?: Todo) => {
+    if (!todo) return;
+    try {
+      if (!todo?.id) return;
+      setLoading(true);
+      await TodoService.updateTodo(todo.id, todo);
+      // re-fetch list
+      const dataRequest = {
+        author: authUser?.id,
+        status: DEFAULT_SELECTED_STATUS,
+      };
+
+      const res = await TodoService.listTodo(dataRequest);
+      console.log(res.data);
+      setLoading(false);
+      if (res?.data) {
+        setTodos(keyBy(res.data, 'id') as TodoCollection);
+      }
+    } catch (e) {
+      setLoading(false);
+      notification.error({ message: 'Error Update Todo' });
+    }
+  };
   useEffect(() => {
     const init = async () => {
       try {
@@ -74,6 +98,7 @@ const TodoPage = (props: Props) => {
         };
 
         const res = await TodoService.listTodo(dataRequest);
+        console.log(res.data);
         setLoading(false);
         if (res?.data) {
           setTodos(keyBy(res.data, 'id') as TodoCollection);
@@ -106,12 +131,14 @@ const TodoPage = (props: Props) => {
             placeholder="Please select"
             defaultValue={selectedStatus}
             onChange={handleChangeStatus}
-            options={Object.values(status).map((i) => {
-              return {
-                label: i.label,
-                value: i.id,
-              };
-            })}
+            options={Object.values(status)
+              .filter((i) => i.id !== 2)
+              .map((i) => {
+                return {
+                  label: i.label,
+                  value: i.id,
+                };
+              })}
           />
 
           <Tooltip title="Create todo">
@@ -152,9 +179,7 @@ const TodoPage = (props: Props) => {
     <div className="Todo flex">
       <div className={TodoListContainerClassName}>
         {renderHeader}
-        {selectedStatus.map((i) => {
-          return <TodoList status={i} key={i} />;
-        })}
+        <TodoList cb={handleUpdate} />
       </div>
 
       {renderDetail()}
