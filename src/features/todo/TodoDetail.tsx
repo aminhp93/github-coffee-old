@@ -8,13 +8,13 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
-import './Todo.less';
-import TodoService from './Todo.service';
+import './index.less';
+import TodoService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import useTodoStore from './Todo.store';
+import useTodoStore from './store';
 import useTagStore from '../tag/store';
-import { Todo, TodoCollection } from './Todo.types';
+import { Todo, TodoCollection } from './types';
 import { debounce } from 'lodash';
 import useStatusStore from 'features/status/store';
 

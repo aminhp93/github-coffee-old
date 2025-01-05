@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import './Todo.less';
-import useTodoStore from './Todo.store';
-import { Todo } from './Todo.types';
+import './index.less';
+import useTodoStore from './store';
+import { Todo } from './types';
 import { CheckOutlined } from '@ant-design/icons';
 import { Checkbox, Tooltip } from 'antd';
 import dayjs from 'dayjs';

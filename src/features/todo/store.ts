@@ -1,6 +1,6 @@
 import produce from 'immer';
 import { create } from 'zustand';
-import { TodoCollection, Mode, Todo } from './Todo.types';
+import { TodoCollection, Mode, Todo } from './types';
 
 type TodoStore = {
   todos: TodoCollection;

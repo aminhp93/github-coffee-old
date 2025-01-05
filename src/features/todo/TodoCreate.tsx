@@ -2,12 +2,12 @@
 
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
-import './Todo.less';
-import TodoService from './Todo.service';
-import { Todo } from './Todo.types';
+import './index.less';
+import TodoService from './service';
+import { Todo } from './types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import useTodoStore from './Todo.store';
+import useTodoStore from './store';
 import useTagStore from '../tag/store';
 
 export default function TodoCreate() {

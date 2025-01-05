@@ -21,7 +21,7 @@ import Figma from 'features/figma/Figma';
 import Post from 'features/post/Post';
 import Chat from 'features/chat/Chat';
 import Snippet from 'features/snippet/Snippet';
-import Todo from 'features/todo/Todo';
+import Todo from 'features/todo';
 import Test from 'features/test/Test';
 
 import { JSON_MODEL_RESET } from 'features/work/Work.constants';

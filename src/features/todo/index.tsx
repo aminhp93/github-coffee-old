@@ -10,15 +10,15 @@ import {
   Divider,
 } from 'antd';
 import { useEffect, useState } from 'react';
-import './Todo.less';
+import './index.less';
 import TodoCreate from './TodoCreate';
 import TodoDetail from './TodoDetail';
 import TodoList from './TodoList';
-import TodoService from './Todo.service';
-import useTodoStore from './Todo.store';
+import TodoService from './service';
+import useTodoStore from './store';
 import { keyBy } from 'lodash';
 import useStatusStore from 'features/status/store';
-import { Todo, TodoCollection } from './Todo.types';
+import { Todo, TodoCollection } from './types';
 
 type Props = {
   tag?: string;
@@ -208,7 +208,7 @@ const TodoPage = (props: Props) => {
       if (selectedTodo?.id) {
         return (
           <div className="TodoDetailContainer flex flex-1 height-100">
-            <TodoDetail selectedTodo={selectedTodo} />;
+            <TodoDetail selectedTodo={selectedTodo} />
           </div>
         );
       }
