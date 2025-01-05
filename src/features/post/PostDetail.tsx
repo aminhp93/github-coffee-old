@@ -7,13 +7,13 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
-import './Post.less';
-import PostService from './Post.service';
+import './index.less';
+import PostService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import usePostStore from './Post.store';
+import usePostStore from './store';
 import useTagStore from '../tag/store';
-import { Post, PostCollection } from './Post.types';
+import { Post, PostCollection } from './types';
 import { debounce } from 'lodash';
 
 const IS_AUTO_UPDATE = false;

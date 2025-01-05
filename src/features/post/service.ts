@@ -1,5 +1,5 @@
 import supabase from '@/services/supabase';
-import { Post } from './Post.types';
+import { Post } from './types';
 
 const PostService = {
   createPost(data: Partial<Post>) {

@@ -8,7 +8,7 @@ import type { MenuProps } from 'antd';
 // Import local files
 import CustomFlexLayout from 'components/customFlexLayout/CustomFlexLayout';
 import Chat from 'features/chat/Chat';
-import Post from 'features/post/Post';
+import Post from 'features/post';
 import Snippet from 'features/snippet/Snippet';
 import StockDetail from 'features/stock/StockDetail';
 import StockManager from 'features/stock/stockManager/StockManager';
@@ -51,8 +51,8 @@ const Work = ({ layoutName, defaultJson }: Props) => {
           StockNews: <StockNews />,
           Figma: <Figma />,
           Test: <Test />,
+          Todo: <Todo />,
           '[Deprecated] Snippet': <Snippet />,
-          '[Deprecated] Todo': <Todo />,
           '[Deprecated] Booking': <Booking />,
           '[Deprecated] Chat': <Chat hideOnlineUsers />,
           '[Deprecated] StockTable': <StockTable />,

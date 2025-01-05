@@ -2,12 +2,12 @@
 
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
-import './Post.less';
-import PostService from './Post.service';
-import { Post } from './Post.types';
+import './index.less';
+import PostService from './service';
+import { Post } from './types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import usePostStore from './Post.store';
+import usePostStore from './store';
 import useTagStore from '../tag/store';
 
 export default function PostCreate() {

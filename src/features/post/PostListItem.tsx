@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import './Post.less';
-import usePostStore from './Post.store';
-import { Post } from './Post.types';
+import './index.less';
+import usePostStore from './store';
+import { Post } from './types';
 import { CheckOutlined } from '@ant-design/icons';
 
 type Props = {
