@@ -21,7 +21,7 @@ const useTodoStore = create<TodoStore>((set, get) => ({
         draft.todos = todos;
       })
     ),
-  mode: 'list',
+  mode: 'single-view',
   setMode: (mode: Mode) =>
     set(
       produce((draft) => {

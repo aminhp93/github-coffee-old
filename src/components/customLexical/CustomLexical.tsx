@@ -90,10 +90,11 @@ const UpdatePlugin = (props: Props) => {
 
 type Props = {
   data?: string;
+  showToolbar?: boolean;
   onChange?: (value?: string) => void;
 };
 
-export default function Editor(props: Props) {
+export default function Editor({ showToolbar = true, ...props }: Props) {
   const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
       const value = JSON.stringify(editorState);
@@ -107,7 +108,7 @@ export default function Editor(props: Props) {
   return (
     <LexicalComposer initialConfig={editorConfig}>
       <div className="editor-container">
-        <ToolbarPlugin />
+        {showToolbar && <ToolbarPlugin />}
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={<ContentEditable className="editor-input" />}

@@ -33,7 +33,7 @@ export default function TodoCreate() {
         newTodos[newTodo.id] = newTodo;
         setTodos(newTodos);
         setSelectedTodo(newTodo);
-        setMode('list');
+        setMode('single-view');
       }
 
       notification.success({ message: 'Create success' });

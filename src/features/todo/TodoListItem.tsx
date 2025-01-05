@@ -32,7 +32,7 @@ function TodoListItem({ data, cb }: Props) {
       <div
         onClick={() => {
           setSelectedTodo(data);
-          setMode('list');
+          setMode('single-view');
         }}
         style={{ flex: 1 }}
       >

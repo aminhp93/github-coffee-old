@@ -1,6 +1,14 @@
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
-import { Button, notification, Tooltip, Select } from 'antd';
+import {
+  Button,
+  notification,
+  Tooltip,
+  Select,
+  Radio,
+  Flex,
+  Divider,
+} from 'antd';
 import { useEffect, useState } from 'react';
 import './Todo.less';
 import TodoCreate from './TodoCreate';
@@ -24,6 +32,8 @@ const TodoPage = (props: Props) => {
   const setTodos = useTodoStore((state) => state.setTodos);
   const mode = useTodoStore((state) => state.mode);
   const setMode = useTodoStore((state) => state.setMode);
+  const todos = useTodoStore((state) => state.todos);
+
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
   const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
   const setLoading = useTodoStore((state) => state.setLoading);
@@ -118,7 +128,7 @@ const TodoPage = (props: Props) => {
           <Button
             size="small"
             icon={<RollbackOutlined />}
-            onClick={() => setMode('list')}
+            onClick={() => setMode('single-view')}
           />
         </Tooltip>
       ) : (
@@ -140,17 +150,30 @@ const TodoPage = (props: Props) => {
                 };
               })}
           />
-
-          <Tooltip title="Create todo">
-            <Button
+          <Flex>
+            <Radio.Group
               size="small"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setMode('create');
-                setSelectedTodo(undefined);
-              }}
-            />
-          </Tooltip>
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+            >
+              <Radio.Button value="create">create</Radio.Button>
+              <Radio.Button value="single-view">singleView</Radio.Button>
+              <Radio.Button value="all-view">allView</Radio.Button>
+            </Radio.Group>
+            <Tooltip title="Create todo">
+              <Button
+                style={{
+                  marginLeft: '10px',
+                }}
+                size="small"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setMode('create');
+                  setSelectedTodo(undefined);
+                }}
+              />
+            </Tooltip>
+          </Flex>
         </>
       )}
     </div>
@@ -163,17 +186,38 @@ const TodoPage = (props: Props) => {
           <TodoCreate />;
         </div>
       );
-    }
-    if (selectedTodo?.id) {
+    } else if (mode === 'all-view') {
       return (
-        <div className="TodoDetailContainer flex flex-1 height-100">
-          <TodoDetail />;
+        <div
+          className="TodoDetailContainer flex flex-1 height-100"
+          style={{
+            flexDirection: 'column',
+          }}
+        >
+          {Object.values(todos).map((i) => {
+            return (
+              <>
+                <TodoDetail selectedTodo={i} showHeader={false} />
+                <Divider />
+              </>
+            );
+          })}
         </div>
       );
+    } else if (mode === 'single-view') {
+      if (selectedTodo?.id) {
+        return (
+          <div className="TodoDetailContainer flex flex-1 height-100">
+            <TodoDetail selectedTodo={selectedTodo} />;
+          </div>
+        );
+      }
     }
 
     return null;
   };
+
+  console.log(mode);
 
   return (
     <div className="Todo flex">
