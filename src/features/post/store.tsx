@@ -1,49 +1,49 @@
 import React, { ReactNode } from 'react';
 import { createStore, useStore, StoreApi } from 'zustand';
 import produce from 'immer';
-import { TodoCollection, Mode, Todo } from './types';
+import { PostCollection, Mode, Post } from './types';
 
 // Define the types for the store state and actions
-type TodoState = {
-  todos: TodoCollection;
+type PostState = {
+  posts: PostCollection;
   mode: Mode;
-  selectedTodo?: Todo;
+  selectedPost?: Post;
   loading: boolean;
   actions: {
-    setTodos: (todos: TodoCollection) => void;
+    setPosts: (posts: PostCollection) => void;
     setMode: (mode: Mode) => void;
-    setSelectedTodo: (todo?: Todo) => void;
+    setSelectedPost: (post?: Post) => void;
     setLoading: (loading: boolean) => void;
   };
 };
 
 // Create a context with the store type
-const TodoStoreContext = React.createContext<StoreApi<TodoState> | null>(null);
+const PostStoreContext = React.createContext<StoreApi<PostState> | null>(null);
 
-interface TodoStoreProviderProps {
+interface PostStoreProviderProps {
   children: ReactNode;
-  initialTodos: TodoCollection;
+  initialPosts: PostCollection;
   initialMode: Mode;
   initialLoading: boolean;
 }
 
-const TodoStoreProvider: React.FC<TodoStoreProviderProps> = ({
+const PostStoreProvider: React.FC<PostStoreProviderProps> = ({
   children,
-  initialTodos,
+  initialPosts,
   initialMode,
   initialLoading,
 }) => {
   const [store] = React.useState(() =>
-    createStore<TodoState>((set) => ({
-      todos: initialTodos,
+    createStore<PostState>((set) => ({
+      posts: initialPosts,
       mode: initialMode,
-      selectedTodo: undefined,
+      selectedPost: undefined,
       loading: initialLoading,
       actions: {
-        setTodos: (todos) =>
+        setPosts: (posts) =>
           set(
             produce((state) => {
-              state.todos = todos;
+              state.posts = posts;
             })
           ),
         setMode: (mode) =>
@@ -52,10 +52,10 @@ const TodoStoreProvider: React.FC<TodoStoreProviderProps> = ({
               state.mode = mode;
             })
           ),
-        setSelectedTodo: (todo) =>
+        setSelectedPost: (post) =>
           set(
             produce((state) => {
-              state.selectedTodo = todo;
+              state.selectedPost = post;
             })
           ),
         setLoading: (loading) =>
@@ -69,18 +69,18 @@ const TodoStoreProvider: React.FC<TodoStoreProviderProps> = ({
   );
 
   return (
-    <TodoStoreContext.Provider value={store}>
+    <PostStoreContext.Provider value={store}>
       {children}
-    </TodoStoreContext.Provider>
+    </PostStoreContext.Provider>
   );
 };
 
-const useTodoStore = <T,>(selector: (state: TodoState) => T): T => {
-  const store = React.useContext(TodoStoreContext);
+const usePostStore = <T,>(selector: (state: PostState) => T): T => {
+  const store = React.useContext(PostStoreContext);
   if (!store) {
-    throw new Error('Missing TodoStoreProvider');
+    throw new Error('Missing PostStoreProvider');
   }
   return useStore(store, selector);
 };
 
-export { TodoStoreProvider, useTodoStore };
+export { PostStoreProvider, usePostStore };

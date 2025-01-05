@@ -18,7 +18,7 @@ import '@/styles/index.less';
 import Layout from 'components/layout/Layout';
 import Work from 'features/work/Work';
 import Figma from 'features/figma/Figma';
-import Post from 'features/post/Post';
+import Post from 'features/post';
 import Chat from 'features/chat/Chat';
 import Snippet from 'features/snippet/Snippet';
 import Todo from 'features/todo';

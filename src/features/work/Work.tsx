@@ -8,7 +8,7 @@ import type { MenuProps } from 'antd';
 // Import local files
 import CustomFlexLayout from 'components/customFlexLayout/CustomFlexLayout';
 import Chat from 'features/chat/Chat';
-import Post from 'features/post/Post';
+import Post from 'features/post';
 import Snippet from 'features/snippet/Snippet';
 import StockDetail from 'features/stock/StockDetail';
 import StockManager from 'features/stock/stockManager/StockManager';
@@ -19,6 +19,7 @@ import Todo from 'features/todo';
 import Test from 'features/test/Test';
 import Booking from 'features/booking/Booking';
 import { DROPDOWN_LIST } from './Work.constants';
+import Roadmap from 'features/roadmap';
 
 type Props = {
   defaultJson: IJsonModel;
@@ -51,8 +52,9 @@ const Work = ({ layoutName, defaultJson }: Props) => {
           StockNews: <StockNews />,
           Figma: <Figma />,
           Test: <Test />,
+          Todo: <Todo />,
+          Roadmap: <Roadmap />,
           '[Deprecated] Snippet': <Snippet />,
-          '[Deprecated] Todo': <Todo />,
           '[Deprecated] Booking': <Booking />,
           '[Deprecated] Chat': <Chat hideOnlineUsers />,
           '[Deprecated] StockTable': <StockTable />,

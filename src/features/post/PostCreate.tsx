@@ -2,21 +2,23 @@
 
 import { Button, Form, Input, notification, Select } from 'antd';
 import { useState } from 'react';
-import './Post.less';
-import PostService from './Post.service';
-import { Post } from './Post.types';
+import './index.less';
+import PostService from './service';
+import { Post } from './types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import usePostStore from './Post.store';
+import { usePostStore } from './store';
 import useTagStore from '../tag/store';
 
 export default function PostCreate() {
   const { authUser }: AuthUserContext = useAuth();
   const [post, setPost] = useState<Partial<Post> | undefined>();
   const posts = usePostStore((state) => state.posts);
-  const setPosts = usePostStore((state) => state.setPosts);
-  const setMode = usePostStore((state) => state.setMode);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+  const setPosts = usePostStore((state) => state.actions.setPosts);
+  const setMode = usePostStore((state) => state.actions.setMode);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
   const tags = useTagStore((state) => state.tags);
 
   const onFinish = async () => {

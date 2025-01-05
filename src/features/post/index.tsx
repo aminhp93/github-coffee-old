@@ -2,14 +2,14 @@ import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import { PlusOutlined, RollbackOutlined } from '@ant-design/icons';
 import { Button, notification, Tooltip, Radio } from 'antd';
 import { useEffect, useState } from 'react';
-import './Post.less';
+import './index.less';
 import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
-import PostService from './Post.service';
-import usePostStore from './Post.store';
+import PostService from './service';
+import { PostStoreProvider, usePostStore } from './store';
 import { keyBy } from 'lodash';
-import { PostCollection } from './Post.types';
+import { PostCollection } from './types';
 import useTagStore from '../tag/store';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 import type { RadioChangeEvent } from 'antd';
@@ -21,12 +21,14 @@ type Props = {
 const PostPage = (props: Props) => {
   const { tag } = props;
 
-  const setPosts = usePostStore((state) => state.setPosts);
+  const setPosts = usePostStore((state) => state.actions.setPosts);
   const mode = usePostStore((state) => state.mode);
-  const setMode = usePostStore((state) => state.setMode);
+  const setMode = usePostStore((state) => state.actions.setMode);
   const selectedPost = usePostStore((state) => state.selectedPost);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
-  const setLoading = usePostStore((state) => state.setLoading);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
+  const setLoading = usePostStore((state) => state.actions.setLoading);
   const tags = useTagStore((state) => state.tags);
   const [openDetail, setOpenDetail] = useState(true);
 
@@ -161,4 +163,16 @@ const PostPage = (props: Props) => {
   );
 };
 
-export default PostPage;
+const WrappedPost = (props: Props) => {
+  return (
+    <PostStoreProvider
+      initialLoading={false}
+      initialMode="list"
+      initialPosts={{}}
+    >
+      <PostPage {...props} />
+    </PostStoreProvider>
+  );
+};
+
+export default WrappedPost;
