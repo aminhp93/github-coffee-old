@@ -12,7 +12,7 @@ import './index.less';
 import TodoService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import useTodoStore from './store';
+import { useTodoStore } from './store';
 import useTagStore from '../tag/store';
 import { Todo, TodoCollection } from './types';
 import { debounce } from 'lodash';
@@ -31,8 +31,10 @@ const MemoizedTodoDetail = memo(function TodoDetail({
 }) {
   const tags = useTagStore((state) => state.tags);
   const status = useStatusStore((state) => state.status);
-  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
-  const setTodos = useTodoStore((state) => state.setTodos);
+  const setSelectedTodo = useTodoStore(
+    (state) => state.actions.setSelectedTodo
+  );
+  const setTodos = useTodoStore((state) => state.actions.setTodos);
   const todos = useTodoStore((state) => state.todos);
 
   const [loading, setLoading] = useState(false);

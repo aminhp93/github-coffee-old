@@ -1,7 +1,7 @@
 import { Spin } from 'antd';
 import './index.less';
 import TodoListItem from './TodoListItem';
-import useTodoStore from './store';
+import { useTodoStore } from './store';
 import { Todo } from './types';
 
 type Props = {

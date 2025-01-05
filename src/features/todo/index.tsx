@@ -15,7 +15,7 @@ import TodoCreate from './TodoCreate';
 import TodoDetail from './TodoDetail';
 import TodoList from './TodoList';
 import TodoService from './service';
-import useTodoStore from './store';
+import { useTodoStore, TodoStoreProvider } from './store';
 import { keyBy } from 'lodash';
 import useStatusStore from 'features/status/store';
 import { Todo, TodoCollection } from './types';
@@ -29,14 +29,16 @@ const DEFAULT_SELECTED_STATUS = [1];
 const TodoPage = (props: Props) => {
   const { tag } = props;
 
-  const setTodos = useTodoStore((state) => state.setTodos);
+  const setTodos = useTodoStore((state) => state.actions.setTodos);
   const mode = useTodoStore((state) => state.mode);
-  const setMode = useTodoStore((state) => state.setMode);
+  const setMode = useTodoStore((state) => state.actions.setMode);
   const todos = useTodoStore((state) => state.todos);
 
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
-  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
-  const setLoading = useTodoStore((state) => state.setLoading);
+  const setSelectedTodo = useTodoStore(
+    (state) => state.actions.setSelectedTodo
+  );
+  const setLoading = useTodoStore((state) => state.actions.setLoading);
   const status = useStatusStore((state) => state.status);
 
   const [selectedStatus, setSelectedStatus] = useState<number[]>(
@@ -231,4 +233,16 @@ const TodoPage = (props: Props) => {
   );
 };
 
-export default TodoPage;
+const WrappedTodo = (props: Props) => {
+  return (
+    <TodoStoreProvider
+      initialTodos={{}}
+      initialMode="single-view"
+      initialLoading={false}
+    >
+      <TodoPage {...props} />
+    </TodoStoreProvider>
+  );
+};
+
+export default WrappedTodo;

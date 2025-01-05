@@ -7,16 +7,18 @@ import TodoService from './service';
 import { Todo } from './types';
 import { useAuth, AuthUserContext } from '@/context/SupabaseContext';
 import CustomLexical from 'components/customLexical/CustomLexical';
-import useTodoStore from './store';
+import { useTodoStore } from './store';
 import useTagStore from '../tag/store';
 
 export default function TodoCreate() {
   const { authUser }: AuthUserContext = useAuth();
   const [todo, setTodo] = useState<Partial<Todo> | undefined>();
   const todos = useTodoStore((state) => state.todos);
-  const setTodos = useTodoStore((state) => state.setTodos);
-  const setMode = useTodoStore((state) => state.setMode);
-  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
+  const setTodos = useTodoStore((state) => state.actions.setTodos);
+  const setMode = useTodoStore((state) => state.actions.setMode);
+  const setSelectedTodo = useTodoStore(
+    (state) => state.actions.setSelectedTodo
+  );
   const tags = useTagStore((state) => state.tags);
 
   const onFinish = async () => {
