@@ -11,7 +11,7 @@ import './index.less';
 import PostService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import usePostStore from './store';
+import { usePostStore } from './store';
 import useTagStore from '../tag/store';
 import { Post, PostCollection } from './types';
 import { debounce } from 'lodash';
@@ -23,8 +23,10 @@ const { Paragraph } = Typography;
 const MemoizedPostDetail = memo(function PostDetail() {
   const tags = useTagStore((state) => state.tags);
   const selectedPost = usePostStore((state) => state.selectedPost);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
-  const setPosts = usePostStore((state) => state.setPosts);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
+  const setPosts = usePostStore((state) => state.actions.setPosts);
   const posts = usePostStore((state) => state.posts);
 
   const [loading, setLoading] = useState(false);

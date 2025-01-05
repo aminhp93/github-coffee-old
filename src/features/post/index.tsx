@@ -7,7 +7,7 @@ import PostCreate from './PostCreate';
 import PostDetail from './PostDetail';
 import PostList from './PostList';
 import PostService from './service';
-import usePostStore from './store';
+import { PostStoreProvider, usePostStore } from './store';
 import { keyBy } from 'lodash';
 import { PostCollection } from './types';
 import useTagStore from '../tag/store';
@@ -21,12 +21,14 @@ type Props = {
 const PostPage = (props: Props) => {
   const { tag } = props;
 
-  const setPosts = usePostStore((state) => state.setPosts);
+  const setPosts = usePostStore((state) => state.actions.setPosts);
   const mode = usePostStore((state) => state.mode);
-  const setMode = usePostStore((state) => state.setMode);
+  const setMode = usePostStore((state) => state.actions.setMode);
   const selectedPost = usePostStore((state) => state.selectedPost);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
-  const setLoading = usePostStore((state) => state.setLoading);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
+  const setLoading = usePostStore((state) => state.actions.setLoading);
   const tags = useTagStore((state) => state.tags);
   const [openDetail, setOpenDetail] = useState(true);
 
@@ -161,4 +163,16 @@ const PostPage = (props: Props) => {
   );
 };
 
-export default PostPage;
+const WrappedPost = (props: Props) => {
+  return (
+    <PostStoreProvider
+      initialLoading={false}
+      initialMode="list"
+      initialPosts={{}}
+    >
+      <PostPage {...props} />
+    </PostStoreProvider>
+  );
+};
+
+export default WrappedPost;

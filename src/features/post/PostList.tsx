@@ -1,7 +1,7 @@
 import { Spin } from 'antd';
 import './index.less';
 import PostListItem from './PostListItem';
-import usePostStore from './store';
+import { usePostStore } from './store';
 
 const PostList = () => {
   const posts = usePostStore((state) => state.posts);

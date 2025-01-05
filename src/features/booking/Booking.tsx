@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 import PostDetail from 'features/post/PostDetail';
 import PostService from 'features/post/service';
-import usePostStore from 'features/post/store';
+import { usePostStore } from 'features/post/store';
 import { Post } from 'features/post/types';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
@@ -17,7 +17,9 @@ const BookingPage = () => {
   const [api, contextHolder] = notification.useNotification();
 
   const [showPostDetail, setShowPostDetail] = useState(false);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
   const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
 
   const handleFindPartner = async () => {

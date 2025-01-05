@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import './index.less';
-import usePostStore from './store';
+import { usePostStore } from './store';
 import { Post } from './types';
 import { CheckOutlined } from '@ant-design/icons';
 
@@ -10,8 +10,10 @@ type Props = {
 
 function PostListItem({ data }: Props) {
   const selectedPost = usePostStore((state) => state.selectedPost);
-  const setSelectedPost = usePostStore((state) => state.setSelectedPost);
-  const setMode = usePostStore((state) => state.setMode);
+  const setSelectedPost = usePostStore(
+    (state) => state.actions.setSelectedPost
+  );
+  const setMode = usePostStore((state) => state.actions.setMode);
 
   const selected = selectedPost?.id === data.id;
 
