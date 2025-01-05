@@ -2,11 +2,14 @@ import { Spin } from 'antd';
 import './Todo.less';
 import TodoListItem from './TodoListItem';
 import useTodoStore from './Todo.store';
-import useStatusStore from 'features/status/store';
+import { Todo } from './Todo.types';
 
-const TodoList = ({ status }: { status: number }) => {
+type Props = {
+  cb?: (todo: Todo) => void;
+};
+
+const TodoList = ({ cb }: Props) => {
   const todos = useTodoStore((state) => state.todos);
-  const statusStore = useStatusStore((state) => state.status);
   const loading = useTodoStore((state) => state.loading);
 
   if (loading) {
@@ -15,12 +18,9 @@ const TodoList = ({ status }: { status: number }) => {
 
   return (
     <div className="TodoList flex">
-      <div>{statusStore[status]?.label}</div>
-      {Object.values(todos)
-        .filter((i) => i.status === status)
-        .map((i) => {
-          return <TodoListItem key={i.id} data={i} />;
-        })}
+      {Object.values(todos).map((i) => {
+        return <TodoListItem key={i.id} data={i} cb={cb} />;
+      })}
     </div>
   );
 };

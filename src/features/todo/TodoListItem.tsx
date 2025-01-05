@@ -3,12 +3,15 @@ import './Todo.less';
 import useTodoStore from './Todo.store';
 import { Todo } from './Todo.types';
 import { CheckOutlined } from '@ant-design/icons';
+import { Checkbox, Tooltip } from 'antd';
+import dayjs from 'dayjs';
 
 type Props = {
   data: Todo;
+  cb?: (todo: Todo) => void;
 };
 
-function TodoListItem({ data }: Props) {
+function TodoListItem({ data, cb }: Props) {
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
   const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
   const setMode = useTodoStore((state) => state.setMode);
@@ -17,16 +20,27 @@ function TodoListItem({ data }: Props) {
 
   return (
     <div className={`TodoListItem flex ${selected ? 'selected' : ''}`}>
+      <Checkbox
+        checked={data.status === 3}
+        onClick={() => {
+          cb?.({
+            ...data,
+            status: data.status === 3 ? 1 : 3,
+          });
+        }}
+      />
       <div
         onClick={() => {
           setSelectedTodo(data);
           setMode('list');
         }}
         style={{ flex: 1 }}
-      >{`- ${data.title}`}</div>
-      <div className="toolbox">
-        <CheckOutlined />
+      >
+        {dayjs(data.created_at).format('YYYY-MM-DD')} - {`${data.title}`}
       </div>
+      <Tooltip title="recurring">
+        <CheckOutlined />
+      </Tooltip>
     </div>
   );
 }
