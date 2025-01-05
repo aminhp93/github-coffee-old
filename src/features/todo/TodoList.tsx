@@ -1,8 +1,8 @@
 import { Spin } from 'antd';
-import './Todo.less';
+import './index.less';
 import TodoListItem from './TodoListItem';
-import useTodoStore from './Todo.store';
-import { Todo } from './Todo.types';
+import { useTodoStore } from './store';
+import { Todo } from './types';
 
 type Props = {
   cb?: (todo: Todo) => void;

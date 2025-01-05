@@ -8,13 +8,13 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
-import './Todo.less';
-import TodoService from './Todo.service';
+import './index.less';
+import TodoService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
-import useTodoStore from './Todo.store';
+import { useTodoStore } from './store';
 import useTagStore from '../tag/store';
-import { Todo, TodoCollection } from './Todo.types';
+import { Todo, TodoCollection } from './types';
 import { debounce } from 'lodash';
 import useStatusStore from 'features/status/store';
 
@@ -22,12 +22,19 @@ const IS_AUTO_UPDATE = false;
 
 const { Paragraph } = Typography;
 
-const MemoizedTodoDetail = memo(function TodoDetail() {
+const MemoizedTodoDetail = memo(function TodoDetail({
+  showHeader = true,
+  selectedTodo,
+}: {
+  showHeader?: boolean;
+  selectedTodo?: Todo;
+}) {
   const tags = useTagStore((state) => state.tags);
   const status = useStatusStore((state) => state.status);
-  const selectedTodo = useTodoStore((state) => state.selectedTodo);
-  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
-  const setTodos = useTodoStore((state) => state.setTodos);
+  const setSelectedTodo = useTodoStore(
+    (state) => state.actions.setSelectedTodo
+  );
+  const setTodos = useTodoStore((state) => state.actions.setTodos);
   const todos = useTodoStore((state) => state.todos);
 
   const [loading, setLoading] = useState(false);
@@ -242,9 +249,10 @@ const MemoizedTodoDetail = memo(function TodoDetail() {
 
   return (
     <div className="TodoDetail width-100">
-      {renderHeader}
+      {showHeader && renderHeader}
       <div style={{ flex: 1, overflow: 'auto' }}>
         <CustomLexical
+          showToolbar={showHeader ? true : false}
           data={lexicalData}
           onChange={(value?: string) => {
             console.log('onchange', value);

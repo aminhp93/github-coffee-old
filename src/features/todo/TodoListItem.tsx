@@ -1,7 +1,7 @@
 import { memo } from 'react';
-import './Todo.less';
-import useTodoStore from './Todo.store';
-import { Todo } from './Todo.types';
+import './index.less';
+import { useTodoStore } from './store';
+import { Todo } from './types';
 import { CheckOutlined } from '@ant-design/icons';
 import { Checkbox, Tooltip } from 'antd';
 import dayjs from 'dayjs';
@@ -13,8 +13,10 @@ type Props = {
 
 function TodoListItem({ data, cb }: Props) {
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
-  const setSelectedTodo = useTodoStore((state) => state.setSelectedTodo);
-  const setMode = useTodoStore((state) => state.setMode);
+  const setSelectedTodo = useTodoStore(
+    (state) => state.actions.setSelectedTodo
+  );
+  const setMode = useTodoStore((state) => state.actions.setMode);
 
   const selected = selectedTodo?.id === data.id;
 
@@ -32,7 +34,7 @@ function TodoListItem({ data, cb }: Props) {
       <div
         onClick={() => {
           setSelectedTodo(data);
-          setMode('list');
+          setMode('single-view');
         }}
         style={{ flex: 1 }}
       >

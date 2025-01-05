@@ -15,7 +15,7 @@ import StockManager from 'features/stock/stockManager/StockManager';
 import StockNews from 'features/stock/StockNews';
 import StockTable from 'features/stock/stockTable/StockTable';
 import Figma from 'features/figma/Figma';
-import Todo from 'features/todo/Todo';
+import Todo from 'features/todo';
 import Test from 'features/test/Test';
 import Booking from 'features/booking/Booking';
 import { DROPDOWN_LIST } from './Work.constants';

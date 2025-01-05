@@ -11,4 +11,4 @@ export type Todo = {
 
 export type TodoCollection = Record<string, Todo>;
 
-export type Mode = 'create' | 'list';
+export type Mode = 'create' | 'single-view' | 'all-view';

@@ -1,5 +1,5 @@
 import supabase from '@/services/supabase';
-import { Todo } from './Todo.types';
+import { Todo } from './types';
 
 const TodoService = {
   createTodo(data: Partial<Todo>) {
