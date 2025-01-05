@@ -19,6 +19,7 @@ import Todo from 'features/todo';
 import Test from 'features/test/Test';
 import Booking from 'features/booking/Booking';
 import { DROPDOWN_LIST } from './Work.constants';
+import Roadmap from 'features/roadmap';
 
 type Props = {
   defaultJson: IJsonModel;
@@ -52,6 +53,7 @@ const Work = ({ layoutName, defaultJson }: Props) => {
           Figma: <Figma />,
           Test: <Test />,
           Todo: <Todo />,
+          Roadmap: <Roadmap />,
           '[Deprecated] Snippet': <Snippet />,
           '[Deprecated] Booking': <Booking />,
           '[Deprecated] Chat': <Chat hideOnlineUsers />,
