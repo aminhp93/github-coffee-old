@@ -82,7 +82,6 @@ const ChatPage = ({ hideOnlineUsers }: Props) => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat' },
         (payload) => {
-          console.log('Change received!', payload);
           if (payload.eventType === 'INSERT') {
             const newData = payload.new as Chat;
 
@@ -98,8 +97,6 @@ const ChatPage = ({ hideOnlineUsers }: Props) => {
       chat.unsubscribe();
     };
   }, [addChats]);
-
-  console.log(chats);
 
   return (
     <div className="Chat height-100">

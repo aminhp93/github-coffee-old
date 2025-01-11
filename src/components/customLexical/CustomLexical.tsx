@@ -77,8 +77,6 @@ const UpdatePlugin = (props: Props) => {
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    // console.log('updated', props.data);
-
     if (!props.data) return;
     const editorState = editor.parseEditorState(props.data);
     editor.setEditorState(editorState);
@@ -98,7 +96,6 @@ export default function Editor({ showToolbar = true, ...props }: Props) {
   const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
       const value = JSON.stringify(editorState);
-      console.log('change', props.data === value);
       if (props.data === value || value === EMPTY_VALUE) return;
 
       props.onChange && props.onChange(value);

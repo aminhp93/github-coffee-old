@@ -49,7 +49,6 @@ const Item = ({ id }: Props) => {
   useGesture(
     {
       onDrag: ({ offset: [x, y], event, tap, first, last }) => {
-        console.log('onDrag');
         event.stopPropagation();
         if (mode === 'pan') {
           if (item.type === 'view') {

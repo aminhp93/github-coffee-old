@@ -103,7 +103,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
   );
 
   const handleChangeTag = (value: any, data: any) => {
-    console.log(value, data, selectedTodo);
     if (!selectedTodo?.id) return;
     const updatedTodo = {
       ...selectedTodo,
@@ -119,7 +118,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
   };
 
   const handleChangeStatus = (value: any, data: any) => {
-    console.log(value, data, selectedTodo);
     if (!selectedTodo?.id) return;
     const updatedTodo = {
       ...selectedTodo,
@@ -255,7 +253,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
           showToolbar={showHeader ? true : false}
           data={lexicalData}
           onChange={(value?: string) => {
-            console.log('onchange', value);
             handleChangeLexical({ value, todos, selectedTodo });
           }}
         />

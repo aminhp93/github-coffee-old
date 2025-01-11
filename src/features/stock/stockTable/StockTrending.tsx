@@ -57,18 +57,15 @@ const StockTrending = () => {
   const [tab, setTab] = useState('post');
 
   const handleChange = (value: string) => {
-    console.log(`selected ${value}`);
     setFilter(value);
   };
 
   const handleChangeWl = (value: string) => {
-    console.log(`selected wl ${value}`);
     if (!watchlist) return;
     setSelectedWatchlist(watchlist[Number(value)]);
   };
 
   const handleChangeTab = (value: string) => {
-    console.log(`selected tab ${value}`);
     setTab(value);
     setOption(null);
   };
@@ -101,7 +98,6 @@ const StockTrending = () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       await Promise.all(listPromise)
         .then((res: any) => {
-          console.log(res);
           const flattenData = uniqBy(
             res.map((i: any) => i.data).flat(),
             (item: any) => item.postID
@@ -123,7 +119,6 @@ const StockTrending = () => {
               };
             } else {
               const newSeries: any = [];
-              console.log(newSeriesData);
               newSeries.push({
                 name: selectedWatchlist.symbols[i],
                 type: 'line',
@@ -170,7 +165,6 @@ const StockTrending = () => {
     }
     return result;
   };
-  console.log({ option });
 
   return (
     <div

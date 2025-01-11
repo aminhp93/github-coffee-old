@@ -43,8 +43,6 @@ const StockManager = () => {
       setListStocks(res);
     } catch (e) {
       gridRef.current?.api?.hideOverlay();
-
-      console.log(e);
       notification.error({ message: 'error' });
     }
   }, []);
@@ -79,7 +77,6 @@ const StockManager = () => {
 
       notification.success({ message: 'success' });
     } catch (e) {
-      console.log(e);
       notification.error({ message: 'error' });
     }
   };

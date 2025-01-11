@@ -161,7 +161,6 @@ const useHistoryStore = create<HistoryStore>((set, get) => ({
     );
   },
   patchItems: (data: ItemCollection) => {
-    console.log('patchItems', data);
     set(
       produceWithHistory((draft) => {
         // Apply the patch to the current state.

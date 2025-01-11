@@ -41,7 +41,6 @@ const BookingPage = () => {
     const init = async () => {
       try {
         const res = await PostService.detailPost(41);
-        console.log(res);
         if (res?.data && res.data.length === 1) {
           setSelectedPost(res.data[0] as Post);
         }
@@ -60,7 +59,6 @@ const BookingPage = () => {
           creator: authUser?.id,
           status: 1,
         });
-        console.log(res);
         if (res?.data && res.data.length > 0) {
           setCurrentBooking(res.data[0] as Booking);
         }
@@ -72,8 +70,6 @@ const BookingPage = () => {
     init();
   }, []);
 
-  console.log(currentBooking);
-
   useEffect(() => {
     if (!currentBooking) return;
     api.success({
@@ -84,7 +80,6 @@ const BookingPage = () => {
         console.log('Notification Clicked!');
       },
       onClose: async () => {
-        console.log('closed');
         if (!currentBooking) return;
         await BookingService.deleteBooking(currentBooking?.id);
       },
@@ -93,7 +88,6 @@ const BookingPage = () => {
       if (!currentBooking) return;
       const init = async () => {
         try {
-          console.log('deleted');
           await BookingService.deleteBooking(currentBooking?.id);
         } catch (e) {
           console.log(e);

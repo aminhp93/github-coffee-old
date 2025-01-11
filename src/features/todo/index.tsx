@@ -55,8 +55,6 @@ const TodoPage = (props: Props) => {
   }`;
 
   const handleChangeStatus = async (value: number[]) => {
-    console.log(value);
-
     try {
       setLoading(true);
       setSelectedStatus(value);
@@ -90,7 +88,6 @@ const TodoPage = (props: Props) => {
       };
 
       const res = await TodoService.listTodo(dataRequest);
-      console.log(res.data);
       setLoading(false);
       if (res?.data) {
         setTodos(keyBy(res.data, 'id') as TodoCollection);
@@ -110,7 +107,6 @@ const TodoPage = (props: Props) => {
         };
 
         const res = await TodoService.listTodo(dataRequest);
-        console.log(res.data);
         setLoading(false);
         if (res?.data) {
           setTodos(keyBy(res.data, 'id') as TodoCollection);
@@ -218,8 +214,6 @@ const TodoPage = (props: Props) => {
 
     return null;
   };
-
-  console.log(mode);
 
   return (
     <div className="Todo flex">

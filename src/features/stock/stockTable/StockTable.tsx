@@ -150,7 +150,6 @@ const StockTable = () => {
               offset,
               list_all
             );
-            console.log(res);
             setResultUpdate((pre: any) => ({
               ...pre,
               res: [...(pre.res || []), ...res],
