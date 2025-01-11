@@ -17,7 +17,7 @@
 
 .TodoCreateButton {
   justify-content: space-between;
-  margin: 8px 16px;
+  margin: 8px;
 }
 .TodoDetailContainer {
   overflow: auto;
@@ -49,12 +49,20 @@
   .toolbox {
     display: none;
   }
+
+  .ant-checkbox-wrapper {
+    visibility: hidden;
+  }
 }
 
 .TodoListItem:hover {
   background: @gray-100;
   .toolbox {
     display: block;
+  }
+
+  .ant-checkbox-wrapper {
+    visibility: visible;
   }
 }
 

@@ -2,9 +2,8 @@ import { memo } from 'react';
 import './index.less';
 import { useTodoStore } from './store';
 import { Todo } from './types';
-import { CheckOutlined } from '@ant-design/icons';
-import { Checkbox, Tooltip } from 'antd';
-import dayjs from 'dayjs';
+import { RetweetOutlined, LineOutlined } from '@ant-design/icons';
+import { Checkbox, Tooltip, Button } from 'antd';
 
 type Props = {
   data: Todo;
@@ -23,11 +22,11 @@ function TodoListItem({ data, cb }: Props) {
   return (
     <div className={`TodoListItem flex ${selected ? 'selected' : ''}`}>
       <Checkbox
-        checked={data.status === 3}
-        onClick={() => {
+        checked={data.isDone}
+        onChange={(e) => {
           cb?.({
             ...data,
-            status: data.status === 3 ? 1 : 3,
+            isDone: e.target.checked,
           });
         }}
       />
@@ -36,12 +35,21 @@ function TodoListItem({ data, cb }: Props) {
           setSelectedTodo(data);
           setMode('single-view');
         }}
-        style={{ flex: 1 }}
+        style={{ flex: 1, marginLeft: 10 }}
       >
-        {dayjs(data.created_at).format('YYYY-MM-DD')} - {`${data.title}`}
+        {`${data.title}`}
       </div>
       <Tooltip title="recurring">
-        <CheckOutlined />
+        <Button
+          size="small"
+          icon={data.isRecurring ? <RetweetOutlined /> : <LineOutlined />}
+          onClick={() => {
+            cb?.({
+              ...data,
+              isRecurring: !data.isRecurring,
+            });
+          }}
+        />
       </Tooltip>
     </div>
   );

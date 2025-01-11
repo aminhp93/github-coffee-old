@@ -1,22 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import {
   CheckCircleOutlined,
   DeleteOutlined,
   WarningOutlined,
   LeftOutlined,
 } from '@ant-design/icons';
-import { Button, notification, Select, Typography, Popconfirm } from 'antd';
+import { Button, notification, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
 import './index.less';
 import TodoService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
 import { DEFAULT_VALUE } from 'components/customLexical/utils';
 import { useTodoStore } from './store';
-import useTagStore from '../tag/store';
 import { Todo, TodoCollection } from './types';
 import { debounce } from 'lodash';
-import useStatusStore from 'features/status/store';
 
 const IS_AUTO_UPDATE = false;
 
@@ -29,8 +26,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
   showHeader?: boolean;
   selectedTodo?: Todo;
 }) {
-  const tags = useTagStore((state) => state.tags);
-  const status = useStatusStore((state) => state.status);
   const setSelectedTodo = useTodoStore(
     (state) => state.actions.setSelectedTodo
   );
@@ -102,36 +97,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
     [setTodos, setSelectedTodo]
   );
 
-  const handleChangeTag = (value: any, data: any) => {
-    if (!selectedTodo?.id) return;
-    const updatedTodo = {
-      ...selectedTodo,
-      tag: data.data.id,
-    };
-
-    setTodos({
-      ...todos,
-      [selectedTodo.id]: updatedTodo,
-    });
-    setSelectedTodo(updatedTodo);
-    handleUpdate(updatedTodo);
-  };
-
-  const handleChangeStatus = (value: any, data: any) => {
-    if (!selectedTodo?.id) return;
-    const updatedTodo = {
-      ...selectedTodo,
-      status: data.data.id,
-    };
-
-    setTodos({
-      ...todos,
-      [selectedTodo.id]: updatedTodo,
-    });
-    setSelectedTodo(updatedTodo);
-    handleUpdate(updatedTodo);
-  };
-
   useEffect(() => {
     if (!selectedTodo?.id) return;
 
@@ -189,30 +154,6 @@ const MemoizedTodoDetail = memo(function TodoDetail({
         </Paragraph>
       </div>
       <div>
-        <Select
-          size="small"
-          style={{ width: '100px', marginRight: '8px' }}
-          value={selectedTodo?.tag}
-          placeholder="Tags"
-          onChange={handleChangeTag}
-          options={Object.values(tags).map((tag) => ({
-            label: tag.title,
-            value: tag.id,
-            data: tag,
-          }))}
-        />
-        <Select
-          size="small"
-          style={{ width: '100px', marginRight: '8px' }}
-          value={selectedTodo?.status}
-          placeholder="Status"
-          onChange={handleChangeStatus}
-          options={Object.values(status).map((i) => ({
-            label: i.label,
-            value: i.id,
-            data: i,
-          }))}
-        />
         {loading ? (
           <Button
             className="btn-warning"

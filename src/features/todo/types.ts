@@ -6,6 +6,7 @@ export type Todo = {
   author: string | null;
   tag: number;
   isDone: boolean;
+  isRecurring: boolean;
   status: number;
 };
 

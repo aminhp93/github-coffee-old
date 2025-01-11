@@ -9,9 +9,23 @@ const TodoService = {
     author?: string;
     isDone?: boolean;
     tag?: number;
-    status?: number[];
+    // status?: number[];
   }) {
-    const isDone = params && Object.hasOwn(params, 'isDone');
+    let isDoneObj: {
+      key: string;
+      value: boolean | undefined;
+    } = {
+      key: '',
+      value: undefined,
+    };
+    if (params?.isDone === false) {
+      // only get the todo that is not done
+      isDoneObj = {
+        key: 'isDone',
+        value: false,
+      };
+    }
+
     const tag = params && Object.hasOwn(params, 'tag');
 
     // let authorQuery = 'author.is.null';
@@ -23,9 +37,9 @@ const TodoService = {
       .from('todo')
       .select()
       .eq('author', params?.author)
-      .eq(isDone ? 'isDone' : '', params?.isDone)
-      .eq(tag ? 'tag' : '', params?.tag)
-      .in('status', params?.status || []);
+      .eq(isDoneObj.key, isDoneObj.value)
+      .eq(tag ? 'tag' : '', params?.tag);
+    // .in('status', params?.status || []);
     // .or(authorQuery);
   },
   detailTodo(todoId: number) {
