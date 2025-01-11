@@ -8,7 +8,6 @@ type Props = {
 };
 
 const StockResultUpdateDrawer = ({ onClose, data }: Props) => {
-  console.log(data);
   const valid = (data?.res || []).filter((i: any) => i[0]?.symbol).length;
   const all = (data?.list_all || []).length;
   const percent = (100 * valid) / all;

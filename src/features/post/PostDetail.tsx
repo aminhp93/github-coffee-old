@@ -35,7 +35,6 @@ const MemoizedPostDetail = memo(function PostDetail() {
   );
 
   const handleUpdate = async (post?: Post) => {
-    console.log('handleUpdate', post);
     if (!post) return;
     try {
       if (!post?.id) return;
@@ -96,7 +95,6 @@ const MemoizedPostDetail = memo(function PostDetail() {
   );
 
   const handleChangeTag = (value: any, data: any) => {
-    console.log(value, data, selectedPost);
     if (!selectedPost?.id) return;
     const updatedPost = {
       ...selectedPost,
@@ -212,7 +210,6 @@ const MemoizedPostDetail = memo(function PostDetail() {
         <CustomLexical
           data={lexicalData}
           onChange={(value?: string) => {
-            console.log('onchange', value);
             handleChangeLexical({ value, posts, selectedPost });
           }}
         />

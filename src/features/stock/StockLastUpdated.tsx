@@ -75,7 +75,6 @@ const StockLastUpdated = ({ onClose }: Props) => {
 
   const handleTest = async (symbol: string) => {
     try {
-      console.log(`start getting last updated of symbol: ${symbol}`);
       const res: any = await StockService.getLastUpdatedStock(symbol);
       const res2 = await StockService.getCountStock(symbol);
       if (res.status === 200 && res2.status === 200) {
@@ -88,9 +87,7 @@ const StockLastUpdated = ({ onClose }: Props) => {
       return {
         symbol,
       };
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   };
 
   const handleTestAll = async (listSymbol: string[]) => {
@@ -109,14 +106,12 @@ const StockLastUpdated = ({ onClose }: Props) => {
         const res = await Promise.all(listPromises);
         result = [...result, ...res];
         setLoading(false);
-        console.log(res);
       }
 
       gridRef.current?.api.setRowData(result);
     } catch (e) {
       setLoading(false);
       notification.error({ message: 'error' });
-      console.log(e);
     }
   };
   const handleForceUpdate = async (listSymbols: string[]) => {

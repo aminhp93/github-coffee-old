@@ -144,7 +144,6 @@ const StockDetail = () => {
       setStockBase(newStockBase as StockBase);
     } catch (e) {
       setLoading(false);
-      console.log(e);
     }
   };
 

@@ -23,7 +23,6 @@ const Test = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      console.log('fetchData');
       Object.keys(objectItems).forEach((id) => {
         objectItems[id] = {
           ...objectItems[id],
@@ -49,7 +48,6 @@ const Test = () => {
     'shift',
     (event) => {
       event.preventDefault();
-      console.log('ctrl pressed', event);
       if (event.type === 'keydown') {
         setMode('pan');
       }
@@ -67,7 +65,6 @@ const Test = () => {
   useHotkeys(
     'p',
     () => {
-      console.log('p pressed');
       patchItems({
         '1': {
           legacy: {
@@ -98,7 +95,6 @@ const Test = () => {
           },
         } as any,
       });
-      console.log('s pressed');
       setMode('select');
     },
     []
@@ -107,7 +103,6 @@ const Test = () => {
   useHotkeys(
     'v',
     () => {
-      console.log('s pressed');
       setMode('view');
     },
     []
@@ -140,12 +135,10 @@ const Test = () => {
   };
 
   const handlePrevious = () => {
-    console.log('handlePrevious');
     undo();
   };
 
   const handleNext = () => {
-    console.log('handleNext');
     redo();
   };
 
