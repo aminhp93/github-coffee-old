@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// Import libraries
 import {
   CheckCircleOutlined,
   DeleteOutlined,
@@ -6,7 +7,10 @@ import {
   LeftOutlined,
 } from '@ant-design/icons';
 import { Button, notification, Typography, Popconfirm } from 'antd';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { memo, useEffect, useState, useMemo } from 'react';
+
+// Import local files
 import './index.less';
 import TodoService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
@@ -95,6 +99,15 @@ const MemoizedTodoDetail = memo(function TodoDetail({
         300
       ),
     [setTodos, setSelectedTodo]
+  );
+
+  useHotkeys(
+    'meta+s',
+    (e) => {
+      e.preventDefault();
+      handleUpdate(selectedTodo);
+    },
+    []
   );
 
   useEffect(() => {

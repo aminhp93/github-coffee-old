@@ -23,7 +23,6 @@ const Test = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      console.log('fetchData');
       Object.keys(objectItems).forEach((id) => {
         objectItems[id] = {
           ...objectItems[id],
