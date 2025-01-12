@@ -19,13 +19,7 @@ import { useTodoStore, TodoStoreProvider } from './store';
 import { keyBy } from 'lodash';
 import { Todo, TodoCollection } from './types';
 
-type Props = {
-  tag?: string;
-};
-
-const TodoPage = (props: Props) => {
-  const { tag } = props;
-
+const TodoPage = () => {
   // Hooks
   const { authUser }: AuthUserContext = useAuth();
   const setTodos = useTodoStore((state) => state.actions.setTodos);
@@ -36,8 +30,7 @@ const TodoPage = (props: Props) => {
   const setLoading = useTodoStore((state) => state.actions.setLoading);
 
   // States
-  const [showClosed, setShowClosed] = useState(false);
-
+  const [showAll, setShowAll] = useState(false);
   const isOpenDetail = selectedTodo?.id || mode === 'create';
 
   // variable
@@ -54,7 +47,7 @@ const TodoPage = (props: Props) => {
         // re-fetch list
         const dataRequest = {
           author: authUser?.id,
-          isDone: showClosed,
+          showAll,
         };
 
         const res = await TodoService.listTodo(dataRequest);
@@ -67,7 +60,7 @@ const TodoPage = (props: Props) => {
         notification.error({ message: 'Error Update Todo' });
       }
     },
-    [authUser?.id, setLoading, setTodos, showClosed]
+    [authUser?.id, setLoading, setTodos, showAll]
   );
 
   useEffect(() => {
@@ -76,7 +69,7 @@ const TodoPage = (props: Props) => {
         setLoading(true);
         const dataRequest = {
           author: authUser?.id,
-          isDone: showClosed,
+          showAll,
         };
 
         const res = await TodoService.listTodo(dataRequest);
@@ -90,10 +83,10 @@ const TodoPage = (props: Props) => {
       }
     };
     init();
-  }, [authUser?.id, setTodos, setLoading, tag, showClosed]);
+  }, [authUser?.id, setTodos, setLoading, showAll]);
 
   const renderHeader = (
-    <div className="TodoCreateButton flex">
+    <div className={`TodoCreateButton flex `}>
       {mode === 'create' ? (
         <Tooltip title="Back">
           <Button
@@ -105,10 +98,10 @@ const TodoPage = (props: Props) => {
       ) : (
         <>
           <Checkbox
-            checked={showClosed}
-            onChange={(e) => setShowClosed(e.target.checked)}
+            checked={showAll}
+            onChange={(e) => setShowAll(e.target.checked)}
           >
-            Show closed
+            Show All
           </Checkbox>
           <Flex>
             <Radio.Group
@@ -136,7 +129,7 @@ const TodoPage = (props: Props) => {
     } else if (mode === 'all-view') {
       return (
         <div
-          className="TodoDetailContainer flex flex-1 height-100"
+          className={`TodoDetailContainer flex flex-1 height-100 `}
           style={{
             flexDirection: 'column',
           }}
@@ -165,7 +158,7 @@ const TodoPage = (props: Props) => {
   };
 
   return (
-    <div className="Todo flex">
+    <div className={`Todo flex ${showAll ? 'showAll' : ''}`}>
       <div className={TodoListContainerClassName}>
         {renderHeader}
         <TodoList cb={handleUpdate} />
@@ -176,14 +169,14 @@ const TodoPage = (props: Props) => {
   );
 };
 
-const WrappedTodo = (props: Props) => {
+const WrappedTodo = () => {
   return (
     <TodoStoreProvider
       initialTodos={{}}
       initialMode="single-view"
       initialLoading={false}
     >
-      <TodoPage {...props} />
+      <TodoPage />
     </TodoStoreProvider>
   );
 };

@@ -2,7 +2,6 @@ import { memo } from 'react';
 import './index.less';
 import { usePostStore } from './store';
 import { Post } from './types';
-import { CheckOutlined } from '@ant-design/icons';
 
 type Props = {
   data: Post;
@@ -18,17 +17,14 @@ function PostListItem({ data }: Props) {
   const selected = selectedPost?.id === data.id;
 
   return (
-    <div className={`PostListItem flex ${selected ? 'selected' : ''}`}>
-      <div
-        onClick={() => {
-          setSelectedPost(data);
-          setMode('list');
-        }}
-        style={{ flex: 1 }}
-      >{`${data.id} - ${data.title}`}</div>
-      <div className="toolbox">
-        <CheckOutlined />
-      </div>
+    <div
+      className={`PostListItem flex ${selected ? 'selected' : ''}`}
+      onClick={() => {
+        setSelectedPost(data);
+        setMode('list');
+      }}
+    >
+      {`${data.id} - ${data.title}`}
     </div>
   );
 }

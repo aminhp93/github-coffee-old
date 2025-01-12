@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
+// Import libraries
 import {
   CheckCircleOutlined,
   DeleteOutlined,
@@ -7,6 +7,10 @@ import {
 } from '@ant-design/icons';
 import { Button, notification, Select, Typography, Popconfirm } from 'antd';
 import { memo, useEffect, useState, useMemo } from 'react';
+import { debounce } from 'lodash';
+import { useHotkeys } from 'react-hotkeys-hook';
+
+// Import local files
 import './index.less';
 import PostService from './service';
 import CustomLexical from 'components/customLexical/CustomLexical';
@@ -14,7 +18,6 @@ import { DEFAULT_VALUE } from 'components/customLexical/utils';
 import { usePostStore } from './store';
 import useTagStore from '../tag/store';
 import { Post, PostCollection } from './types';
-import { debounce } from 'lodash';
 
 const IS_AUTO_UPDATE = false;
 
@@ -32,6 +35,15 @@ const MemoizedPostDetail = memo(function PostDetail() {
   const [loading, setLoading] = useState(false);
   const [lexicalData, setLexicalData] = useState<string | undefined>(
     selectedPost ? selectedPost.content : JSON.stringify(DEFAULT_VALUE)
+  );
+
+  useHotkeys(
+    'meta+s',
+    (e) => {
+      e.preventDefault();
+      handleUpdate(selectedPost);
+    },
+    []
   );
 
   const handleUpdate = async (post?: Post) => {

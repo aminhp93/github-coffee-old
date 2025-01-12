@@ -8,39 +8,27 @@ const TodoService = {
   listTodo(params?: {
     author?: string;
     isDone?: boolean;
-    tag?: number;
-    // status?: number[];
+    isRecurring?: boolean;
+    showAll?: boolean;
   }) {
-    let isDoneObj: {
-      key: string;
-      value: boolean | undefined;
-    } = {
-      key: '',
-      value: undefined,
-    };
-    if (params?.isDone === false) {
-      // only get the todo that is not done
-      isDoneObj = {
-        key: 'isDone',
-        value: false,
-      };
+    // get query in supabase todo table where updated is today
+    // or
+    // get query in supabase todo table where author is the same as the author in params
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const startOfDayISO = startOfDay.toISOString();
+
+    if (params?.showAll) {
+      return supabase.from('todo').select().eq('author', params?.author);
     }
-
-    const tag = params && Object.hasOwn(params, 'tag');
-
-    // let authorQuery = 'author.is.null';
-    // if (params?.author) {
-    //   authorQuery = `author.is.null,author.eq.${params.author}`;
-    // }
 
     return supabase
       .from('todo')
       .select()
       .eq('author', params?.author)
-      .eq(isDoneObj.key, isDoneObj.value)
-      .eq(tag ? 'tag' : '', params?.tag);
-    // .in('status', params?.status || []);
-    // .or(authorQuery);
+      .eq('isDone', false)
+      .or(`created_at.gte.${startOfDayISO},isRecurring.eq.true`);
   },
   detailTodo(todoId: number) {
     return supabase.from('todo').select().eq('id', todoId);
