@@ -10,6 +10,11 @@ import CustomLexical from 'components/customLexical/CustomLexical';
 import { useTodoStore } from './store';
 import useTagStore from '../tag/store';
 
+/**
+ * Renders a form interface for creating a new todo item.
+ *
+ * Displays input fields for the todo title, tag selection, and optional content. On submission, creates a new todo associated with the authenticated user and updates the global todo state.
+ */
 export default function TodoCreate() {
   const { authUser }: AuthUserContext = useAuth();
   const [todo, setTodo] = useState<Partial<Todo> | undefined>();

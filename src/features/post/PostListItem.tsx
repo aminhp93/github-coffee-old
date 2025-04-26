@@ -8,6 +8,13 @@ type Props = {
   data: Post;
 };
 
+/**
+ * Renders a single post item with selectable styling and actions.
+ *
+ * Displays the post's ID and title, highlights if selected, and allows selecting the post and changing the mode when clicked.
+ *
+ * @param data - The post to display in the list item.
+ */
 function PostListItem({ data }: Props) {
   const selectedPost = usePostStore((state) => state.selectedPost);
   const setSelectedPost = usePostStore(

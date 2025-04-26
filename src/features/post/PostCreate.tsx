@@ -10,6 +10,11 @@ import CustomLexical from 'components/customLexical/CustomLexical';
 import { usePostStore } from './store';
 import useTagStore from '../tag/store';
 
+/**
+ * Renders a form interface for creating a new post, allowing users to input a title, select a tag, and enter content.
+ *
+ * On submission, creates the post, updates the global post state, and provides user feedback via notifications.
+ */
 export default function PostCreate() {
   const { authUser }: AuthUserContext = useAuth();
   const [post, setPost] = useState<Partial<Post> | undefined>();

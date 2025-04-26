@@ -10,6 +10,14 @@ type Props = {
   cb?: (todo: Todo) => void;
 };
 
+/**
+ * Renders a single to-do item with controls to toggle completion and recurring status.
+ *
+ * Displays the to-do's title, a checkbox for marking it as done, and a button to toggle its recurring state. Selecting the item sets it as the current to-do and switches to single-view mode. Optionally invokes a callback with updated to-do data when toggling completion or recurring status.
+ *
+ * @param data - The to-do item to display and interact with.
+ * @param cb - Optional callback invoked with the updated to-do when its completion or recurring status changes.
+ */
 function TodoListItem({ data, cb }: Props) {
   const selectedTodo = useTodoStore((state) => state.selectedTodo);
   const setSelectedTodo = useTodoStore(

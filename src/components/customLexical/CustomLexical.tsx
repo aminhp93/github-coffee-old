@@ -92,6 +92,15 @@ type Props = {
   onChange?: (value?: string) => void;
 };
 
+/**
+ * Renders a fully featured rich text editor with custom theming, plugins, and optional toolbar.
+ *
+ * The editor supports controlled updates via a serialized state and notifies changes through the {@link onChange} callback. It includes plugins for code highlighting, lists, links, markdown shortcuts, auto-focus, and more.
+ *
+ * @param showToolbar - Whether to display the editor toolbar. Defaults to true.
+ *
+ * @returns The configured Lexical rich text editor React component.
+ */
 export default function Editor({ showToolbar = true, ...props }: Props) {
   const handleChange = (editorState: EditorState) => {
     editorState.read(() => {
